@@ -1,5 +1,6 @@
 import { notFound } from "next/navigation";
-import { PARKS } from "@/data/parks";
+import { prisma } from "@/lib/prisma";
+import { transformDbPark } from "@/lib/types";
 import { ParkDetailPage } from "@/features/parks/detail/ParkDetailPage";
 
 interface ParkPageProps {
@@ -7,20 +8,42 @@ interface ParkPageProps {
 }
 
 export async function generateStaticParams() {
-  return PARKS.map((park) => ({
-    id: park.id,
+  const parks = await prisma.park.findMany({
+    where: {
+      status: "APPROVED",
+    },
+    select: {
+      slug: true,
+    },
+  });
+
+  return parks.map((park) => ({
+    id: park.slug,
   }));
 }
 
 export async function generateMetadata({ params }: ParkPageProps) {
   const { id } = await params;
-  const park = PARKS.find((p) => p.id === id);
 
-  if (!park) {
+  const dbPark = await prisma.park.findUnique({
+    where: {
+      slug: id,
+      status: "APPROVED",
+    },
+    include: {
+      terrain: true,
+      difficulty: true,
+      amenities: true,
+    },
+  });
+
+  if (!dbPark) {
     return {
       title: "Park Not Found",
     };
   }
+
+  const park = transformDbPark(dbPark);
 
   return {
     title: `${park.name} - UTV Parks`,
@@ -32,11 +55,24 @@ export async function generateMetadata({ params }: ParkPageProps) {
 
 export default async function ParkPage({ params }: ParkPageProps) {
   const { id } = await params;
-  const park = PARKS.find((p) => p.id === id);
 
-  if (!park) {
+  const dbPark = await prisma.park.findUnique({
+    where: {
+      slug: id,
+      status: "APPROVED",
+    },
+    include: {
+      terrain: true,
+      difficulty: true,
+      amenities: true,
+    },
+  });
+
+  if (!dbPark) {
     notFound();
   }
+
+  const park = transformDbPark(dbPark);
 
   return <ParkDetailPage park={park} />;
 }

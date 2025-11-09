@@ -19,7 +19,11 @@ const MapView = dynamic(
   { ssr: false },
 );
 
-export default function OffroadParksApp() {
+interface OffroadParksAppProps {
+  parks: Park[];
+}
+
+export default function OffroadParksApp({ parks }: OffroadParksAppProps) {
   const [selectedPark, setSelectedPark] = useState<Park | null>(null);
   const [activeView, setActiveView] = useState<"list" | "map">("list");
 
@@ -37,7 +41,7 @@ export default function OffroadParksApp() {
     availableStates,
     filteredParks,
     clearAllFilters,
-  } = useFilteredParks();
+  } = useFilteredParks({ parks });
 
   const { toggleFavorite, isFavorite } = useFavorites();
 

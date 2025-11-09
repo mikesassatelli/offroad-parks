@@ -2,22 +2,18 @@ import type { Amenity, Terrain } from "@/lib/types";
 
 export const ALL_AMENITIES: Amenity[] = [
   "camping",
+  "cabins",
+  "restrooms",
   "showers",
-  "rv hookups",
+  "food",
   "fuel",
-  "wash station",
-  "restaurant",
-  "rentals",
-  "trail maps",
+  "repair",
 ];
 
 export const ALL_TERRAIN_TYPES: Terrain[] = [
   "sand",
+  "rocks",
   "mud",
-  "hardpack",
-  "rocky",
-  "desert",
-  "forest",
+  "trails",
   "hills",
-  "mountain",
 ];

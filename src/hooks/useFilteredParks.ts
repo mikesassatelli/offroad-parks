@@ -1,10 +1,13 @@
 import { useMemo, useState } from "react";
-import type { Amenity, Terrain } from "@/lib/types";
-import { PARKS } from "@/data/parks";
+import type { Amenity, Terrain, Park } from "@/lib/types";
 
 export type SortOption = "name" | "price" | "miles";
 
-export function useFilteredParks() {
+interface UseFilteredParksProps {
+  parks: Park[];
+}
+
+export function useFilteredParks({ parks }: UseFilteredParksProps) {
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedState, setSelectedState] = useState<string | undefined>();
   const [selectedTerrain, setSelectedTerrain] = useState<string | undefined>();
@@ -12,17 +15,17 @@ export function useFilteredParks() {
   const [sortOption, setSortOption] = useState<SortOption>("name");
 
   const availableStates = useMemo(
-    () => Array.from(new Set(PARKS.map((park) => park.state))).sort(),
-    [],
+    () => Array.from(new Set(parks.map((park) => park.state))).sort(),
+    [parks],
   );
 
   const filteredParks = useMemo(() => {
-    let parks = [...PARKS];
+    let filteredList = [...parks];
 
     // Apply search query filter
     if (searchQuery.trim()) {
       const searchTerm = searchQuery.toLowerCase();
-      parks = parks.filter((park) =>
+      filteredList = filteredList.filter((park) =>
         [park.name, park.city, park.state, park.notes]
           .filter(Boolean)
           .some((value) => value!.toLowerCase().includes(searchTerm)),
@@ -31,25 +34,27 @@ export function useFilteredParks() {
 
     // Apply state filter
     if (selectedState) {
-      parks = parks.filter((park) => park.state === selectedState);
+      filteredList = filteredList.filter(
+        (park) => park.state === selectedState,
+      );
     }
 
     // Apply terrain filter
     if (selectedTerrain) {
-      parks = parks.filter((park) =>
+      filteredList = filteredList.filter((park) =>
         park.terrain.includes(selectedTerrain as Terrain),
       );
     }
 
     // Apply amenity filter
     if (selectedAmenity) {
-      parks = parks.filter((park) =>
+      filteredList = filteredList.filter((park) =>
         park.amenities.includes(selectedAmenity as Amenity),
       );
     }
 
     // Apply sorting
-    parks.sort((parkA, parkB) => {
+    filteredList.sort((parkA, parkB) => {
       if (sortOption === "name") {
         return parkA.name.localeCompare(parkB.name);
       }
@@ -62,8 +67,9 @@ export function useFilteredParks() {
       return 0;
     });
 
-    return parks;
+    return filteredList;
   }, [
+    parks,
     searchQuery,
     selectedState,
     selectedTerrain,
