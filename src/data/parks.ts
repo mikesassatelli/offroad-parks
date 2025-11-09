@@ -7,6 +7,7 @@ export const PARKS: Park[] = [
     city: "Chadwick",
     state: "MO",
     website: "https://www.fs.usda.gov/recarea/mtnf/recarea/?recid=21766",
+    coords: { lat: 36.9386, lng: -93.0104 },
     acres: 12500,
     milesOfTrails: 80,
     dayPassUSD: 7,
@@ -14,7 +15,8 @@ export const PARKS: Park[] = [
     terrain: ["forest", "hills", "rocky"],
     amenities: ["camping", "trail maps"],
     difficulty: ["easy", "moderate", "hard"],
-    notes: "Popular Ozarks singletrack/UTV system near Springfield; dispersed-style camps in loop."
+    notes:
+      "Popular Ozarks singletrack/UTV system near Springfield; dispersed-style camps in loop.",
   },
   {
     id: "suttonbluff-mo",
@@ -22,6 +24,7 @@ export const PARKS: Park[] = [
     city: "Centerville",
     state: "MO",
     website: "https://www.fs.usda.gov/recarea/mtnf/recarea/?recid=21774",
+    coords: { lat: 37.4558, lng: -90.9656 },
     acres: 20000,
     milesOfTrails: 27,
     dayPassUSD: 5,
@@ -29,7 +32,7 @@ export const PARKS: Park[] = [
     terrain: ["forest", "hills", "rocky"],
     amenities: ["camping"],
     difficulty: ["easy", "moderate"],
-    notes: "River access close by; seasonal closures possible."
+    notes: "River access close by; seasonal closures possible.",
   },
   {
     id: "fingerlakes-mo",
@@ -37,6 +40,7 @@ export const PARKS: Park[] = [
     city: "Columbia",
     state: "MO",
     website: "https://mostateparks.com/park/finger-lakes-state-park",
+    coords: { lat: 38.8703, lng: -92.2843 },
     acres: 1100,
     milesOfTrails: 70,
     dayPassUSD: 5,
@@ -44,7 +48,8 @@ export const PARKS: Park[] = [
     terrain: ["mud", "hardpack"],
     amenities: ["camping", "showers", "trail maps"],
     difficulty: ["easy", "moderate"],
-    notes: "MX tracks + trail network on reclaimed mine land; reservable campground."
+    notes:
+      "MX tracks + trail network on reclaimed mine land; reservable campground.",
   },
   {
     id: "blackriverfalls-wi",
@@ -52,6 +57,7 @@ export const PARKS: Park[] = [
     city: "Black River Falls",
     state: "WI",
     website: "https://dnr.wisconsin.gov/topic/parks/blackriver",
+    coords: { lat: 44.2906, lng: -90.8512 },
     acres: 68000,
     milesOfTrails: 100,
     dayPassUSD: 0,
@@ -59,6 +65,6 @@ export const PARKS: Park[] = [
     terrain: ["forest", "sand"],
     amenities: ["camping", "rv hookups", "trail maps"],
     difficulty: ["easy", "moderate"],
-    notes: "Connects to county trail network; sticker requirements apply."
-  }
+    notes: "Connects to county trail network; sticker requirements apply.",
+  },
 ];

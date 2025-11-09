@@ -1,15 +1,27 @@
 "use client";
 import { useState } from "react";
+import dynamic from "next/dynamic";
 import type { Park } from "@/lib/types";
 import { useFilteredParks } from "@/hooks/useFilteredParks";
 import { useFavorites } from "@/hooks/useFavorites";
+import { useRouteBuilder } from "@/hooks/useRouteBuilder";
 import { AppHeader } from "@/components/layout/AppHeader";
 import { SearchFiltersPanel } from "@/components/parks/SearchFiltersPanel";
 import { ParkCard } from "@/components/parks/ParkCard";
 import { ParkDetailsDialog } from "@/components/parks/ParkDetailsDialog";
+import { RouteList } from "@/features/route-planner/RouteList";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { LayoutGrid, Map } from "lucide-react";
+
+// Dynamically import MapView to avoid SSR issues with Leaflet
+const MapView = dynamic(
+  () => import("@/features/map/MapView").then((mod) => mod.MapView),
+  { ssr: false },
+);
 
 export default function OffroadParksApp() {
   const [selectedPark, setSelectedPark] = useState<Park | null>(null);
+  const [activeView, setActiveView] = useState<"list" | "map">("list");
 
   const {
     searchQuery,
@@ -29,16 +41,26 @@ export default function OffroadParksApp() {
 
   const { toggleFavorite, isFavorite } = useFavorites();
 
+  const {
+    routeParks,
+    addParkToRoute,
+    removeParkFromRoute,
+    clearRoute,
+    reorderRoute,
+    isParkInRoute,
+    totalRouteDistance,
+  } = useRouteBuilder();
+
   const handleCloseDialog = () => {
     setSelectedPark(null);
   };
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen bg-background">
       <AppHeader sortOption={sortOption} onSortChange={setSortOption} />
 
-      <main className="max-w-6xl mx-auto px-4 py-6">
-        <div className="grid md:grid-cols-4 gap-4 items-start">
+      <main className="max-w-7xl mx-auto px-6 py-8">
+        <div className="grid lg:grid-cols-5 gap-6 items-start">
           <SearchFiltersPanel
             searchQuery={searchQuery}
             onSearchQueryChange={setSearchQuery}
@@ -52,16 +74,59 @@ export default function OffroadParksApp() {
             onClearFilters={clearAllFilters}
           />
 
-          <div className="md:col-span-3 grid grid-cols-1 sm:grid-cols-2 gap-4">
-            {filteredParks.map((park) => (
-              <ParkCard
-                key={park.id}
-                park={park}
-                isFavorite={isFavorite(park.id)}
-                onToggleFavorite={toggleFavorite}
-                onCardClick={setSelectedPark}
-              />
-            ))}
+          <div className="lg:col-span-4">
+            <Tabs
+              value={activeView}
+              onValueChange={(v) => setActiveView(v as "list" | "map")}
+            >
+              <TabsList className="mb-6">
+                <TabsTrigger value="list" className="flex items-center gap-2">
+                  <LayoutGrid className="w-4 h-4" />
+                  List View
+                </TabsTrigger>
+                <TabsTrigger value="map" className="flex items-center gap-2">
+                  <Map className="w-4 h-4" />
+                  Map View
+                </TabsTrigger>
+              </TabsList>
+
+              <TabsContent value="list" className="mt-0">
+                <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-5">
+                  {filteredParks.map((park) => (
+                    <ParkCard
+                      key={park.id}
+                      park={park}
+                      isFavorite={isFavorite(park.id)}
+                      onToggleFavorite={toggleFavorite}
+                      onCardClick={setSelectedPark}
+                    />
+                  ))}
+                </div>
+              </TabsContent>
+
+              <TabsContent value="map" className="mt-0">
+                <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                  <div className="lg:col-span-2">
+                    <MapView
+                      parks={filteredParks}
+                      routeParks={routeParks}
+                      onAddToRoute={addParkToRoute}
+                      isParkInRoute={isParkInRoute}
+                    />
+                  </div>
+                  <div className="lg:col-span-1">
+                    <RouteList
+                      routeParks={routeParks}
+                      onRemovePark={removeParkFromRoute}
+                      onClearRoute={clearRoute}
+                      onReorderRoute={reorderRoute}
+                      totalDistance={totalRouteDistance()}
+                      onParkClick={setSelectedPark}
+                    />
+                  </div>
+                </div>
+              </TabsContent>
+            </Tabs>
           </div>
         </div>
       </main>

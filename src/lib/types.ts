@@ -1,7 +1,22 @@
 export type Amenity =
-  | "camping" | "showers" | "rv hookups" | "fuel" | "wash station" | "restaurant" | "rentals" | "trail maps";
+  | "camping"
+  | "showers"
+  | "rv hookups"
+  | "fuel"
+  | "wash station"
+  | "restaurant"
+  | "rentals"
+  | "trail maps";
 
-export type Terrain = "sand" | "mud" | "hardpack" | "rocky" | "desert" | "forest" | "hills" | "mountain";
+export type Terrain =
+  | "sand"
+  | "mud"
+  | "hardpack"
+  | "rocky"
+  | "desert"
+  | "forest"
+  | "hills"
+  | "mountain";
 
 export type Park = {
   id: string;
