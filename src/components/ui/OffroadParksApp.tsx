@@ -1,6 +1,7 @@
 "use client";
 import { useState } from "react";
 import dynamic from "next/dynamic";
+import { SessionProvider, useSession } from "next-auth/react";
 import type { Park } from "@/lib/types";
 import { useFilteredParks } from "@/hooks/useFilteredParks";
 import { useFavorites } from "@/hooks/useFavorites";
@@ -23,7 +24,8 @@ interface OffroadParksAppProps {
   parks: Park[];
 }
 
-export default function OffroadParksApp({ parks }: OffroadParksAppProps) {
+function OffroadParksAppInner({ parks }: OffroadParksAppProps) {
+  const { data: session } = useSession();
   const [selectedPark, setSelectedPark] = useState<Park | null>(null);
   const [activeView, setActiveView] = useState<"list" | "map">("list");
 
@@ -59,9 +61,23 @@ export default function OffroadParksApp({ parks }: OffroadParksAppProps) {
     setSelectedPark(null);
   };
 
+  const user = session?.user
+    ? {
+        name: session.user.name,
+        email: session.user.email,
+        image: session.user.image,
+        // @ts-expect-error - role added in auth callback
+        role: session.user.role,
+      }
+    : null;
+
   return (
     <div className="min-h-screen bg-background">
-      <AppHeader sortOption={sortOption} onSortChange={setSortOption} />
+      <AppHeader
+        sortOption={sortOption}
+        onSortChange={setSortOption}
+        user={user}
+      />
 
       <main className="max-w-7xl mx-auto px-6 py-8">
         <div className="grid lg:grid-cols-5 gap-6 items-start">
@@ -141,5 +157,13 @@ export default function OffroadParksApp({ parks }: OffroadParksAppProps) {
         onClose={handleCloseDialog}
       />
     </div>
+  );
+}
+
+export default function OffroadParksApp(props: OffroadParksAppProps) {
+  return (
+    <SessionProvider>
+      <OffroadParksAppInner {...props} />
+    </SessionProvider>
   );
 }

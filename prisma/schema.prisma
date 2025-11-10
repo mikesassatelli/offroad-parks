@@ -46,7 +46,8 @@ model User {
   accounts      Account[]
   sessions      Session[]
 
-  submittedParks Park[] @relation("SubmittedParks")
+  submittedParks Park[]         @relation("SubmittedParks")
+  favorites      UserFavorite[]
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -90,6 +91,7 @@ model Park {
   terrain    ParkTerrain[]
   difficulty ParkDifficulty[]
   amenities  ParkAmenity[]
+  favorites  UserFavorite[]
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -160,4 +162,19 @@ enum Amenity {
   food
   fuel
   repair
+}
+
+// User Favorites
+model UserFavorite {
+  id     String @id @default(cuid())
+  userId String
+  parkId String
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+  park Park @relation(fields: [parkId], references: [id], onDelete: Cascade)
+
+  createdAt DateTime @default(now())
+
+  @@unique([userId, parkId])
+  @@index([userId])
 }
