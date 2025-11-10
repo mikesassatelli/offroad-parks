@@ -1,11 +1,9 @@
 "use client";
 
-import { useState } from "react";
 import { SessionProvider } from "next-auth/react";
 import { useRouter } from "next/navigation";
 import type { Park } from "@/lib/types";
 import { ParkCard } from "@/components/parks/ParkCard";
-import { ParkDetailsDialog } from "@/components/parks/ParkDetailsDialog";
 import { useFavorites } from "@/hooks/useFavorites";
 import { Heart, User, ArrowLeft } from "lucide-react";
 import Link from "next/link";
@@ -22,7 +20,6 @@ interface UserProfileClientProps {
 
 function UserProfileInner({ parks, user }: UserProfileClientProps) {
   const router = useRouter();
-  const [selectedPark, setSelectedPark] = useState<Park | null>(null);
   const { toggleFavorite, isFavorite } = useFavorites();
 
   const handleToggleFavorite = async (parkId: string) => {
@@ -102,19 +99,12 @@ function UserProfileInner({ parks, user }: UserProfileClientProps) {
                   park={park}
                   isFavorite={isFavorite(park.id)}
                   onToggleFavorite={handleToggleFavorite}
-                  onCardClick={setSelectedPark}
                 />
               ))}
             </div>
           )}
         </div>
       </main>
-
-      <ParkDetailsDialog
-        park={selectedPark}
-        isOpen={!!selectedPark}
-        onClose={() => setSelectedPark(null)}
-      />
     </div>
   );
 }
