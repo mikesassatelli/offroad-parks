@@ -26,15 +26,7 @@ export function UserMenu({ user, onSignOut }: UserMenuProps) {
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
         <Button variant="ghost" size="sm" className="gap-2">
-          {user.image ? (
-            <img
-              src={user.image}
-              alt={user.name || "User"}
-              className="w-6 h-6 rounded-full"
-            />
-          ) : (
-            <User className="w-4 h-4" />
-          )}
+          <User className="w-4 h-4" />
           <span className="hidden sm:inline">{user.name || "Account"}</span>
         </Button>
       </DropdownMenuTrigger>

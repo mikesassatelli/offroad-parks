@@ -1,6 +1,7 @@
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import type { Park } from "@/lib/types";
 import { ExternalLink, Phone, MapPin } from "lucide-react";
+import { formatPhone } from "@/lib/formatting";
 
 interface ParkContactSidebarProps {
   park: Park;
@@ -29,7 +30,7 @@ export function ParkContactSidebar({ park }: ParkContactSidebarProps) {
           <div className="flex items-center gap-2 text-gray-700">
             <Phone className="w-4 h-4" />
             <a href={`tel:${park.phone}`} className="hover:underline">
-              {park.phone}
+              {formatPhone(park.phone)}
             </a>
           </div>
         )}

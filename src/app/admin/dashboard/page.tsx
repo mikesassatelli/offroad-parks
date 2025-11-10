@@ -1,16 +1,25 @@
 import { prisma } from "@/lib/prisma";
-import { MapPin, Clock, CheckCircle, XCircle } from "lucide-react";
+import { MapPin, Clock, CheckCircle, XCircle, Camera } from "lucide-react";
+import Image from "next/image";
+import Link from "next/link";
 
 export default async function AdminDashboard() {
   // Fetch statistics
-  const [totalParks, pendingParks, approvedParks, rejectedParks, totalUsers] =
-    await Promise.all([
-      prisma.park.count(),
-      prisma.park.count({ where: { status: "PENDING" } }),
-      prisma.park.count({ where: { status: "APPROVED" } }),
-      prisma.park.count({ where: { status: "REJECTED" } }),
-      prisma.user.count(),
-    ]);
+  const [
+    totalParks,
+    pendingParks,
+    approvedParks,
+    rejectedParks,
+    totalUsers,
+    pendingPhotos,
+  ] = await Promise.all([
+    prisma.park.count(),
+    prisma.park.count({ where: { status: "PENDING" } }),
+    prisma.park.count({ where: { status: "APPROVED" } }),
+    prisma.park.count({ where: { status: "REJECTED" } }),
+    prisma.user.count(),
+    prisma.parkPhoto.count({ where: { status: "PENDING" } }),
+  ]);
 
   // Get recent pending parks
   const recentPendingParks = await prisma.park.findMany({
@@ -27,6 +36,25 @@ export default async function AdminDashboard() {
     },
   });
 
+  // Get recent photos (all statuses)
+  const recentPhotos = await prisma.parkPhoto.findMany({
+    orderBy: { createdAt: "desc" },
+    take: 8,
+    include: {
+      park: {
+        select: {
+          name: true,
+          slug: true,
+        },
+      },
+      user: {
+        select: {
+          name: true,
+        },
+      },
+    },
+  });
+
   const stats = [
     {
       name: "Total Parks",
@@ -35,22 +63,22 @@ export default async function AdminDashboard() {
       color: "bg-blue-500",
     },
     {
-      name: "Pending Approval",
+      name: "Pending Parks",
       value: pendingParks,
       icon: Clock,
       color: "bg-yellow-500",
     },
     {
-      name: "Approved",
-      value: approvedParks,
-      icon: CheckCircle,
-      color: "bg-green-500",
+      name: "Pending Photos",
+      value: pendingPhotos,
+      icon: Camera,
+      color: "bg-purple-500",
     },
     {
-      name: "Rejected",
-      value: rejectedParks,
-      icon: XCircle,
-      color: "bg-red-500",
+      name: "Total Users",
+      value: totalUsers,
+      icon: CheckCircle,
+      color: "bg-green-500",
     },
   ];
 
@@ -130,16 +158,53 @@ export default async function AdminDashboard() {
         </div>
       </div>
 
-      {/* User Stats */}
-      <div className="mt-8 bg-white rounded-lg shadow border border-gray-200 p-6">
-        <h2 className="text-xl font-semibold text-gray-900 mb-4">
-          User Statistics
-        </h2>
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-          <div>
-            <p className="text-sm text-gray-600">Total Users</p>
-            <p className="text-2xl font-bold text-gray-900">{totalUsers}</p>
-          </div>
+      {/* Recent Photos */}
+      <div className="mt-8 bg-white rounded-lg shadow border border-gray-200">
+        <div className="p-6 border-b border-gray-200 flex items-center justify-between">
+          <h2 className="text-xl font-semibold text-gray-900">Recent Photos</h2>
+          <Link
+            href="/admin/photos"
+            className="text-sm text-blue-600 hover:text-blue-700 font-medium"
+          >
+            View All →
+          </Link>
+        </div>
+        <div className="p-6">
+          {recentPhotos.length === 0 ? (
+            <div className="text-center text-gray-500 py-8">
+              No photos uploaded yet
+            </div>
+          ) : (
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+              {recentPhotos.map((photo) => (
+                <Link
+                  key={photo.id}
+                  href={`/parks/${photo.park.slug}`}
+                  className="group relative aspect-square rounded-lg overflow-hidden border border-gray-200 hover:border-blue-500 transition-colors"
+                >
+                  <Image
+                    src={photo.url}
+                    alt={photo.caption || "Park photo"}
+                    fill
+                    className="object-cover group-hover:scale-105 transition-transform duration-200"
+                    sizes="(max-width: 768px) 50vw, 25vw"
+                  />
+                  <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent opacity-0 group-hover:opacity-100 transition-opacity">
+                    <div className="absolute bottom-0 left-0 right-0 p-3 text-white">
+                      <p className="text-sm font-medium truncate">
+                        {photo.park.name}
+                      </p>
+                      <p className="text-xs opacity-90">
+                        {photo.status === "PENDING" && "⏳ Pending"}
+                        {photo.status === "APPROVED" && "✓ Approved"}
+                        {photo.status === "REJECTED" && "✗ Rejected"}
+                      </p>
+                    </div>
+                  </div>
+                </Link>
+              ))}
+            </div>
+          )}
         </div>
       </div>
     </div>

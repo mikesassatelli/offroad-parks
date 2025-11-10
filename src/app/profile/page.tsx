@@ -20,6 +20,18 @@ export default async function ProfilePage() {
           terrain: true,
           difficulty: true,
           amenities: true,
+          photos: {
+            where: {
+              status: "APPROVED",
+            },
+            take: 1,
+            orderBy: {
+              createdAt: "desc",
+            },
+            select: {
+              url: true,
+            },
+          },
         },
       },
     },
@@ -28,7 +40,10 @@ export default async function ProfilePage() {
 
   const favoritedParks = favorites
     .filter((f) => f.park.status === "APPROVED")
-    .map((f) => transformDbPark(f.park));
+    .map((f) => ({
+      ...transformDbPark(f.park),
+      heroImage: f.park.photos[0]?.url || null,
+    }));
 
   return <UserProfileClient parks={favoritedParks} user={session.user} />;
 }

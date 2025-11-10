@@ -8,6 +8,8 @@ import {
   Settings,
   LogOut,
   PlusCircle,
+  Home,
+  Camera,
 } from "lucide-react";
 
 export default async function AdminLayout({
@@ -58,6 +60,14 @@ export default async function AdminLayout({
         <aside className="w-64 bg-white border-r border-gray-200 min-h-[calc(100vh-4rem)]">
           <nav className="p-4 space-y-2">
             <Link
+              href="/"
+              className="flex items-center gap-3 px-4 py-3 text-gray-700 rounded-lg hover:bg-gray-100 transition-colors"
+            >
+              <Home className="w-5 h-5" />
+              <span className="font-medium">Return to Homepage</span>
+            </Link>
+            <div className="border-t border-gray-200 my-2"></div>
+            <Link
               href="/admin/dashboard"
               className="flex items-center gap-3 px-4 py-3 text-gray-700 rounded-lg hover:bg-gray-100 transition-colors"
             >
@@ -77,6 +87,13 @@ export default async function AdminLayout({
             >
               <PlusCircle className="w-5 h-5" />
               <span className="font-medium">Add Park</span>
+            </Link>
+            <Link
+              href="/admin/photos"
+              className="flex items-center gap-3 px-4 py-3 text-gray-700 rounded-lg hover:bg-gray-100 transition-colors"
+            >
+              <Camera className="w-5 h-5" />
+              <span className="font-medium">Photos</span>
             </Link>
             <Link
               href="/admin/users"

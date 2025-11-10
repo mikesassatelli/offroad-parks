@@ -11,7 +11,6 @@ interface RouteListProps {
   onClearRoute: () => void;
   onReorderRoute: (fromIndex: number, toIndex: number) => void;
   totalDistance: number;
-  onParkClick: (park: Park) => void;
 }
 
 export function RouteList({
@@ -20,7 +19,6 @@ export function RouteList({
   onClearRoute,
   onReorderRoute,
   totalDistance,
-  onParkClick,
 }: RouteListProps) {
   const [draggedIndex, setDraggedIndex] = useState<number | null>(null);
   const [dragOverIndex, setDragOverIndex] = useState<number | null>(null);
@@ -72,7 +70,6 @@ export function RouteList({
             onDragOver={handleDragOver}
             onDragEnd={handleDragEnd}
             onDragLeave={handleDragLeave}
-            onParkClick={onParkClick}
             onRemovePark={onRemovePark}
           />
         ))}

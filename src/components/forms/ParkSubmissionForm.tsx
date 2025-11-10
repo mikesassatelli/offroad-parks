@@ -16,7 +16,8 @@ import {
 import { Checkbox } from "@/components/ui/checkbox";
 import { ALL_TERRAIN_TYPES, ALL_AMENITIES } from "@/lib/constants";
 import { US_STATES } from "@/lib/constants";
-import { Loader2 } from "lucide-react";
+import { Loader2, X, Image as ImageIcon } from "lucide-react";
+import Image from "next/image";
 
 interface ParkSubmissionFormProps {
   isAdminForm?: boolean;
@@ -29,6 +30,8 @@ export function ParkSubmissionForm({
 }: ParkSubmissionFormProps) {
   const router = useRouter();
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [photos, setPhotos] = useState<File[]>([]);
+  const [photoPreviews, setPhotoPreviews] = useState<string[]>([]);
   const [formData, setFormData] = useState({
     name: "",
     slug: "",
@@ -52,6 +55,14 @@ export function ParkSubmissionForm({
     e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>,
   ) => {
     const { name, value } = e.target;
+
+    // Sanitize phone number - strip all non-numeric characters
+    if (name === "phone") {
+      const sanitized = value.replace(/\D/g, "");
+      setFormData((prev) => ({ ...prev, [name]: sanitized }));
+      return;
+    }
+
     setFormData((prev) => ({ ...prev, [name]: value }));
 
     // Auto-generate slug from name if not admin
@@ -74,6 +85,45 @@ export function ParkSubmissionForm({
         ? prev[field].filter((v) => v !== value)
         : [...prev[field], value],
     }));
+  };
+
+  const handlePhotoChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const files = Array.from(e.target.files || []);
+    const allowedTypes = ["image/jpeg", "image/jpg", "image/png", "image/webp"];
+    const maxSize = 5 * 1024 * 1024; // 5MB
+
+    const validFiles = files.filter((file) => {
+      if (!allowedTypes.includes(file.type)) {
+        alert(`${file.name}: Invalid file type. Only JPEG, PNG, and WebP allowed.`);
+        return false;
+      }
+      if (file.size > maxSize) {
+        alert(`${file.name}: File too large. Maximum size is 5MB.`);
+        return false;
+      }
+      return true;
+    });
+
+    if (photos.length + validFiles.length > 5) {
+      alert("Maximum 5 photos allowed");
+      return;
+    }
+
+    setPhotos((prev) => [...prev, ...validFiles]);
+
+    // Create previews
+    validFiles.forEach((file) => {
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        setPhotoPreviews((prev) => [...prev, reader.result as string]);
+      };
+      reader.readAsDataURL(file);
+    });
+  };
+
+  const removePhoto = (index: number) => {
+    setPhotos((prev) => prev.filter((_, i) => i !== index));
+    setPhotoPreviews((prev) => prev.filter((_, i) => i !== index));
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -102,6 +152,26 @@ export function ParkSubmissionForm({
 
       if (response.ok) {
         const result = await response.json();
+        const parkSlug = result.park.slug;
+
+        // Upload photos if any
+        if (photos.length > 0 && parkSlug) {
+          for (const photo of photos) {
+            const photoFormData = new FormData();
+            photoFormData.append("file", photo);
+            photoFormData.append("caption", "");
+
+            try {
+              await fetch(`/api/parks/${parkSlug}/photos`, {
+                method: "POST",
+                body: photoFormData,
+              });
+            } catch (photoError) {
+              console.error("Failed to upload photo:", photoError);
+            }
+          }
+        }
+
         alert(
           isAdminForm
             ? "Park created successfully!"
@@ -136,6 +206,7 @@ export function ParkSubmissionForm({
             value={formData.name}
             onChange={handleInputChange}
             required
+            maxLength={100}
           />
         </div>
 
@@ -159,6 +230,7 @@ export function ParkSubmissionForm({
             name="city"
             value={formData.city}
             onChange={handleInputChange}
+            maxLength={50}
           />
         </div>
 
@@ -229,7 +301,8 @@ export function ParkSubmissionForm({
             type="tel"
             value={formData.phone}
             onChange={handleInputChange}
-            placeholder="(555) 123-4567"
+            placeholder="5551234567"
+            maxLength={15}
           />
         </div>
 
@@ -240,6 +313,8 @@ export function ParkSubmissionForm({
             name="dayPassUSD"
             type="number"
             step="0.01"
+            min="0"
+            max="9999.99"
             value={formData.dayPassUSD}
             onChange={handleInputChange}
             placeholder="25.00"
@@ -252,6 +327,8 @@ export function ParkSubmissionForm({
             id="milesOfTrails"
             name="milesOfTrails"
             type="number"
+            min="0"
+            max="99999"
             value={formData.milesOfTrails}
             onChange={handleInputChange}
           />
@@ -263,6 +340,8 @@ export function ParkSubmissionForm({
             id="acres"
             name="acres"
             type="number"
+            min="0"
+            max="9999999"
             value={formData.acres}
             onChange={handleInputChange}
           />
@@ -276,6 +355,7 @@ export function ParkSubmissionForm({
               name="submitterName"
               value={formData.submitterName}
               onChange={handleInputChange}
+              maxLength={100}
             />
           </div>
         )}
@@ -359,7 +439,67 @@ export function ParkSubmissionForm({
           onChange={handleInputChange}
           rows={4}
           placeholder="Any additional information about the park..."
+          maxLength={2000}
         />
+      </div>
+
+      {/* Photos */}
+      <div>
+        <Label className="mb-3 block">Photos (Optional, max 5)</Label>
+        <div className="space-y-4">
+          {/* File input */}
+          {photos.length < 5 && (
+            <div>
+              <label
+                htmlFor="photos"
+                className="flex flex-col items-center justify-center w-full h-32 border-2 border-dashed border-border rounded-lg cursor-pointer hover:border-primary transition-colors"
+              >
+                <div className="flex flex-col items-center justify-center pt-5 pb-6">
+                  <ImageIcon className="w-8 h-8 mb-2 text-muted-foreground" />
+                  <p className="text-sm text-muted-foreground">
+                    Click to upload photos
+                  </p>
+                  <p className="text-xs text-muted-foreground mt-1">
+                    PNG, JPG, or WebP (max 5MB each)
+                  </p>
+                </div>
+                <input
+                  id="photos"
+                  type="file"
+                  className="hidden"
+                  accept="image/jpeg,image/jpg,image/png,image/webp"
+                  onChange={handlePhotoChange}
+                  multiple
+                />
+              </label>
+            </div>
+          )}
+
+          {/* Photo previews */}
+          {photoPreviews.length > 0 && (
+            <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
+              {photoPreviews.map((preview, index) => (
+                <div key={index} className="relative aspect-square">
+                  <div className="relative w-full h-full rounded-lg overflow-hidden border border-border">
+                    <Image
+                      src={preview}
+                      alt={`Preview ${index + 1}`}
+                      fill
+                      className="object-cover"
+                    />
+                  </div>
+                  <button
+                    type="button"
+                    onClick={() => removePhoto(index)}
+                    className="absolute -top-2 -right-2 bg-destructive text-destructive-foreground p-1 rounded-full hover:bg-destructive/90"
+                  >
+                    <X className="w-4 h-4" />
+                  </button>
+                </div>
+              ))}
+            </div>
+          )}
+        </div>
       </div>
 
       <div className="flex gap-3">

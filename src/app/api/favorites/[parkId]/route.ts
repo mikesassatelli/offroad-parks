@@ -23,11 +23,20 @@ export async function DELETE(
 
   const { parkId } = await params;
 
+  // The frontend sends the slug as parkId, so we need to look up the park first
+  const park = await prisma.park.findUnique({
+    where: { slug: parkId },
+  });
+
+  if (!park) {
+    return NextResponse.json({ error: "Park not found" }, { status: 404 });
+  }
+
   const favorite = await prisma.userFavorite.findUnique({
     where: {
       userId_parkId: {
         userId: session.user.id,
-        parkId,
+        parkId: park.id, // Use the actual database ID
       },
     },
   });

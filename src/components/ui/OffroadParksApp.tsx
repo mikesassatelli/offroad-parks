@@ -9,7 +9,6 @@ import { useRouteBuilder } from "@/hooks/useRouteBuilder";
 import { AppHeader } from "@/components/layout/AppHeader";
 import { SearchFiltersPanel } from "@/components/parks/SearchFiltersPanel";
 import { ParkCard } from "@/components/parks/ParkCard";
-import { ParkDetailsDialog } from "@/components/parks/ParkDetailsDialog";
 import { RouteList } from "@/features/route-planner/RouteList";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { LayoutGrid, Map } from "lucide-react";
@@ -26,7 +25,6 @@ interface OffroadParksAppProps {
 
 function OffroadParksAppInner({ parks }: OffroadParksAppProps) {
   const { data: session } = useSession();
-  const [selectedPark, setSelectedPark] = useState<Park | null>(null);
   const [activeView, setActiveView] = useState<"list" | "map">("list");
 
   const {
@@ -56,10 +54,6 @@ function OffroadParksAppInner({ parks }: OffroadParksAppProps) {
     isParkInRoute,
     totalRouteDistance,
   } = useRouteBuilder();
-
-  const handleCloseDialog = () => {
-    setSelectedPark(null);
-  };
 
   const user = session?.user
     ? {
@@ -118,7 +112,6 @@ function OffroadParksAppInner({ parks }: OffroadParksAppProps) {
                       park={park}
                       isFavorite={isFavorite(park.id)}
                       onToggleFavorite={toggleFavorite}
-                      onCardClick={setSelectedPark}
                     />
                   ))}
                 </div>
@@ -141,7 +134,6 @@ function OffroadParksAppInner({ parks }: OffroadParksAppProps) {
                       onClearRoute={clearRoute}
                       onReorderRoute={reorderRoute}
                       totalDistance={totalRouteDistance()}
-                      onParkClick={setSelectedPark}
                     />
                   </div>
                 </div>
@@ -150,12 +142,6 @@ function OffroadParksAppInner({ parks }: OffroadParksAppProps) {
           </div>
         </div>
       </main>
-
-      <ParkDetailsDialog
-        park={selectedPark}
-        isOpen={!!selectedPark}
-        onClose={handleCloseDialog}
-      />
     </div>
   );
 }

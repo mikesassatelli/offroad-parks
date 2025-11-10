@@ -2,11 +2,12 @@
 
 import { useState } from "react";
 import { SessionProvider } from "next-auth/react";
+import { useRouter } from "next/navigation";
 import type { Park } from "@/lib/types";
 import { ParkCard } from "@/components/parks/ParkCard";
 import { ParkDetailsDialog } from "@/components/parks/ParkDetailsDialog";
 import { useFavorites } from "@/hooks/useFavorites";
-import { Heart, User } from "lucide-react";
+import { Heart, User, ArrowLeft } from "lucide-react";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
 
@@ -20,8 +21,15 @@ interface UserProfileClientProps {
 }
 
 function UserProfileInner({ parks, user }: UserProfileClientProps) {
+  const router = useRouter();
   const [selectedPark, setSelectedPark] = useState<Park | null>(null);
   const { toggleFavorite, isFavorite } = useFavorites();
+
+  const handleToggleFavorite = async (parkId: string) => {
+    await toggleFavorite(parkId);
+    // Refresh the page to update the server-side favorites list
+    router.refresh();
+  };
 
   return (
     <div className="min-h-screen bg-background">
@@ -42,17 +50,9 @@ function UserProfileInner({ parks, user }: UserProfileClientProps) {
       <main className="max-w-7xl mx-auto px-6 py-8">
         <div className="mb-8">
           <div className="flex items-center gap-4 mb-4">
-            {user.image ? (
-              <img
-                src={user.image}
-                alt={user.name || "User"}
-                className="w-16 h-16 rounded-full"
-              />
-            ) : (
-              <div className="w-16 h-16 rounded-full bg-primary/10 flex items-center justify-center">
-                <User className="w-8 h-8 text-primary" />
-              </div>
-            )}
+            <div className="w-16 h-16 rounded-full bg-primary/10 flex items-center justify-center">
+              <User className="w-8 h-8 text-primary" />
+            </div>
             <div>
               <h1 className="text-3xl font-bold text-foreground">
                 {user.name || "My Profile"}
@@ -63,14 +63,22 @@ function UserProfileInner({ parks, user }: UserProfileClientProps) {
         </div>
 
         <div className="mb-6">
-          <div className="flex items-center gap-2 mb-4">
-            <Heart className="w-5 h-5 text-primary" />
-            <h2 className="text-2xl font-semibold text-foreground">
-              My Favorites
-            </h2>
-            <span className="text-sm text-muted-foreground">
-              ({parks.length} park{parks.length !== 1 ? "s" : ""})
-            </span>
+          <div className="flex items-center justify-between mb-4">
+            <div className="flex items-center gap-2">
+              <Heart className="w-5 h-5 text-primary" />
+              <h2 className="text-2xl font-semibold text-foreground">
+                My Favorites
+              </h2>
+              <span className="text-sm text-muted-foreground">
+                ({parks.length} park{parks.length !== 1 ? "s" : ""})
+              </span>
+            </div>
+            <Button asChild variant="outline">
+              <Link href="/" className="flex items-center gap-2">
+                <ArrowLeft className="w-4 h-4" />
+                Back to Parks
+              </Link>
+            </Button>
           </div>
 
           {parks.length === 0 ? (
@@ -93,7 +101,7 @@ function UserProfileInner({ parks, user }: UserProfileClientProps) {
                   key={park.id}
                   park={park}
                   isFavorite={isFavorite(park.id)}
-                  onToggleFavorite={toggleFavorite}
+                  onToggleFavorite={handleToggleFavorite}
                   onCardClick={setSelectedPark}
                 />
               ))}

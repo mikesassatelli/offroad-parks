@@ -46,17 +46,9 @@ export default async function AdminUsersPage() {
                 <tr key={user.id} className="hover:bg-gray-50">
                   <td className="px-6 py-4 whitespace-nowrap">
                     <div className="flex items-center">
-                      {user.image ? (
-                        <img
-                          src={user.image}
-                          alt={user.name || "User"}
-                          className="w-8 h-8 rounded-full mr-3"
-                        />
-                      ) : (
-                        <div className="w-8 h-8 rounded-full bg-gray-300 flex items-center justify-center mr-3">
-                          <UsersIcon className="w-4 h-4 text-gray-600" />
-                        </div>
-                      )}
+                      <div className="w-8 h-8 rounded-full bg-gray-300 flex items-center justify-center mr-3">
+                        <UsersIcon className="w-4 h-4 text-gray-600" />
+                      </div>
                       <div className="text-sm font-medium text-gray-900">
                         {user.name || "Anonymous"}
                       </div>

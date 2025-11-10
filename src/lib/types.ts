@@ -50,6 +50,7 @@ export type Park = {
   amenities: Amenity[];
   difficulty: Difficulty[];
   notes?: string;
+  heroImage?: string | null;
 };
 
 // Transform database park to client park

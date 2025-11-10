@@ -2,6 +2,7 @@ import { notFound } from "next/navigation";
 import { prisma } from "@/lib/prisma";
 import { transformDbPark } from "@/lib/types";
 import { ParkDetailPage } from "@/features/parks/detail/ParkDetailPage";
+import { auth } from "@/lib/auth";
 
 interface ParkPageProps {
   params: Promise<{ id: string }>;
@@ -55,6 +56,7 @@ export async function generateMetadata({ params }: ParkPageProps) {
 
 export default async function ParkPage({ params }: ParkPageProps) {
   const { id } = await params;
+  const session = await auth();
 
   const dbPark = await prisma.park.findUnique({
     where: {
@@ -72,7 +74,36 @@ export default async function ParkPage({ params }: ParkPageProps) {
     notFound();
   }
 
+  // Fetch approved photos for this park
+  const photos = await prisma.parkPhoto.findMany({
+    where: {
+      parkId: dbPark.id,
+      status: "APPROVED",
+    },
+    include: {
+      user: {
+        select: {
+          name: true,
+          email: true,
+        },
+      },
+    },
+    orderBy: {
+      createdAt: "desc",
+    },
+  });
+
   const park = transformDbPark(dbPark);
 
-  return <ParkDetailPage park={park} />;
+  const userRole = (session?.user as { role?: string })?.role;
+  const isAdmin = userRole === "ADMIN";
+
+  return (
+    <ParkDetailPage
+      park={park}
+      photos={photos}
+      currentUserId={session?.user?.id}
+      isAdmin={isAdmin}
+    />
+  );
 }

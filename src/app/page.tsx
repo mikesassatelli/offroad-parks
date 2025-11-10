@@ -12,14 +12,29 @@ export default async function Page() {
       terrain: true,
       difficulty: true,
       amenities: true,
+      photos: {
+        where: {
+          status: "APPROVED",
+        },
+        take: 1,
+        orderBy: {
+          createdAt: "desc",
+        },
+        select: {
+          url: true,
+        },
+      },
     },
     orderBy: {
       name: "asc",
     },
   });
 
-  // Transform to client format
-  const parks = dbParks.map(transformDbPark);
+  // Transform to client format with hero images
+  const parks = dbParks.map((park) => ({
+    ...transformDbPark(park),
+    heroImage: park.photos[0]?.url || null,
+  }));
 
   return <UtvParksApp parks={parks} />;
 }

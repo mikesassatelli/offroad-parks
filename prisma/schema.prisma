@@ -48,6 +48,7 @@ model User {
 
   submittedParks Park[]         @relation("SubmittedParks")
   favorites      UserFavorite[]
+  uploadedPhotos ParkPhoto[]
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -92,6 +93,7 @@ model Park {
   difficulty ParkDifficulty[]
   amenities  ParkAmenity[]
   favorites  UserFavorite[]
+  photos     ParkPhoto[]
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -177,4 +179,30 @@ model UserFavorite {
 
   @@unique([userId, parkId])
   @@index([userId])
+}
+
+// Park Photos
+model ParkPhoto {
+  id      String      @id @default(cuid())
+  parkId  String
+  userId  String?
+  url     String
+  caption String?     @db.Text
+  status  PhotoStatus @default(PENDING)
+
+  park Park  @relation(fields: [parkId], references: [id], onDelete: Cascade)
+  user User? @relation(fields: [userId], references: [id], onDelete: SetNull)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([parkId])
+  @@index([userId])
+  @@index([status])
+}
+
+enum PhotoStatus {
+  PENDING
+  APPROVED
+  REJECTED
 }

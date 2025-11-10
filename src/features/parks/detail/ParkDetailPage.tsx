@@ -5,10 +5,13 @@ import dynamic from "next/dynamic";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import type { Park } from "@/lib/types";
-import { ArrowLeft, MapPin } from "lucide-react";
+import { ArrowLeft, MapPin, Camera } from "lucide-react";
 import { ParkOverviewCard } from "./components/ParkOverviewCard";
 import { ParkAttributesCards } from "./components/ParkAttributesCards";
 import { ParkContactSidebar } from "./components/ParkContactSidebar";
+import { PhotoGallery } from "@/components/parks/PhotoGallery";
+import { PhotoUploadForm } from "@/components/parks/PhotoUploadForm";
+import { SessionProvider, useSession } from "next-auth/react";
 
 // Dynamically import map to avoid SSR issues
 const MapView = dynamic(
@@ -16,15 +19,40 @@ const MapView = dynamic(
   { ssr: false },
 );
 
-interface ParkDetailPageProps {
-  park: Park;
+interface Photo {
+  id: string;
+  url: string;
+  caption: string | null;
+  createdAt: Date;
+  user: {
+    name: string | null;
+    email: string | null;
+  } | null;
+  userId: string | null;
 }
 
-export function ParkDetailPage({ park }: ParkDetailPageProps) {
+interface ParkDetailPageProps {
+  park: Park;
+  photos: Photo[];
+  currentUserId?: string;
+  isAdmin?: boolean;
+}
+
+function ParkDetailPageInner({
+  park,
+  photos,
+  currentUserId,
+  isAdmin,
+}: ParkDetailPageProps) {
   const router = useRouter();
+  const { data: session } = useSession();
 
   const handleBack = () => {
     router.push("/");
+  };
+
+  const handlePhotoUploadSuccess = () => {
+    router.refresh();
   };
 
   return (
@@ -56,6 +84,33 @@ export function ParkDetailPage({ park }: ParkDetailPageProps) {
             <ParkOverviewCard park={park} />
             <ParkAttributesCards park={park} />
 
+            {/* Photo Gallery Card */}
+            <Card>
+              <CardHeader>
+                <div className="flex items-center justify-between">
+                  <CardTitle className="flex items-center gap-2">
+                    <Camera className="w-5 h-5" />
+                    Photo Gallery ({photos.length})
+                  </CardTitle>
+                </div>
+              </CardHeader>
+              <CardContent>
+                <PhotoGallery
+                  photos={photos}
+                  currentUserId={currentUserId}
+                  isAdmin={isAdmin}
+                />
+              </CardContent>
+            </Card>
+
+            {/* Photo Upload Form - Only for authenticated users */}
+            {session?.user && (
+              <PhotoUploadForm
+                parkSlug={park.id}
+                onSuccess={handlePhotoUploadSuccess}
+              />
+            )}
+
             {/* Map Card */}
             {park.coords && (
               <Card>
@@ -78,5 +133,13 @@ export function ParkDetailPage({ park }: ParkDetailPageProps) {
         </div>
       </main>
     </div>
+  );
+}
+
+export function ParkDetailPage(props: ParkDetailPageProps) {
+  return (
+    <SessionProvider>
+      <ParkDetailPageInner {...props} />
+    </SessionProvider>
   );
 }

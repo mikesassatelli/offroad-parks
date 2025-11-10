@@ -20,7 +20,10 @@ export function useFavorites() {
       const response = await fetch("/api/favorites");
       if (response.ok) {
         const favorites = await response.json();
-        setFavoriteParkIds(favorites.map((f: { parkId: string }) => f.parkId));
+        // Extract slugs from the park objects (frontend uses slugs as IDs)
+        setFavoriteParkIds(
+          favorites.map((f: { park: { slug: string } }) => f.park.slug),
+        );
       }
     } catch (error) {
       console.error("Failed to load favorites:", error);
@@ -46,6 +49,8 @@ export function useFavorites() {
         if (response.ok) {
           setFavoriteParkIds((prev) => prev.filter((id) => id !== parkId));
         } else {
+          const errorData = await response.json().catch(() => ({}));
+          console.error("Failed to remove favorite:", errorData);
           alert("Failed to remove favorite");
         }
       } else {
@@ -59,6 +64,8 @@ export function useFavorites() {
         if (response.ok) {
           setFavoriteParkIds((prev) => [...prev, parkId]);
         } else {
+          const errorData = await response.json().catch(() => ({}));
+          console.error("Failed to add favorite:", errorData);
           alert("Failed to add favorite");
         }
       }
