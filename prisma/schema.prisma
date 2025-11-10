@@ -1,0 +1,163 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider  = "postgresql"
+  url       = env("POSTGRES_PRISMA_URL")
+  directUrl = env("POSTGRES_URL_NON_POOLING")
+}
+
+// Auth Models (NextAuth.js)
+model Account {
+  id                String  @id @default(cuid())
+  userId            String
+  type              String
+  provider          String
+  providerAccountId String
+  refresh_token     String? @db.Text
+  access_token      String? @db.Text
+  expires_at        Int?
+  token_type        String?
+  scope             String?
+  id_token          String? @db.Text
+  session_state     String?
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([provider, providerAccountId])
+}
+
+model Session {
+  id           String   @id @default(cuid())
+  sessionToken String   @unique
+  userId       String
+  expires      DateTime
+  user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+model User {
+  id            String    @id @default(cuid())
+  name          String?
+  email         String?   @unique
+  emailVerified DateTime?
+  image         String?
+  role          UserRole  @default(USER)
+  accounts      Account[]
+  sessions      Session[]
+
+  submittedParks Park[] @relation("SubmittedParks")
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model VerificationToken {
+  identifier String
+  token      String   @unique
+  expires    DateTime
+
+  @@unique([identifier, token])
+}
+
+enum UserRole {
+  USER
+  ADMIN
+}
+
+// Park Models
+model Park {
+  id            String     @id @default(cuid())
+  name          String
+  slug          String     @unique
+  city          String?
+  state         String
+  latitude      Float?
+  longitude     Float?
+  website       String?
+  phone         String?
+  dayPassUSD    Float?
+  milesOfTrails Int?
+  acres         Int?
+  utvAllowed    Boolean    @default(true)
+  notes         String?    @db.Text
+  status        ParkStatus @default(PENDING)
+
+  submittedBy   User?   @relation("SubmittedParks", fields: [submitterId], references: [id])
+  submitterId   String?
+  submitterName String? // For anonymous submissions
+
+  terrain    ParkTerrain[]
+  difficulty ParkDifficulty[]
+  amenities  ParkAmenity[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([status])
+  @@index([state])
+}
+
+enum ParkStatus {
+  PENDING
+  APPROVED
+  REJECTED
+  DRAFT
+}
+
+// Junction tables for many-to-many relationships
+model ParkTerrain {
+  id      String  @id @default(cuid())
+  parkId  String
+  terrain Terrain
+
+  park Park @relation(fields: [parkId], references: [id], onDelete: Cascade)
+
+  @@unique([parkId, terrain])
+}
+
+model ParkDifficulty {
+  id         String     @id @default(cuid())
+  parkId     String
+  difficulty Difficulty
+
+  park Park @relation(fields: [parkId], references: [id], onDelete: Cascade)
+
+  @@unique([parkId, difficulty])
+}
+
+model ParkAmenity {
+  id      String  @id @default(cuid())
+  parkId  String
+  amenity Amenity
+
+  park Park @relation(fields: [parkId], references: [id], onDelete: Cascade)
+
+  @@unique([parkId, amenity])
+}
+
+// Enums matching your existing types
+enum Terrain {
+  sand
+  rocks
+  mud
+  trails
+  hills
+}
+
+enum Difficulty {
+  easy
+  moderate
+  difficult
+  extreme
+}
+
+enum Amenity {
+  camping
+  cabins
+  restrooms
+  showers
+  food
+  fuel
+  repair
+}
