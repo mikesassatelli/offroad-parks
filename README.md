@@ -16,15 +16,26 @@ A modern web application for discovering and exploring offroad parks and UTV tra
 
 ## Tech Stack
 
+### Core
+
 - **Framework**: Next.js 16 (App Router)
-- **Language**: TypeScript
+- **Language**: TypeScript 5 (strict mode)
 - **Database**: PostgreSQL (via Vercel Postgres)
-- **ORM**: Prisma
+- **ORM**: Prisma 6
 - **Authentication**: NextAuth.js v5
 - **Styling**: Tailwind CSS v4
 - **UI Components**: Radix UI
 - **Maps**: Leaflet + React Leaflet
 - **Icons**: Lucide React
+
+### Testing
+
+- **Test Runner**: Vitest 4
+- **Component Testing**: React Testing Library
+- **E2E Testing**: Playwright
+- **API Mocking**: MSW (Mock Service Worker)
+- **Coverage**: V8 (built into Vitest)
+- **CI/CD**: GitHub Actions
 
 ## Prerequisites
 
@@ -91,15 +102,7 @@ Push the Prisma schema to your database:
 npm run db:push
 ```
 
-### 5. Seed the database (optional)
-
-Populate the database with initial park data:
-
-```bash
-npm run db:seed
-```
-
-### 6. Run the development server
+### 5. Run the development server
 
 ```bash
 npm run dev
@@ -109,12 +112,25 @@ Open [http://localhost:3000](http://localhost:3000) to see the application.
 
 ## Available Scripts
 
+### Development
+
 - `npm run dev` - Start development server
 - `npm run build` - Build for production
 - `npm start` - Start production server
 - `npm run lint` - Run ESLint
+
+### Testing
+
+- `npm test` - Run all unit & integration tests
+- `npm run test:watch` - Run tests in watch mode
+- `npm run test:ui` - Run tests with UI
+- `npm run test:coverage` - Run tests with coverage report
+- `npm run test:e2e` - Run end-to-end tests
+- `npm run test:e2e:ui` - Run E2E tests with UI
+
+### Database
+
 - `npm run db:push` - Push Prisma schema to database
-- `npm run db:seed` - Seed database with sample data
 - `npm run db:studio` - Open Prisma Studio (database GUI)
 
 ## Project Structure
@@ -122,8 +138,7 @@ Open [http://localhost:3000](http://localhost:3000) to see the application.
 ```
 offroad-parks/
 ├── prisma/
-│   ├── schema.prisma      # Database schema
-│   └── seed.ts            # Database seed script
+│   └── schema.prisma      # Database schema
 ├── public/                # Static assets
 ├── src/
 │   ├── app/              # Next.js app router pages
@@ -189,13 +204,68 @@ The application is optimized for deployment on Vercel:
 4. Deploy!
 
 For other platforms, ensure your environment supports:
+
 - Node.js 20+
 - PostgreSQL database
 - Environment variables configuration
 
+## Testing
+
+This project follows **Test-Driven Development (TDD)** practices and aims for **100% code coverage**.
+
+### Running Tests
+
+```bash
+# Run all tests
+npm test
+
+# Run tests in watch mode (during development)
+npm run test:watch
+
+# Run tests with coverage report
+npm run test:coverage
+
+# Run E2E tests
+npm run test:e2e
+```
+
+### Test Infrastructure
+
+- **Vitest** - Fast, modern test runner with native TypeScript support
+- **React Testing Library** - Component testing with user-centric approach
+- **Playwright** - Cross-browser E2E testing
+- **MSW** - API mocking for integration tests
+
+### Pre-Commit Hooks
+
+Before every commit, automated checks run:
+
+- ✅ ESLint on staged files
+- ✅ Tests related to changed files
+
+### CI/CD
+
+All pushes and pull requests trigger:
+
+- ✅ Linting and type checking
+- ✅ Full test suite execution
+- ✅ Coverage report generation
+- ✅ E2E tests across browsers
+
+**Deployment**: Tests must pass before deployment to production.
+
+For detailed testing guidelines, see [TESTING.md](./TESTING.md).
+
 ## Contributing
 
-Contributions are welcome! Please feel free to submit a Pull Request.
+We welcome contributions! Please read our [Contributing Guide](./CONTRIBUTING.md) for:
+
+- TDD workflow (write tests first!)
+- Code standards and style guide
+- Commit message conventions
+- Pull request process
+
+**Key principle**: All code changes must include tests.
 
 ## License
 

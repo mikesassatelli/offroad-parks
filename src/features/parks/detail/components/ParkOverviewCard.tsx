@@ -1,7 +1,7 @@
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import type { Park } from "@/lib/types";
 import { formatCurrency } from "@/lib/formatting";
-import { Mountain, DollarSign, Gauge } from "lucide-react";
+import { DollarSign, Gauge, Mountain } from "lucide-react";
 
 interface ParkOverviewCardProps {
   park: Park;

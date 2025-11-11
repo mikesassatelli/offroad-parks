@@ -3,7 +3,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { formatCurrency } from "@/lib/formatting";
 import type { Park } from "@/lib/types";
-import { MapPin, Star, StarOff, Camera } from "lucide-react";
+import { Camera, MapPin, Star, StarOff } from "lucide-react";
 import Link from "next/link";
 import Image from "next/image";
 

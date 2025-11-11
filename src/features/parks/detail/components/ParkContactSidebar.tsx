@@ -1,6 +1,6 @@
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import type { Park } from "@/lib/types";
-import { ExternalLink, Phone, MapPin } from "lucide-react";
+import { ExternalLink, MapPin, Phone } from "lucide-react";
 import { formatPhone } from "@/lib/formatting";
 
 interface ParkContactSidebarProps {

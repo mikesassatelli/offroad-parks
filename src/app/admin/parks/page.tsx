@@ -18,7 +18,13 @@ export default async function AdminParksPage({
   const whereClause =
     statusFilter === "all"
       ? {}
-      : { status: statusFilter.toUpperCase() as "PENDING" | "APPROVED" | "REJECTED" | "DRAFT" };
+      : {
+          status: statusFilter.toUpperCase() as
+            | "PENDING"
+            | "APPROVED"
+            | "REJECTED"
+            | "DRAFT",
+        };
 
   // Fetch parks with their relations
   const parks = await prisma.park.findMany({

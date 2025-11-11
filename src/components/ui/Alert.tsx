@@ -1,6 +1,6 @@
 "use client";
 
-import { X, CheckCircle, AlertCircle, Info } from "lucide-react";
+import { AlertCircle, CheckCircle, Info, X } from "lucide-react";
 import { useEffect, useState } from "react";
 
 export type AlertType = "success" | "error" | "info";
@@ -32,6 +32,7 @@ function Alert({ alert, onDismiss }: AlertProps) {
     }, 5000);
 
     return () => clearTimeout(timer);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [alert.id]);
 
   const icons = {

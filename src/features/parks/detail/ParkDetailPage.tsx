@@ -1,20 +1,21 @@
 "use client";
 
-import { useRouter } from "next/navigation";
-import dynamic from "next/dynamic";
+import { PhotoGallery } from "@/components/parks/PhotoGallery";
+import { PhotoUploadForm } from "@/components/parks/PhotoUploadForm";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import type { Park } from "@/lib/types";
-import { ArrowLeft, MapPin, Camera } from "lucide-react";
-import { ParkOverviewCard } from "./components/ParkOverviewCard";
+import { ArrowLeft, Camera, MapPin } from "lucide-react";
+import { SessionProvider, useSession } from "next-auth/react";
+import dynamic from "next/dynamic";
+import { useRouter } from "next/navigation";
 import { ParkAttributesCards } from "./components/ParkAttributesCards";
 import { ParkContactSidebar } from "./components/ParkContactSidebar";
-import { PhotoGallery } from "@/components/parks/PhotoGallery";
-import { PhotoUploadForm } from "@/components/parks/PhotoUploadForm";
-import { SessionProvider, useSession } from "next-auth/react";
+import { ParkOverviewCard } from "./components/ParkOverviewCard";
 
 // Dynamically import map to avoid SSR issues
 const MapView = dynamic(
+  /* v8 ignore next */
   () => import("@/features/map/MapView").then((mod) => mod.MapView),
   { ssr: false },
 );

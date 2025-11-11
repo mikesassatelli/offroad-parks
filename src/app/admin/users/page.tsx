@@ -15,9 +15,7 @@ export default async function AdminUsersPage() {
 
   return (
     <div>
-      <h1 className="text-3xl font-bold text-gray-900 mb-8">
-        User Management
-      </h1>
+      <h1 className="text-3xl font-bold text-gray-900 mb-8">User Management</h1>
 
       <div className="bg-white rounded-lg shadow border border-gray-200 overflow-hidden">
         <div className="overflow-x-auto">

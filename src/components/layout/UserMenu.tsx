@@ -1,6 +1,6 @@
 "use client";
 
-import { User, LogOut, Heart, PlusCircle } from "lucide-react";
+import { Heart, LogOut, PlusCircle, User } from "lucide-react";
 import Link from "next/link";
 import {
   DropdownMenu,

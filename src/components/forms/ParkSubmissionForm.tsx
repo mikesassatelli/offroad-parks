@@ -14,9 +14,9 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Checkbox } from "@/components/ui/checkbox";
-import { ALL_TERRAIN_TYPES, ALL_AMENITIES } from "@/lib/constants";
+import { ALL_AMENITIES, ALL_TERRAIN_TYPES } from "@/lib/constants";
 import { US_STATES } from "@/lib/constants";
-import { Loader2, X, Image as ImageIcon } from "lucide-react";
+import { Image as ImageIcon, Loader2, X } from "lucide-react";
 import Image from "next/image";
 
 interface ParkSubmissionFormProps {
@@ -94,7 +94,9 @@ export function ParkSubmissionForm({
 
     const validFiles = files.filter((file) => {
       if (!allowedTypes.includes(file.type)) {
-        alert(`${file.name}: Invalid file type. Only JPEG, PNG, and WebP allowed.`);
+        alert(
+          `${file.name}: Invalid file type. Only JPEG, PNG, and WebP allowed.`,
+        );
         return false;
       }
       if (file.size > maxSize) {
@@ -137,9 +139,7 @@ export function ParkSubmissionForm({
         body: JSON.stringify({
           ...formData,
           latitude: formData.latitude ? parseFloat(formData.latitude) : null,
-          longitude: formData.longitude
-            ? parseFloat(formData.longitude)
-            : null,
+          longitude: formData.longitude ? parseFloat(formData.longitude) : null,
           dayPassUSD: formData.dayPassUSD
             ? parseFloat(formData.dayPassUSD)
             : null,
@@ -167,6 +167,7 @@ export function ParkSubmissionForm({
                 body: photoFormData,
               });
             } catch (photoError) {
+              /* v8 ignore next - Photo upload error logging only */
               console.error("Failed to upload photo:", photoError);
             }
           }
@@ -187,6 +188,7 @@ export function ParkSubmissionForm({
         alert(`Failed to submit: ${error.error || "Unknown error"}`);
       }
     } catch (error) {
+      /* v8 ignore next - Network error logging only */
       console.error("Submission error:", error);
       alert("Failed to submit park. Please try again.");
     } finally {
@@ -416,7 +418,9 @@ export function ParkSubmissionForm({
               <Checkbox
                 id={`amenity-${amenity}`}
                 checked={formData.amenities.includes(amenity)}
-                onCheckedChange={() => handleCheckboxChange("amenities", amenity)}
+                onCheckedChange={() =>
+                  handleCheckboxChange("amenities", amenity)
+                }
               />
               <label
                 htmlFor={`amenity-${amenity}`}

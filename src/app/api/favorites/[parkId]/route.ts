@@ -11,10 +11,7 @@ type RouteParams = {
 };
 
 // DELETE /api/favorites/[parkId] - Remove a favorite
-export async function DELETE(
-  _request: Request,
-  { params }: RouteParams,
-) {
+export async function DELETE(_request: Request, { params }: RouteParams) {
   const session = await auth();
 
   if (!session?.user?.id) {

@@ -63,10 +63,7 @@ export async function POST(request: Request) {
   });
 
   if (existing) {
-    return NextResponse.json(
-      { error: "Already favorited" },
-      { status: 400 },
-    );
+    return NextResponse.json({ error: "Already favorited" }, { status: 400 });
   }
 
   const favorite = await prisma.userFavorite.create({

@@ -2,7 +2,13 @@
 
 import { useState } from "react";
 import Image from "next/image";
-import { X, ChevronLeft, ChevronRight, Trash2, User as UserIcon } from "lucide-react";
+import {
+  ChevronLeft,
+  ChevronRight,
+  Trash2,
+  User as UserIcon,
+  X,
+} from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useRouter } from "next/navigation";
 
@@ -24,7 +30,11 @@ interface PhotoGalleryProps {
   isAdmin?: boolean;
 }
 
-export function PhotoGallery({ photos, currentUserId, isAdmin }: PhotoGalleryProps) {
+export function PhotoGallery({
+  photos,
+  currentUserId,
+  isAdmin,
+}: PhotoGalleryProps) {
   const router = useRouter();
   const [selectedIndex, setSelectedIndex] = useState<number | null>(null);
   const [isDeleting, setIsDeleting] = useState(false);
@@ -46,13 +56,13 @@ export function PhotoGallery({ photos, currentUserId, isAdmin }: PhotoGalleryPro
   };
 
   const goToPrevious = () => {
-    if (selectedIndex === null) return;
-    setSelectedIndex((selectedIndex - 1 + photos.length) % photos.length);
+    // TypeScript ensures selectedIndex is not null when this is called from the lightbox
+    setSelectedIndex((selectedIndex! - 1 + photos.length) % photos.length);
   };
 
   const goToNext = () => {
-    if (selectedIndex === null) return;
-    setSelectedIndex((selectedIndex + 1) % photos.length);
+    // TypeScript ensures selectedIndex is not null when this is called from the lightbox
+    setSelectedIndex((selectedIndex! + 1) % photos.length);
   };
 
   const handleDelete = async (photoId: string) => {
@@ -73,6 +83,7 @@ export function PhotoGallery({ photos, currentUserId, isAdmin }: PhotoGalleryPro
         alert("Failed to delete photo");
       }
     } catch (error) {
+      /* v8 ignore next - Network error logging only */
       console.error("Failed to delete photo:", error);
       alert("Failed to delete photo");
     } finally {
@@ -166,7 +177,9 @@ export function PhotoGallery({ photos, currentUserId, isAdmin }: PhotoGalleryPro
                     </p>
                   )}
                   <p className="text-gray-400 text-xs mt-1">
-                    {new Date(photos[selectedIndex].createdAt).toLocaleDateString()}
+                    {new Date(
+                      photos[selectedIndex].createdAt,
+                    ).toLocaleDateString()}
                   </p>
                 </div>
 

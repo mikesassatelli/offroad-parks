@@ -12,6 +12,9 @@
 
 # testing
 /coverage
+/.nyc_output
+*.lcov
+/html
 
 # next.js
 /.next/

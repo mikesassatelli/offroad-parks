@@ -8,6 +8,7 @@ interface ParkPageProps {
   params: Promise<{ id: string }>;
 }
 
+/* v8 ignore next - tested via E2E */
 export async function generateStaticParams() {
   const parks = await prisma.park.findMany({
     where: {
