@@ -324,7 +324,7 @@ describe("ParkDetailPage", () => {
   });
 
   it("should handle park with null city", () => {
-    const parkWithNullCity = { ...mockPark, city: null };
+    const parkWithNullCity = { ...mockPark, city: undefined };
 
     render(<ParkDetailPage park={parkWithNullCity} photos={[]} />);
 

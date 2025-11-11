@@ -102,7 +102,7 @@ describe("useAlerts", () => {
     });
   });
 
-  it("should show warning alert", () => {
+  it("should show info alert", () => {
     const { result } = renderHook(() => useAlerts(), { wrapper });
     const { container } = render(
       <AlertProvider>
@@ -111,15 +111,15 @@ describe("useAlerts", () => {
     );
 
     act(() => {
-      result.current.showAlert("warning", "Warning message");
+      result.current.showAlert("info", "Info message");
     });
 
     waitFor(() => {
-      const warningAlert = container.querySelector(
-        '[data-testid="alert-warning"]',
+      const infoAlert = container.querySelector(
+        '[data-testid="alert-info"]',
       );
-      expect(warningAlert).toBeInTheDocument();
-      expect(warningAlert).toHaveTextContent("Warning message");
+      expect(infoAlert).toBeInTheDocument();
+      expect(infoAlert).toHaveTextContent("Info message");
     });
   });
 

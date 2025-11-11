@@ -7,7 +7,7 @@ import { vi } from "vitest";
 
 // Mock dependencies
 vi.mock("@/lib/auth", () => ({
-  auth: vi.fn(),
+  auth: vi.fn(() => Promise.resolve(null)),
 }));
 
 vi.mock("@/lib/prisma", () => ({
@@ -37,7 +37,7 @@ describe("ProfilePage", () => {
   });
 
   it("should redirect to signin when not authenticated", async () => {
-    vi.mocked(auth).mockResolvedValue(null);
+    vi.mocked(auth).mockResolvedValue(null as any);
     vi.mocked(redirect).mockImplementation(() => {
       throw new Error("NEXT_REDIRECT");
     });

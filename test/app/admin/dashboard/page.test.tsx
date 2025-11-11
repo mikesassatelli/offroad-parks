@@ -54,11 +54,11 @@ describe("AdminDashboard", () => {
 
   it("should display total parks stat", async () => {
     vi.mocked(prisma.park.count).mockImplementation((args?: any) => {
-      if (!args?.where) return Promise.resolve(42);
-      if (args.where.status === "PENDING") return Promise.resolve(5);
-      if (args.where.status === "APPROVED") return Promise.resolve(35);
-      if (args.where.status === "REJECTED") return Promise.resolve(2);
-      return Promise.resolve(0);
+      if (!args?.where) return Promise.resolve(42) as any;
+      if (args.where.status === "PENDING") return Promise.resolve(5) as any;
+      if (args.where.status === "APPROVED") return Promise.resolve(35) as any;
+      if (args.where.status === "REJECTED") return Promise.resolve(2) as any;
+      return Promise.resolve(0) as any;
     });
     vi.mocked(prisma.user.count).mockResolvedValue(100);
     vi.mocked(prisma.parkPhoto.count).mockResolvedValue(10);
@@ -74,9 +74,9 @@ describe("AdminDashboard", () => {
 
   it("should display pending parks stat", async () => {
     vi.mocked(prisma.park.count).mockImplementation((args?: any) => {
-      if (!args?.where) return Promise.resolve(50);
-      if (args.where.status === "PENDING") return Promise.resolve(12);
-      return Promise.resolve(0);
+      if (!args?.where) return Promise.resolve(50) as any;
+      if (args.where.status === "PENDING") return Promise.resolve(12) as any;
+      return Promise.resolve(0) as any;
     });
     vi.mocked(prisma.user.count).mockResolvedValue(100);
     vi.mocked(prisma.parkPhoto.count).mockResolvedValue(5);
@@ -170,9 +170,9 @@ describe("AdminDashboard", () => {
 
     vi.mocked(prisma.park.findMany).mockImplementation((args?: any) => {
       if (args?.where?.status === "PENDING") {
-        return Promise.resolve(mockPendingParks as any);
+        return Promise.resolve(mockPendingParks as any) as any;
       }
-      return Promise.resolve([]);
+      return Promise.resolve([]) as any;
     });
     vi.mocked(prisma.parkPhoto.findMany).mockResolvedValue([]);
 
@@ -203,9 +203,9 @@ describe("AdminDashboard", () => {
 
     vi.mocked(prisma.park.findMany).mockImplementation((args?: any) => {
       if (args?.where?.status === "PENDING") {
-        return Promise.resolve(mockPendingParks as any);
+        return Promise.resolve(mockPendingParks as any) as any;
       }
-      return Promise.resolve([]);
+      return Promise.resolve([]) as any;
     });
     vi.mocked(prisma.parkPhoto.findMany).mockResolvedValue([]);
 
@@ -233,9 +233,9 @@ describe("AdminDashboard", () => {
 
     vi.mocked(prisma.park.findMany).mockImplementation((args?: any) => {
       if (args?.where?.status === "PENDING") {
-        return Promise.resolve(mockPendingParks as any);
+        return Promise.resolve(mockPendingParks as any) as any;
       }
-      return Promise.resolve([]);
+      return Promise.resolve([]) as any;
     });
     vi.mocked(prisma.parkPhoto.findMany).mockResolvedValue([]);
 

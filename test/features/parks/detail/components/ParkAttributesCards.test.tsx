@@ -130,7 +130,7 @@ describe("ParkAttributesCards", () => {
   });
 
   it("should render single item in each category", () => {
-    const singleItemPark = {
+    const singleItemPark: Park = {
       ...mockPark,
       terrain: ["sand"],
       difficulty: ["easy"],

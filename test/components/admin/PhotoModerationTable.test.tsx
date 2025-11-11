@@ -96,9 +96,9 @@ describe("PhotoModerationTable", () => {
     mockAlert = vi.fn();
     mockConfirm = vi.fn(() => true);
 
-    global.fetch = mockFetch;
-    global.alert = mockAlert;
-    global.confirm = mockConfirm;
+    global.fetch = mockFetch as any;
+    global.alert = mockAlert as any;
+    global.confirm = mockConfirm as any;
 
     vi.clearAllMocks();
   });

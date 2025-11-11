@@ -51,18 +51,16 @@ describe("TerrainBadges", () => {
       "sand",
       "rocks",
       "mud",
-      "dirt",
-      "clay",
-      "gravel",
+      "trails",
+      "hills",
     ];
     render(<TerrainBadges terrain={terrain} />);
 
     expect(screen.getByText("sand")).toBeInTheDocument();
     expect(screen.getByText("rocks")).toBeInTheDocument();
     expect(screen.getByText("mud")).toBeInTheDocument();
-    expect(screen.getByText("dirt")).toBeInTheDocument();
-    expect(screen.getByText("clay")).toBeInTheDocument();
-    expect(screen.getByText("gravel")).toBeInTheDocument();
+    expect(screen.getByText("trails")).toBeInTheDocument();
+    expect(screen.getByText("hills")).toBeInTheDocument();
   });
 });
 
@@ -103,28 +101,22 @@ describe("AmenityBadges", () => {
   it("should render all amenity types", () => {
     const amenities: Amenity[] = [
       "camping",
+      "cabins",
       "restrooms",
       "showers",
-      "water",
-      "electric",
-      "wifi",
-      "rv-hookups",
-      "dump-station",
-      "firewood",
-      "store",
+      "food",
+      "fuel",
+      "repair",
     ];
     render(<AmenityBadges amenities={amenities} />);
 
     expect(screen.getByText("camping")).toBeInTheDocument();
+    expect(screen.getByText("cabins")).toBeInTheDocument();
     expect(screen.getByText("restrooms")).toBeInTheDocument();
     expect(screen.getByText("showers")).toBeInTheDocument();
-    expect(screen.getByText("water")).toBeInTheDocument();
-    expect(screen.getByText("electric")).toBeInTheDocument();
-    expect(screen.getByText("wifi")).toBeInTheDocument();
-    expect(screen.getByText("rv-hookups")).toBeInTheDocument();
-    expect(screen.getByText("dump-station")).toBeInTheDocument();
-    expect(screen.getByText("firewood")).toBeInTheDocument();
-    expect(screen.getByText("store")).toBeInTheDocument();
+    expect(screen.getByText("food")).toBeInTheDocument();
+    expect(screen.getByText("fuel")).toBeInTheDocument();
+    expect(screen.getByText("repair")).toBeInTheDocument();
   });
 
   it("should handle single amenity", () => {

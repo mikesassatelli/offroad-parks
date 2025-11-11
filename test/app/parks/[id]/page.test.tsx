@@ -22,7 +22,7 @@ vi.mock("@/lib/prisma", () => ({
 }));
 
 vi.mock("@/lib/auth", () => ({
-  auth: vi.fn(),
+  auth: vi.fn(() => Promise.resolve(null)),
 }));
 
 vi.mock("next/navigation", () => ({
@@ -204,7 +204,7 @@ describe("Park Detail Page", () => {
     it("should render for unauthenticated user", async () => {
       vi.mocked(prisma.park.findUnique).mockResolvedValue(mockDbPark as any);
       vi.mocked(prisma.parkPhoto.findMany).mockResolvedValue([]);
-      vi.mocked(auth).mockResolvedValue(null);
+      vi.mocked(auth).mockResolvedValue(null as any);
 
       const component = await ParkPage({
         params: Promise.resolve({ id: "test-park" }),
@@ -217,7 +217,7 @@ describe("Park Detail Page", () => {
 
     it("should call notFound for non-existent park", async () => {
       vi.mocked(prisma.park.findUnique).mockResolvedValue(null);
-      vi.mocked(auth).mockResolvedValue(null);
+      vi.mocked(auth).mockResolvedValue(null as any);
       vi.mocked(notFound).mockImplementation(() => {
         throw new Error("NEXT_NOT_FOUND");
       });
@@ -234,7 +234,7 @@ describe("Park Detail Page", () => {
     it("should fetch park by slug and approved status", async () => {
       vi.mocked(prisma.park.findUnique).mockResolvedValue(mockDbPark as any);
       vi.mocked(prisma.parkPhoto.findMany).mockResolvedValue([]);
-      vi.mocked(auth).mockResolvedValue(null);
+      vi.mocked(auth).mockResolvedValue(null as any);
 
       await ParkPage({
         params: Promise.resolve({ id: "test-park" }),
@@ -256,7 +256,7 @@ describe("Park Detail Page", () => {
     it("should fetch approved photos for the park", async () => {
       vi.mocked(prisma.park.findUnique).mockResolvedValue(mockDbPark as any);
       vi.mocked(prisma.parkPhoto.findMany).mockResolvedValue(mockPhotos as any);
-      vi.mocked(auth).mockResolvedValue(null);
+      vi.mocked(auth).mockResolvedValue(null as any);
 
       const component = await ParkPage({
         params: Promise.resolve({ id: "test-park" }),
@@ -287,7 +287,7 @@ describe("Park Detail Page", () => {
     it("should handle park with no photos", async () => {
       vi.mocked(prisma.park.findUnique).mockResolvedValue(mockDbPark as any);
       vi.mocked(prisma.parkPhoto.findMany).mockResolvedValue([]);
-      vi.mocked(auth).mockResolvedValue(null);
+      vi.mocked(auth).mockResolvedValue(null as any);
 
       const component = await ParkPage({
         params: Promise.resolve({ id: "test-park" }),

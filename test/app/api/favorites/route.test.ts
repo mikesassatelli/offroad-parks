@@ -5,7 +5,7 @@ import { vi } from "vitest";
 
 // Mock auth and Prisma
 vi.mock("@/lib/auth", () => ({
-  auth: vi.fn(),
+  auth: vi.fn(() => Promise.resolve(null)),
 }));
 
 vi.mock("@/lib/prisma", () => ({
@@ -28,7 +28,7 @@ describe("GET /api/favorites", () => {
 
   it("should return 401 when user is not authenticated", async () => {
     // Arrange
-    vi.mocked(auth).mockResolvedValue(null);
+    vi.mocked(auth).mockResolvedValue(null as any);
 
     // Act
     const response = await GET();
@@ -151,7 +151,7 @@ describe("POST /api/favorites", () => {
 
   it("should return 401 when user is not authenticated", async () => {
     // Arrange
-    vi.mocked(auth).mockResolvedValue(null);
+    vi.mocked(auth).mockResolvedValue(null as any);
 
     const request = new Request("http://localhost:3000/api/favorites", {
       method: "POST",

@@ -10,12 +10,6 @@ export default defineConfig({
     setupFiles: ["./vitest.setup.ts"],
     include: ["test/**/*.{test,spec}.{js,mjs,cjs,ts,mts,cts,jsx,tsx}"],
     exclude: ["node_modules", ".next", "e2e"],
-    pool: "threads",
-    poolOptions: {
-      threads: {
-        singleThread: true,
-      },
-    },
     coverage: {
       provider: "v8",
       reporter: ["text", "json", "html", "lcov"],

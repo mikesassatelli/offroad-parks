@@ -6,7 +6,7 @@ import { vi } from "vitest";
 
 // Mock dependencies
 vi.mock("@/lib/auth", () => ({
-  auth: vi.fn(),
+  auth: vi.fn(() => Promise.resolve(null)),
 }));
 
 vi.mock("@/lib/prisma", () => ({
@@ -40,7 +40,7 @@ describe("POST /api/parks/[slug]/photos", () => {
   });
 
   it("should return 401 when not authenticated", async () => {
-    vi.mocked(auth).mockResolvedValue(null);
+    vi.mocked(auth).mockResolvedValue(null as any);
 
     const request = new Request("http://localhost/api/parks/test-park/photos", {
       method: "POST",
