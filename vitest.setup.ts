@@ -1,37 +1,6 @@
 import "@testing-library/jest-dom";
 import { vi } from "vitest";
 
-// React 19 compatibility: Polyfill React.act for testing libraries
-// React 19 changed how act works, causing issues with @testing-library/react
-// Import React dynamically to ensure we get the right version
-const actPolyfill = async (callback: () => void | Promise<void>) => {
-  const result = callback();
-  if (result && typeof result.then === "function") {
-    await result;
-  }
-  return undefined;
-};
-
-// Set up React.act before any other imports
-try {
-  // eslint-disable-next-line @typescript-eslint/no-require-imports
-  const React = require("react");
-  if (typeof React.act !== "function") {
-    Object.defineProperty(React, "act", {
-      value: actPolyfill,
-      writable: true,
-      configurable: true,
-    });
-  }
-} catch (error) {
-  // Failed to set up React.act polyfill
-  console.warn("Could not polyfill React.act:", error);
-}
-
-// React 19 compatibility: Ensure global.IS_REACT_ACT_ENVIRONMENT is set
-// This tells React Testing Library to use the correct act implementation
-(globalThis as { IS_REACT_ACT_ENVIRONMENT?: boolean }).IS_REACT_ACT_ENVIRONMENT = true;
-
 // Mock Next.js router
 vi.mock("next/navigation", () => ({
   useRouter: () => ({
