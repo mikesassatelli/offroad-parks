@@ -4,15 +4,26 @@ import * as React from "react";
 
 // React 19 compatibility: Polyfill React.act for testing libraries
 // React 19 removed ReactDOMTestUtils.act, but testing libraries still try to use it
-if (typeof React.act === "undefined") {
-  // @ts-expect-error - Polyfilling act for React 19 compatibility
-  React.act = async (callback: () => void | Promise<void>) => {
-    const result = callback();
-    if (result && typeof result.then === "function") {
-      await result;
-    }
-    return undefined;
-  };
+if (!React.act) {
+  try {
+    const actPolyfill = async (callback: () => void | Promise<void>) => {
+      const result = callback();
+      if (result && typeof result.then === "function") {
+        await result;
+      }
+      return undefined;
+    };
+
+    // Try to define React.act if it doesn't exist
+    Object.defineProperty(React, "act", {
+      value: actPolyfill,
+      writable: true,
+      configurable: true,
+    });
+  } catch (error) {
+    // React.act might already be defined as non-configurable in some environments
+    // Safe to ignore - the existing implementation will be used
+  }
 }
 
 // React 19 compatibility: Ensure global.IS_REACT_ACT_ENVIRONMENT is set
