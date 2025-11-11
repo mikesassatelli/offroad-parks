@@ -1,5 +1,19 @@
 import "@testing-library/jest-dom";
 import { vi } from "vitest";
+import * as React from "react";
+
+// React 19 compatibility: Polyfill React.act for testing libraries
+// React 19 removed ReactDOMTestUtils.act, but testing libraries still try to use it
+if (typeof React.act === "undefined") {
+  // @ts-expect-error - Polyfilling act for React 19 compatibility
+  React.act = async (callback: () => void | Promise<void>) => {
+    const result = callback();
+    if (result && typeof result.then === "function") {
+      await result;
+    }
+    return undefined;
+  };
+}
 
 // React 19 compatibility: Ensure global.IS_REACT_ACT_ENVIRONMENT is set
 // This tells React Testing Library to use the correct act implementation
