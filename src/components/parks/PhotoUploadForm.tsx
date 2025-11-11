@@ -4,7 +4,7 @@ import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Upload, X, Image as ImageIcon } from "lucide-react";
+import { Image as ImageIcon, Upload, X } from "lucide-react";
 import Image from "next/image";
 
 interface PhotoUploadFormProps {
@@ -27,7 +27,9 @@ export function PhotoUploadForm({ parkSlug, onSuccess }: PhotoUploadFormProps) {
     // Validate file type
     const allowedTypes = ["image/jpeg", "image/jpg", "image/png", "image/webp"];
     if (!allowedTypes.includes(selectedFile.type)) {
-      setError("Invalid file type. Only JPEG, PNG, and WebP images are allowed.");
+      setError(
+        "Invalid file type. Only JPEG, PNG, and WebP images are allowed.",
+      );
       return;
     }
 

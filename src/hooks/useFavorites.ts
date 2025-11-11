@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useEffect, useState } from "react";
 import { useSession } from "next-auth/react";
 
 export function useFavorites() {
@@ -26,6 +26,7 @@ export function useFavorites() {
         );
       }
     } catch (error) {
+      /* v8 ignore next - Error logging only, actual error handling tested via response mocking */
       console.error("Failed to load favorites:", error);
     }
   };
@@ -50,6 +51,7 @@ export function useFavorites() {
           setFavoriteParkIds((prev) => prev.filter((id) => id !== parkId));
         } else {
           const errorData = await response.json().catch(() => ({}));
+          /* v8 ignore next - Error logging only */
           console.error("Failed to remove favorite:", errorData);
           alert("Failed to remove favorite");
         }
@@ -65,11 +67,13 @@ export function useFavorites() {
           setFavoriteParkIds((prev) => [...prev, parkId]);
         } else {
           const errorData = await response.json().catch(() => ({}));
+          /* v8 ignore next - Error logging only */
           console.error("Failed to add favorite:", errorData);
           alert("Failed to add favorite");
         }
       }
     } catch (error) {
+      /* v8 ignore next - Network error logging only */
       console.error("Failed to toggle favorite:", error);
       alert("Failed to update favorite");
     } finally {

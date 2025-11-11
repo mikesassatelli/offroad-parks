@@ -21,7 +21,10 @@ export async function POST(_request: Request, { params }: RouteParams) {
   // Check if user is admin
   const userRole = (session.user as { role?: string })?.role;
   if (userRole !== "ADMIN") {
-    return NextResponse.json({ error: "Admin access required" }, { status: 403 });
+    return NextResponse.json(
+      { error: "Admin access required" },
+      { status: 403 },
+    );
   }
 
   const { id } = await params;

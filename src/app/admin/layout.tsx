@@ -2,14 +2,14 @@ import { auth } from "@/lib/auth";
 import Link from "next/link";
 import { redirect } from "next/navigation";
 import {
-  LayoutDashboard,
-  MapPin,
-  Users,
-  Settings,
-  LogOut,
-  PlusCircle,
-  Home,
   Camera,
+  Home,
+  LayoutDashboard,
+  LogOut,
+  MapPin,
+  PlusCircle,
+  Settings,
+  Users,
 } from "lucide-react";
 
 export default async function AdminLayout({

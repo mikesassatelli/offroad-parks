@@ -5,7 +5,7 @@ import { useRouter } from "next/navigation";
 import type { Park } from "@/lib/types";
 import { ParkCard } from "@/components/parks/ParkCard";
 import { useFavorites } from "@/hooks/useFavorites";
-import { Heart, User, ArrowLeft } from "lucide-react";
+import { ArrowLeft, Heart, User } from "lucide-react";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
 

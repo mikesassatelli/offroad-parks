@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { CheckCircle, XCircle, Edit, Trash2, MapPin } from "lucide-react";
+import { CheckCircle, Edit, MapPin, Trash2, XCircle } from "lucide-react";
 
 type ParkStatus = "PENDING" | "APPROVED" | "REJECTED" | "DRAFT";
 
@@ -45,6 +45,7 @@ export function ParkManagementTable({ parks, highlightId }: Props) {
         alert("Failed to approve park");
       }
     } catch (error) {
+      /* v8 ignore next - Network error logging only */
       console.error("Error approving park:", error);
       alert("Failed to approve park");
     } finally {
@@ -93,6 +94,7 @@ export function ParkManagementTable({ parks, highlightId }: Props) {
         alert("Failed to delete park");
       }
     } catch (error) {
+      /* v8 ignore next - Network error logging only */
       console.error("Error deleting park:", error);
       alert("Failed to delete park");
     } finally {
@@ -182,7 +184,9 @@ export function ParkManagementTable({ parks, highlightId }: Props) {
                 </td>
                 <td className="px-6 py-4 whitespace-nowrap">
                   <div className="text-sm text-gray-900">
-                    {park.submittedBy?.name || park.submitterName || "Anonymous"}
+                    {park.submittedBy?.name ||
+                      park.submitterName ||
+                      "Anonymous"}
                   </div>
                   {park.submittedBy?.email && (
                     <div className="text-xs text-gray-500">

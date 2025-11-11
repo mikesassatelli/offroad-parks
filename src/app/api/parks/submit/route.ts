@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
 import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
-import type { Terrain, Difficulty, Amenity } from "@prisma/client";
+import type { Amenity, Difficulty, Terrain } from "@prisma/client";
 
 export const runtime = "nodejs";
 

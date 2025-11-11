@@ -1,5 +1,5 @@
 import { useMemo, useState } from "react";
-import type { Amenity, Terrain, Park } from "@/lib/types";
+import type { Amenity, Park, Terrain } from "@/lib/types";
 
 export type SortOption = "name" | "price" | "miles";
 
@@ -57,14 +57,12 @@ export function useFilteredParks({ parks }: UseFilteredParksProps) {
     filteredList.sort((parkA, parkB) => {
       if (sortOption === "name") {
         return parkA.name.localeCompare(parkB.name);
-      }
-      if (sortOption === "price") {
+      } else if (sortOption === "price") {
         return (parkA.dayPassUSD ?? Infinity) - (parkB.dayPassUSD ?? Infinity);
-      }
-      if (sortOption === "miles") {
+      } else {
+        // sortOption === "miles"
         return (parkB.milesOfTrails ?? 0) - (parkA.milesOfTrails ?? 0);
       }
-      return 0;
     });
 
     return filteredList;
