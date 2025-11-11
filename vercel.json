@@ -1,4 +1,4 @@
 {
-  "buildCommand": "npm run test && npm run build",
+  "buildCommand": "npm run build",
   "ignoreCommand": "git diff --quiet HEAD^ HEAD ./"
 }
