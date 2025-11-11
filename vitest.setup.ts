@@ -1,6 +1,10 @@
 import "@testing-library/jest-dom";
 import { vi } from "vitest";
 
+// React 19 compatibility: Ensure global.IS_REACT_ACT_ENVIRONMENT is set
+// This tells React Testing Library to use the correct act implementation
+(globalThis as { IS_REACT_ACT_ENVIRONMENT?: boolean }).IS_REACT_ACT_ENVIRONMENT = true;
+
 // Mock Next.js router
 vi.mock("next/navigation", () => ({
   useRouter: () => ({
