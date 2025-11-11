@@ -6,6 +6,10 @@ on:
   pull_request:
     branches: [master, main]
 
+permissions:
+  contents: read
+  pull-requests: write
+
 jobs:
   test:
     runs-on: ubuntu-latest
@@ -43,16 +47,6 @@ jobs:
           POSTGRES_PRISMA_URL: postgresql://test:test@localhost:5432/test
           BLOB_READ_WRITE_TOKEN: test-blob-token
 
-      - name: Upload coverage reports
-        uses: codecov/codecov-action@v4
-        if: always()
-        with:
-          file: ./coverage/lcov.info
-          flags: unittests
-          fail_ci_if_error: false
-        env:
-          CODECOV_TOKEN: ${{ secrets.CODECOV_TOKEN }}
-
       - name: Comment coverage on PR
         if: github.event_name == 'pull_request'
         uses: romeovs/lcov-reporter-action@v0.3.1
@@ -60,3 +54,4 @@ jobs:
           lcov-file: ./coverage/lcov.info
           github-token: ${{ secrets.GITHUB_TOKEN }}
           delete-old-comments: true
+          filter-changed-files: true
