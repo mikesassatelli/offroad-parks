@@ -1,29 +1,31 @@
 import "@testing-library/jest-dom";
 import { vi } from "vitest";
-import * as React from "react";
 
 // React 19 compatibility: Polyfill React.act for testing libraries
-// React 19 removed ReactDOMTestUtils.act, but testing libraries still try to use it
-if (!React.act) {
-  try {
-    const actPolyfill = async (callback: () => void | Promise<void>) => {
-      const result = callback();
-      if (result && typeof result.then === "function") {
-        await result;
-      }
-      return undefined;
-    };
+// React 19 changed how act works, causing issues with @testing-library/react
+// Import React dynamically to ensure we get the right version
+const actPolyfill = async (callback: () => void | Promise<void>) => {
+  const result = callback();
+  if (result && typeof result.then === "function") {
+    await result;
+  }
+  return undefined;
+};
 
-    // Try to define React.act if it doesn't exist
+// Set up React.act before any other imports
+try {
+  // eslint-disable-next-line @typescript-eslint/no-require-imports
+  const React = require("react");
+  if (typeof React.act !== "function") {
     Object.defineProperty(React, "act", {
       value: actPolyfill,
       writable: true,
       configurable: true,
     });
-  } catch (error) {
-    // React.act might already be defined as non-configurable in some environments
-    // Safe to ignore - the existing implementation will be used
   }
+} catch (error) {
+  // Failed to set up React.act polyfill
+  console.warn("Could not polyfill React.act:", error);
 }
 
 // React 19 compatibility: Ensure global.IS_REACT_ACT_ENVIRONMENT is set
