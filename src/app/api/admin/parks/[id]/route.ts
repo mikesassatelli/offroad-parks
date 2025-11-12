@@ -1,4 +1,5 @@
 import { NextResponse } from "next/server";
+import { revalidatePath } from "next/cache";
 import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 
@@ -25,9 +26,13 @@ export async function DELETE(_request: Request, { params }: RouteParams) {
     const { id } = await params;
 
     // Delete park (cascade will handle related records)
-    await prisma.park.delete({
+    const deletedPark = await prisma.park.delete({
       where: { id },
     });
+
+    // Revalidate cached pages
+    revalidatePath("/");
+    revalidatePath(`/parks/${deletedPark.slug}`);
 
     return NextResponse.json({ success: true });
   } catch (error) {
@@ -83,6 +88,10 @@ export async function PATCH(request: Request, { params }: RouteParams) {
         amenities: true,
       },
     });
+
+    // Revalidate cached pages
+    revalidatePath("/");
+    revalidatePath(`/parks/${park.slug}`);
 
     return NextResponse.json({ success: true, park });
   } catch (error) {

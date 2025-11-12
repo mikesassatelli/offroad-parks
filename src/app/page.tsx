@@ -2,6 +2,9 @@ import UtvParksApp from "@/components/ui/OffroadParksApp";
 import { prisma } from "@/lib/prisma";
 import { transformDbPark } from "@/lib/types";
 
+// Force dynamic rendering to always show fresh data
+export const dynamic = "force-dynamic";
+
 export default async function Page() {
   // Fetch parks from database
   const dbParks = await prisma.park.findMany({
