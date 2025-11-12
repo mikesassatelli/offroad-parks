@@ -12,6 +12,7 @@ export const authConfig = {
       clientSecret: process.env.GOOGLE_CLIENT_SECRET!,
     }),
   ],
+  trustHost: true,
   callbacks: {
     async session({
       session,

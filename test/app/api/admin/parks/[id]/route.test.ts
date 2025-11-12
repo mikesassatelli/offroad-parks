@@ -17,6 +17,11 @@ vi.mock("@/lib/prisma", () => ({
   },
 }));
 
+// Mock Next.js cache revalidation
+vi.mock("next/cache", () => ({
+  revalidatePath: vi.fn(),
+}));
+
 describe("DELETE /api/admin/parks/[id]", () => {
   beforeEach(() => {
     vi.clearAllMocks();
@@ -70,11 +75,14 @@ describe("DELETE /api/admin/parks/[id]", () => {
 
   it("should successfully delete park when user is admin", async () => {
     // Arrange
+    const { revalidatePath } = await import("next/cache");
     vi.mocked(auth).mockResolvedValue({
       user: { id: "admin-123", role: "ADMIN" },
     } as any);
 
-    vi.mocked(prisma.park.delete).mockResolvedValue({} as any);
+    vi.mocked(prisma.park.delete).mockResolvedValue({
+      slug: "test-park",
+    } as any);
 
     const request = new Request(
       "http://localhost:3000/api/admin/parks/park-123",
@@ -95,6 +103,8 @@ describe("DELETE /api/admin/parks/[id]", () => {
     expect(prisma.park.delete).toHaveBeenCalledWith({
       where: { id: "park-123" },
     });
+    expect(revalidatePath).toHaveBeenCalledWith("/");
+    expect(revalidatePath).toHaveBeenCalledWith("/parks/test-park");
   });
 
   it("should handle database errors gracefully", async () => {
@@ -206,6 +216,7 @@ describe("PATCH /api/admin/parks/[id]", () => {
 
   it("should successfully update park when user is admin", async () => {
     // Arrange
+    const { revalidatePath } = await import("next/cache");
     vi.mocked(auth).mockResolvedValue({
       user: { id: "admin-123", role: "ADMIN" },
     } as any);
@@ -243,6 +254,8 @@ describe("PATCH /api/admin/parks/[id]", () => {
     expect(response.status).toBe(200);
     expect(data.success).toBe(true);
     expect(data.park.name).toBe("Updated Park");
+    expect(revalidatePath).toHaveBeenCalledWith("/");
+    expect(revalidatePath).toHaveBeenCalledWith("/parks/updated-park");
   });
 
   it("should update park with terrain, difficulty, and amenities relations", async () => {
