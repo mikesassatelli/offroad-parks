@@ -1346,7 +1346,7 @@ describe("ParkSubmissionForm", () => {
             ),
           ),
       );
-      global.fetch = mockFetch;
+      global.fetch = mockFetch as any;
 
       const { container } = render(
         <ParkSubmissionForm
