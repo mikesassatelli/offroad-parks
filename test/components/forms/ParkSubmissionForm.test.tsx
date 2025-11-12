@@ -26,7 +26,16 @@ vi.mock("@/components/ui/button", () => ({
 }));
 
 vi.mock("@/components/ui/input", () => ({
-  Input: ({ value, onChange, name, id, required, maxLength }: any) => (
+  Input: ({
+    value,
+    onChange,
+    name,
+    id,
+    required,
+    maxLength,
+    disabled,
+    className,
+  }: any) => (
     <input
       value={value}
       onChange={onChange}
@@ -34,6 +43,8 @@ vi.mock("@/components/ui/input", () => ({
       id={id}
       required={required}
       maxLength={maxLength}
+      disabled={disabled}
+      className={className}
     />
   ),
 }));
@@ -939,5 +950,459 @@ describe("ParkSubmissionForm", () => {
     });
 
     alertSpy.mockRestore();
+  });
+
+  describe("Edit Mode", () => {
+    const mockInitialData = {
+      name: "Existing Park",
+      slug: "existing-park",
+      city: "Test City",
+      state: "California",
+      latitude: "37.7749",
+      longitude: "-122.4194",
+      website: "https://example.com",
+      phone: "5551234567",
+      dayPassUSD: "25.50",
+      milesOfTrails: "100",
+      acres: "5000",
+      notes: "Test notes",
+      submitterName: "",
+      terrain: ["sand", "rocks"],
+      difficulty: ["moderate", "difficult"],
+      amenities: ["camping", "restrooms"],
+    };
+
+    it("should render form with initial data in edit mode", () => {
+      render(
+        <ParkSubmissionForm
+          isAdminForm={true}
+          initialData={mockInitialData}
+          parkId="park-123"
+        />,
+      );
+
+      expect(screen.getByLabelText(/park name/i)).toHaveValue("Existing Park");
+      expect(screen.getByLabelText(/slug/i)).toHaveValue("existing-park");
+      expect(screen.getByLabelText(/city/i)).toHaveValue("Test City");
+      expect(screen.getByLabelText(/latitude/i)).toHaveValue("37.7749");
+      expect(screen.getByLabelText(/longitude/i)).toHaveValue("-122.4194");
+      expect(screen.getByLabelText(/website/i)).toHaveValue(
+        "https://example.com",
+      );
+      expect(screen.getByLabelText(/phone/i)).toHaveValue("5551234567");
+      expect(screen.getByLabelText(/day pass price/i)).toHaveValue("25.50");
+      expect(screen.getByLabelText(/miles of trails/i)).toHaveValue("100");
+      expect(screen.getByLabelText(/acres/i)).toHaveValue("5000");
+      expect(screen.getByLabelText(/additional notes/i)).toHaveValue(
+        "Test notes",
+      );
+    });
+
+    it("should disable slug field in edit mode", () => {
+      render(
+        <ParkSubmissionForm
+          isAdminForm={true}
+          initialData={mockInitialData}
+          parkId="park-123"
+        />,
+      );
+
+      const slugInput = screen.getByLabelText(/slug/i);
+      expect(slugInput).toBeDisabled();
+      expect(screen.getByText(/slug \* \(read-only\)/i)).toBeInTheDocument();
+    });
+
+    it("should show correct button text in edit mode", () => {
+      render(
+        <ParkSubmissionForm
+          isAdminForm={true}
+          initialData={mockInitialData}
+          parkId="park-123"
+        />,
+      );
+
+      expect(screen.getByText("Update Park")).toBeInTheDocument();
+    });
+
+    it("should not show photo upload section in edit mode", () => {
+      render(
+        <ParkSubmissionForm
+          isAdminForm={true}
+          initialData={mockInitialData}
+          parkId="park-123"
+          existingPhotoCount={0}
+        />,
+      );
+
+      expect(screen.queryByText(/click to upload photos/i)).not.toBeInTheDocument();
+    });
+
+    it("should show existing photo count message when photos exist", () => {
+      render(
+        <ParkSubmissionForm
+          isAdminForm={true}
+          initialData={mockInitialData}
+          parkId="park-123"
+          existingPhotoCount={3}
+        />,
+      );
+
+      expect(
+        screen.getByText(/this park has 3 existing photos/i),
+      ).toBeInTheDocument();
+      expect(
+        screen.getByText(/photo management is not available in edit mode/i),
+      ).toBeInTheDocument();
+    });
+
+    it("should handle singular photo count correctly", () => {
+      render(
+        <ParkSubmissionForm
+          isAdminForm={true}
+          initialData={mockInitialData}
+          parkId="park-123"
+          existingPhotoCount={1}
+        />,
+      );
+
+      expect(
+        screen.getByText(/this park has 1 existing photo\./i),
+      ).toBeInTheDocument();
+    });
+
+    it("should send PATCH request to correct endpoint in edit mode", async () => {
+      const mockFetch = vi.fn().mockResolvedValue({
+        ok: true,
+        json: async () => ({ park: { id: "park-123", slug: "existing-park" } }),
+      });
+      global.fetch = mockFetch;
+
+      const { container } = render(
+        <ParkSubmissionForm
+          isAdminForm={true}
+          initialData={mockInitialData}
+          parkId="park-123"
+        />,
+      );
+
+      const form = container.querySelector("form");
+      fireEvent.submit(form!);
+
+      await waitFor(() => {
+        expect(mockFetch).toHaveBeenCalledWith(
+          "/api/admin/parks/park-123",
+          expect.objectContaining({
+            method: "PATCH",
+            headers: { "Content-Type": "application/json" },
+          }),
+        );
+      });
+    });
+
+    it("should show success message and redirect after successful update", async () => {
+      const mockFetch = vi.fn().mockResolvedValue({
+        ok: true,
+        json: async () => ({ park: { id: "park-123", slug: "existing-park" } }),
+      });
+      global.fetch = mockFetch;
+      const alertSpy = vi.spyOn(window, "alert").mockImplementation(() => {});
+
+      const { container } = render(
+        <ParkSubmissionForm
+          isAdminForm={true}
+          initialData={mockInitialData}
+          parkId="park-123"
+        />,
+      );
+
+      const form = container.querySelector("form");
+      fireEvent.submit(form!);
+
+      await waitFor(() => {
+        expect(alertSpy).toHaveBeenCalledWith("Park updated successfully!");
+        expect(mockPush).toHaveBeenCalledWith("/admin/parks?highlight=park-123");
+      });
+
+      alertSpy.mockRestore();
+    });
+
+    it("should not upload photos in edit mode even if photos were added", async () => {
+      const mockFetch = vi.fn().mockResolvedValue({
+        ok: true,
+        json: async () => ({ park: { id: "park-123", slug: "existing-park" } }),
+      });
+      global.fetch = mockFetch;
+
+      const { container } = render(
+        <ParkSubmissionForm
+          isAdminForm={true}
+          initialData={mockInitialData}
+          parkId="park-123"
+        />,
+      );
+
+      const form = container.querySelector("form");
+      fireEvent.submit(form!);
+
+      await waitFor(() => {
+        expect(mockFetch).toHaveBeenCalledTimes(1); // Only PATCH call, no photo uploads
+      });
+    });
+
+    it("should handle update errors with correct message", async () => {
+      const mockFetch = vi.fn().mockResolvedValue({
+        ok: false,
+        json: async () => ({ error: "Update failed" }),
+      });
+      global.fetch = mockFetch;
+      const alertSpy = vi.spyOn(window, "alert").mockImplementation(() => {});
+
+      const { container } = render(
+        <ParkSubmissionForm
+          isAdminForm={true}
+          initialData={mockInitialData}
+          parkId="park-123"
+        />,
+      );
+
+      const form = container.querySelector("form");
+      fireEvent.submit(form!);
+
+      await waitFor(() => {
+        expect(alertSpy).toHaveBeenCalledWith("Failed to update: Update failed");
+      });
+
+      alertSpy.mockRestore();
+    });
+
+    it("should handle update errors without error message", async () => {
+      const mockFetch = vi.fn().mockResolvedValue({
+        ok: false,
+        json: async () => ({}),
+      });
+      global.fetch = mockFetch;
+      const alertSpy = vi.spyOn(window, "alert").mockImplementation(() => {});
+
+      const { container } = render(
+        <ParkSubmissionForm
+          isAdminForm={true}
+          initialData={mockInitialData}
+          parkId="park-123"
+        />,
+      );
+
+      const form = container.querySelector("form");
+      fireEvent.submit(form!);
+
+      await waitFor(() => {
+        expect(alertSpy).toHaveBeenCalledWith("Failed to update: Unknown error");
+      });
+
+      alertSpy.mockRestore();
+    });
+
+    it("should update form fields in edit mode", () => {
+      render(
+        <ParkSubmissionForm
+          isAdminForm={true}
+          initialData={mockInitialData}
+          parkId="park-123"
+        />,
+      );
+
+      const nameInput = screen.getByLabelText(/park name/i);
+      fireEvent.change(nameInput, {
+        target: { name: "name", value: "Updated Park Name" },
+      });
+
+      expect(nameInput).toHaveValue("Updated Park Name");
+    });
+
+    it("should not auto-generate slug when name changes in edit mode", () => {
+      render(
+        <ParkSubmissionForm
+          isAdminForm={true}
+          initialData={mockInitialData}
+          parkId="park-123"
+        />,
+      );
+
+      const nameInput = screen.getByLabelText(/park name/i);
+      const slugInput = screen.getByLabelText(/slug/i);
+
+      fireEvent.change(nameInput, {
+        target: { name: "name", value: "Completely Different Name" },
+      });
+
+      // Slug should remain unchanged
+      expect(slugInput).toHaveValue("existing-park");
+      expect(slugInput).toBeDisabled();
+    });
+
+    it("should check terrain checkboxes based on initial data", () => {
+      render(
+        <ParkSubmissionForm
+          isAdminForm={true}
+          initialData={mockInitialData}
+          parkId="park-123"
+        />,
+      );
+
+      const sandCheckbox = screen.getByLabelText(/sand/i);
+      const rocksCheckbox = screen.getByLabelText(/rocks/i);
+      const mudCheckbox = screen.getByLabelText(/mud/i);
+
+      expect(sandCheckbox).toBeChecked();
+      expect(rocksCheckbox).toBeChecked();
+      expect(mudCheckbox).not.toBeChecked();
+    });
+
+    it("should check difficulty checkboxes based on initial data", () => {
+      render(
+        <ParkSubmissionForm
+          isAdminForm={true}
+          initialData={mockInitialData}
+          parkId="park-123"
+        />,
+      );
+
+      const easyCheckbox = screen.getByLabelText(/^easy$/i);
+      const moderateCheckbox = screen.getByLabelText(/moderate/i);
+      const difficultCheckbox = screen.getByLabelText(/^difficult$/i);
+      const extremeCheckbox = screen.getByLabelText(/extreme/i);
+
+      expect(easyCheckbox).not.toBeChecked();
+      expect(moderateCheckbox).toBeChecked();
+      expect(difficultCheckbox).toBeChecked();
+      expect(extremeCheckbox).not.toBeChecked();
+    });
+
+    it("should check amenity checkboxes based on initial data", () => {
+      render(
+        <ParkSubmissionForm
+          isAdminForm={true}
+          initialData={mockInitialData}
+          parkId="park-123"
+        />,
+      );
+
+      const campingCheckbox = screen.getByLabelText(/camping/i);
+      const restroomsCheckbox = screen.getByLabelText(/restrooms/i);
+      const showersCheckbox = screen.getByLabelText(/showers/i);
+
+      expect(campingCheckbox).toBeChecked();
+      expect(restroomsCheckbox).toBeChecked();
+      expect(showersCheckbox).not.toBeChecked();
+    });
+
+    it("should send all form data including updates in PATCH request", async () => {
+      const mockFetch = vi.fn().mockResolvedValue({
+        ok: true,
+        json: async () => ({ park: { id: "park-123", slug: "existing-park" } }),
+      });
+      global.fetch = mockFetch;
+
+      const { container } = render(
+        <ParkSubmissionForm
+          isAdminForm={true}
+          initialData={mockInitialData}
+          parkId="park-123"
+        />,
+      );
+
+      // Update a field
+      const cityInput = screen.getByLabelText(/city/i);
+      fireEvent.change(cityInput, {
+        target: { name: "city", value: "Updated City" },
+      });
+
+      const form = container.querySelector("form");
+      fireEvent.submit(form!);
+
+      await waitFor(() => {
+        expect(mockFetch).toHaveBeenCalledWith(
+          "/api/admin/parks/park-123",
+          expect.objectContaining({
+            method: "PATCH",
+            body: expect.stringContaining('"city":"Updated City"'),
+          }),
+        );
+      });
+    });
+
+    it("should show 'Updating...' text when submitting in edit mode", async () => {
+      const mockFetch = vi.fn(
+        () =>
+          new Promise((resolve) =>
+            setTimeout(
+              () =>
+                resolve({
+                  ok: true,
+                  json: async () => ({
+                    park: { id: "park-123", slug: "existing-park" },
+                  }),
+                }),
+              100,
+            ),
+          ),
+      );
+      global.fetch = mockFetch;
+
+      const { container } = render(
+        <ParkSubmissionForm
+          isAdminForm={true}
+          initialData={mockInitialData}
+          parkId="park-123"
+        />,
+      );
+
+      const form = container.querySelector("form");
+      fireEvent.submit(form!);
+
+      // Should show "Updating..." while submitting
+      await waitFor(() => {
+        expect(screen.getByText("Updating...")).toBeInTheDocument();
+      });
+    });
+
+    it("should not show existing photo message when existingPhotoCount is 0", () => {
+      render(
+        <ParkSubmissionForm
+          isAdminForm={true}
+          initialData={mockInitialData}
+          parkId="park-123"
+          existingPhotoCount={0}
+        />,
+      );
+
+      expect(
+        screen.queryByText(/this park has.*existing photo/i),
+      ).not.toBeInTheDocument();
+    });
+
+    it("should handle network error in edit mode", async () => {
+      const mockFetch = vi.fn().mockRejectedValue(new Error("Network error"));
+      global.fetch = mockFetch;
+      const alertSpy = vi.spyOn(window, "alert").mockImplementation(() => {});
+
+      const { container } = render(
+        <ParkSubmissionForm
+          isAdminForm={true}
+          initialData={mockInitialData}
+          parkId="park-123"
+        />,
+      );
+
+      const form = container.querySelector("form");
+      fireEvent.submit(form!);
+
+      await waitFor(() => {
+        expect(alertSpy).toHaveBeenCalledWith(
+          "Failed to update park. Please try again.",
+        );
+      });
+
+      alertSpy.mockRestore();
+    });
   });
 });
