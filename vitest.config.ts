@@ -33,6 +33,7 @@ export default defineConfig({
         "src/app/admin/settings/page.tsx", // Placeholder server component
         "src/app/admin/users/page.tsx", // Server component with Prisma
         "src/app/admin/parks/new/page.tsx", // Server component wrapper
+        "src/app/admin/parks/[id]/edit/page.tsx", // Server component for editing parks
       ],
       thresholds: {
         lines: 100,

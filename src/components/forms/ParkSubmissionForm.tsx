@@ -19,37 +19,65 @@ import { US_STATES } from "@/lib/constants";
 import { Image as ImageIcon, Loader2, X } from "lucide-react";
 import Image from "next/image";
 
+interface FormData {
+  name: string;
+  slug: string;
+  city: string;
+  state: string;
+  latitude: string;
+  longitude: string;
+  website: string;
+  phone: string;
+  dayPassUSD: string;
+  milesOfTrails: string;
+  acres: string;
+  notes: string;
+  submitterName: string;
+  terrain: string[];
+  difficulty: string[];
+  amenities: string[];
+}
+
 interface ParkSubmissionFormProps {
   isAdminForm?: boolean;
+  initialData?: FormData;
+  parkId?: string;
+  existingPhotoCount?: number;
 }
 
 const DIFFICULTY_LEVELS = ["easy", "moderate", "difficult", "extreme"];
 
 export function ParkSubmissionForm({
   isAdminForm = false,
+  initialData,
+  parkId,
+  existingPhotoCount = 0,
 }: ParkSubmissionFormProps) {
   const router = useRouter();
+  const isEditMode = !!parkId;
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [photos, setPhotos] = useState<File[]>([]);
   const [photoPreviews, setPhotoPreviews] = useState<string[]>([]);
-  const [formData, setFormData] = useState({
-    name: "",
-    slug: "",
-    city: "",
-    state: "",
-    latitude: "",
-    longitude: "",
-    website: "",
-    phone: "",
-    dayPassUSD: "",
-    milesOfTrails: "",
-    acres: "",
-    notes: "",
-    submitterName: "",
-    terrain: [] as string[],
-    difficulty: [] as string[],
-    amenities: [] as string[],
-  });
+  const [formData, setFormData] = useState<FormData>(
+    initialData || {
+      name: "",
+      slug: "",
+      city: "",
+      state: "",
+      latitude: "",
+      longitude: "",
+      website: "",
+      phone: "",
+      dayPassUSD: "",
+      milesOfTrails: "",
+      acres: "",
+      notes: "",
+      submitterName: "",
+      terrain: [],
+      difficulty: [],
+      amenities: [],
+    },
+  );
 
   const handleInputChange = (
     e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>,
@@ -65,8 +93,8 @@ export function ParkSubmissionForm({
 
     setFormData((prev) => ({ ...prev, [name]: value }));
 
-    // Auto-generate slug from name if not admin
-    if (name === "name" && !isAdminForm) {
+    // Auto-generate slug from name if not admin and not in edit mode
+    if (name === "name" && !isAdminForm && !isEditMode) {
       const slug = value
         .toLowerCase()
         .replace(/[^a-z0-9]+/g, "-")
@@ -133,8 +161,13 @@ export function ParkSubmissionForm({
     setIsSubmitting(true);
 
     try {
-      const response = await fetch("/api/parks/submit", {
-        method: "POST",
+      const url = isEditMode
+        ? `/api/admin/parks/${parkId}`
+        : "/api/parks/submit";
+      const method = isEditMode ? "PATCH" : "POST";
+
+      const response = await fetch(url, {
+        method,
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           ...formData,
@@ -152,10 +185,11 @@ export function ParkSubmissionForm({
 
       if (response.ok) {
         const result = await response.json();
-        const parkSlug = result.park.slug;
+        const parkSlug = isEditMode ? formData.slug : result.park.slug;
+        const resultParkId = isEditMode ? parkId : result.park.id;
 
-        // Upload photos if any
-        if (photos.length > 0 && parkSlug) {
+        // Upload photos if any (only in create mode)
+        if (!isEditMode && photos.length > 0 && parkSlug) {
           for (const photo of photos) {
             const photoFormData = new FormData();
             photoFormData.append("file", photo);
@@ -174,23 +208,27 @@ export function ParkSubmissionForm({
         }
 
         alert(
-          isAdminForm
-            ? "Park created successfully!"
-            : "Park submitted for review! An admin will review it soon.",
+          isEditMode
+            ? "Park updated successfully!"
+            : isAdminForm
+              ? "Park created successfully!"
+              : "Park submitted for review! An admin will review it soon.",
         );
         if (isAdminForm) {
-          router.push(`/admin/parks?highlight=${result.park.id}`);
+          router.push(`/admin/parks?highlight=${resultParkId}`);
         } else {
           router.push("/");
         }
       } else {
         const error = await response.json();
-        alert(`Failed to submit: ${error.error || "Unknown error"}`);
+        alert(
+          `Failed to ${isEditMode ? "update" : "submit"}: ${error.error || "Unknown error"}`,
+        );
       }
     } catch (error) {
       /* v8 ignore next - Network error logging only */
       console.error("Submission error:", error);
-      alert("Failed to submit park. Please try again.");
+      alert(`Failed to ${isEditMode ? "update" : "submit"} park. Please try again.`);
     } finally {
       setIsSubmitting(false);
     }
@@ -214,13 +252,17 @@ export function ParkSubmissionForm({
 
         {isAdminForm && (
           <div>
-            <Label htmlFor="slug">Slug *</Label>
+            <Label htmlFor="slug">
+              Slug * {isEditMode && "(read-only)"}
+            </Label>
             <Input
               id="slug"
               name="slug"
               value={formData.slug}
               onChange={handleInputChange}
               required
+              disabled={isEditMode}
+              className={isEditMode ? "bg-muted cursor-not-allowed" : ""}
             />
           </div>
         )}
@@ -448,71 +490,86 @@ export function ParkSubmissionForm({
       </div>
 
       {/* Photos */}
-      <div>
-        <Label className="mb-3 block">Photos (Optional, max 5)</Label>
-        <div className="space-y-4">
-          {/* File input */}
-          {photos.length < 5 && (
-            <div>
-              <label
-                htmlFor="photos"
-                className="flex flex-col items-center justify-center w-full h-32 border-2 border-dashed border-border rounded-lg cursor-pointer hover:border-primary transition-colors"
-              >
-                <div className="flex flex-col items-center justify-center pt-5 pb-6">
-                  <ImageIcon className="w-8 h-8 mb-2 text-muted-foreground" />
-                  <p className="text-sm text-muted-foreground">
-                    Click to upload photos
-                  </p>
-                  <p className="text-xs text-muted-foreground mt-1">
-                    PNG, JPG, or WebP (max 5MB each)
-                  </p>
-                </div>
-                <input
-                  id="photos"
-                  type="file"
-                  className="hidden"
-                  accept="image/jpeg,image/jpg,image/png,image/webp"
-                  onChange={handlePhotoChange}
-                  multiple
-                />
-              </label>
-            </div>
-          )}
-
-          {/* Photo previews */}
-          {photoPreviews.length > 0 && (
-            <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
-              {photoPreviews.map((preview, index) => (
-                <div key={index} className="relative aspect-square">
-                  <div className="relative w-full h-full rounded-lg overflow-hidden border border-border">
-                    <Image
-                      src={preview}
-                      alt={`Preview ${index + 1}`}
-                      fill
-                      className="object-cover"
-                    />
+      {!isEditMode && (
+        <div>
+          <Label className="mb-3 block">Photos (Optional, max 5)</Label>
+          <div className="space-y-4">
+            {/* File input */}
+            {photos.length < 5 && (
+              <div>
+                <label
+                  htmlFor="photos"
+                  className="flex flex-col items-center justify-center w-full h-32 border-2 border-dashed border-border rounded-lg cursor-pointer hover:border-primary transition-colors"
+                >
+                  <div className="flex flex-col items-center justify-center pt-5 pb-6">
+                    <ImageIcon className="w-8 h-8 mb-2 text-muted-foreground" />
+                    <p className="text-sm text-muted-foreground">
+                      Click to upload photos
+                    </p>
+                    <p className="text-xs text-muted-foreground mt-1">
+                      PNG, JPG, or WebP (max 5MB each)
+                    </p>
                   </div>
-                  <button
-                    type="button"
-                    onClick={() => removePhoto(index)}
-                    className="absolute -top-2 -right-2 bg-destructive text-destructive-foreground p-1 rounded-full hover:bg-destructive/90"
-                  >
-                    <X className="w-4 h-4" />
-                  </button>
-                </div>
-              ))}
-            </div>
-          )}
+                  <input
+                    id="photos"
+                    type="file"
+                    className="hidden"
+                    accept="image/jpeg,image/jpg,image/png,image/webp"
+                    onChange={handlePhotoChange}
+                    multiple
+                  />
+                </label>
+              </div>
+            )}
+
+            {/* Photo previews */}
+            {photoPreviews.length > 0 && (
+              <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
+                {photoPreviews.map((preview, index) => (
+                  <div key={index} className="relative aspect-square">
+                    <div className="relative w-full h-full rounded-lg overflow-hidden border border-border">
+                      <Image
+                        src={preview}
+                        alt={`Preview ${index + 1}`}
+                        fill
+                        className="object-cover"
+                      />
+                    </div>
+                    <button
+                      type="button"
+                      onClick={() => removePhoto(index)}
+                      className="absolute -top-2 -right-2 bg-destructive text-destructive-foreground p-1 rounded-full hover:bg-destructive/90"
+                    >
+                      <X className="w-4 h-4" />
+                    </button>
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
         </div>
-      </div>
+      )}
+
+      {/* Existing photos indicator */}
+      {isEditMode && existingPhotoCount > 0 && (
+        <div className="p-4 bg-muted rounded-lg">
+          <p className="text-sm text-muted-foreground">
+            This park has {existingPhotoCount} existing photo
+            {existingPhotoCount !== 1 ? "s" : ""}. Photo management is not
+            available in edit mode.
+          </p>
+        </div>
+      )}
 
       <div className="flex gap-3">
         <Button type="submit" disabled={isSubmitting}>
           {isSubmitting ? (
             <>
               <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-              Submitting...
+              {isEditMode ? "Updating..." : "Submitting..."}
             </>
+          ) : isEditMode ? (
+            "Update Park"
           ) : isAdminForm ? (
             "Create Park"
           ) : (
