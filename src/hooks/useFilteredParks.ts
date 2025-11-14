@@ -1,5 +1,5 @@
 import { useMemo, useState } from "react";
-import type { Amenity, Park, Terrain, VehicleType } from "@/lib/types";
+import type { Park } from "@/lib/types";
 
 export type SortOption = "name" | "price" | "miles";
 
@@ -10,9 +10,9 @@ interface UseFilteredParksProps {
 export function useFilteredParks({ parks }: UseFilteredParksProps) {
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedState, setSelectedState] = useState<string | undefined>();
-  const [selectedTerrain, setSelectedTerrain] = useState<string | undefined>();
-  const [selectedAmenity, setSelectedAmenity] = useState<string | undefined>();
-  const [selectedVehicleType, setSelectedVehicleType] = useState<string | undefined>();
+  const [selectedTerrains, setSelectedTerrains] = useState<string[]>([]);
+  const [selectedAmenities, setSelectedAmenities] = useState<string[]>([]);
+  const [selectedVehicleTypes, setSelectedVehicleTypes] = useState<string[]>([]);
   const [sortOption, setSortOption] = useState<SortOption>("name");
 
   const availableStates = useMemo(
@@ -40,24 +40,24 @@ export function useFilteredParks({ parks }: UseFilteredParksProps) {
       );
     }
 
-    // Apply terrain filter
-    if (selectedTerrain) {
+    // Apply terrain filter (multi-select - park must have at least one selected terrain)
+    if (selectedTerrains.length > 0) {
       filteredList = filteredList.filter((park) =>
-        park.terrain.includes(selectedTerrain as Terrain),
+        park.terrain.some((t) => selectedTerrains.includes(t)),
       );
     }
 
-    // Apply amenity filter
-    if (selectedAmenity) {
+    // Apply amenity filter (multi-select - park must have at least one selected amenity)
+    if (selectedAmenities.length > 0) {
       filteredList = filteredList.filter((park) =>
-        park.amenities.includes(selectedAmenity as Amenity),
+        park.amenities.some((a) => selectedAmenities.includes(a)),
       );
     }
 
-    // Apply vehicle type filter
-    if (selectedVehicleType) {
+    // Apply vehicle type filter (multi-select - park must have at least one selected vehicle type)
+    if (selectedVehicleTypes.length > 0) {
       filteredList = filteredList.filter((park) =>
-        park.vehicleTypes.includes(selectedVehicleType as VehicleType),
+        park.vehicleTypes.some((v) => selectedVehicleTypes.includes(v)),
       );
     }
 
@@ -78,18 +78,18 @@ export function useFilteredParks({ parks }: UseFilteredParksProps) {
     parks,
     searchQuery,
     selectedState,
-    selectedTerrain,
-    selectedAmenity,
-    selectedVehicleType,
+    selectedTerrains,
+    selectedAmenities,
+    selectedVehicleTypes,
     sortOption,
   ]);
 
   const clearAllFilters = () => {
     setSearchQuery("");
     setSelectedState(undefined);
-    setSelectedTerrain(undefined);
-    setSelectedAmenity(undefined);
-    setSelectedVehicleType(undefined);
+    setSelectedTerrains([]);
+    setSelectedAmenities([]);
+    setSelectedVehicleTypes([]);
   };
 
   return {
@@ -97,12 +97,12 @@ export function useFilteredParks({ parks }: UseFilteredParksProps) {
     setSearchQuery,
     selectedState,
     setSelectedState,
-    selectedTerrain,
-    setSelectedTerrain,
-    selectedAmenity,
-    setSelectedAmenity,
-    selectedVehicleType,
-    setSelectedVehicleType,
+    selectedTerrains,
+    setSelectedTerrains,
+    selectedAmenities,
+    setSelectedAmenities,
+    selectedVehicleTypes,
+    setSelectedVehicleTypes,
     sortOption,
     setSortOption,
     availableStates,

@@ -139,7 +139,7 @@ describe("useFilteredParks", () => {
     const { result } = renderHook(() => useFilteredParks({ parks: mockParks }));
 
     act(() => {
-      result.current.setSelectedTerrain("rocks");
+      result.current.setSelectedTerrains(["rocks"]);
     });
 
     expect(result.current.filteredParks).toHaveLength(2);
@@ -152,7 +152,7 @@ describe("useFilteredParks", () => {
     const { result } = renderHook(() => useFilteredParks({ parks: mockParks }));
 
     act(() => {
-      result.current.setSelectedAmenity("fuel");
+      result.current.setSelectedAmenities(["fuel"]);
     });
 
     expect(result.current.filteredParks).toHaveLength(1);
@@ -164,7 +164,7 @@ describe("useFilteredParks", () => {
 
     act(() => {
       result.current.setSelectedState("California");
-      result.current.setSelectedTerrain("sand");
+      result.current.setSelectedTerrains(["sand"]);
     });
 
     expect(result.current.filteredParks).toHaveLength(2);
@@ -234,8 +234,8 @@ describe("useFilteredParks", () => {
     act(() => {
       result.current.setSearchQuery("test");
       result.current.setSelectedState("California");
-      result.current.setSelectedTerrain("sand");
-      result.current.setSelectedAmenity("camping");
+      result.current.setSelectedTerrains(["sand"]);
+      result.current.setSelectedAmenities(["camping"]);
     });
 
     // Clear all
@@ -245,8 +245,8 @@ describe("useFilteredParks", () => {
 
     expect(result.current.searchQuery).toBe("");
     expect(result.current.selectedState).toBeUndefined();
-    expect(result.current.selectedTerrain).toBeUndefined();
-    expect(result.current.selectedAmenity).toBeUndefined();
+    expect(result.current.selectedTerrains).toEqual([]);
+    expect(result.current.selectedAmenities).toEqual([]);
     expect(result.current.filteredParks).toHaveLength(3);
   });
 

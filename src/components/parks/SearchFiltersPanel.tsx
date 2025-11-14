@@ -7,6 +7,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { Checkbox } from "@/components/ui/checkbox";
 import { ALL_AMENITIES, ALL_TERRAIN_TYPES, ALL_VEHICLE_TYPES } from "@/lib/constants";
 
 interface SearchFiltersPanelProps {
@@ -15,12 +16,12 @@ interface SearchFiltersPanelProps {
   selectedState: string | undefined;
   onStateChange: (state: string | undefined) => void;
   availableStates: string[];
-  selectedTerrain: string | undefined;
-  onTerrainChange: (terrain: string | undefined) => void;
-  selectedAmenity: string | undefined;
-  onAmenityChange: (amenity: string | undefined) => void;
-  selectedVehicleType: string | undefined;
-  onVehicleTypeChange: (vehicleType: string | undefined) => void;
+  selectedTerrains: string[];
+  onTerrainsChange: (terrains: string[]) => void;
+  selectedAmenities: string[];
+  onAmenitiesChange: (amenities: string[]) => void;
+  selectedVehicleTypes: string[];
+  onVehicleTypesChange: (vehicleTypes: string[]) => void;
   onClearFilters: () => void;
 }
 
@@ -30,28 +31,40 @@ export function SearchFiltersPanel({
   selectedState,
   onStateChange,
   availableStates,
-  selectedTerrain,
-  onTerrainChange,
-  selectedAmenity,
-  onAmenityChange,
-  selectedVehicleType,
-  onVehicleTypeChange,
+  selectedTerrains,
+  onTerrainsChange,
+  selectedAmenities,
+  onAmenitiesChange,
+  selectedVehicleTypes,
+  onVehicleTypesChange,
   onClearFilters,
 }: SearchFiltersPanelProps) {
   const handleStateChange = (value: string) => {
     onStateChange(value === "__all" ? undefined : value);
   };
 
-  const handleTerrainChange = (value: string) => {
-    onTerrainChange(value === "__all" ? undefined : value);
+  const handleTerrainToggle = (terrain: string) => {
+    if (selectedTerrains.includes(terrain)) {
+      onTerrainsChange(selectedTerrains.filter((t) => t !== terrain));
+    } else {
+      onTerrainsChange([...selectedTerrains, terrain]);
+    }
   };
 
-  const handleAmenityChange = (value: string) => {
-    onAmenityChange(value === "__all" ? undefined : value);
+  const handleAmenityToggle = (amenity: string) => {
+    if (selectedAmenities.includes(amenity)) {
+      onAmenitiesChange(selectedAmenities.filter((a) => a !== amenity));
+    } else {
+      onAmenitiesChange([...selectedAmenities, amenity]);
+    }
   };
 
-  const handleVehicleTypeChange = (value: string) => {
-    onVehicleTypeChange(value === "__all" ? undefined : value);
+  const handleVehicleTypeToggle = (vehicleType: string) => {
+    if (selectedVehicleTypes.includes(vehicleType)) {
+      onVehicleTypesChange(selectedVehicleTypes.filter((v) => v !== vehicleType));
+    } else {
+      onVehicleTypesChange([...selectedVehicleTypes, vehicleType]);
+    }
   };
 
   return (
@@ -83,54 +96,19 @@ export function SearchFiltersPanel({
         </SelectContent>
       </Select>
 
-      <div className="mt-4 text-sm font-semibold mb-2">Terrain</div>
-      <Select
-        onValueChange={handleTerrainChange}
-        value={selectedTerrain ?? "__all"}
-      >
-        <SelectTrigger>
-          <SelectValue placeholder="Any terrain" />
-        </SelectTrigger>
-        <SelectContent>
-          <SelectItem value="__all">Any</SelectItem>
-          {ALL_TERRAIN_TYPES.map((terrain) => (
-            <SelectItem key={terrain} value={terrain}>
-              {terrain}
-            </SelectItem>
-          ))}
-        </SelectContent>
-      </Select>
-
-      <div className="mt-4 text-sm font-semibold mb-2">Amenities</div>
-      <Select
-        onValueChange={handleAmenityChange}
-        value={selectedAmenity ?? "__all"}
-      >
-        <SelectTrigger>
-          <SelectValue placeholder="Any amenity" />
-        </SelectTrigger>
-        <SelectContent>
-          <SelectItem value="__all">Any</SelectItem>
-          {ALL_AMENITIES.map((amenity) => (
-            <SelectItem key={amenity} value={amenity}>
-              {amenity}
-            </SelectItem>
-          ))}
-        </SelectContent>
-      </Select>
-
       <div className="mt-4 text-sm font-semibold mb-2">Vehicle Type</div>
-      <Select
-        onValueChange={handleVehicleTypeChange}
-        value={selectedVehicleType ?? "__all"}
-      >
-        <SelectTrigger>
-          <SelectValue placeholder="Any vehicle" />
-        </SelectTrigger>
-        <SelectContent>
-          <SelectItem value="__all">Any</SelectItem>
-          {ALL_VEHICLE_TYPES.map((vehicleType) => (
-            <SelectItem key={vehicleType} value={vehicleType}>
+      <div className="space-y-2">
+        {ALL_VEHICLE_TYPES.map((vehicleType) => (
+          <div key={vehicleType} className="flex items-center space-x-2">
+            <Checkbox
+              id={`vehicle-${vehicleType}`}
+              checked={selectedVehicleTypes.includes(vehicleType)}
+              onCheckedChange={() => handleVehicleTypeToggle(vehicleType)}
+            />
+            <label
+              htmlFor={`vehicle-${vehicleType}`}
+              className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70 cursor-pointer"
+            >
               {vehicleType === "fullSize"
                 ? "Full-Size"
                 : vehicleType === "sxs"
@@ -138,10 +116,48 @@ export function SearchFiltersPanel({
                   : vehicleType === "atv"
                     ? "ATV"
                     : "Motorcycle"}
-            </SelectItem>
-          ))}
-        </SelectContent>
-      </Select>
+            </label>
+          </div>
+        ))}
+      </div>
+
+      <div className="mt-4 text-sm font-semibold mb-2">Terrain</div>
+      <div className="space-y-2">
+        {ALL_TERRAIN_TYPES.map((terrain) => (
+          <div key={terrain} className="flex items-center space-x-2">
+            <Checkbox
+              id={`terrain-${terrain}`}
+              checked={selectedTerrains.includes(terrain)}
+              onCheckedChange={() => handleTerrainToggle(terrain)}
+            />
+            <label
+              htmlFor={`terrain-${terrain}`}
+              className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70 cursor-pointer"
+            >
+              {terrain}
+            </label>
+          </div>
+        ))}
+      </div>
+
+      <div className="mt-4 text-sm font-semibold mb-2">Amenities</div>
+      <div className="space-y-2">
+        {ALL_AMENITIES.map((amenity) => (
+          <div key={amenity} className="flex items-center space-x-2">
+            <Checkbox
+              id={`amenity-${amenity}`}
+              checked={selectedAmenities.includes(amenity)}
+              onCheckedChange={() => handleAmenityToggle(amenity)}
+            />
+            <label
+              htmlFor={`amenity-${amenity}`}
+              className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70 cursor-pointer"
+            >
+              {amenity}
+            </label>
+          </div>
+        ))}
+      </div>
 
       <div className="mt-4 flex gap-2">
         <Button variant="secondary" onClick={onClearFilters}>

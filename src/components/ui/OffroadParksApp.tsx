@@ -32,12 +32,12 @@ function OffroadParksAppInner({ parks }: OffroadParksAppProps) {
     setSearchQuery,
     selectedState,
     setSelectedState,
-    selectedTerrain,
-    setSelectedTerrain,
-    selectedAmenity,
-    setSelectedAmenity,
-    selectedVehicleType,
-    setSelectedVehicleType,
+    selectedTerrains,
+    setSelectedTerrains,
+    selectedAmenities,
+    setSelectedAmenities,
+    selectedVehicleTypes,
+    setSelectedVehicleTypes,
     sortOption,
     setSortOption,
     availableStates,
@@ -83,12 +83,12 @@ function OffroadParksAppInner({ parks }: OffroadParksAppProps) {
             selectedState={selectedState}
             onStateChange={setSelectedState}
             availableStates={availableStates}
-            selectedTerrain={selectedTerrain}
-            onTerrainChange={setSelectedTerrain}
-            selectedAmenity={selectedAmenity}
-            onAmenityChange={setSelectedAmenity}
-            selectedVehicleType={selectedVehicleType}
-            onVehicleTypeChange={setSelectedVehicleType}
+            selectedTerrains={selectedTerrains}
+            onTerrainsChange={setSelectedTerrains}
+            selectedAmenities={selectedAmenities}
+            onAmenitiesChange={setSelectedAmenities}
+            selectedVehicleTypes={selectedVehicleTypes}
+            onVehicleTypesChange={setSelectedVehicleTypes}
             onClearFilters={clearAllFilters}
           />
 
