@@ -227,6 +227,53 @@ describe("useFilteredParks", () => {
     expect(result.current.availableStates).toEqual(["California", "Colorado"]);
   });
 
+  it("should filter parks by minimum trail miles", () => {
+    const { result } = renderHook(() => useFilteredParks({ parks: mockParks }));
+
+    act(() => {
+      result.current.setMinTrailMiles(30);
+    });
+
+    expect(result.current.filteredParks).toHaveLength(2);
+    expect(
+      result.current.filteredParks.every((p) => (p.milesOfTrails ?? 0) >= 30),
+    ).toBe(true);
+  });
+
+  it("should filter parks by minimum acres", () => {
+    const { result } = renderHook(() => useFilteredParks({ parks: mockParks }));
+
+    act(() => {
+      result.current.setMinAcres(1500);
+    });
+
+    expect(result.current.filteredParks).toHaveLength(1);
+    expect(result.current.filteredParks[0].name).toBe("Rocky Mountain Trail");
+  });
+
+  it("should combine trail miles and acres filters", () => {
+    const { result } = renderHook(() => useFilteredParks({ parks: mockParks }));
+
+    act(() => {
+      result.current.setMinTrailMiles(30);
+      result.current.setMinAcres(500);
+    });
+
+    expect(result.current.filteredParks).toHaveLength(2);
+  });
+
+  it("should provide max trail miles based on parks data", () => {
+    const { result } = renderHook(() => useFilteredParks({ parks: mockParks }));
+
+    expect(result.current.maxTrailMiles).toBe(100);
+  });
+
+  it("should provide max acres based on parks data", () => {
+    const { result } = renderHook(() => useFilteredParks({ parks: mockParks }));
+
+    expect(result.current.maxAcres).toBe(2000);
+  });
+
   it("should clear all filters", () => {
     const { result } = renderHook(() => useFilteredParks({ parks: mockParks }));
 
@@ -236,6 +283,8 @@ describe("useFilteredParks", () => {
       result.current.setSelectedState("California");
       result.current.setSelectedTerrains(["sand"]);
       result.current.setSelectedAmenities(["camping"]);
+      result.current.setMinTrailMiles(50);
+      result.current.setMinAcres(1000);
     });
 
     // Clear all
@@ -247,6 +296,8 @@ describe("useFilteredParks", () => {
     expect(result.current.selectedState).toBeUndefined();
     expect(result.current.selectedTerrains).toEqual([]);
     expect(result.current.selectedAmenities).toEqual([]);
+    expect(result.current.minTrailMiles).toBe(0);
+    expect(result.current.minAcres).toBe(0);
     expect(result.current.filteredParks).toHaveLength(3);
   });
 

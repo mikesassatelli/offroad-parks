@@ -13,12 +13,28 @@ export function useFilteredParks({ parks }: UseFilteredParksProps) {
   const [selectedTerrains, setSelectedTerrains] = useState<string[]>([]);
   const [selectedAmenities, setSelectedAmenities] = useState<string[]>([]);
   const [selectedVehicleTypes, setSelectedVehicleTypes] = useState<string[]>([]);
+  const [minTrailMiles, setMinTrailMiles] = useState<number>(0);
+  const [minAcres, setMinAcres] = useState<number>(0);
   const [sortOption, setSortOption] = useState<SortOption>("name");
 
   const availableStates = useMemo(
     () => Array.from(new Set(parks.map((park) => park.state))).sort(),
     [parks],
   );
+
+  const maxTrailMiles = useMemo(() => {
+    const miles = parks
+      .map((park) => park.milesOfTrails)
+      .filter((m): m is number => m !== undefined);
+    return miles.length > 0 ? Math.max(...miles) : 500;
+  }, [parks]);
+
+  const maxAcres = useMemo(() => {
+    const acres = parks
+      .map((park) => park.acres)
+      .filter((a): a is number => a !== undefined);
+    return acres.length > 0 ? Math.max(...acres) : 10000;
+  }, [parks]);
 
   const filteredParks = useMemo(() => {
     let filteredList = [...parks];
@@ -61,6 +77,20 @@ export function useFilteredParks({ parks }: UseFilteredParksProps) {
       );
     }
 
+    // Apply trail miles filter
+    if (minTrailMiles > 0) {
+      filteredList = filteredList.filter(
+        (park) => (park.milesOfTrails ?? 0) >= minTrailMiles,
+      );
+    }
+
+    // Apply acres filter
+    if (minAcres > 0) {
+      filteredList = filteredList.filter(
+        (park) => (park.acres ?? 0) >= minAcres,
+      );
+    }
+
     // Apply sorting
     filteredList.sort((parkA, parkB) => {
       if (sortOption === "name") {
@@ -81,6 +111,8 @@ export function useFilteredParks({ parks }: UseFilteredParksProps) {
     selectedTerrains,
     selectedAmenities,
     selectedVehicleTypes,
+    minTrailMiles,
+    minAcres,
     sortOption,
   ]);
 
@@ -90,6 +122,8 @@ export function useFilteredParks({ parks }: UseFilteredParksProps) {
     setSelectedTerrains([]);
     setSelectedAmenities([]);
     setSelectedVehicleTypes([]);
+    setMinTrailMiles(0);
+    setMinAcres(0);
   };
 
   return {
@@ -103,6 +137,12 @@ export function useFilteredParks({ parks }: UseFilteredParksProps) {
     setSelectedAmenities,
     selectedVehicleTypes,
     setSelectedVehicleTypes,
+    minTrailMiles,
+    setMinTrailMiles,
+    maxTrailMiles,
+    minAcres,
+    setMinAcres,
+    maxAcres,
     sortOption,
     setSortOption,
     availableStates,

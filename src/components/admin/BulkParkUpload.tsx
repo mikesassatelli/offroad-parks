@@ -375,19 +375,13 @@ export function BulkParkUpload() {
             <strong>Valid terrain types:</strong> {ALL_TERRAIN_TYPES.join(", ")}
           </div>
           <div>
-            <strong>Valid difficulty levels:</strong>{" "}
-            {ALL_DIFFICULTY_LEVELS.join(", ")}
+            <strong>Valid difficulty levels:</strong> {ALL_DIFFICULTY_LEVELS.join(", ")}
           </div>
           <div>
             <strong>Valid amenities:</strong> {ALL_AMENITIES.join(", ")}
           </div>
           <div>
-            <strong>Valid vehicle types:</strong> {ALL_VEHICLE_TYPES.map(vt =>
-              vt === "fullSize" ? "fullSize" :
-              vt === "sxs" ? "sxs" :
-              vt === "atv" ? "atv" :
-              "motorcycle"
-            ).join(", ")}
+            <strong>Valid vehicle types:</strong> {ALL_VEHICLE_TYPES.join(", ")}
           </div>
           <div>
             <strong>Array fields (CSV):</strong> Use comma-separated values

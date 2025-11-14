@@ -50,6 +50,19 @@ vi.mock("@/components/ui/checkbox", () => ({
   ),
 }));
 
+vi.mock("@/components/ui/slider", () => ({
+  Slider: ({ value, min, max, onValueChange }: any) => (
+    <input
+      type="range"
+      value={value?.[0] ?? 0}
+      min={min}
+      max={max}
+      onChange={(e) => onValueChange?.([parseInt(e.target.value, 10)])}
+      data-testid="slider"
+    />
+  ),
+}));
+
 describe("SearchFiltersPanel", () => {
   const mockProps = {
     searchQuery: "",
@@ -63,6 +76,12 @@ describe("SearchFiltersPanel", () => {
     onAmenitiesChange: vi.fn(),
     selectedVehicleTypes: [],
     onVehicleTypesChange: vi.fn(),
+    minTrailMiles: 0,
+    onMinTrailMilesChange: vi.fn(),
+    maxTrailMiles: 500,
+    minAcres: 0,
+    onMinAcresChange: vi.fn(),
+    maxAcres: 10000,
     onClearFilters: vi.fn(),
   };
 

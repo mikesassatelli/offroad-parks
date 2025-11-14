@@ -8,6 +8,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Checkbox } from "@/components/ui/checkbox";
+import { Slider } from "@/components/ui/slider";
 import { ALL_AMENITIES, ALL_TERRAIN_TYPES, ALL_VEHICLE_TYPES } from "@/lib/constants";
 
 interface SearchFiltersPanelProps {
@@ -22,6 +23,12 @@ interface SearchFiltersPanelProps {
   onAmenitiesChange: (amenities: string[]) => void;
   selectedVehicleTypes: string[];
   onVehicleTypesChange: (vehicleTypes: string[]) => void;
+  minTrailMiles: number;
+  onMinTrailMilesChange: (miles: number) => void;
+  maxTrailMiles: number;
+  minAcres: number;
+  onMinAcresChange: (acres: number) => void;
+  maxAcres: number;
   onClearFilters: () => void;
 }
 
@@ -37,6 +44,12 @@ export function SearchFiltersPanel({
   onAmenitiesChange,
   selectedVehicleTypes,
   onVehicleTypesChange,
+  minTrailMiles,
+  onMinTrailMilesChange,
+  maxTrailMiles,
+  minAcres,
+  onMinAcresChange,
+  maxAcres,
   onClearFilters,
 }: SearchFiltersPanelProps) {
   const handleStateChange = (value: string) => {
@@ -157,6 +170,36 @@ export function SearchFiltersPanel({
             </label>
           </div>
         ))}
+      </div>
+
+      <div className="mt-4 text-sm font-semibold mb-2">Trail Miles</div>
+      <div className="space-y-2">
+        <div className="flex justify-between text-xs text-gray-500">
+          <span>Min: {minTrailMiles} mi</span>
+          <span>Max: {maxTrailMiles} mi</span>
+        </div>
+        <Slider
+          value={[minTrailMiles]}
+          min={0}
+          max={maxTrailMiles}
+          step={5}
+          onValueChange={(values) => onMinTrailMilesChange(values[0])}
+        />
+      </div>
+
+      <div className="mt-4 text-sm font-semibold mb-2">Acres</div>
+      <div className="space-y-2">
+        <div className="flex justify-between text-xs text-gray-500">
+          <span>Min: {minAcres.toLocaleString()} acres</span>
+          <span>Max: {maxAcres.toLocaleString()} acres</span>
+        </div>
+        <Slider
+          value={[minAcres]}
+          min={0}
+          max={maxAcres}
+          step={100}
+          onValueChange={(values) => onMinAcresChange(values[0])}
+        />
       </div>
 
       <div className="mt-4 flex gap-2">
