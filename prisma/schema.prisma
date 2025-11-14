@@ -81,7 +81,6 @@ model Park {
   dayPassUSD    Float?
   milesOfTrails Int?
   acres         Int?
-  utvAllowed    Boolean    @default(true)
   notes         String?    @db.Text
   status        ParkStatus @default(PENDING)
 
@@ -89,11 +88,12 @@ model Park {
   submitterId   String?
   submitterName String? // For anonymous submissions
 
-  terrain    ParkTerrain[]
-  difficulty ParkDifficulty[]
-  amenities  ParkAmenity[]
-  favorites  UserFavorite[]
-  photos     ParkPhoto[]
+  terrain      ParkTerrain[]
+  difficulty   ParkDifficulty[]
+  amenities    ParkAmenity[]
+  vehicleTypes ParkVehicleType[]
+  favorites    UserFavorite[]
+  photos       ParkPhoto[]
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -140,6 +140,16 @@ model ParkAmenity {
   @@unique([parkId, amenity])
 }
 
+model ParkVehicleType {
+  id          String      @id @default(cuid())
+  parkId      String
+  vehicleType VehicleType
+
+  park Park @relation(fields: [parkId], references: [id], onDelete: Cascade)
+
+  @@unique([parkId, vehicleType])
+}
+
 // Enums matching your existing types
 enum Terrain {
   sand
@@ -164,6 +174,13 @@ enum Amenity {
   food
   fuel
   repair
+}
+
+enum VehicleType {
+  motorcycle
+  atv
+  sxs
+  fullSize
 }
 
 // User Favorites

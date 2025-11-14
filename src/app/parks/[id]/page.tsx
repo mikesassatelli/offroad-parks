@@ -36,6 +36,7 @@ export async function generateMetadata({ params }: ParkPageProps) {
       terrain: true,
       difficulty: true,
       amenities: true,
+      vehicleTypes: true,
     },
   });
 
@@ -68,6 +69,7 @@ export default async function ParkPage({ params }: ParkPageProps) {
       terrain: true,
       difficulty: true,
       amenities: true,
+      vehicleTypes: true,
     },
   });
 

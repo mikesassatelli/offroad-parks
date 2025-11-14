@@ -23,10 +23,10 @@ describe("ParkOverviewCard", () => {
     dayPassUSD: 25,
     milesOfTrails: 50,
     acres: 1000,
-    utvAllowed: true,
     terrain: ["sand"],
     amenities: ["camping"],
     difficulty: ["moderate"],
+    vehicleTypes: [],
     notes: "Great park for off-roading",
   };
 
@@ -93,20 +93,6 @@ describe("ParkOverviewCard", () => {
     expect(screen.getByText("Acres")).toBeInTheDocument();
   });
 
-  it('should display "Yes" when UTV is allowed', () => {
-    render(<ParkOverviewCard park={mockPark} />);
-
-    expect(screen.getByText("UTV Allowed")).toBeInTheDocument();
-    expect(screen.getByText("Yes")).toBeInTheDocument();
-  });
-
-  it('should display "No" when UTV is not allowed', () => {
-    const parkNoUtv = { ...mockPark, utvAllowed: false };
-    render(<ParkOverviewCard park={parkNoUtv} />);
-
-    expect(screen.getByText("No")).toBeInTheDocument();
-  });
-
   it("should render icons", () => {
     const { container } = render(<ParkOverviewCard park={mockPark} />);
 
@@ -121,15 +107,17 @@ describe("ParkOverviewCard", () => {
       name: "Minimal Park",
       state: "Texas",
       coords: { lat: 30, lng: -98 },
-      utvAllowed: false,
       terrain: [],
       amenities: [],
       difficulty: [],
+      vehicleTypes: [],
     };
 
     render(<ParkOverviewCard park={minimalPark} />);
 
     expect(screen.getByText("Overview")).toBeInTheDocument();
-    expect(screen.getByText("No")).toBeInTheDocument();
+    // Should show em dashes for undefined optional fields
+    const emDashes = screen.getAllByText("—");
+    expect(emDashes.length).toBeGreaterThan(0);
   });
 });

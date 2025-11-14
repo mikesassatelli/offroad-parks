@@ -33,6 +33,7 @@ export default async function AdminParksPage({
       terrain: true,
       difficulty: true,
       amenities: true,
+      vehicleTypes: true,
       submittedBy: {
         select: {
           id: true,

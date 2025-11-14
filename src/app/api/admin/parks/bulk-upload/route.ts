@@ -1,8 +1,13 @@
 import { NextResponse } from "next/server";
 import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
-import { ALL_TERRAIN_TYPES, ALL_AMENITIES, US_STATES } from "@/lib/constants";
-import type { Terrain, Difficulty, Amenity } from "@/lib/types";
+import {
+  ALL_TERRAIN_TYPES,
+  ALL_AMENITIES,
+  ALL_VEHICLE_TYPES,
+  US_STATES,
+} from "@/lib/constants";
+import type { Terrain, Difficulty, Amenity, VehicleType } from "@/lib/types";
 
 // Difficulty levels array
 const ALL_DIFFICULTY_LEVELS: Difficulty[] = [
@@ -25,10 +30,10 @@ interface BulkParkInput {
   milesOfTrails?: number | null;
   acres?: number | null;
   notes?: string;
-  utvAllowed?: boolean;
   terrain: string[];
   difficulty: string[];
   amenities?: string[];
+  vehicleTypes?: string[];
 }
 
 interface ValidationError {
@@ -131,6 +136,20 @@ function validateParkEntry(
         row: rowIndex,
         field: "amenities",
         message: `Invalid amenities: ${invalidAmenities.join(", ")}. Valid options: ${ALL_AMENITIES.join(", ")}`,
+      });
+    }
+  }
+
+  // Vehicle types validation (optional)
+  if (park.vehicleTypes && park.vehicleTypes.length > 0) {
+    const invalidVehicleTypes = park.vehicleTypes.filter(
+      (v) => !ALL_VEHICLE_TYPES.includes(v as VehicleType)
+    );
+    if (invalidVehicleTypes.length > 0) {
+      errors.push({
+        row: rowIndex,
+        field: "vehicleTypes",
+        message: `Invalid vehicle types: ${invalidVehicleTypes.join(", ")}. Valid options: ${ALL_VEHICLE_TYPES.join(", ")}`,
       });
     }
   }
@@ -343,7 +362,6 @@ export async function POST(
             milesOfTrails: park.milesOfTrails ?? null,
             acres: park.acres ?? null,
             notes: park.notes || null,
-            utvAllowed: park.utvAllowed ?? true,
             status: "APPROVED", // Admin bulk uploads are pre-approved
             submitterId: session.user?.id || "",
           },
@@ -381,6 +399,20 @@ export async function POST(
                 data: {
                   parkId: createdPark.id,
                   amenity: amenity as Amenity,
+                },
+              })
+            )
+          );
+        }
+
+        // Create vehicle type relations (if provided)
+        if (park.vehicleTypes && park.vehicleTypes.length > 0) {
+          await Promise.all(
+            park.vehicleTypes.map((vehicleType) =>
+              tx.parkVehicleType.create({
+                data: {
+                  parkId: createdPark.id,
+                  vehicleType: vehicleType as VehicleType,
                 },
               })
             )

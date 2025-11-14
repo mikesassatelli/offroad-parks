@@ -36,6 +36,8 @@ function OffroadParksAppInner({ parks }: OffroadParksAppProps) {
     setSelectedTerrain,
     selectedAmenity,
     setSelectedAmenity,
+    selectedVehicleType,
+    setSelectedVehicleType,
     sortOption,
     setSortOption,
     availableStates,
@@ -85,6 +87,8 @@ function OffroadParksAppInner({ parks }: OffroadParksAppProps) {
             onTerrainChange={setSelectedTerrain}
             selectedAmenity={selectedAmenity}
             onAmenityChange={setSelectedAmenity}
+            selectedVehicleType={selectedVehicleType}
+            onVehicleTypeChange={setSelectedVehicleType}
             onClearFilters={clearAllFilters}
           />
 

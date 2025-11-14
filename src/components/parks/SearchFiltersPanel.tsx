@@ -7,7 +7,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { ALL_AMENITIES, ALL_TERRAIN_TYPES } from "@/lib/constants";
+import { ALL_AMENITIES, ALL_TERRAIN_TYPES, ALL_VEHICLE_TYPES } from "@/lib/constants";
 
 interface SearchFiltersPanelProps {
   searchQuery: string;
@@ -19,6 +19,8 @@ interface SearchFiltersPanelProps {
   onTerrainChange: (terrain: string | undefined) => void;
   selectedAmenity: string | undefined;
   onAmenityChange: (amenity: string | undefined) => void;
+  selectedVehicleType: string | undefined;
+  onVehicleTypeChange: (vehicleType: string | undefined) => void;
   onClearFilters: () => void;
 }
 
@@ -32,6 +34,8 @@ export function SearchFiltersPanel({
   onTerrainChange,
   selectedAmenity,
   onAmenityChange,
+  selectedVehicleType,
+  onVehicleTypeChange,
   onClearFilters,
 }: SearchFiltersPanelProps) {
   const handleStateChange = (value: string) => {
@@ -44,6 +48,10 @@ export function SearchFiltersPanel({
 
   const handleAmenityChange = (value: string) => {
     onAmenityChange(value === "__all" ? undefined : value);
+  };
+
+  const handleVehicleTypeChange = (value: string) => {
+    onVehicleTypeChange(value === "__all" ? undefined : value);
   };
 
   return (
@@ -106,6 +114,30 @@ export function SearchFiltersPanel({
           {ALL_AMENITIES.map((amenity) => (
             <SelectItem key={amenity} value={amenity}>
               {amenity}
+            </SelectItem>
+          ))}
+        </SelectContent>
+      </Select>
+
+      <div className="mt-4 text-sm font-semibold mb-2">Vehicle Type</div>
+      <Select
+        onValueChange={handleVehicleTypeChange}
+        value={selectedVehicleType ?? "__all"}
+      >
+        <SelectTrigger>
+          <SelectValue placeholder="Any vehicle" />
+        </SelectTrigger>
+        <SelectContent>
+          <SelectItem value="__all">Any</SelectItem>
+          {ALL_VEHICLE_TYPES.map((vehicleType) => (
+            <SelectItem key={vehicleType} value={vehicleType}>
+              {vehicleType === "fullSize"
+                ? "Full-Size"
+                : vehicleType === "sxs"
+                  ? "SxS"
+                  : vehicleType === "atv"
+                    ? "ATV"
+                    : "Motorcycle"}
             </SelectItem>
           ))}
         </SelectContent>

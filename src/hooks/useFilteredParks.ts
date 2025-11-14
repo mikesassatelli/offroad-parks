@@ -1,5 +1,5 @@
 import { useMemo, useState } from "react";
-import type { Amenity, Park, Terrain } from "@/lib/types";
+import type { Amenity, Park, Terrain, VehicleType } from "@/lib/types";
 
 export type SortOption = "name" | "price" | "miles";
 
@@ -12,6 +12,7 @@ export function useFilteredParks({ parks }: UseFilteredParksProps) {
   const [selectedState, setSelectedState] = useState<string | undefined>();
   const [selectedTerrain, setSelectedTerrain] = useState<string | undefined>();
   const [selectedAmenity, setSelectedAmenity] = useState<string | undefined>();
+  const [selectedVehicleType, setSelectedVehicleType] = useState<string | undefined>();
   const [sortOption, setSortOption] = useState<SortOption>("name");
 
   const availableStates = useMemo(
@@ -53,6 +54,13 @@ export function useFilteredParks({ parks }: UseFilteredParksProps) {
       );
     }
 
+    // Apply vehicle type filter
+    if (selectedVehicleType) {
+      filteredList = filteredList.filter((park) =>
+        park.vehicleTypes.includes(selectedVehicleType as VehicleType),
+      );
+    }
+
     // Apply sorting
     filteredList.sort((parkA, parkB) => {
       if (sortOption === "name") {
@@ -72,6 +80,7 @@ export function useFilteredParks({ parks }: UseFilteredParksProps) {
     selectedState,
     selectedTerrain,
     selectedAmenity,
+    selectedVehicleType,
     sortOption,
   ]);
 
@@ -80,6 +89,7 @@ export function useFilteredParks({ parks }: UseFilteredParksProps) {
     setSelectedState(undefined);
     setSelectedTerrain(undefined);
     setSelectedAmenity(undefined);
+    setSelectedVehicleType(undefined);
   };
 
   return {
@@ -91,6 +101,8 @@ export function useFilteredParks({ parks }: UseFilteredParksProps) {
     setSelectedTerrain,
     selectedAmenity,
     setSelectedAmenity,
+    selectedVehicleType,
+    setSelectedVehicleType,
     sortOption,
     setSortOption,
     availableStates,

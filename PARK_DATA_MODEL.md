@@ -50,7 +50,9 @@
 | **Transformer** | `src/lib/types.ts` | `transformDbPark()` function |
 | **API Queries** | `src/app/api/**/route.ts` | Prisma `include` clauses |
 | **Bulk Upload** | `src/app/api/admin/parks/bulk-upload/route.ts` | Validation logic + constants |
-| **Forms** | `src/components/forms/ParkSubmissionForm.tsx` | Form checkboxes |
+| **Forms** | `src/components/forms/ParkSubmissionForm.tsx` | Form checkboxes (shared for create/edit) |
+| **Admin Edit Page** | `src/app/admin/parks/[id]/edit/page.tsx` | Data transformation for form |
+| **Admin Edit API** | `src/app/api/admin/parks/[id]/route.ts` | PATCH handler with junction table updates |
 | **Filters** | `src/components/parks/SearchFiltersPanel.tsx` | Filter dropdowns |
 | **Display** | `src/components/shared/ParkBadges.tsx` | Badge components |
 
@@ -510,12 +512,49 @@ if (selectedVehicleType) {
 }
 ```
 
-#### ✅ Step 9: Push Database Changes
+#### ✅ Step 9: Update Admin Edit API
+**File:** `src/app/api/admin/parks/[id]/route.ts`
+
+Add junction table updates for the new category:
+```typescript
+// In PATCH handler, add to park.update data
+await prisma.park.update({
+  where: { id },
+  data: {
+    // ... existing updates
+    terrain: {
+      deleteMany: {},
+      create: terrain?.map((t: string) => ({ terrain: t })) || [],
+    },
+    vehicleTypes: {  // ← Add new category
+      deleteMany: {},
+      create: vehicleTypes?.map((v: string) => ({ vehicleType: v })) || [],
+    },
+  },
+});
+```
+
+**File:** `src/app/admin/parks/[id]/edit/page.tsx`
+
+Add transformation for edit page form:
+```typescript
+const initialData = {
+  // ... existing fields
+  terrain: park.terrain.map((t) => t.terrain),
+  difficulty: park.difficulty.map((d) => d.difficulty),
+  amenities: park.amenities.map((a) => a.amenity),
+  vehicleTypes: park.vehicleTypes.map((v) => v.vehicleType),  // ← Add here
+};
+```
+
+**Note:** Since `ParkSubmissionForm` is reused for both create and edit, form updates (Step 7) automatically apply to admin edit!
+
+#### ✅ Step 10: Push Database Changes
 ```bash
 npm run db:push
 ```
 
-#### ✅ Step 10: Update Bulk Upload
+#### ✅ Step 11: Update Bulk Upload
 **File:** `src/app/api/admin/parks/bulk-upload/route.ts`
 
 Add validation for the new category:
@@ -558,9 +597,10 @@ if (park.vehicleTypes && park.vehicleTypes.length > 0) {
 }
 ```
 
-#### ✅ Step 11: Test Critical Paths
+#### ✅ Step 12: Test Critical Paths
 ```bash
 npx vitest run test/app/api/parks/submit/route.test.ts
+npx vitest run test/app/api/admin/parks/[id]/route.test.ts  # Admin edit API
 npx vitest run test/app/api/admin/parks/bulk-upload/route.test.ts
 npx vitest run test/hooks/useFilteredParks.test.ts
 ```
@@ -826,6 +866,46 @@ await prisma.$transaction(async (tx) => {
 - Returns detailed validation errors per row
 - More explicit error handling
 
+**Admin Edit Pattern** (Update Existing Parks)
+```typescript
+// 1. Edit page fetches park with relations
+const park = await prisma.park.findUnique({
+  where: { id },
+  include: { terrain: true, difficulty: true, amenities: true }
+});
+
+// 2. Transform for form (junction tables → arrays)
+const formData = {
+  ...park,
+  terrain: park.terrain.map((t) => t.terrain),
+  difficulty: park.difficulty.map((d) => d.difficulty),
+  amenities: park.amenities.map((a) => a.amenity),
+};
+
+// 3. PATCH API recreates junction records
+await prisma.park.update({
+  where: { id },
+  data: {
+    ...parkData,
+    terrain: {
+      deleteMany: {},  // Remove all existing
+      create: terrain.map((t) => ({ terrain: t }))  // Recreate
+    }
+  }
+});
+```
+
+**Why admin edit uses deleteMany + create?**
+- Ensures junction records match form state exactly
+- Simpler than computing diffs
+- No orphaned records
+- Same pattern as regular updates
+
+**Important:** `ParkSubmissionForm` is reused for both create and edit:
+- Regular users: POST `/api/parks/submit` (status: PENDING)
+- Admin create: POST `/api/parks/submit` (status: APPROVED)
+- Admin edit: PATCH `/api/admin/parks/[id]` (preserves status)
+
 ### Data Transformation Requirements
 
 **Always use `transformDbPark()` in API routes:**
@@ -939,6 +1019,19 @@ await prisma.parkTerrain.create({
 
 **Note:** Adding values to existing categories (e.g., "waterfalls" to terrain) automatically works in bulk upload via shared constants!
 
+### ❌ Pitfall 8: Forgetting Admin Edit Transformations
+```typescript
+// Added VehicleType to schema, API, and form
+// Forgot to update admin edit page transformation
+// Result: Edit page shows empty vehicleTypes, saves incorrectly
+```
+
+**✅ Solution:** When adding new categories, update BOTH:
+1. `src/app/api/admin/parks/[id]/route.ts` - PATCH handler junction table logic
+2. `src/app/admin/parks/[id]/edit/page.tsx` - Form data transformation
+
+**Form reuse bonus:** Since `ParkSubmissionForm` is shared, form UI updates automatically apply to admin edit!
+
 ---
 
 ## Example: Complete Extension (Step-by-Step)
@@ -1007,12 +1100,13 @@ npm run build
 When adding new categorical data, test:
 
 - [ ] Park creation API with new value
-- [ ] Park update API replacing old values
+- [ ] Park update API replacing old values (admin edit)
+- [ ] Admin edit page transforms data correctly for form
 - [ ] Bulk upload API validates new value
 - [ ] `transformDbPark()` handles new field
 - [ ] Search filters include new value
 - [ ] Park badges display new value
-- [ ] Form validation accepts new value
+- [ ] Form validation accepts new value (create & edit modes)
 - [ ] TypeScript compilation passes (`npx tsc --noEmit`)
 - [ ] All tests pass (`npm test`)
 

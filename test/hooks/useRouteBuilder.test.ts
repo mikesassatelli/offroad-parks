@@ -7,43 +7,39 @@ describe("useRouteBuilder", () => {
     id: "park-1",
     name: "Park 1",
     state: "CA",
-    coords: { lat: 34.0522, lng: -118.2437 }, // Los Angeles
-    utvAllowed: true,
-    terrain: ["sand"],
+    coords: { lat: 34.0522, lng: -118.2437 }, // Los Angelesterrain: ["sand"],
     amenities: [],
     difficulty: ["easy"],
+    vehicleTypes: [],
   };
 
   const mockPark2: Park = {
     id: "park-2",
     name: "Park 2",
     state: "CA",
-    coords: { lat: 37.7749, lng: -122.4194 }, // San Francisco
-    utvAllowed: true,
-    terrain: ["rocks"],
+    coords: { lat: 37.7749, lng: -122.4194 }, // San Franciscoterrain: ["rocks"],
     amenities: [],
     difficulty: ["moderate"],
+    vehicleTypes: [],
   };
 
   const mockPark3: Park = {
     id: "park-3",
     name: "Park 3",
     state: "CA",
-    coords: { lat: 36.7783, lng: -119.4179 }, // Between LA and SF
-    utvAllowed: true,
-    terrain: ["mud"],
+    coords: { lat: 36.7783, lng: -119.4179 }, // Between LA and SFterrain: ["mud"],
     amenities: [],
     difficulty: ["difficult"],
+    vehicleTypes: [],
   };
 
   const mockParkNoCoords: Park = {
     id: "park-no-coords",
     name: "Park Without Coords",
-    state: "TX",
-    utvAllowed: true,
-    terrain: ["sand"],
+    state: "TX",terrain: ["sand"],
     amenities: [],
     difficulty: ["easy"],
+    vehicleTypes: [],
   };
 
   it("should initialize with empty route", () => {

@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
 import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
-import type { Amenity, Difficulty, Terrain } from "@prisma/client";
+import type { Amenity, Difficulty, Terrain, VehicleType } from "@prisma/client";
 
 export const runtime = "nodejs";
 
@@ -22,6 +22,7 @@ interface SubmitParkRequest {
   terrain: string[];
   difficulty: string[];
   amenities: string[];
+  vehicleTypes?: string[];
 }
 
 export async function POST(request: Request) {
@@ -112,11 +113,17 @@ export async function POST(request: Request) {
             amenity: a as Amenity,
           })),
         },
+        vehicleTypes: {
+          create: (data.vehicleTypes || []).map((v) => ({
+            vehicleType: v as VehicleType,
+          })),
+        },
       },
       include: {
         terrain: true,
         difficulty: true,
         amenities: true,
+        vehicleTypes: true,
       },
     });
 

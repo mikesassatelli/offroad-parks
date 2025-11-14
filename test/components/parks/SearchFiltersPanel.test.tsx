@@ -50,6 +50,8 @@ describe("SearchFiltersPanel", () => {
     onTerrainChange: vi.fn(),
     selectedAmenity: undefined,
     onAmenityChange: vi.fn(),
+    selectedVehicleType: undefined,
+    onVehicleTypeChange: vi.fn(),
     onClearFilters: vi.fn(),
   };
 
@@ -127,7 +129,7 @@ describe("SearchFiltersPanel", () => {
     render(<SearchFiltersPanel {...mockProps} />);
 
     const anyOptions = screen.getAllByText("Any");
-    expect(anyOptions.length).toBe(2); // Terrain and amenity filters
+    expect(anyOptions.length).toBe(3); // Terrain, amenity, and vehicle type filters
   });
 
   it("should render Reset button", () => {

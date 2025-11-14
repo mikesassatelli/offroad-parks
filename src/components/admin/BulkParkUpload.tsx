@@ -3,7 +3,7 @@
 import { useState, useRef } from "react";
 import * as Papa from "papaparse";
 import { Button } from "@/components/ui/button";
-import { ALL_TERRAIN_TYPES, ALL_AMENITIES, US_STATES } from "@/lib/constants";
+import { ALL_TERRAIN_TYPES, ALL_AMENITIES, ALL_VEHICLE_TYPES, US_STATES } from "@/lib/constants";
 import type { Difficulty } from "@/lib/types";
 
 // Difficulty levels array
@@ -27,10 +27,10 @@ interface BulkParkInput {
   milesOfTrails?: number | null;
   acres?: number | null;
   notes?: string;
-  utvAllowed?: boolean;
   terrain: string[];
   difficulty: string[];
   amenities?: string[];
+  vehicleTypes?: string[];
 }
 
 interface ValidationError {
@@ -106,10 +106,10 @@ function downloadCSVTemplate() {
     "milesOfTrails",
     "acres",
     "notes",
-    "utvAllowed",
     "terrain",
     "difficulty",
     "amenities",
+    "vehicleTypes",
   ];
 
   const exampleRow = [
@@ -125,10 +125,10 @@ function downloadCSVTemplate() {
     "100",
     "5000",
     "Great park with stunning views",
-    "true",
     "rocks,trails,hills",
     "moderate,difficult",
     "camping,restrooms,fuel",
+    "atv,sxs,motorcycle",
   ];
 
   const csv = Papa.unparse([headers, exampleRow]);
@@ -174,10 +174,10 @@ export function BulkParkUpload() {
           milesOfTrails: parseInteger(row.milesOfTrails),
           acres: parseInteger(row.acres),
           notes: row.notes || undefined,
-          utvAllowed: parseBoolean(row.utvAllowed),
           terrain: parseArrayField(row.terrain),
           difficulty: parseArrayField(row.difficulty),
           amenities: parseArrayField(row.amenities),
+          vehicleTypes: parseArrayField(row.vehicleTypes),
         }));
 
         setParks(parsedParks);
@@ -229,10 +229,10 @@ export function BulkParkUpload() {
           milesOfTrails: park.milesOfTrails ?? null,
           acres: park.acres ?? null,
           notes: park.notes,
-          utvAllowed: park.utvAllowed ?? true,
           terrain: Array.isArray(park.terrain) ? park.terrain : [],
           difficulty: Array.isArray(park.difficulty) ? park.difficulty : [],
           amenities: Array.isArray(park.amenities) ? park.amenities : [],
+          vehicleTypes: Array.isArray(park.vehicleTypes) ? park.vehicleTypes : [],
         }));
 
         setParks(parsedParks);
@@ -380,6 +380,14 @@ export function BulkParkUpload() {
           </div>
           <div>
             <strong>Valid amenities:</strong> {ALL_AMENITIES.join(", ")}
+          </div>
+          <div>
+            <strong>Valid vehicle types:</strong> {ALL_VEHICLE_TYPES.map(vt =>
+              vt === "fullSize" ? "fullSize" :
+              vt === "sxs" ? "sxs" :
+              vt === "atv" ? "atv" :
+              "motorcycle"
+            ).join(", ")}
           </div>
           <div>
             <strong>Array fields (CSV):</strong> Use comma-separated values

@@ -32,6 +32,7 @@ describe("AdminParksPage", () => {
       terrain: [],
       difficulty: [],
       amenities: [],
+      vehicleTypes: [],
       submittedBy: {
         id: "user-1",
         name: "John Doe",
@@ -47,6 +48,7 @@ describe("AdminParksPage", () => {
       terrain: [],
       difficulty: [],
       amenities: [],
+      vehicleTypes: [],
       submittedBy: null,
     },
   ];
@@ -91,6 +93,7 @@ describe("AdminParksPage", () => {
         terrain: true,
         difficulty: true,
         amenities: true,
+        vehicleTypes: true,
         submittedBy: {
           select: {
             id: true,

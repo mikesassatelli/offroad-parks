@@ -25,10 +25,10 @@ describe("ParkAttributesCards", () => {
     name: "Test Park",
     state: "California",
     coords: { lat: 34, lng: -118 },
-    utvAllowed: true,
     terrain: ["sand", "rocks", "mud"],
     amenities: ["camping", "restrooms", "showers"],
     difficulty: ["easy", "moderate", "difficult"],
+    vehicleTypes: [],
   };
 
   it("should render all three cards", () => {
@@ -116,10 +116,10 @@ describe("ParkAttributesCards", () => {
       name: "Minimal Park",
       state: "Texas",
       coords: { lat: 30, lng: -98 },
-      utvAllowed: false,
       terrain: [],
       amenities: [],
       difficulty: [],
+    vehicleTypes: [],
     };
 
     render(<ParkAttributesCards park={minimalPark} />);
@@ -135,6 +135,7 @@ describe("ParkAttributesCards", () => {
       terrain: ["sand"],
       difficulty: ["easy"],
       amenities: ["camping"],
+      vehicleTypes: [],
     };
 
     render(<ParkAttributesCards park={singleItemPark} />);

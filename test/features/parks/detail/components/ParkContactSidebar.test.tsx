@@ -25,6 +25,7 @@ describe("ParkContactSidebar", () => {
     terrain: [],
     amenities: [],
     difficulty: [],
+    vehicleTypes: [],
   };
 
   it("should render contact sidebar", () => {
@@ -131,6 +132,7 @@ describe("ParkContactSidebar", () => {
       terrain: [],
       amenities: [],
       difficulty: [],
+    vehicleTypes: [],
     };
 
     render(<ParkContactSidebar park={minimalPark} />);

@@ -15,6 +15,7 @@ export default async function Page() {
       terrain: true,
       difficulty: true,
       amenities: true,
+      vehicleTypes: true,
       photos: {
         where: {
           status: "APPROVED",

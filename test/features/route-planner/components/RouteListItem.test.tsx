@@ -28,10 +28,10 @@ describe("RouteListItem", () => {
     state: "California",
     city: "Los Angeles",
     coords: { lat: 34.0522, lng: -118.2437 },
-    utvAllowed: true,
     terrain: [],
     amenities: [],
     difficulty: [],
+    vehicleTypes: [],
   };
 
   const defaultProps = {

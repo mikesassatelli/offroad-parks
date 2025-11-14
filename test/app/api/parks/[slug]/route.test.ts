@@ -30,13 +30,12 @@ describe("GET /api/parks/[slug]", () => {
       phone: "5551234567",
       dayPassUSD: 25,
       milesOfTrails: 50,
-      acres: 1000,
-      utvAllowed: true,
-      notes: "Great park",
+      acres: 1000,notes: "Great park",
       status: "APPROVED",
       terrain: [{ terrain: "sand" as const }],
       difficulty: [{ difficulty: "moderate" as const }],
       amenities: [{ amenity: "camping" as const }],
+      vehicleTypes: [],
     };
 
     vi.mocked(prisma.park.findUnique).mockResolvedValue(mockPark as any);
@@ -60,12 +59,11 @@ describe("GET /api/parks/[slug]", () => {
       phone: "5551234567",
       dayPassUSD: 25,
       milesOfTrails: 50,
-      acres: 1000,
-      utvAllowed: true,
-      notes: "Great park",
+      acres: 1000,notes: "Great park",
       terrain: ["sand"],
       difficulty: ["moderate"],
       amenities: ["camping"],
+      vehicleTypes: [],
     });
 
     expect(prisma.park.findUnique).toHaveBeenCalledWith({
@@ -77,6 +75,7 @@ describe("GET /api/parks/[slug]", () => {
         terrain: true,
         difficulty: true,
         amenities: true,
+        vehicleTypes: true,
       },
     });
   });
@@ -157,13 +156,12 @@ describe("GET /api/parks/[slug]", () => {
       phone: null,
       dayPassUSD: null,
       milesOfTrails: null,
-      acres: null,
-      utvAllowed: false,
-      notes: null,
+      acres: null,notes: null,
       status: "APPROVED",
       terrain: [],
       difficulty: [],
       amenities: [],
+      vehicleTypes: [],
     };
 
     vi.mocked(prisma.park.findUnique).mockResolvedValue(mockPark as any);
@@ -186,12 +184,11 @@ describe("GET /api/parks/[slug]", () => {
       phone: undefined,
       dayPassUSD: undefined,
       milesOfTrails: undefined,
-      acres: undefined,
-      utvAllowed: false,
-      notes: undefined,
+      acres: undefined,notes: undefined,
       terrain: [],
       difficulty: [],
       amenities: [],
+      vehicleTypes: [],
     });
   });
 

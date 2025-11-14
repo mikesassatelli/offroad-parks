@@ -31,13 +31,12 @@ describe("GET /api/parks", () => {
         phone: "5551234567",
         dayPassUSD: 25,
         milesOfTrails: 50,
-        acres: 1000,
-        utvAllowed: true,
-        notes: "Great park",
+        acres: 1000,notes: "Great park",
         status: "APPROVED",
         terrain: [{ terrain: "sand" as const }],
         difficulty: [{ difficulty: "moderate" as const }],
         amenities: [{ amenity: "camping" as const }],
+        vehicleTypes: [],
       },
       {
         id: "2",
@@ -51,13 +50,12 @@ describe("GET /api/parks", () => {
         phone: null,
         dayPassUSD: null,
         milesOfTrails: null,
-        acres: null,
-        utvAllowed: false,
-        notes: null,
+        acres: null,notes: null,
         status: "APPROVED",
         terrain: [],
         difficulty: [],
         amenities: [],
+        vehicleTypes: [],
       },
     ];
 
@@ -83,12 +81,11 @@ describe("GET /api/parks", () => {
       phone: "5551234567",
       dayPassUSD: 25,
       milesOfTrails: 50,
-      acres: 1000,
-      utvAllowed: true,
-      notes: "Great park",
+      acres: 1000,notes: "Great park",
       terrain: ["sand"],
       difficulty: ["moderate"],
       amenities: ["camping"],
+      vehicleTypes: [],
     });
 
     // Verify second park (with null values)
@@ -102,12 +99,11 @@ describe("GET /api/parks", () => {
       phone: undefined,
       dayPassUSD: undefined,
       milesOfTrails: undefined,
-      acres: undefined,
-      utvAllowed: false,
-      notes: undefined,
+      acres: undefined,notes: undefined,
       terrain: [],
       difficulty: [],
       amenities: [],
+      vehicleTypes: [],
     });
 
     // Verify Prisma was called with correct filter
@@ -119,6 +115,7 @@ describe("GET /api/parks", () => {
         terrain: true,
         difficulty: true,
         amenities: true,
+        vehicleTypes: true,
       },
       orderBy: {
         name: "asc",
@@ -155,13 +152,12 @@ describe("GET /api/parks", () => {
         phone: null,
         dayPassUSD: null,
         milesOfTrails: null,
-        acres: null,
-        utvAllowed: true,
-        notes: null,
+        acres: null,notes: null,
         status: "APPROVED",
         terrain: [],
         difficulty: [],
         amenities: [],
+        vehicleTypes: [],
       },
     ];
 
@@ -220,9 +216,7 @@ describe("GET /api/parks", () => {
       phone: null,
       dayPassUSD: null,
       milesOfTrails: null,
-      acres: null,
-      utvAllowed: true,
-      notes: null,
+      acres: null,notes: null,
       status: "APPROVED",
       terrain: [
         { terrain: "sand" as const },
@@ -238,6 +232,7 @@ describe("GET /api/parks", () => {
         { amenity: "restrooms" as const },
         { amenity: "fuel" as const },
       ],
+      vehicleTypes: [],
     };
 
     vi.mocked(prisma.park.findMany).mockResolvedValue([mockPark] as any);
