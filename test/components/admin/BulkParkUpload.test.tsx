@@ -144,7 +144,8 @@ Test Park 2,Colorado,rocks,moderate`;
         expect(screen.getByText(/loaded 2 parks/i)).toBeInTheDocument();
       });
 
-      const uploadButton = screen.getByRole("button", {
+      // Wait for the button to appear with the correct text after file parsing
+      const uploadButton = await screen.findByRole("button", {
         name: /upload 2 parks/i,
       });
       await user.click(uploadButton);
@@ -183,7 +184,8 @@ Test Park,Utah,sand,easy`;
 
       await user.upload(fileInput, file);
 
-      const uploadButton = screen.getByRole("button", {
+      // Wait for the button to appear with the correct text after file parsing
+      const uploadButton = await screen.findByRole("button", {
         name: /upload 1 park/i,
       });
       await user.click(uploadButton);
@@ -221,7 +223,8 @@ Test Park,ZZ,rocks,moderate`;
 
       await user.upload(fileInput, file);
 
-      const uploadButton = screen.getByRole("button", {
+      // Wait for the button to appear with the correct text after file parsing
+      const uploadButton = await screen.findByRole("button", {
         name: /upload 2 parks/i,
       });
       await user.click(uploadButton);
