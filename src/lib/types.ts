@@ -12,6 +12,8 @@ export type Terrain = "sand" | "rocks" | "mud" | "trails" | "hills";
 
 export type Difficulty = "easy" | "moderate" | "difficult" | "extreme";
 
+export type VehicleType = "motorcycle" | "atv" | "sxs" | "fullSize";
+
 // Database park type (from Prisma)
 export type DbPark = {
   id: string;
@@ -26,11 +28,11 @@ export type DbPark = {
   dayPassUSD: number | null;
   milesOfTrails: number | null;
   acres: number | null;
-  utvAllowed: boolean;
   notes: string | null;
   terrain: Array<{ terrain: Terrain }>;
   difficulty: Array<{ difficulty: Difficulty }>;
   amenities: Array<{ amenity: Amenity }>;
+  vehicleTypes: Array<{ vehicleType: VehicleType }>;
 };
 
 // Client-facing park type (transformed for UI compatibility)
@@ -45,10 +47,10 @@ export type Park = {
   acres?: number;
   milesOfTrails?: number;
   dayPassUSD?: number;
-  utvAllowed: boolean;
   terrain: Terrain[];
   amenities: Amenity[];
   difficulty: Difficulty[];
+  vehicleTypes: VehicleType[];
   notes?: string;
   heroImage?: string | null;
 };
@@ -69,10 +71,10 @@ export function transformDbPark(dbPark: DbPark): Park {
     acres: dbPark.acres ?? undefined,
     milesOfTrails: dbPark.milesOfTrails ?? undefined,
     dayPassUSD: dbPark.dayPassUSD ?? undefined,
-    utvAllowed: dbPark.utvAllowed,
     terrain: dbPark.terrain.map((t) => t.terrain),
     amenities: dbPark.amenities.map((a) => a.amenity),
     difficulty: dbPark.difficulty.map((d) => d.difficulty),
+    vehicleTypes: dbPark.vehicleTypes.map((v) => v.vehicleType),
     notes: dbPark.notes ?? undefined,
   };
 }

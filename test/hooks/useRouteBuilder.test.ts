@@ -8,10 +8,10 @@ describe("useRouteBuilder", () => {
     name: "Park 1",
     state: "CA",
     coords: { lat: 34.0522, lng: -118.2437 }, // Los Angeles
-    utvAllowed: true,
     terrain: ["sand"],
     amenities: [],
     difficulty: ["easy"],
+    vehicleTypes: [],
   };
 
   const mockPark2: Park = {
@@ -19,10 +19,10 @@ describe("useRouteBuilder", () => {
     name: "Park 2",
     state: "CA",
     coords: { lat: 37.7749, lng: -122.4194 }, // San Francisco
-    utvAllowed: true,
     terrain: ["rocks"],
     amenities: [],
     difficulty: ["moderate"],
+    vehicleTypes: [],
   };
 
   const mockPark3: Park = {
@@ -30,20 +30,20 @@ describe("useRouteBuilder", () => {
     name: "Park 3",
     state: "CA",
     coords: { lat: 36.7783, lng: -119.4179 }, // Between LA and SF
-    utvAllowed: true,
     terrain: ["mud"],
     amenities: [],
     difficulty: ["difficult"],
+    vehicleTypes: [],
   };
 
   const mockParkNoCoords: Park = {
     id: "park-no-coords",
     name: "Park Without Coords",
     state: "TX",
-    utvAllowed: true,
     terrain: ["sand"],
     amenities: [],
     difficulty: ["easy"],
+    vehicleTypes: [],
   };
 
   it("should initialize with empty route", () => {

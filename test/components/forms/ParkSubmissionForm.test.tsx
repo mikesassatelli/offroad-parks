@@ -970,6 +970,7 @@ describe("ParkSubmissionForm", () => {
       terrain: ["sand", "rocks"],
       difficulty: ["moderate", "difficult"],
       amenities: ["camping", "restrooms"],
+      vehicleTypes: [],
     };
 
     it("should render form with initial data in edit mode", () => {

@@ -1,4 +1,4 @@
-import type { Amenity, Terrain } from "@/lib/types";
+import type { Amenity, Terrain, VehicleType } from "@/lib/types";
 
 export const ALL_AMENITIES: Amenity[] = [
   "camping",
@@ -16,6 +16,13 @@ export const ALL_TERRAIN_TYPES: Terrain[] = [
   "mud",
   "trails",
   "hills",
+];
+
+export const ALL_VEHICLE_TYPES: VehicleType[] = [
+  "motorcycle",
+  "atv",
+  "sxs",
+  "fullSize",
 ];
 
 export const US_STATES = [

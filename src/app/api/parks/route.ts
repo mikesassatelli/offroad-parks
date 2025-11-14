@@ -12,6 +12,7 @@ export async function GET() {
         terrain: true,
         difficulty: true,
         amenities: true,
+        vehicleTypes: true,
       },
       orderBy: {
         name: "asc",

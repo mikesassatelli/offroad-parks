@@ -58,6 +58,7 @@ describe("GET /api/favorites", () => {
           terrain: [{ terrain: "sand" }],
           difficulty: [{ difficulty: "moderate" }],
           amenities: [{ amenity: "camping" }],
+          vehicleTypes: [],
         },
       },
       {
@@ -72,6 +73,7 @@ describe("GET /api/favorites", () => {
           terrain: [{ terrain: "rocks" }],
           difficulty: [{ difficulty: "difficult" }],
           amenities: [],
+          vehicleTypes: [],
         },
       },
     ];
@@ -99,6 +101,7 @@ describe("GET /api/favorites", () => {
             terrain: true,
             difficulty: true,
             amenities: true,
+            vehicleTypes: true,
           },
         },
       },

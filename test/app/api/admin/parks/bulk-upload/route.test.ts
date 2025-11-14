@@ -43,6 +43,7 @@ describe("POST /api/admin/parks/bulk-upload", () => {
       terrain: ["sand", "rocks"],
       difficulty: ["moderate"],
       amenities: ["camping"],
+      vehicleTypes: [],
     },
   ];
 
@@ -138,6 +139,7 @@ describe("POST /api/admin/parks/bulk-upload", () => {
           state: "Utah",
           terrain: ["sand"],
           difficulty: ["easy"],
+          vehicleTypes: [],
         },
       ];
 
@@ -167,6 +169,7 @@ describe("POST /api/admin/parks/bulk-upload", () => {
           name: "Test Park",
           state: "Utah",
           difficulty: ["easy"],
+          vehicleTypes: [],
         },
       ];
 

@@ -162,6 +162,7 @@ describe("PATCH /api/admin/parks/[id]", () => {
     terrain: ["sand", "rocks"],
     difficulty: ["moderate"],
     amenities: ["camping", "restrooms"],
+    vehicleTypes: [],
   };
 
   it("should return 401 when user is not authenticated", async () => {
@@ -298,11 +299,16 @@ describe("PATCH /api/admin/parks/[id]", () => {
           deleteMany: {},
           create: [{ amenity: "camping" }, { amenity: "restrooms" }],
         },
+        vehicleTypes: {
+          deleteMany: {},
+          create: [],
+        },
       }),
       include: {
         terrain: true,
         difficulty: true,
         amenities: true,
+        vehicleTypes: true,
       },
     });
   });
@@ -320,6 +326,7 @@ describe("PATCH /api/admin/parks/[id]", () => {
       terrain: [],
       difficulty: [],
       amenities: [],
+      vehicleTypes: [],
     };
 
     const request = new Request(
@@ -489,6 +496,7 @@ describe("PATCH /api/admin/parks/[id]", () => {
       terrain: ["sand"],
       difficulty: ["easy"],
       amenities: [],
+      vehicleTypes: [],
     };
 
     const request = new Request(

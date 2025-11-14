@@ -12,11 +12,10 @@ describe("useFilteredParks", () => {
       coords: { lat: 34, lng: -118 },
       dayPassUSD: 25,
       milesOfTrails: 50,
-      acres: 1000,
-      utvAllowed: true,
-      terrain: ["sand", "rocks"],
+      acres: 1000,terrain: ["sand", "rocks"],
       amenities: ["camping", "restrooms"],
       difficulty: ["moderate"],
+      vehicleTypes: [],
       notes: "Great for beginners",
     },
     {
@@ -27,11 +26,10 @@ describe("useFilteredParks", () => {
       coords: { lat: 39, lng: -104 },
       dayPassUSD: 35,
       milesOfTrails: 100,
-      acres: 2000,
-      utvAllowed: true,
-      terrain: ["rocks", "mud"],
+      acres: 2000,terrain: ["rocks", "mud"],
       amenities: ["camping", "fuel"],
       difficulty: ["difficult"],
+      vehicleTypes: [],
       notes: "Advanced riders only",
     },
     {
@@ -42,11 +40,10 @@ describe("useFilteredParks", () => {
       coords: undefined,
       dayPassUSD: undefined,
       milesOfTrails: 20,
-      acres: undefined,
-      utvAllowed: false,
-      terrain: ["sand"],
+      acres: undefined,terrain: ["sand"],
       amenities: [],
       difficulty: ["easy"],
+      vehicleTypes: [],
     },
   ];
 
@@ -142,7 +139,7 @@ describe("useFilteredParks", () => {
     const { result } = renderHook(() => useFilteredParks({ parks: mockParks }));
 
     act(() => {
-      result.current.setSelectedTerrain("rocks");
+      result.current.setSelectedTerrains(["rocks"]);
     });
 
     expect(result.current.filteredParks).toHaveLength(2);
@@ -155,7 +152,7 @@ describe("useFilteredParks", () => {
     const { result } = renderHook(() => useFilteredParks({ parks: mockParks }));
 
     act(() => {
-      result.current.setSelectedAmenity("fuel");
+      result.current.setSelectedAmenities(["fuel"]);
     });
 
     expect(result.current.filteredParks).toHaveLength(1);
@@ -167,7 +164,7 @@ describe("useFilteredParks", () => {
 
     act(() => {
       result.current.setSelectedState("California");
-      result.current.setSelectedTerrain("sand");
+      result.current.setSelectedTerrains(["sand"]);
     });
 
     expect(result.current.filteredParks).toHaveLength(2);
@@ -230,6 +227,53 @@ describe("useFilteredParks", () => {
     expect(result.current.availableStates).toEqual(["California", "Colorado"]);
   });
 
+  it("should filter parks by minimum trail miles", () => {
+    const { result } = renderHook(() => useFilteredParks({ parks: mockParks }));
+
+    act(() => {
+      result.current.setMinTrailMiles(30);
+    });
+
+    expect(result.current.filteredParks).toHaveLength(2);
+    expect(
+      result.current.filteredParks.every((p) => (p.milesOfTrails ?? 0) >= 30),
+    ).toBe(true);
+  });
+
+  it("should filter parks by minimum acres", () => {
+    const { result } = renderHook(() => useFilteredParks({ parks: mockParks }));
+
+    act(() => {
+      result.current.setMinAcres(1500);
+    });
+
+    expect(result.current.filteredParks).toHaveLength(1);
+    expect(result.current.filteredParks[0].name).toBe("Rocky Mountain Trail");
+  });
+
+  it("should combine trail miles and acres filters", () => {
+    const { result } = renderHook(() => useFilteredParks({ parks: mockParks }));
+
+    act(() => {
+      result.current.setMinTrailMiles(30);
+      result.current.setMinAcres(500);
+    });
+
+    expect(result.current.filteredParks).toHaveLength(2);
+  });
+
+  it("should provide max trail miles based on parks data", () => {
+    const { result } = renderHook(() => useFilteredParks({ parks: mockParks }));
+
+    expect(result.current.maxTrailMiles).toBe(100);
+  });
+
+  it("should provide max acres based on parks data", () => {
+    const { result } = renderHook(() => useFilteredParks({ parks: mockParks }));
+
+    expect(result.current.maxAcres).toBe(2000);
+  });
+
   it("should clear all filters", () => {
     const { result } = renderHook(() => useFilteredParks({ parks: mockParks }));
 
@@ -237,8 +281,10 @@ describe("useFilteredParks", () => {
     act(() => {
       result.current.setSearchQuery("test");
       result.current.setSelectedState("California");
-      result.current.setSelectedTerrain("sand");
-      result.current.setSelectedAmenity("camping");
+      result.current.setSelectedTerrains(["sand"]);
+      result.current.setSelectedAmenities(["camping"]);
+      result.current.setMinTrailMiles(50);
+      result.current.setMinAcres(1000);
     });
 
     // Clear all
@@ -248,8 +294,10 @@ describe("useFilteredParks", () => {
 
     expect(result.current.searchQuery).toBe("");
     expect(result.current.selectedState).toBeUndefined();
-    expect(result.current.selectedTerrain).toBeUndefined();
-    expect(result.current.selectedAmenity).toBeUndefined();
+    expect(result.current.selectedTerrains).toEqual([]);
+    expect(result.current.selectedAmenities).toEqual([]);
+    expect(result.current.minTrailMiles).toBe(0);
+    expect(result.current.minAcres).toBe(0);
     expect(result.current.filteredParks).toHaveLength(3);
   });
 

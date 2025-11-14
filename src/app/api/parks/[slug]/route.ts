@@ -21,6 +21,7 @@ export async function GET(_request: Request, { params }: RouteParams) {
         terrain: true,
         difficulty: true,
         amenities: true,
+        vehicleTypes: true,
       },
     });
 

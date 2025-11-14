@@ -14,7 +14,11 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Checkbox } from "@/components/ui/checkbox";
-import { ALL_AMENITIES, ALL_TERRAIN_TYPES } from "@/lib/constants";
+import {
+  ALL_AMENITIES,
+  ALL_TERRAIN_TYPES,
+  ALL_VEHICLE_TYPES,
+} from "@/lib/constants";
 import { US_STATES } from "@/lib/constants";
 import { Image as ImageIcon, Loader2, X } from "lucide-react";
 import Image from "next/image";
@@ -36,6 +40,7 @@ interface FormData {
   terrain: string[];
   difficulty: string[];
   amenities: string[];
+  vehicleTypes: string[];
 }
 
 interface ParkSubmissionFormProps {
@@ -76,6 +81,7 @@ export function ParkSubmissionForm({
       terrain: [],
       difficulty: [],
       amenities: [],
+      vehicleTypes: [],
     },
   );
 
@@ -104,7 +110,7 @@ export function ParkSubmissionForm({
   };
 
   const handleCheckboxChange = (
-    field: "terrain" | "difficulty" | "amenities",
+    field: "terrain" | "difficulty" | "amenities" | "vehicleTypes",
     value: string,
   ) => {
     setFormData((prev) => ({
@@ -469,6 +475,36 @@ export function ParkSubmissionForm({
                 className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70 capitalize"
               >
                 {amenity}
+              </label>
+            </div>
+          ))}
+        </div>
+      </div>
+
+      {/* Vehicle Types */}
+      <div>
+        <Label className="mb-3 block">Allowed Vehicle Types</Label>
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+          {ALL_VEHICLE_TYPES.map((vehicleType) => (
+            <div key={vehicleType} className="flex items-center space-x-2">
+              <Checkbox
+                id={`vehicle-${vehicleType}`}
+                checked={formData.vehicleTypes.includes(vehicleType)}
+                onCheckedChange={() =>
+                  handleCheckboxChange("vehicleTypes", vehicleType)
+                }
+              />
+              <label
+                htmlFor={`vehicle-${vehicleType}`}
+                className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70 capitalize"
+              >
+                {vehicleType === "fullSize"
+                  ? "Full-Size"
+                  : vehicleType === "sxs"
+                    ? "SxS"
+                    : vehicleType === "atv"
+                      ? "ATV"
+                      : "Motorcycle"}
               </label>
             </div>
           ))}

@@ -52,9 +52,7 @@ describe("Park Detail Page", () => {
     longitude: -118.2437,
     dayPassUSD: 25,
     milesOfTrails: 50,
-    acres: 1000,
-    utvAllowed: true,
-    website: "https://testpark.com",
+    acres: 1000,website: "https://testpark.com",
     phone: "5551234567",
     notes: "Great park for beginners",
     status: "APPROVED",
@@ -64,6 +62,7 @@ describe("Park Detail Page", () => {
     terrain: [{ id: "1", name: "sand", parkId: "park-1" }],
     difficulty: [{ id: "1", level: "moderate", parkId: "park-1" }],
     amenities: [{ id: "1", name: "camping", parkId: "park-1" }],
+    vehicleTypes: [],
   };
 
   const mockPhotos = [
@@ -249,6 +248,7 @@ describe("Park Detail Page", () => {
           terrain: true,
           difficulty: true,
           amenities: true,
+          vehicleTypes: true,
         },
       });
     });

@@ -43,11 +43,10 @@ describe("ParkDetailsDialog", () => {
     coords: { lat: 34, lng: -118 },
     dayPassUSD: 25,
     milesOfTrails: 50,
-    acres: 1000,
-    utvAllowed: true,
-    terrain: ["sand", "rocks"],
+    acres: 1000,terrain: ["sand", "rocks"],
     amenities: ["camping", "restrooms"],
     difficulty: ["moderate"],
+    vehicleTypes: [],
     notes: "Great park for beginners!",
     website: "https://testpark.com",
     phone: "5551234567",
@@ -336,11 +335,10 @@ describe("ParkDetailsDialog", () => {
     const minimalPark: Park = {
       id: "minimal-park",
       name: "Minimal Park",
-      state: "Texas",
-      utvAllowed: false,
-      terrain: [],
+      state: "Texas",terrain: [],
       amenities: [],
       difficulty: [],
+      vehicleTypes: [],
     };
 
     render(

@@ -48,10 +48,10 @@ describe("MapView", () => {
     name: "Park One",
     state: "CA",
     coords: { lat: 34.0522, lng: -118.2437 },
-    utvAllowed: true,
     terrain: [],
     difficulty: [],
     amenities: [],
+    vehicleTypes: [],
   };
 
   const mockPark2: Park = {
@@ -59,10 +59,10 @@ describe("MapView", () => {
     name: "Park Two",
     state: "NV",
     coords: { lat: 36.1699, lng: -115.1398 },
-    utvAllowed: true,
     terrain: [],
     difficulty: [],
     amenities: [],
+    vehicleTypes: [],
   };
 
   const mockParkNoCoords: Park = {
@@ -70,10 +70,10 @@ describe("MapView", () => {
     name: "Park No Coords",
     state: "AZ",
     coords: undefined,
-    utvAllowed: true,
     terrain: [],
     difficulty: [],
     amenities: [],
+    vehicleTypes: [],
   };
 
   it("should render map container", () => {

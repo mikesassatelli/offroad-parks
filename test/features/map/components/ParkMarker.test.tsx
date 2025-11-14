@@ -32,10 +32,10 @@ describe("ParkMarker", () => {
     milesOfTrails: 50,
     dayPassUSD: 25,
     acres: 1000,
-    utvAllowed: true,
     terrain: [],
     difficulty: [],
     amenities: [],
+    vehicleTypes: [],
   };
 
   it("should return null when park has no coordinates", () => {

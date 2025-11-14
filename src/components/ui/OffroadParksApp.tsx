@@ -32,10 +32,18 @@ function OffroadParksAppInner({ parks }: OffroadParksAppProps) {
     setSearchQuery,
     selectedState,
     setSelectedState,
-    selectedTerrain,
-    setSelectedTerrain,
-    selectedAmenity,
-    setSelectedAmenity,
+    selectedTerrains,
+    setSelectedTerrains,
+    selectedAmenities,
+    setSelectedAmenities,
+    selectedVehicleTypes,
+    setSelectedVehicleTypes,
+    minTrailMiles,
+    setMinTrailMiles,
+    maxTrailMiles,
+    minAcres,
+    setMinAcres,
+    maxAcres,
     sortOption,
     setSortOption,
     availableStates,
@@ -81,10 +89,18 @@ function OffroadParksAppInner({ parks }: OffroadParksAppProps) {
             selectedState={selectedState}
             onStateChange={setSelectedState}
             availableStates={availableStates}
-            selectedTerrain={selectedTerrain}
-            onTerrainChange={setSelectedTerrain}
-            selectedAmenity={selectedAmenity}
-            onAmenityChange={setSelectedAmenity}
+            selectedTerrains={selectedTerrains}
+            onTerrainsChange={setSelectedTerrains}
+            selectedAmenities={selectedAmenities}
+            onAmenitiesChange={setSelectedAmenities}
+            selectedVehicleTypes={selectedVehicleTypes}
+            onVehicleTypesChange={setSelectedVehicleTypes}
+            minTrailMiles={minTrailMiles}
+            onMinTrailMilesChange={setMinTrailMiles}
+            maxTrailMiles={maxTrailMiles}
+            minAcres={minAcres}
+            onMinAcresChange={setMinAcres}
+            maxAcres={maxAcres}
             onClearFilters={clearAllFilters}
           />
 

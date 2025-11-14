@@ -14,12 +14,11 @@ describe("transformDbPark", () => {
       phone: "5551234567",
       dayPassUSD: 25,
       milesOfTrails: 50,
-      acres: 1000,
-      utvAllowed: true,
-      notes: "Great park for off-roading",
+      acres: 1000,notes: "Great park for off-roading",
       terrain: [{ terrain: "sand" }, { terrain: "rocks" }],
       difficulty: [{ difficulty: "moderate" }],
       amenities: [{ amenity: "camping" }, { amenity: "restrooms" }],
+      vehicleTypes: [],
     };
 
     const result = transformDbPark(dbPark);
@@ -34,12 +33,11 @@ describe("transformDbPark", () => {
       phone: "5551234567",
       dayPassUSD: 25,
       milesOfTrails: 50,
-      acres: 1000,
-      utvAllowed: true,
-      notes: "Great park for off-roading",
+      acres: 1000,notes: "Great park for off-roading",
       terrain: ["sand", "rocks"],
       difficulty: ["moderate"],
       amenities: ["camping", "restrooms"],
+      vehicleTypes: [],
     });
   });
 
@@ -56,12 +54,11 @@ describe("transformDbPark", () => {
       phone: null,
       dayPassUSD: null,
       milesOfTrails: null,
-      acres: null,
-      utvAllowed: false,
-      notes: null,
+      acres: null,notes: null,
       terrain: [],
       difficulty: [],
       amenities: [],
+      vehicleTypes: [],
     };
 
     const result = transformDbPark(dbPark);
@@ -76,12 +73,11 @@ describe("transformDbPark", () => {
       phone: undefined,
       dayPassUSD: undefined,
       milesOfTrails: undefined,
-      acres: undefined,
-      utvAllowed: false,
-      notes: undefined,
+      acres: undefined,notes: undefined,
       terrain: [],
       difficulty: [],
       amenities: [],
+      vehicleTypes: [],
     });
   });
 
@@ -98,12 +94,11 @@ describe("transformDbPark", () => {
       phone: null,
       dayPassUSD: null,
       milesOfTrails: null,
-      acres: null,
-      utvAllowed: true,
-      notes: null,
+      acres: null,notes: null,
       terrain: [],
       difficulty: [],
       amenities: [],
+      vehicleTypes: [],
     };
 
     const result = transformDbPark(dbPark);
@@ -123,12 +118,11 @@ describe("transformDbPark", () => {
       phone: null,
       dayPassUSD: null,
       milesOfTrails: null,
-      acres: null,
-      utvAllowed: true,
-      notes: null,
+      acres: null,notes: null,
       terrain: [],
       difficulty: [],
       amenities: [],
+      vehicleTypes: [],
     };
 
     const result = transformDbPark(dbPark);
@@ -148,9 +142,7 @@ describe("transformDbPark", () => {
       phone: null,
       dayPassUSD: null,
       milesOfTrails: null,
-      acres: null,
-      utvAllowed: true,
-      notes: null,
+      acres: null,notes: null,
       terrain: [
         { terrain: "sand" },
         { terrain: "rocks" },
@@ -160,6 +152,7 @@ describe("transformDbPark", () => {
       ],
       difficulty: [],
       amenities: [],
+      vehicleTypes: [],
     };
 
     const result = transformDbPark(dbPark);
@@ -179,9 +172,7 @@ describe("transformDbPark", () => {
       phone: null,
       dayPassUSD: null,
       milesOfTrails: null,
-      acres: null,
-      utvAllowed: true,
-      notes: null,
+      acres: null,notes: null,
       terrain: [],
       difficulty: [
         { difficulty: "easy" },
@@ -190,6 +181,7 @@ describe("transformDbPark", () => {
         { difficulty: "extreme" },
       ],
       amenities: [],
+      vehicleTypes: [],
     };
 
     const result = transformDbPark(dbPark);
@@ -214,9 +206,7 @@ describe("transformDbPark", () => {
       phone: null,
       dayPassUSD: null,
       milesOfTrails: null,
-      acres: null,
-      utvAllowed: true,
-      notes: null,
+      acres: null,notes: null,
       terrain: [],
       difficulty: [],
       amenities: [
@@ -228,6 +218,7 @@ describe("transformDbPark", () => {
         { amenity: "fuel" },
         { amenity: "repair" },
       ],
+      vehicleTypes: [],
     };
 
     const result = transformDbPark(dbPark);
@@ -255,12 +246,11 @@ describe("transformDbPark", () => {
       phone: null,
       dayPassUSD: null,
       milesOfTrails: null,
-      acres: null,
-      utvAllowed: true,
-      notes: null,
+      acres: null,notes: null,
       terrain: [],
       difficulty: [],
       amenities: [],
+      vehicleTypes: [],
     };
 
     const result = transformDbPark(dbPark);

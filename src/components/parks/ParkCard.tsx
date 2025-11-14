@@ -109,12 +109,6 @@ export function ParkCard({
               <span className="text-muted-foreground">Acres:</span>{" "}
               <span className="font-medium">{acresDisplay}</span>
             </div>
-            <div>
-              <span className="text-muted-foreground">UTV allowed:</span>{" "}
-              <span className="font-medium">
-                {park.utvAllowed ? "Yes" : "No"}
-              </span>
-            </div>
           </div>
           <div className="flex flex-wrap gap-1.5 mt-auto">
             {park.amenities.map((amenity) => (

@@ -16,7 +16,7 @@ export function ParkOverviewCard({ park }: ParkOverviewCardProps) {
       <CardContent className="space-y-4">
         {park.notes && <p className="text-gray-700">{park.notes}</p>}
 
-        <div className="grid grid-cols-2 gap-4">
+        <div className="grid grid-cols-3 gap-4">
           <div className="flex items-start gap-3">
             <Mountain className="w-5 h-5 text-gray-500 mt-0.5" />
             <div>
@@ -40,16 +40,6 @@ export function ParkOverviewCard({ park }: ParkOverviewCardProps) {
             <div>
               <div className="text-sm text-gray-500">Acres</div>
               <div className="font-semibold">{park.acres ?? "—"}</div>
-            </div>
-          </div>
-
-          <div className="flex items-start gap-3">
-            <Mountain className="w-5 h-5 text-gray-500 mt-0.5" />
-            <div>
-              <div className="text-sm text-gray-500">UTV Allowed</div>
-              <div className="font-semibold">
-                {park.utvAllowed ? "Yes" : "No"}
-              </div>
             </div>
           </div>
         </div>

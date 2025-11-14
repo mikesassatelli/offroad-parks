@@ -21,10 +21,10 @@ describe("ParkContactSidebar", () => {
     name: "Test Park",
     state: "California",
     coords: { lat: 34.0522, lng: -118.2437 },
-    utvAllowed: true,
     terrain: [],
     amenities: [],
     difficulty: [],
+    vehicleTypes: [],
   };
 
   it("should render contact sidebar", () => {
@@ -127,10 +127,10 @@ describe("ParkContactSidebar", () => {
       name: "Minimal Park",
       state: "Texas",
       coords: { lat: 30, lng: -98 },
-      utvAllowed: false,
       terrain: [],
       amenities: [],
       difficulty: [],
+      vehicleTypes: [],
     };
 
     render(<ParkContactSidebar park={minimalPark} />);

@@ -64,6 +64,30 @@ export function ParkAttributesCards({ park }: ParkAttributesCardsProps) {
           </div>
         </CardContent>
       </Card>
+
+      {/* Vehicle Types Card */}
+      {park.vehicleTypes.length > 0 && (
+        <Card>
+          <CardHeader>
+            <CardTitle>Allowed Vehicle Types</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="flex flex-wrap gap-2">
+              {park.vehicleTypes.map((vehicleType) => (
+                <Badge key={vehicleType} variant="outline" className="text-sm">
+                  {vehicleType === "fullSize"
+                    ? "Full-Size"
+                    : vehicleType === "sxs"
+                      ? "SxS"
+                      : vehicleType === "atv"
+                        ? "ATV"
+                        : "Motorcycle"}
+                </Badge>
+              ))}
+            </div>
+          </CardContent>
+        </Card>
+      )}
     </>
   );
 }

@@ -33,10 +33,10 @@ describe("MapBoundsHandler", () => {
     name: "Test Park",
     state: "CA",
     coords: { lat: 34.0522, lng: -118.2437 },
-    utvAllowed: true,
     terrain: [],
     difficulty: [],
     amenities: [],
+    vehicleTypes: [],
   };
 
   it("should render without crashing", () => {

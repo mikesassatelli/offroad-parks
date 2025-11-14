@@ -7,7 +7,9 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { ALL_AMENITIES, ALL_TERRAIN_TYPES } from "@/lib/constants";
+import { Checkbox } from "@/components/ui/checkbox";
+import { Slider } from "@/components/ui/slider";
+import { ALL_AMENITIES, ALL_TERRAIN_TYPES, ALL_VEHICLE_TYPES } from "@/lib/constants";
 
 interface SearchFiltersPanelProps {
   searchQuery: string;
@@ -15,10 +17,18 @@ interface SearchFiltersPanelProps {
   selectedState: string | undefined;
   onStateChange: (state: string | undefined) => void;
   availableStates: string[];
-  selectedTerrain: string | undefined;
-  onTerrainChange: (terrain: string | undefined) => void;
-  selectedAmenity: string | undefined;
-  onAmenityChange: (amenity: string | undefined) => void;
+  selectedTerrains: string[];
+  onTerrainsChange: (terrains: string[]) => void;
+  selectedAmenities: string[];
+  onAmenitiesChange: (amenities: string[]) => void;
+  selectedVehicleTypes: string[];
+  onVehicleTypesChange: (vehicleTypes: string[]) => void;
+  minTrailMiles: number;
+  onMinTrailMilesChange: (miles: number) => void;
+  maxTrailMiles: number;
+  minAcres: number;
+  onMinAcresChange: (acres: number) => void;
+  maxAcres: number;
   onClearFilters: () => void;
 }
 
@@ -28,22 +38,46 @@ export function SearchFiltersPanel({
   selectedState,
   onStateChange,
   availableStates,
-  selectedTerrain,
-  onTerrainChange,
-  selectedAmenity,
-  onAmenityChange,
+  selectedTerrains,
+  onTerrainsChange,
+  selectedAmenities,
+  onAmenitiesChange,
+  selectedVehicleTypes,
+  onVehicleTypesChange,
+  minTrailMiles,
+  onMinTrailMilesChange,
+  maxTrailMiles,
+  minAcres,
+  onMinAcresChange,
+  maxAcres,
   onClearFilters,
 }: SearchFiltersPanelProps) {
   const handleStateChange = (value: string) => {
     onStateChange(value === "__all" ? undefined : value);
   };
 
-  const handleTerrainChange = (value: string) => {
-    onTerrainChange(value === "__all" ? undefined : value);
+  const handleTerrainToggle = (terrain: string) => {
+    if (selectedTerrains.includes(terrain)) {
+      onTerrainsChange(selectedTerrains.filter((t) => t !== terrain));
+    } else {
+      onTerrainsChange([...selectedTerrains, terrain]);
+    }
   };
 
-  const handleAmenityChange = (value: string) => {
-    onAmenityChange(value === "__all" ? undefined : value);
+  const handleAmenityToggle = (amenity: string) => {
+    if (selectedAmenities.includes(amenity)) {
+      onAmenitiesChange(selectedAmenities.filter((a) => a !== amenity));
+    } else {
+      onAmenitiesChange([...selectedAmenities, amenity]);
+    }
+  };
+
+  const handleVehicleTypeToggle = (vehicleType: string) => {
+    if (selectedVehicleTypes.includes(vehicleType)) {
+      onVehicleTypesChange(selectedVehicleTypes.filter((v) => v !== vehicleType));
+    } else {
+      onVehicleTypesChange([...selectedVehicleTypes, vehicleType]);
+    }
   };
 
   return (
@@ -75,41 +109,98 @@ export function SearchFiltersPanel({
         </SelectContent>
       </Select>
 
+      <div className="mt-4 text-sm font-semibold mb-2">Vehicle Type</div>
+      <div className="space-y-2">
+        {ALL_VEHICLE_TYPES.map((vehicleType) => (
+          <div key={vehicleType} className="flex items-center space-x-2">
+            <Checkbox
+              id={`vehicle-${vehicleType}`}
+              checked={selectedVehicleTypes.includes(vehicleType)}
+              onCheckedChange={() => handleVehicleTypeToggle(vehicleType)}
+            />
+            <label
+              htmlFor={`vehicle-${vehicleType}`}
+              className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70 cursor-pointer"
+            >
+              {vehicleType === "fullSize"
+                ? "Full-Size"
+                : vehicleType === "sxs"
+                  ? "SxS"
+                  : vehicleType === "atv"
+                    ? "ATV"
+                    : "Motorcycle"}
+            </label>
+          </div>
+        ))}
+      </div>
+
       <div className="mt-4 text-sm font-semibold mb-2">Terrain</div>
-      <Select
-        onValueChange={handleTerrainChange}
-        value={selectedTerrain ?? "__all"}
-      >
-        <SelectTrigger>
-          <SelectValue placeholder="Any terrain" />
-        </SelectTrigger>
-        <SelectContent>
-          <SelectItem value="__all">Any</SelectItem>
-          {ALL_TERRAIN_TYPES.map((terrain) => (
-            <SelectItem key={terrain} value={terrain}>
+      <div className="space-y-2">
+        {ALL_TERRAIN_TYPES.map((terrain) => (
+          <div key={terrain} className="flex items-center space-x-2">
+            <Checkbox
+              id={`terrain-${terrain}`}
+              checked={selectedTerrains.includes(terrain)}
+              onCheckedChange={() => handleTerrainToggle(terrain)}
+            />
+            <label
+              htmlFor={`terrain-${terrain}`}
+              className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70 cursor-pointer"
+            >
               {terrain}
-            </SelectItem>
-          ))}
-        </SelectContent>
-      </Select>
+            </label>
+          </div>
+        ))}
+      </div>
 
       <div className="mt-4 text-sm font-semibold mb-2">Amenities</div>
-      <Select
-        onValueChange={handleAmenityChange}
-        value={selectedAmenity ?? "__all"}
-      >
-        <SelectTrigger>
-          <SelectValue placeholder="Any amenity" />
-        </SelectTrigger>
-        <SelectContent>
-          <SelectItem value="__all">Any</SelectItem>
-          {ALL_AMENITIES.map((amenity) => (
-            <SelectItem key={amenity} value={amenity}>
+      <div className="space-y-2">
+        {ALL_AMENITIES.map((amenity) => (
+          <div key={amenity} className="flex items-center space-x-2">
+            <Checkbox
+              id={`amenity-${amenity}`}
+              checked={selectedAmenities.includes(amenity)}
+              onCheckedChange={() => handleAmenityToggle(amenity)}
+            />
+            <label
+              htmlFor={`amenity-${amenity}`}
+              className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70 cursor-pointer"
+            >
               {amenity}
-            </SelectItem>
-          ))}
-        </SelectContent>
-      </Select>
+            </label>
+          </div>
+        ))}
+      </div>
+
+      <div className="mt-4 text-sm font-semibold mb-2">Trail Miles</div>
+      <div className="space-y-2">
+        <div className="flex justify-between text-xs text-gray-500">
+          <span>Min: {minTrailMiles} mi</span>
+          <span>Max: {maxTrailMiles} mi</span>
+        </div>
+        <Slider
+          value={[minTrailMiles]}
+          min={0}
+          max={maxTrailMiles}
+          step={5}
+          onValueChange={(values) => onMinTrailMilesChange(values[0])}
+        />
+      </div>
+
+      <div className="mt-4 text-sm font-semibold mb-2">Acres</div>
+      <div className="space-y-2">
+        <div className="flex justify-between text-xs text-gray-500">
+          <span>Min: {minAcres.toLocaleString()} acres</span>
+          <span>Max: {maxAcres.toLocaleString()} acres</span>
+        </div>
+        <Slider
+          value={[minAcres]}
+          min={0}
+          max={maxAcres}
+          step={100}
+          onValueChange={(values) => onMinAcresChange(values[0])}
+        />
+      </div>
 
       <div className="mt-4 flex gap-2">
         <Button variant="secondary" onClick={onClearFilters}>

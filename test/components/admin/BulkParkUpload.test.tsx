@@ -89,12 +89,14 @@ Test Park 2,Colorado,"rocks,trails","moderate,difficult"`;
           state: "Utah",
           terrain: ["sand"],
           difficulty: ["easy"],
+          vehicleTypes: [],
         },
         {
           name: "Test Park 2",
           state: "Colorado",
           terrain: ["rocks", "trails"],
           difficulty: ["moderate", "difficult"],
+          vehicleTypes: [],
         },
       ]);
 
