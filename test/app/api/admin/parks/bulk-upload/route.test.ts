@@ -53,7 +53,7 @@ describe("POST /api/admin/parks/bulk-upload", () => {
 
   describe("Authentication & Authorization", () => {
     it("should return 401 if not authenticated", async () => {
-      vi.mocked(auth).mockResolvedValue(null);
+      vi.mocked(auth).mockResolvedValue(null as any);
 
       const request = new Request(
         "http://localhost/api/admin/parks/bulk-upload",
