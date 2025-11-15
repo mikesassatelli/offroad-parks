@@ -1,0 +1,34 @@
+name: Clean up preview deployments
+
+on:
+  pull_request:
+    types: [closed]
+
+jobs:
+  delete-preview-deployment:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Delete Vercel Preview Deployments
+        env:
+          VERCEL_TOKEN: ${{ secrets.VERCEL_TOKEN }}
+          VERCEL_PROJECT_ID: ${{ secrets.VERCEL_PROJECT_ID }}
+        run: |
+          echo "Deleting preview deployments for PR #${{ github.event.pull_request.number }}"
+
+          # Get all deployments for this project
+          DEPLOYMENTS=$(curl -s \
+            "https://api.vercel.com/v6/deployments?projectId=${VERCEL_PROJECT_ID}&limit=100" \
+            -H "Authorization: Bearer ${VERCEL_TOKEN}")
+
+          # Filter deployments that match the PR branch and delete them
+          echo "$DEPLOYMENTS" | jq -r ".deployments[] | select(.meta.githubPrId == \"${{ github.event.pull_request.number }}\") | .uid" | while read -r deployment_id; do
+            if [ -n "$deployment_id" ]; then
+              echo "Deleting deployment: $deployment_id"
+              curl -X DELETE \
+                "https://api.vercel.com/v13/deployments/${deployment_id}" \
+                -H "Authorization: Bearer ${VERCEL_TOKEN}"
+              echo "Deployment deleted: $deployment_id"
+            fi
+          done
+
+          echo "Preview deployment cleanup complete. Vercel will automatically clean up associated Neon branches."
