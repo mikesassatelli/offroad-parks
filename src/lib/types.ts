@@ -14,7 +14,11 @@ export type Difficulty = "easy" | "moderate" | "difficult" | "extreme";
 
 export type VehicleType = "motorcycle" | "atv" | "sxs" | "fullSize";
 
-// Database park type (from Prisma)
+// Status enum from Prisma
+export type ParkStatus = "PENDING" | "APPROVED" | "REJECTED" | "DRAFT";
+
+// Database park type - matches Prisma Park model with includes
+// This is a flexible type that accepts the actual Prisma query results
 export type DbPark = {
   id: string;
   name: string;
@@ -29,10 +33,16 @@ export type DbPark = {
   milesOfTrails: number | null;
   acres: number | null;
   notes: string | null;
-  terrain: Array<{ terrain: Terrain }>;
-  difficulty: Array<{ difficulty: Difficulty }>;
-  amenities: Array<{ amenity: Amenity }>;
-  vehicleTypes: Array<{ vehicleType: VehicleType }>;
+  status: ParkStatus;
+  submitterId: string | null;
+  submitterName: string | null;
+  createdAt: Date;
+  updatedAt: Date;
+  terrain: Array<{ id?: string; parkId?: string; terrain: Terrain }>;
+  difficulty: Array<{ id?: string; parkId?: string; difficulty: Difficulty }>;
+  amenities: Array<{ id?: string; parkId?: string; amenity: Amenity }>;
+  vehicleTypes: Array<{ id?: string; parkId?: string; vehicleType: VehicleType }>;
+  photos?: Array<{ id?: string; parkId?: string; userId?: string | null; url: string; caption?: string | null; status?: string; createdAt?: Date; updatedAt?: Date }>;
 };
 
 // Client-facing park type (transformed for UI compatibility)
