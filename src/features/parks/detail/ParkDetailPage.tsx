@@ -12,6 +12,7 @@ import { useRouter } from "next/navigation";
 import { ParkAttributesCards } from "./components/ParkAttributesCards";
 import { ParkContactSidebar } from "./components/ParkContactSidebar";
 import { ParkOverviewCard } from "./components/ParkOverviewCard";
+import { CampingInfoCard } from "./components/CampingInfoCard";
 
 // Dynamically import map to avoid SSR issues
 const MapView = dynamic(
@@ -129,7 +130,10 @@ function ParkDetailPageInner({
 
           {/* Sidebar */}
           <div className="lg:col-span-1">
-            <ParkContactSidebar park={park} />
+            <div className="sticky top-4 space-y-6">
+              <ParkContactSidebar park={park} />
+              <CampingInfoCard park={park} />
+            </div>
           </div>
         </div>
       </main>

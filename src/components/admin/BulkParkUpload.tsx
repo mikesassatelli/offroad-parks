@@ -23,6 +23,8 @@ interface BulkParkInput {
   longitude?: number | null;
   website?: string;
   phone?: string;
+  campingWebsite?: string;
+  campingPhone?: string;
   dayPassUSD?: number | null;
   milesOfTrails?: number | null;
   acres?: number | null;
@@ -93,6 +95,8 @@ function downloadCSVTemplate() {
     "longitude",
     "website",
     "phone",
+    "campingWebsite",
+    "campingPhone",
     "dayPassUSD",
     "milesOfTrails",
     "acres",
@@ -113,6 +117,8 @@ function downloadCSVTemplate() {
     "-109.5498",
     "https://example.com",
     "555-123-4567",
+    "https://reservations.example.com",
+    "555-987-6543",
     "50",
     "100",
     "5000",
@@ -163,6 +169,8 @@ export function BulkParkUpload() {
           longitude: parseNumber(row.longitude),
           website: row.website || undefined,
           phone: row.phone || undefined,
+          campingWebsite: row.campingWebsite || undefined,
+          campingPhone: row.campingPhone || undefined,
           dayPassUSD: parseNumber(row.dayPassUSD),
           milesOfTrails: parseInteger(row.milesOfTrails),
           acres: parseInteger(row.acres),
@@ -218,6 +226,8 @@ export function BulkParkUpload() {
           longitude: park.longitude ?? null,
           website: park.website,
           phone: park.phone,
+          campingWebsite: park.campingWebsite,
+          campingPhone: park.campingPhone,
           dayPassUSD: park.dayPassUSD ?? null,
           milesOfTrails: park.milesOfTrails ?? null,
           acres: park.acres ?? null,

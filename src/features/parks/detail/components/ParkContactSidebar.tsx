@@ -9,7 +9,7 @@ interface ParkContactSidebarProps {
 
 export function ParkContactSidebar({ park }: ParkContactSidebarProps) {
   return (
-    <Card className="sticky top-4">
+    <Card>
       <CardHeader>
         <CardTitle>Contact & Links</CardTitle>
       </CardHeader>

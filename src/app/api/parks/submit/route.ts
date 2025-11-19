@@ -20,6 +20,8 @@ interface SubmitParkRequest {
   longitude?: number | null;
   website?: string;
   phone?: string;
+  campingWebsite?: string;
+  campingPhone?: string;
   dayPassUSD?: number | null;
   milesOfTrails?: number | null;
   acres?: number | null;
@@ -97,6 +99,8 @@ export async function POST(request: Request) {
         longitude: data.longitude || null,
         website: data.website || null,
         phone: data.phone || null,
+        campingWebsite: data.campingWebsite || null,
+        campingPhone: data.campingPhone || null,
         dayPassUSD: data.dayPassUSD || null,
         milesOfTrails: data.milesOfTrails || null,
         acres: data.acres || null,
