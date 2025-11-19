@@ -32,7 +32,12 @@
 
 **Amenities** (`Amenity` enum)
 ```typescript
-"camping" | "cabins" | "restrooms" | "showers" | "food" | "fuel" | "repair"
+"restrooms" | "showers" | "food" | "fuel" | "repair"
+```
+
+**Camping** (`Camping` enum)
+```typescript
+"tent" | "rv30A" | "rv50A" | "fullHookup" | "cabin" | "groupSite" | "backcountry"
 ```
 
 **Park Status** (`ParkStatus` enum)
@@ -80,7 +85,6 @@ type DbPark = {
   dayPassUSD: number | null;
   milesOfTrails: number | null;
   acres: number | null;
-  utvAllowed: boolean;
   notes: string | null;
   status: ParkStatus;
 
@@ -105,7 +109,6 @@ type Park = {
   dayPassUSD?: number;
   milesOfTrails?: number;
   acres?: number;
-  utvAllowed: boolean;
   notes?: string;
 
   // Categorical data (flattened to simple arrays)
@@ -1031,6 +1034,699 @@ await prisma.parkTerrain.create({
 2. `src/app/admin/parks/[id]/edit/page.tsx` - Form data transformation
 
 **Form reuse bonus:** Since `ParkSubmissionForm` is shared, form UI updates automatically apply to admin edit!
+
+---
+
+## Data Model Change Process: Lessons Learned
+
+### Overview
+
+This section documents the complete process for making significant changes to the data model based on the real-world experience of converting "camping" from a simple amenity to a dedicated category with 7 granular options.
+
+**Use Case:** When an existing categorical value needs to become its own category with more detailed options.
+
+**Example:** Converting "camping" and "cabins" amenities into a dedicated Camping category with: Tent, RV 30A, RV 50A, Full Hookup, Cabin, Group Site, Backcountry/Walk-in.
+
+### Complete Change Workflow
+
+#### Phase 1: Planning & Data Migration (Manual)
+
+**1. Identify the Scope**
+- Determine which existing values need to be removed
+- Define new category name and all possible values
+- Decide on display name formatting requirements
+- Plan data migration strategy (manual vs automated)
+
+**Example Decision Log:**
+```
+- Remove: amenities "camping" and "cabins"
+- Add: New "Camping" category
+- Values: tent, rv30A, rv50A, fullHookup, cabin, groupSite, backcountry
+- Display: "RV 30A", "RV 50A", "Backcountry / Walk-in"
+- Migration: Manual (user will update data via Prisma Studio)
+```
+
+**2. Handle Existing Data**
+Before making schema changes that would cause data loss:
+
+```bash
+# Option A: Delete conflicting records via Prisma Studio
+# Navigate to ParkAmenity table
+# Delete all records where amenity IN ('camping', 'cabins')
+
+# Option B: SQL query (if comfortable)
+# DELETE FROM "ParkAmenity" WHERE amenity IN ('camping', 'cabins');
+
+# Option C: Create a Prisma migration script
+# npx prisma migrate dev --create-only
+# Edit the generated migration SQL to preserve/transform data
+```
+
+**Important:** Prisma will warn you about data loss if you try to remove enum values that are in use. You MUST handle the data before pushing schema changes.
+
+#### Phase 2: Schema & Type Updates (8 Layers)
+
+Follow these steps in order to maintain type safety throughout:
+
+**Layer 1: Database Schema** (`prisma/schema.prisma`)
+
+```prisma
+// 1. Create new enum
+enum Camping {
+  tent
+  rv30A      // Display as "RV 30A"
+  rv50A      // Display as "RV 50A"
+  fullHookup
+  cabin
+  groupSite
+  backcountry  // Display as "Backcountry / Walk-in"
+}
+
+// 2. Create junction table
+model ParkCamping {
+  id      String  @id @default(cuid())
+  parkId  String
+  camping Camping
+
+  park Park @relation(fields: [parkId], references: [id], onDelete: Cascade)
+
+  @@unique([parkId, camping])
+}
+
+// 3. Add relation to Park model
+model Park {
+  // ... existing relations
+  camping     ParkCamping[]  // Add here
+}
+
+// 4. Remove old values from original enum
+enum Amenity {
+  restrooms
+  showers
+  food
+  fuel
+  repair
+  // REMOVED: camping, cabins
+}
+```
+
+Push changes:
+```bash
+npm run db:push
+```
+
+**Layer 2: TypeScript Types** (`src/lib/types.ts`)
+
+```typescript
+// 1. Add new type
+export type Camping = "tent" | "rv30A" | "rv50A" | "fullHookup" | "cabin" | "groupSite" | "backcountry";
+
+// 2. Update Amenity type (remove old values)
+export type Amenity = "restrooms" | "showers" | "food" | "fuel" | "repair";
+
+// 3. Update DbPark interface
+export type DbPark = {
+  // ... existing fields
+  amenities: Array<{ amenity: Amenity }>;
+  camping: Array<{ camping: Camping }>;  // Add here
+};
+
+// 4. Update Park interface
+export type Park = {
+  // ... existing fields
+  amenities: Amenity[];
+  camping: Camping[];  // Add here
+};
+
+// 5. Update transformDbPark function
+export function transformDbPark(dbPark: DbPark): Park {
+  return {
+    // ... existing transformations
+    amenities: dbPark.amenities.map((a) => a.amenity),
+    camping: dbPark.camping.map((c) => c.camping),  // Add here
+  };
+}
+```
+
+**Layer 3: Constants** (`src/lib/constants.ts`)
+
+```typescript
+// 1. Create new constant
+export const ALL_CAMPING_TYPES: Camping[] = [
+  "tent",
+  "rv30A",
+  "rv50A",
+  "fullHookup",
+  "cabin",
+  "groupSite",
+  "backcountry",
+];
+
+// 2. Update existing constant (remove old values)
+export const ALL_AMENITIES: Amenity[] = [
+  "restrooms",
+  "showers",
+  "food",
+  "fuel",
+  "repair",
+  // REMOVED: "camping", "cabins"
+];
+```
+
+**Layer 4: Display Formatting** (`src/lib/formatting.ts`)
+
+For multi-word or special formatting needs:
+
+```typescript
+export function formatCamping(camping: Camping): string {
+  const campingLabels: Record<Camping, string> = {
+    tent: "Tent",
+    rv30A: "RV 30A",           // Custom formatting
+    rv50A: "RV 50A",           // Custom formatting
+    fullHookup: "Full Hookup",
+    cabin: "Cabin",
+    groupSite: "Group Site",
+    backcountry: "Backcountry / Walk-in",  // Custom formatting
+  };
+  return campingLabels[camping];
+}
+```
+
+**Layer 5: API Queries** (All `src/app/api/**/route.ts` files)
+
+Update EVERY Prisma query that fetches parks:
+
+```typescript
+// Files to update:
+// - src/app/api/parks/route.ts
+// - src/app/api/parks/[slug]/route.ts
+// - src/app/api/favorites/route.ts
+// - src/app/admin/parks/page.tsx
+// - src/app/admin/parks/[id]/edit/page.tsx
+// - src/app/profile/page.tsx
+// - src/app/parks/[id]/page.tsx
+
+const parks = await prisma.park.findMany({
+  where: { status: "APPROVED" },
+  include: {
+    terrain: true,
+    difficulty: true,
+    amenities: true,
+    camping: true,  // ← Add to ALL includes
+  },
+});
+```
+
+**Critical:** Missing this in ANY query will cause `camping: []` in that route!
+
+**Layer 6: Park Creation** (`src/app/api/parks/submit/route.ts`)
+
+```typescript
+const park = await prisma.park.create({
+  data: {
+    name: data.name,
+    // ... other fields
+    amenities: {
+      create: (data.amenities || []).map((a) => ({ amenity: a as Amenity })),
+    },
+    camping: {  // ← Add here
+      create: (data.camping || []).map((c) => ({ camping: c as Camping })),
+    },
+  },
+  include: {
+    terrain: true,
+    difficulty: true,
+    amenities: true,
+    camping: true,  // ← Add to include
+  },
+});
+```
+
+**Layer 7: Park Updates** (`src/app/api/admin/parks/[id]/route.ts`)
+
+```typescript
+// PATCH handler
+const { camping } = await request.json();
+
+await prisma.park.update({
+  where: { id },
+  data: {
+    amenities: {
+      deleteMany: {},
+      create: amenities?.map((a: string) => ({ amenity: a })) || [],
+    },
+    camping: {  // ← Add here (deleteMany + create pattern)
+      deleteMany: {},
+      create: camping?.map((c: string) => ({ camping: c })) || [],
+    },
+  },
+  include: {
+    terrain: true,
+    difficulty: true,
+    amenities: true,
+    camping: true,  // ← Add to include
+  },
+});
+```
+
+**Layer 8: Admin Edit Page** (`src/app/admin/parks/[id]/edit/page.tsx`)
+
+Transform junction table data for form:
+
+```typescript
+const park = await prisma.park.findUnique({
+  where: { id },
+  include: {
+    terrain: true,
+    difficulty: true,
+    amenities: true,
+    camping: true,  // ← Add to include
+  },
+});
+
+const initialData = {
+  // ... other fields
+  amenities: park.amenities.map((a) => a.amenity),
+  camping: park.camping.map((c) => c.camping),  // ← Add transformation
+};
+```
+
+#### Phase 3: UI Updates (5 Components)
+
+**Component 1: Form Checkboxes** (`src/components/forms/ParkSubmissionForm.tsx`)
+
+```typescript
+// 1. Add to FormData interface
+interface FormData {
+  // ... existing fields
+  amenities: string[];
+  camping: string[];  // ← Add here
+}
+
+// 2. Add to initial state
+const [formData, setFormData] = useState<FormData>({
+  // ... existing fields
+  amenities: initialData?.amenities || [],
+  camping: initialData?.camping || [],  // ← Add here
+});
+
+// 3. Update handleCheckboxChange type
+const handleCheckboxChange = (
+  category: "terrain" | "difficulty" | "amenities" | "camping",  // ← Add "camping"
+  value: string
+) => {
+  // Implementation stays the same
+};
+
+// 4. Add camping section to form JSX
+<div>
+  <Label className="mb-3 block">Camping Options</Label>
+  <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
+    {ALL_CAMPING_TYPES.map((camping) => (
+      <div key={camping} className="flex items-center space-x-2">
+        <Checkbox
+          id={`camping-${camping}`}
+          checked={formData.camping.includes(camping)}
+          onCheckedChange={() => handleCheckboxChange("camping", camping)}
+        />
+        <label
+          htmlFor={`camping-${camping}`}
+          className="text-sm font-medium cursor-pointer"
+        >
+          {formatCamping(camping as Camping)}
+        </label>
+      </div>
+    ))}
+  </div>
+</div>
+```
+
+**Component 2: Search Filters** (`src/components/parks/SearchFiltersPanel.tsx`)
+
+```typescript
+// 1. Add props
+interface SearchFiltersPanelProps {
+  // ... existing props
+  selectedCamping: string[];
+  onCampingChange: (camping: string[]) => void;
+}
+
+// 2. Add toggle handler
+const handleCampingToggle = (camping: string) => {
+  onCampingChange(
+    selectedCamping.includes(camping)
+      ? selectedCamping.filter((c) => c !== camping)
+      : [...selectedCamping, camping]
+  );
+};
+
+// 3. Add camping filter section
+<div className="mt-4">
+  <div className="text-sm font-semibold mb-2">Camping</div>
+  <div className="space-y-2">
+    {ALL_CAMPING_TYPES.map((camping) => (
+      <div key={camping} className="flex items-center space-x-2">
+        <Checkbox
+          id={`camping-${camping}`}
+          checked={selectedCamping.includes(camping)}
+          onCheckedChange={() => handleCampingToggle(camping)}
+        />
+        <label htmlFor={`camping-${camping}`}>
+          {formatCamping(camping as Camping)}
+        </label>
+      </div>
+    ))}
+  </div>
+</div>
+```
+
+**Component 3: Badge Display** (`src/components/shared/ParkBadges.tsx`)
+
+```typescript
+// Create new badge component
+export interface CampingBadgesProps {
+  camping: Camping[];
+}
+
+export function CampingBadges({ camping }: CampingBadgesProps) {
+  return (
+    <div className="flex flex-wrap gap-1">
+      {camping.map((c) => (
+        <Badge key={c} variant="default">
+          {formatCamping(c)}
+        </Badge>
+      ))}
+    </div>
+  );
+}
+
+// Use in park display components
+import { CampingBadges } from "@/components/shared/ParkBadges";
+
+<CampingBadges camping={park.camping} />
+```
+
+**Component 4: Filter Hook** (`src/hooks/useFilteredParks.ts`)
+
+```typescript
+// 1. Add state
+const [selectedCamping, setSelectedCamping] = useState<string[]>([]);
+
+// 2. Add filter logic
+const filteredParks = useMemo(() => {
+  let filteredList = [...parks];
+
+  // ... existing filters
+
+  // Apply camping filter
+  if (selectedCamping.length > 0) {
+    filteredList = filteredList.filter((park) =>
+      park.camping.some((c) => selectedCamping.includes(c))
+    );
+  }
+
+  return filteredList;
+}, [parks, selectedCamping, /* other dependencies */]);
+
+// 3. Add to clearAllFilters
+const clearAllFilters = () => {
+  // ... existing clears
+  setSelectedCamping([]);
+};
+
+// 4. Return new state
+return {
+  // ... existing returns
+  selectedCamping,
+  setSelectedCamping,
+  filteredParks,
+  clearAllFilters,
+};
+```
+
+**Component 5: Main App Component** (`src/components/ui/OffroadParksApp.tsx`)
+
+```typescript
+// Extract from hook and pass to SearchFiltersPanel
+const { selectedCamping, setSelectedCamping } = useFilteredParks({ parks });
+
+<SearchFiltersPanel
+  {/* ... existing props */}
+  selectedCamping={selectedCamping}
+  onCampingChange={setSelectedCamping}
+/>
+```
+
+#### Phase 4: Bulk Upload Updates
+
+**File:** `src/app/api/admin/parks/bulk-upload/route.ts`
+
+```typescript
+// 1. Update BulkParkInput interface
+interface BulkParkInput {
+  // ... existing fields
+  amenities?: string[];
+  camping?: string[];  // ← Add here
+}
+
+// 2. Add validation
+if (park.camping && park.camping.length > 0) {
+  const invalidCamping = park.camping.filter(
+    (c) => !ALL_CAMPING_TYPES.includes(c as Camping)
+  );
+  if (invalidCamping.length > 0) {
+    errors.push({
+      row: rowIndex,
+      field: "camping",
+      message: `Invalid camping types: ${invalidCamping.join(", ")}. Valid options: ${ALL_CAMPING_TYPES.join(", ")}`,
+    });
+  }
+}
+
+// 3. Add to transaction (after creating park)
+if (park.camping && park.camping.length > 0) {
+  await Promise.all(
+    park.camping.map((camping) =>
+      tx.parkCamping.create({
+        data: {
+          parkId: createdPark.id,
+          camping: camping as Camping,
+        },
+      })
+    )
+  );
+}
+```
+
+#### Phase 5: Testing Updates
+
+**Critical: All tests must be updated to reflect the data model change.**
+
+**Test Automation Strategy:**
+1. First, run TypeScript compiler to find all compilation errors
+2. Create automated fix script for common patterns
+3. Manually fix remaining test-specific logic
+
+**Example: Automated Test Fix Script**
+
+```javascript
+// fix-tests.js
+const fs = require('fs');
+const path = require('path');
+
+function getAllTestFiles(dir, files = []) {
+  const items = fs.readdirSync(dir, { withFileTypes: true });
+  for (const item of items) {
+    const fullPath = path.join(dir, item.name);
+    if (item.isDirectory()) {
+      getAllTestFiles(fullPath, files);
+    } else if (item.name.endsWith('.test.ts') || item.name.endsWith('.test.tsx')) {
+      files.push(fullPath);
+    }
+  }
+  return files;
+}
+
+const testFiles = getAllTestFiles('./test');
+
+testFiles.forEach(file => {
+  let content = fs.readFileSync(file, 'utf8');
+
+  // Add camping: [] after amenities in Park objects
+  content = content.replace(
+    /(amenities:\s*\[[^\]]*\]),(\s*\n)/g,
+    '$1,\n      camping: [],$2'
+  );
+
+  fs.writeFileSync(file, content);
+});
+```
+
+**Test Update Patterns:**
+
+1. **Mock Park Data** - Add `camping: []` to all test Park objects
+2. **API Route Tests** - Add `camping: true` to all Prisma `include` expectations
+3. **Component Tests** - Update amenity-related tests:
+   - Remove tests checking for "camping"/"cabins" amenity badges
+   - Add tests for camping category checkboxes/badges
+4. **Type Tests** - Update expected amenity counts and values
+
+**Common Test Fixes:**
+
+```typescript
+// OLD: Test expecting "camping" as amenity
+const mockPark = {
+  amenities: ["camping", "restrooms"],
+};
+expect(screen.getByText("camping")).toBeInTheDocument();
+
+// NEW: Test with camping as separate category
+const mockPark = {
+  amenities: ["restrooms"],
+  camping: ["tent"],
+};
+expect(screen.getByText("tent")).toBeInTheDocument();
+
+// OLD: API include expectation
+expect(prisma.park.findMany).toHaveBeenCalledWith({
+  include: {
+    terrain: true,
+    amenities: true,
+  },
+});
+
+// NEW: Include camping relation
+expect(prisma.park.findMany).toHaveBeenCalledWith({
+  include: {
+    terrain: true,
+    amenities: true,
+    camping: true,  // ← Add here
+  },
+});
+```
+
+**Test Files to Check:**
+- All API route tests (`test/app/api/**/*.test.ts`)
+- Component tests using Park data (`test/components/**/*.test.tsx`)
+- Hook tests with filtering (`test/hooks/useFilteredParks.test.ts`)
+- Type transformation tests (`test/lib/types.test.ts`)
+- Constants tests (`test/lib/constants.test.ts`)
+
+#### Phase 6: Verification Checklist
+
+After completing all changes, verify:
+
+**Type Safety:**
+```bash
+npx tsc --noEmit  # Must pass with zero errors
+```
+
+**Tests:**
+```bash
+npm test  # All 828 tests must pass
+```
+
+**Manual Testing:**
+- [ ] Create new park with camping options
+- [ ] Edit existing park, change camping values
+- [ ] Filter parks by camping types
+- [ ] View park cards with camping badges
+- [ ] Admin bulk upload with camping data
+- [ ] Admin edit page shows camping checkboxes
+
+**Data Integrity:**
+- [ ] Removed enum values no longer in database
+- [ ] Junction table created and populated
+- [ ] All API routes return camping data
+- [ ] Transformation works correctly
+
+### Lessons Learned & Best Practices
+
+**1. Plan Data Migration First**
+Before making any schema changes, decide how to handle existing data. Options:
+- Delete conflicting records (acceptable for small datasets)
+- Write migration script to preserve/transform data
+- Use Prisma migrate for complex transformations
+
+**2. Follow the 8-Layer Pattern**
+Update layers in this order to maintain type safety:
+1. Database Schema (Prisma)
+2. TypeScript Types
+3. Constants
+4. Display Formatting
+5. API Queries (includes)
+6. API Creation
+7. API Updates
+8. Admin Edit Page
+
+Skipping layers or doing them out of order causes compilation errors.
+
+**3. Update ALL API Routes**
+Missing even ONE include clause will cause empty data in that route. Search codebase:
+```bash
+grep -r "prisma.park.find" src/app/api
+```
+
+**4. Test Automation Saves Time**
+For 800+ tests, create automated fix scripts for repetitive patterns:
+- Adding `camping: []` to mock data
+- Adding `camping: true` to includes
+- Replacing removed enum values
+
+**5. Component Reuse is Powerful**
+`ParkSubmissionForm` is used for create AND edit. Update form once, both modes benefit.
+
+**6. Expect Test Failures**
+After major data model changes, expect 20-50 test failures. Systematically:
+1. Run TypeScript compiler first
+2. Fix type errors
+3. Run tests, fix failures by category (API → Components → Hooks)
+
+**7. Document As You Go**
+Update PARK_DATA_MODEL.md with findings immediately while details are fresh.
+
+### Time Estimates
+
+For a change of this magnitude (removing 2 amenities, adding new 7-value category):
+
+- Planning & data migration: 15 minutes
+- Schema & type updates (8 layers): 45 minutes
+- UI updates (5 components): 60 minutes
+- Bulk upload updates: 20 minutes
+- Test updates: 90 minutes
+- Verification: 30 minutes
+
+**Total: ~4 hours for experienced developer**
+
+Most time spent on test updates due to volume (800+ tests across 54 files).
+
+### Common Errors During This Change
+
+1. **Prisma Data Loss Warning**: Attempting to remove enum values in use
+   - Fix: Delete records first via Prisma Studio or SQL
+
+2. **TypeScript Compilation Errors**: Missing camping field in 100+ locations
+   - Fix: Automated script to add `camping: []`
+
+3. **Test Failures**: 22 tests expecting "camping" as amenity
+   - Fix: Update tests to use new camping category
+
+4. **Missing Include Clauses**: API routes returning `camping: []`
+   - Fix: Search and update all `prisma.park.find` calls
+
+5. **Form Not Showing Camping**: Admin edit page missing transformation
+   - Fix: Update `src/app/admin/parks/[id]/edit/page.tsx`
+
+### Success Metrics
+
+After completing this change:
+- ✅ Zero TypeScript compilation errors
+- ✅ All 828 tests passing
+- ✅ 7 new camping options available across entire app
+- ✅ All API routes return camping data
+- ✅ Forms, filters, and badges work correctly
+- ✅ Bulk upload validates camping options
+- ✅ No regression in existing features
 
 ---
 

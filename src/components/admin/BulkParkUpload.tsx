@@ -3,7 +3,7 @@
 import { useState, useRef } from "react";
 import * as Papa from "papaparse";
 import { Button } from "@/components/ui/button";
-import { ALL_TERRAIN_TYPES, ALL_AMENITIES, ALL_VEHICLE_TYPES, US_STATES } from "@/lib/constants";
+import { ALL_TERRAIN_TYPES, ALL_AMENITIES, ALL_CAMPING_TYPES, ALL_VEHICLE_TYPES, US_STATES } from "@/lib/constants";
 import type { Difficulty } from "@/lib/types";
 
 // Difficulty levels array
@@ -59,15 +59,6 @@ function parseArrayField(value: string | undefined): string[] {
 }
 
 /**
- * Parses boolean fields from CSV (handles "true", "yes", "1")
- */
-function parseBoolean(value: string | undefined): boolean {
-  if (!value) return true; // Default to true
-  const normalized = value.toLowerCase().trim();
-  return normalized === "true" || normalized === "yes" || normalized === "1";
-}
-
-/**
  * Parses numeric fields from CSV (returns null if empty/invalid)
  */
 function parseNumber(value: string | undefined): number | null {
@@ -109,6 +100,7 @@ function downloadCSVTemplate() {
     "terrain",
     "difficulty",
     "amenities",
+    "camping",
     "vehicleTypes",
   ];
 
@@ -127,7 +119,8 @@ function downloadCSVTemplate() {
     "Great park with stunning views",
     "rocks,trails,hills",
     "moderate,difficult",
-    "camping,restrooms,fuel",
+    "restrooms,fuel",
+    "tent,rv30A,rv50A",
     "atv,sxs,motorcycle",
   ];
 
@@ -379,6 +372,9 @@ export function BulkParkUpload() {
           </div>
           <div>
             <strong>Valid amenities:</strong> {ALL_AMENITIES.join(", ")}
+          </div>
+          <div>
+            <strong>Valid camping types:</strong> {ALL_CAMPING_TYPES.join(", ")}
           </div>
           <div>
             <strong>Valid vehicle types:</strong> {ALL_VEHICLE_TYPES.join(", ")}

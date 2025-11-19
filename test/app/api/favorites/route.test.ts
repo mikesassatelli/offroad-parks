@@ -57,8 +57,9 @@ describe("GET /api/favorites", () => {
           slug: "favorite-park-1",
           terrain: [{ terrain: "sand" }],
           difficulty: [{ difficulty: "moderate" }],
-          amenities: [{ amenity: "camping" }],
-          vehicleTypes: [],
+          amenities: [{ amenity: "restrooms" }],
+
+      camping: [],vehicleTypes: [],
         },
       },
       {
@@ -73,7 +74,8 @@ describe("GET /api/favorites", () => {
           terrain: [{ terrain: "rocks" }],
           difficulty: [{ difficulty: "difficult" }],
           amenities: [],
-          vehicleTypes: [],
+          
+      camping: [],vehicleTypes: [],
         },
       },
     ];
@@ -101,6 +103,7 @@ describe("GET /api/favorites", () => {
             terrain: true,
             difficulty: true,
             amenities: true,
+            camping: true,
             vehicleTypes: true,
           },
         },

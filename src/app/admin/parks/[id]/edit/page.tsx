@@ -31,6 +31,7 @@ export default async function EditParkPage({ params }: EditParkPageProps) {
       terrain: true,
       difficulty: true,
       amenities: true,
+      camping: true,
       vehicleTypes: true,
       photos: {
         where: {
@@ -62,6 +63,7 @@ export default async function EditParkPage({ params }: EditParkPageProps) {
     terrain: park.terrain.map((t) => t.terrain),
     difficulty: park.difficulty.map((d) => d.difficulty),
     amenities: park.amenities.map((a) => a.amenity),
+    camping: park.camping.map((c) => c.camping),
     vehicleTypes: park.vehicleTypes.map((v) => v.vehicleType),
   };
 

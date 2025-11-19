@@ -35,7 +35,8 @@ describe("ParkMarker", () => {
     terrain: [],
     difficulty: [],
     amenities: [],
-    vehicleTypes: [],
+    
+      camping: [],vehicleTypes: [],
   };
 
   it("should return null when park has no coordinates", () => {

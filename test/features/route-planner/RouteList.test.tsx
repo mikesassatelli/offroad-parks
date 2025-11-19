@@ -63,7 +63,8 @@ describe("RouteList", () => {
       coords: { lat: 34.0522, lng: -118.2437 },
       terrain: [],
       amenities: [],
-      difficulty: [],
+      
+    camping: [],difficulty: [],
     vehicleTypes: [],
     },
     {
@@ -73,7 +74,8 @@ describe("RouteList", () => {
       coords: { lat: 36.1699, lng: -115.1398 },
       terrain: [],
       amenities: [],
-      difficulty: [],
+      
+    camping: [],difficulty: [],
     vehicleTypes: [],
     },
     {
@@ -83,7 +85,8 @@ describe("RouteList", () => {
       coords: { lat: 33.4484, lng: -112.074 },
       terrain: [],
       amenities: [],
-      difficulty: [],
+      
+    camping: [],difficulty: [],
     vehicleTypes: [],
     },
   ];

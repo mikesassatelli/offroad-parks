@@ -23,7 +23,8 @@ describe("ParkContactSidebar", () => {
     coords: { lat: 34.0522, lng: -118.2437 },
     terrain: [],
     amenities: [],
-    difficulty: [],
+    
+    camping: [],difficulty: [],
     vehicleTypes: [],
   };
 
@@ -129,7 +130,8 @@ describe("ParkContactSidebar", () => {
       coords: { lat: 30, lng: -98 },
       terrain: [],
       amenities: [],
-      difficulty: [],
+      
+    camping: [],difficulty: [],
       vehicleTypes: [],
     };
 

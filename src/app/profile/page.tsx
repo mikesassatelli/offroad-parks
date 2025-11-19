@@ -20,6 +20,7 @@ export default async function ProfilePage() {
           terrain: true,
           difficulty: true,
           amenities: true,
+          camping: true,
           vehicleTypes: true,
           photos: {
             where: {

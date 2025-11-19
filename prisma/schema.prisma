@@ -91,6 +91,7 @@ model Park {
   terrain      ParkTerrain[]
   difficulty   ParkDifficulty[]
   amenities    ParkAmenity[]
+  camping      ParkCamping[]
   vehicleTypes ParkVehicleType[]
   favorites    UserFavorite[]
   photos       ParkPhoto[]
@@ -140,6 +141,16 @@ model ParkAmenity {
   @@unique([parkId, amenity])
 }
 
+model ParkCamping {
+  id      String  @id @default(cuid())
+  parkId  String
+  camping Camping
+
+  park Park @relation(fields: [parkId], references: [id], onDelete: Cascade)
+
+  @@unique([parkId, camping])
+}
+
 model ParkVehicleType {
   id          String      @id @default(cuid())
   parkId      String
@@ -167,13 +178,21 @@ enum Difficulty {
 }
 
 enum Amenity {
-  camping
-  cabins
   restrooms
   showers
   food
   fuel
   repair
+}
+
+enum Camping {
+  tent
+  rv30A
+  rv50A
+  fullHookup
+  cabin
+  groupSite
+  backcountry
 }
 
 enum VehicleType {

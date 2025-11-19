@@ -36,8 +36,9 @@ describe("POST /api/parks/submit", () => {
     notes: "Great park",
     terrain: ["sand", "rocks"],
     difficulty: ["moderate"],
-    amenities: ["camping", "restrooms"],
-    vehicleTypes: [],
+    amenities: ["restrooms"],
+    
+      camping: [],vehicleTypes: [],
   };
 
   it("should return 401 when user is not authenticated", async () => {
@@ -413,7 +414,8 @@ describe("POST /api/parks/submit", () => {
       terrain: ["sand"],
       difficulty: ["easy"],
       amenities: [],
-      vehicleTypes: [],
+      
+      camping: [],vehicleTypes: [],
     };
 
     const request = new Request("http://localhost:3000/api/parks/submit", {
@@ -472,7 +474,10 @@ describe("POST /api/parks/submit", () => {
             create: [{ difficulty: "moderate" }],
           },
           amenities: {
-            create: [{ amenity: "camping" }, { amenity: "restrooms" }],
+            create: [{ amenity: "restrooms" }],
+          },
+          camping: {
+            create: [],
           },
           vehicleTypes: {
             create: [],
@@ -482,6 +487,7 @@ describe("POST /api/parks/submit", () => {
           terrain: true,
           difficulty: true,
           amenities: true,
+          camping: true,
           vehicleTypes: true,
         },
       }),

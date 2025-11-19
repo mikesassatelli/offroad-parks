@@ -36,6 +36,8 @@ function OffroadParksAppInner({ parks }: OffroadParksAppProps) {
     setSelectedTerrains,
     selectedAmenities,
     setSelectedAmenities,
+    selectedCamping,
+    setSelectedCamping,
     selectedVehicleTypes,
     setSelectedVehicleTypes,
     minTrailMiles,
@@ -93,6 +95,8 @@ function OffroadParksAppInner({ parks }: OffroadParksAppProps) {
             onTerrainsChange={setSelectedTerrains}
             selectedAmenities={selectedAmenities}
             onAmenitiesChange={setSelectedAmenities}
+            selectedCamping={selectedCamping}
+            onCampingChange={setSelectedCamping}
             selectedVehicleTypes={selectedVehicleTypes}
             onVehicleTypesChange={setSelectedVehicleTypes}
             minTrailMiles={minTrailMiles}

@@ -54,7 +54,8 @@ describe("Homepage", () => {
         terrain: [{ id: "1", name: "sand", parkId: "park-1" }],
         difficulty: [{ id: "1", level: "moderate", parkId: "park-1" }],
         amenities: [{ id: "1", name: "camping", parkId: "park-1" }],
-        vehicleTypes: [],
+        
+      camping: [],vehicleTypes: [],
         photos: [{ url: "https://example.com/photo1.jpg" }],
       },
       {
@@ -77,7 +78,8 @@ describe("Homepage", () => {
         terrain: [{ id: "2", name: "rocks", parkId: "park-2" }],
         difficulty: [],
         amenities: [],
-        vehicleTypes: [],
+        
+      camping: [],vehicleTypes: [],
         photos: [],
       },
     ];
@@ -170,7 +172,8 @@ describe("Homepage", () => {
         terrain: [],
         difficulty: [],
         amenities: [],
-        vehicleTypes: [],
+        
+      camping: [],vehicleTypes: [],
         photos: [{ url: "https://example.com/hero.jpg" }],
       },
     ];
@@ -205,7 +208,8 @@ describe("Homepage", () => {
         terrain: [],
         difficulty: [],
         amenities: [],
-        vehicleTypes: [],
+        
+      camping: [],vehicleTypes: [],
         photos: [],
       },
     ];
@@ -250,7 +254,8 @@ describe("Homepage", () => {
         terrain: [{ id: "1", name: "sand", parkId: "park-1" }],
         difficulty: [{ id: "1", level: "moderate", parkId: "park-1" }],
         amenities: [{ id: "1", name: "camping", parkId: "park-1" }],
-        vehicleTypes: [],
+        
+      camping: [],vehicleTypes: [],
         photos: [{ url: "https://example.com/photo.jpg" }],
       },
     ];

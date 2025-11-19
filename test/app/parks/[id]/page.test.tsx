@@ -62,7 +62,8 @@ describe("Park Detail Page", () => {
     terrain: [{ id: "1", name: "sand", parkId: "park-1" }],
     difficulty: [{ id: "1", level: "moderate", parkId: "park-1" }],
     amenities: [{ id: "1", name: "camping", parkId: "park-1" }],
-    vehicleTypes: [],
+    
+      camping: [],vehicleTypes: [],
   };
 
   const mockPhotos = [
@@ -248,6 +249,7 @@ describe("Park Detail Page", () => {
           terrain: true,
           difficulty: true,
           amenities: true,
+          camping: true,
           vehicleTypes: true,
         },
       });

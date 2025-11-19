@@ -42,8 +42,9 @@ describe("POST /api/admin/parks/bulk-upload", () => {
       state: "Utah",
       terrain: ["sand", "rocks"],
       difficulty: ["moderate"],
-      amenities: ["camping"],
-      vehicleTypes: [],
+      amenities: [],
+      
+      camping: [],vehicleTypes: [],
     },
   ];
 

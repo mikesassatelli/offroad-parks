@@ -23,7 +23,8 @@ describe("transformDbPark", () => {
       updatedAt: new Date("2024-01-01"),
       terrain: [{ terrain: "sand" }, { terrain: "rocks" }],
       difficulty: [{ difficulty: "moderate" }],
-      amenities: [{ amenity: "camping" }, { amenity: "restrooms" }],
+      amenities: [{ amenity: "restrooms" }, { amenity: "showers" }],
+      camping: [],
       vehicleTypes: [],
     };
 
@@ -43,7 +44,8 @@ describe("transformDbPark", () => {
       notes: "Great park for off-roading",
       terrain: ["sand", "rocks"],
       difficulty: ["moderate"],
-      amenities: ["camping", "restrooms"],
+      amenities: ["restrooms", "showers"],
+      camping: [],
       vehicleTypes: [],
     });
   });
@@ -71,7 +73,8 @@ describe("transformDbPark", () => {
       terrain: [],
       difficulty: [],
       amenities: [],
-      vehicleTypes: [],
+      
+      camping: [],vehicleTypes: [],
     };
 
     const result = transformDbPark(dbPark);
@@ -91,7 +94,8 @@ describe("transformDbPark", () => {
       terrain: [],
       difficulty: [],
       amenities: [],
-      vehicleTypes: [],
+      
+      camping: [],vehicleTypes: [],
     });
   });
 
@@ -118,7 +122,8 @@ describe("transformDbPark", () => {
       terrain: [],
       difficulty: [],
       amenities: [],
-      vehicleTypes: [],
+      
+      camping: [],vehicleTypes: [],
     };
 
     const result = transformDbPark(dbPark);
@@ -148,7 +153,8 @@ describe("transformDbPark", () => {
       terrain: [],
       difficulty: [],
       amenities: [],
-      vehicleTypes: [],
+      
+      camping: [],vehicleTypes: [],
     };
 
     const result = transformDbPark(dbPark);
@@ -184,7 +190,8 @@ describe("transformDbPark", () => {
       ],
       difficulty: [],
       amenities: [],
-      vehicleTypes: [],
+      
+      camping: [],vehicleTypes: [],
     };
 
     const result = transformDbPark(dbPark);
@@ -219,7 +226,8 @@ describe("transformDbPark", () => {
         { difficulty: "extreme" },
       ],
       amenities: [],
-      vehicleTypes: [],
+      
+      camping: [],vehicleTypes: [],
     };
 
     const result = transformDbPark(dbPark);
@@ -254,21 +262,18 @@ describe("transformDbPark", () => {
       terrain: [],
       difficulty: [],
       amenities: [
-        { amenity: "camping" },
-        { amenity: "cabins" },
         { amenity: "restrooms" },
         { amenity: "showers" },
         { amenity: "food" },
         { amenity: "fuel" },
         { amenity: "repair" },
       ],
+      camping: [],
       vehicleTypes: [],
     };
 
     const result = transformDbPark(dbPark);
     expect(result.amenities).toEqual([
-      "camping",
-      "cabins",
       "restrooms",
       "showers",
       "food",
@@ -300,7 +305,8 @@ describe("transformDbPark", () => {
       terrain: [],
       difficulty: [],
       amenities: [],
-      vehicleTypes: [],
+      
+      camping: [],vehicleTypes: [],
     };
 
     const result = transformDbPark(dbPark);

@@ -366,10 +366,10 @@ describe("ParkSubmissionForm", () => {
   it("should handle amenities checkbox selection", async () => {
     render(<ParkSubmissionForm />);
 
-    const campingCheckbox = screen.getByRole("checkbox", { name: /camping/i });
-    fireEvent.click(campingCheckbox);
+    const restroomsCheckbox = screen.getByRole("checkbox", { name: /restrooms/i });
+    fireEvent.click(restroomsCheckbox);
 
-    expect(campingCheckbox).toBeChecked();
+    expect(restroomsCheckbox).toBeChecked();
   });
 
   it("should toggle checkbox when clicked twice", async () => {
@@ -969,8 +969,9 @@ describe("ParkSubmissionForm", () => {
       submitterName: "",
       terrain: ["sand", "rocks"],
       difficulty: ["moderate", "difficult"],
-      amenities: ["camping", "restrooms"],
-      vehicleTypes: [],
+      amenities: ["restrooms"],
+      
+      camping: [],vehicleTypes: [],
     };
 
     it("should render form with initial data in edit mode", () => {
@@ -1287,13 +1288,13 @@ describe("ParkSubmissionForm", () => {
         />,
       );
 
-      const campingCheckbox = screen.getByLabelText(/camping/i);
       const restroomsCheckbox = screen.getByLabelText(/restrooms/i);
       const showersCheckbox = screen.getByLabelText(/showers/i);
+      const fuelCheckbox = screen.getByLabelText(/fuel/i);
 
-      expect(campingCheckbox).toBeChecked();
       expect(restroomsCheckbox).toBeChecked();
       expect(showersCheckbox).not.toBeChecked();
+      expect(fuelCheckbox).not.toBeChecked();
     });
 
     it("should send all form data including updates in PATCH request", async () => {

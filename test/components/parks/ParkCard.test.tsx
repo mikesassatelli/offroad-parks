@@ -22,8 +22,9 @@ describe("ParkCard", () => {
     dayPassUSD: 25,
     milesOfTrails: 50,
     acres: 1000,terrain: ["sand", "rocks"],
-    amenities: ["camping", "restrooms"],
-    difficulty: ["moderate"],
+    amenities: ["restrooms"],
+    
+    camping: [],difficulty: ["moderate"],
     vehicleTypes: [],
     notes: "Great park!",
   };
@@ -57,7 +58,8 @@ describe("ParkCard", () => {
       name: "Minimal Park",
       state: "Texas",terrain: [],
       amenities: [],
-      difficulty: [],
+      
+    camping: [],difficulty: [],
       vehicleTypes: [],
     };
 

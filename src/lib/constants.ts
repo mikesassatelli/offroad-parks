@@ -1,13 +1,21 @@
-import type { Amenity, Terrain, VehicleType } from "@/lib/types";
+import type { Amenity, Camping, Terrain, VehicleType } from "@/lib/types";
 
 export const ALL_AMENITIES: Amenity[] = [
-  "camping",
-  "cabins",
   "restrooms",
   "showers",
   "food",
   "fuel",
   "repair",
+];
+
+export const ALL_CAMPING_TYPES: Camping[] = [
+  "tent",
+  "rv30A",
+  "rv50A",
+  "fullHookup",
+  "cabin",
+  "groupSite",
+  "backcountry",
 ];
 
 export const ALL_TERRAIN_TYPES: Terrain[] = [

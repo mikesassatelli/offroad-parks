@@ -35,8 +35,9 @@ describe("GET /api/parks", () => {
         status: "APPROVED",
         terrain: [{ terrain: "sand" as const }],
         difficulty: [{ difficulty: "moderate" as const }],
-        amenities: [{ amenity: "camping" as const }],
-        vehicleTypes: [],
+        amenities: [{ amenity: "restrooms" as const }],
+        
+      camping: [],vehicleTypes: [],
       },
       {
         id: "2",
@@ -55,7 +56,8 @@ describe("GET /api/parks", () => {
         terrain: [],
         difficulty: [],
         amenities: [],
-        vehicleTypes: [],
+        
+      camping: [],vehicleTypes: [],
       },
     ];
 
@@ -84,8 +86,9 @@ describe("GET /api/parks", () => {
       acres: 1000,notes: "Great park",
       terrain: ["sand"],
       difficulty: ["moderate"],
-      amenities: ["camping"],
-      vehicleTypes: [],
+      amenities: ["restrooms"],
+
+      camping: [],vehicleTypes: [],
     });
 
     // Verify second park (with null values)
@@ -103,7 +106,8 @@ describe("GET /api/parks", () => {
       terrain: [],
       difficulty: [],
       amenities: [],
-      vehicleTypes: [],
+      
+      camping: [],vehicleTypes: [],
     });
 
     // Verify Prisma was called with correct filter
@@ -115,6 +119,7 @@ describe("GET /api/parks", () => {
         terrain: true,
         difficulty: true,
         amenities: true,
+        camping: true,
         vehicleTypes: true,
       },
       orderBy: {
@@ -157,7 +162,8 @@ describe("GET /api/parks", () => {
         terrain: [],
         difficulty: [],
         amenities: [],
-        vehicleTypes: [],
+        
+      camping: [],vehicleTypes: [],
       },
     ];
 
@@ -228,11 +234,11 @@ describe("GET /api/parks", () => {
         { difficulty: "difficult" as const },
       ],
       amenities: [
-        { amenity: "camping" as const },
         { amenity: "restrooms" as const },
         { amenity: "fuel" as const },
       ],
-      vehicleTypes: [],
+      
+      camping: [],vehicleTypes: [],
     };
 
     vi.mocked(prisma.park.findMany).mockResolvedValue([mockPark] as any);
@@ -244,7 +250,7 @@ describe("GET /api/parks", () => {
     // Assert
     expect(data[0].terrain).toEqual(["sand", "rocks", "mud"]);
     expect(data[0].difficulty).toEqual(["moderate", "difficult"]);
-    expect(data[0].amenities).toEqual(["camping", "restrooms", "fuel"]);
+    expect(data[0].amenities).toEqual(["restrooms", "fuel"]);
   });
 
   it("should order parks by name ascending", async () => {

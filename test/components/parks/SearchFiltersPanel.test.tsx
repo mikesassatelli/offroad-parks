@@ -74,6 +74,8 @@ describe("SearchFiltersPanel", () => {
     onTerrainsChange: vi.fn(),
     selectedAmenities: [],
     onAmenitiesChange: vi.fn(),
+    selectedCamping: [],
+    onCampingChange: vi.fn(),
     selectedVehicleTypes: [],
     onVehicleTypesChange: vi.fn(),
     minTrailMiles: 0,
@@ -155,7 +157,7 @@ describe("SearchFiltersPanel", () => {
     expect(allOption).toBeInTheDocument();
   });
 
-  it("should render checkboxes for terrains, amenities, and vehicle types", () => {
+  it("should render checkboxes for terrains, amenities, camping, and vehicle types", () => {
     render(<SearchFiltersPanel {...mockProps} />);
 
     // Check that terrain checkboxes exist
@@ -163,8 +165,12 @@ describe("SearchFiltersPanel", () => {
     expect(sandCheckbox).toBeInTheDocument();
 
     // Check that amenity checkboxes exist
-    const campingCheckbox = screen.getByRole("checkbox", { name: /camping/i });
-    expect(campingCheckbox).toBeInTheDocument();
+    const restroomsCheckbox = screen.getByRole("checkbox", { name: /restrooms/i });
+    expect(restroomsCheckbox).toBeInTheDocument();
+
+    // Check that camping checkboxes exist
+    const tentCheckbox = screen.getByRole("checkbox", { name: /tent/i });
+    expect(tentCheckbox).toBeInTheDocument();
 
     // Check that vehicle type checkboxes exist
     const atvCheckbox = screen.getByRole("checkbox", { name: /atv/i });
@@ -232,15 +238,29 @@ describe("SearchFiltersPanel", () => {
   it("should have no amenity checkboxes checked when no amenities selected", () => {
     render(<SearchFiltersPanel {...mockProps} selectedAmenities={[]} />);
 
-    const campingCheckbox = screen.getByRole("checkbox", { name: /camping/i }) as HTMLInputElement;
-    expect(campingCheckbox.checked).toBe(false);
+    const restroomsCheckbox = screen.getByRole("checkbox", { name: /restrooms/i }) as HTMLInputElement;
+    expect(restroomsCheckbox.checked).toBe(false);
   });
 
   it("should check amenity checkbox when amenity is selected", () => {
-    render(<SearchFiltersPanel {...mockProps} selectedAmenities={["camping"]} />);
+    render(<SearchFiltersPanel {...mockProps} selectedAmenities={["restrooms"]} />);
 
-    const campingCheckbox = screen.getByRole("checkbox", { name: /camping/i }) as HTMLInputElement;
-    expect(campingCheckbox.checked).toBe(true);
+    const restroomsCheckbox = screen.getByRole("checkbox", { name: /restrooms/i }) as HTMLInputElement;
+    expect(restroomsCheckbox.checked).toBe(true);
+  });
+
+  it("should have no camping checkboxes checked when no camping selected", () => {
+    render(<SearchFiltersPanel {...mockProps} selectedCamping={[]} />);
+
+    const tentCheckbox = screen.getByRole("checkbox", { name: /tent/i }) as HTMLInputElement;
+    expect(tentCheckbox.checked).toBe(false);
+  });
+
+  it("should check camping checkbox when camping is selected", () => {
+    render(<SearchFiltersPanel {...mockProps} selectedCamping={["tent"]} />);
+
+    const tentCheckbox = screen.getByRole("checkbox", { name: /tent/i }) as HTMLInputElement;
+    expect(tentCheckbox.checked).toBe(true);
   });
 
   it("should render empty state list when no states available", () => {
@@ -272,8 +292,16 @@ describe("SearchFiltersPanel", () => {
     render(<SearchFiltersPanel {...mockProps} />);
 
     // Check for some amenities (from ALL_AMENITIES constant)
-    expect(screen.getByText("camping")).toBeInTheDocument();
     expect(screen.getByText("restrooms")).toBeInTheDocument();
+    expect(screen.getByText("showers")).toBeInTheDocument();
+  });
+
+  it("should render camping types from constants", () => {
+    render(<SearchFiltersPanel {...mockProps} />);
+
+    // Check for some camping types (from ALL_CAMPING_TYPES constant)
+    expect(screen.getByText("Tent")).toBeInTheDocument();
+    expect(screen.getByText("RV 30A")).toBeInTheDocument();
   });
 
   it("should have correct structure with labels and inputs", () => {
@@ -283,6 +311,7 @@ describe("SearchFiltersPanel", () => {
     expect(screen.getByText("State")).toBeInTheDocument();
     expect(screen.getByText("Terrain")).toBeInTheDocument();
     expect(screen.getByText("Amenities")).toBeInTheDocument();
+    expect(screen.getByText("Camping")).toBeInTheDocument();
   });
 
   it("should render with all filters applied", () => {
@@ -292,7 +321,8 @@ describe("SearchFiltersPanel", () => {
         searchQuery="desert"
         selectedState="Arizona"
         selectedTerrains={["sand"]}
-        selectedAmenities={["camping"]}
+        selectedAmenities={["restrooms"]}
+        selectedCamping={["tent"]}
       />,
     );
 
@@ -304,8 +334,11 @@ describe("SearchFiltersPanel", () => {
     const sandCheckbox = screen.getByRole("checkbox", { name: /sand/i }) as HTMLInputElement;
     expect(sandCheckbox.checked).toBe(true);
 
-    const campingCheckbox = screen.getByRole("checkbox", { name: /camping/i }) as HTMLInputElement;
-    expect(campingCheckbox.checked).toBe(true);
+    const restroomsCheckbox = screen.getByRole("checkbox", { name: /restrooms/i }) as HTMLInputElement;
+    expect(restroomsCheckbox.checked).toBe(true);
+
+    const tentCheckbox = screen.getByRole("checkbox", { name: /tent/i }) as HTMLInputElement;
+    expect(tentCheckbox.checked).toBe(true);
   });
 
   it("should render Reset button with secondary variant", () => {
@@ -364,18 +397,36 @@ describe("SearchFiltersPanel", () => {
   it("should call onAmenitiesChange when amenity checkbox is clicked", () => {
     render(<SearchFiltersPanel {...mockProps} selectedAmenities={[]} />);
 
-    const campingCheckbox = screen.getByRole("checkbox", { name: /camping/i });
-    fireEvent.click(campingCheckbox);
+    const restroomsCheckbox = screen.getByRole("checkbox", { name: /restrooms/i });
+    fireEvent.click(restroomsCheckbox);
 
-    expect(mockProps.onAmenitiesChange).toHaveBeenCalledWith(["camping"]);
+    expect(mockProps.onAmenitiesChange).toHaveBeenCalledWith(["restrooms"]);
   });
 
   it("should call onAmenitiesChange to remove amenity when unchecking", () => {
-    render(<SearchFiltersPanel {...mockProps} selectedAmenities={["camping", "restrooms"]} />);
+    render(<SearchFiltersPanel {...mockProps} selectedAmenities={["restrooms", "showers"]} />);
 
-    const campingCheckbox = screen.getByRole("checkbox", { name: /camping/i });
-    fireEvent.click(campingCheckbox);
+    const restroomsCheckbox = screen.getByRole("checkbox", { name: /restrooms/i });
+    fireEvent.click(restroomsCheckbox);
 
-    expect(mockProps.onAmenitiesChange).toHaveBeenCalledWith(["restrooms"]);
+    expect(mockProps.onAmenitiesChange).toHaveBeenCalledWith(["showers"]);
+  });
+
+  it("should call onCampingChange when camping checkbox is clicked", () => {
+    render(<SearchFiltersPanel {...mockProps} selectedCamping={[]} />);
+
+    const tentCheckbox = screen.getByRole("checkbox", { name: /tent/i });
+    fireEvent.click(tentCheckbox);
+
+    expect(mockProps.onCampingChange).toHaveBeenCalledWith(["tent"]);
+  });
+
+  it("should call onCampingChange to remove camping when unchecking", () => {
+    render(<SearchFiltersPanel {...mockProps} selectedCamping={["tent", "cabin"]} />);
+
+    const tentCheckbox = screen.getByRole("checkbox", { name: /tent/i });
+    fireEvent.click(tentCheckbox);
+
+    expect(mockProps.onCampingChange).toHaveBeenCalledWith(["cabin"]);
   });
 });
