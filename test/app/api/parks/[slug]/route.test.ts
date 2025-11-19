@@ -34,8 +34,9 @@ describe("GET /api/parks/[slug]", () => {
       status: "APPROVED",
       terrain: [{ terrain: "sand" as const }],
       difficulty: [{ difficulty: "moderate" as const }],
-      amenities: [{ amenity: "camping" as const }],
-      vehicleTypes: [],
+      amenities: [{ amenity: "restrooms" as const }],
+
+      camping: [],vehicleTypes: [],
     };
 
     vi.mocked(prisma.park.findUnique).mockResolvedValue(mockPark as any);
@@ -62,8 +63,9 @@ describe("GET /api/parks/[slug]", () => {
       acres: 1000,notes: "Great park",
       terrain: ["sand"],
       difficulty: ["moderate"],
-      amenities: ["camping"],
-      vehicleTypes: [],
+      amenities: ["restrooms"],
+
+      camping: [],vehicleTypes: [],
     });
 
     expect(prisma.park.findUnique).toHaveBeenCalledWith({
@@ -75,6 +77,7 @@ describe("GET /api/parks/[slug]", () => {
         terrain: true,
         difficulty: true,
         amenities: true,
+        camping: true,
         vehicleTypes: true,
       },
     });
@@ -161,7 +164,8 @@ describe("GET /api/parks/[slug]", () => {
       terrain: [],
       difficulty: [],
       amenities: [],
-      vehicleTypes: [],
+      
+      camping: [],vehicleTypes: [],
     };
 
     vi.mocked(prisma.park.findUnique).mockResolvedValue(mockPark as any);
@@ -188,7 +192,8 @@ describe("GET /api/parks/[slug]", () => {
       terrain: [],
       difficulty: [],
       amenities: [],
-      vehicleTypes: [],
+      
+      camping: [],vehicleTypes: [],
     });
   });
 

@@ -51,7 +51,8 @@ describe("MapView", () => {
     terrain: [],
     difficulty: [],
     amenities: [],
-    vehicleTypes: [],
+    
+      camping: [],vehicleTypes: [],
   };
 
   const mockPark2: Park = {
@@ -62,7 +63,8 @@ describe("MapView", () => {
     terrain: [],
     difficulty: [],
     amenities: [],
-    vehicleTypes: [],
+    
+      camping: [],vehicleTypes: [],
   };
 
   const mockParkNoCoords: Park = {
@@ -73,7 +75,8 @@ describe("MapView", () => {
     terrain: [],
     difficulty: [],
     amenities: [],
-    vehicleTypes: [],
+    
+      camping: [],vehicleTypes: [],
   };
 
   it("should render map container", () => {

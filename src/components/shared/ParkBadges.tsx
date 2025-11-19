@@ -1,5 +1,6 @@
 import { Badge } from "@/components/ui/badge";
-import type { Amenity, Terrain } from "@/lib/types";
+import type { Amenity, Camping, Terrain } from "@/lib/types";
+import { formatCamping } from "@/lib/formatting";
 
 interface TerrainBadgesProps {
   terrain: Terrain[];
@@ -27,6 +28,22 @@ export function AmenityBadges({ amenities }: AmenityBadgesProps) {
       {amenities.map((amenity) => (
         <Badge key={amenity} className="capitalize" variant="secondary">
           {amenity}
+        </Badge>
+      ))}
+    </div>
+  );
+}
+
+interface CampingBadgesProps {
+  camping: Camping[];
+}
+
+export function CampingBadges({ camping }: CampingBadgesProps) {
+  return (
+    <div className="flex flex-wrap gap-1">
+      {camping.map((c) => (
+        <Badge key={c} variant="default">
+          {formatCamping(c)}
         </Badge>
       ))}
     </div>

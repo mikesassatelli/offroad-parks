@@ -13,8 +13,9 @@ describe("useFilteredParks", () => {
       dayPassUSD: 25,
       milesOfTrails: 50,
       acres: 1000,terrain: ["sand", "rocks"],
-      amenities: ["camping", "restrooms"],
-      difficulty: ["moderate"],
+      amenities: ["restrooms"],
+      
+    camping: [],difficulty: ["moderate"],
       vehicleTypes: [],
       notes: "Great for beginners",
     },
@@ -27,8 +28,9 @@ describe("useFilteredParks", () => {
       dayPassUSD: 35,
       milesOfTrails: 100,
       acres: 2000,terrain: ["rocks", "mud"],
-      amenities: ["camping", "fuel"],
-      difficulty: ["difficult"],
+      amenities: ["fuel"],
+      
+    camping: [],difficulty: ["difficult"],
       vehicleTypes: [],
       notes: "Advanced riders only",
     },
@@ -42,7 +44,8 @@ describe("useFilteredParks", () => {
       milesOfTrails: 20,
       acres: undefined,terrain: ["sand"],
       amenities: [],
-      difficulty: ["easy"],
+      
+    camping: [],difficulty: ["easy"],
       vehicleTypes: [],
     },
   ];

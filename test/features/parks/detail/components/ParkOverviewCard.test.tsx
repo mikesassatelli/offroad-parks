@@ -24,8 +24,9 @@ describe("ParkOverviewCard", () => {
     milesOfTrails: 50,
     acres: 1000,
     terrain: ["sand"],
-    amenities: ["camping"],
-    difficulty: ["moderate"],
+    amenities: [],
+    
+    camping: [],difficulty: ["moderate"],
     vehicleTypes: [],
     notes: "Great park for off-roading",
   };
@@ -109,7 +110,8 @@ describe("ParkOverviewCard", () => {
       coords: { lat: 30, lng: -98 },
       terrain: [],
       amenities: [],
-      difficulty: [],
+      
+    camping: [],difficulty: [],
       vehicleTypes: [],
     };
 

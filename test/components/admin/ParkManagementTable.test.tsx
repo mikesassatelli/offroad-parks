@@ -21,8 +21,9 @@ describe("ParkManagementTable", () => {
       },
       terrain: [{ terrain: "sand" }],
       difficulty: [{ difficulty: "moderate" }],
-      amenities: [{ amenity: "camping" }],
-      vehicleTypes: [],
+      amenities: [{ amenity: "restrooms" }],
+
+      camping: [],vehicleTypes: [],
     },
     {
       id: "park-2",
@@ -37,7 +38,8 @@ describe("ParkManagementTable", () => {
       terrain: [],
       difficulty: [],
       amenities: [],
-      vehicleTypes: [],
+      
+      camping: [],vehicleTypes: [],
     },
     {
       id: "park-3",
@@ -56,7 +58,8 @@ describe("ParkManagementTable", () => {
       terrain: [],
       difficulty: [],
       amenities: [],
-      vehicleTypes: [],
+      
+      camping: [],vehicleTypes: [],
     },
   ];
 

@@ -1,13 +1,11 @@
 import { ALL_AMENITIES, ALL_TERRAIN_TYPES, US_STATES } from "@/lib/constants";
 
 describe("ALL_AMENITIES", () => {
-  it("should contain all 7 amenity types", () => {
-    expect(ALL_AMENITIES).toHaveLength(7);
+  it("should contain all 5 amenity types", () => {
+    expect(ALL_AMENITIES).toHaveLength(5);
   });
 
   it("should contain expected amenities", () => {
-    expect(ALL_AMENITIES).toContain("camping");
-    expect(ALL_AMENITIES).toContain("cabins");
     expect(ALL_AMENITIES).toContain("restrooms");
     expect(ALL_AMENITIES).toContain("showers");
     expect(ALL_AMENITIES).toContain("food");

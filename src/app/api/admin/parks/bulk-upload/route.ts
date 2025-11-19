@@ -4,10 +4,17 @@ import { prisma } from "@/lib/prisma";
 import {
   ALL_TERRAIN_TYPES,
   ALL_AMENITIES,
+  ALL_CAMPING_TYPES,
   ALL_VEHICLE_TYPES,
   US_STATES,
 } from "@/lib/constants";
-import type { Terrain, Difficulty, Amenity, VehicleType } from "@/lib/types";
+import type {
+  Terrain,
+  Difficulty,
+  Amenity,
+  Camping,
+  VehicleType,
+} from "@/lib/types";
 
 // Difficulty levels array
 const ALL_DIFFICULTY_LEVELS: Difficulty[] = [
@@ -33,6 +40,7 @@ interface BulkParkInput {
   terrain: string[];
   difficulty: string[];
   amenities?: string[];
+  camping?: string[];
   vehicleTypes?: string[];
 }
 
@@ -136,6 +144,20 @@ function validateParkEntry(
         row: rowIndex,
         field: "amenities",
         message: `Invalid amenities: ${invalidAmenities.join(", ")}. Valid options: ${ALL_AMENITIES.join(", ")}`,
+      });
+    }
+  }
+
+  // Camping validation (optional)
+  if (park.camping && park.camping.length > 0) {
+    const invalidCamping = park.camping.filter(
+      (c) => !ALL_CAMPING_TYPES.includes(c as Camping)
+    );
+    if (invalidCamping.length > 0) {
+      errors.push({
+        row: rowIndex,
+        field: "camping",
+        message: `Invalid camping types: ${invalidCamping.join(", ")}. Valid options: ${ALL_CAMPING_TYPES.join(", ")}`,
       });
     }
   }
@@ -399,6 +421,20 @@ export async function POST(
                 data: {
                   parkId: createdPark.id,
                   amenity: amenity as Amenity,
+                },
+              })
+            )
+          );
+        }
+
+        // Create camping relations (if provided)
+        if (park.camping && park.camping.length > 0) {
+          await Promise.all(
+            park.camping.map((campingType) =>
+              tx.parkCamping.create({
+                data: {
+                  parkId: createdPark.id,
+                  camping: campingType as Camping,
                 },
               })
             )

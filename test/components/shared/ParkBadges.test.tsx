@@ -66,27 +66,27 @@ describe("TerrainBadges", () => {
 
 describe("AmenityBadges", () => {
   it("should render amenity badges", () => {
-    const amenities: Amenity[] = ["camping", "restrooms", "showers"];
+    const amenities: Amenity[] = ["restrooms", "showers", "food"];
     render(<AmenityBadges amenities={amenities} />);
 
-    expect(screen.getByText("camping")).toBeInTheDocument();
     expect(screen.getByText("restrooms")).toBeInTheDocument();
     expect(screen.getByText("showers")).toBeInTheDocument();
+    expect(screen.getByText("food")).toBeInTheDocument();
   });
 
   it("should render badges with secondary variant", () => {
-    const amenities: Amenity[] = ["camping"];
+    const amenities: Amenity[] = ["restrooms"];
     render(<AmenityBadges amenities={amenities} />);
 
-    const badge = screen.getByText("camping");
+    const badge = screen.getByText("restrooms");
     expect(badge).toHaveAttribute("data-variant", "secondary");
   });
 
   it("should apply capitalize class to badges", () => {
-    const amenities: Amenity[] = ["camping"];
+    const amenities: Amenity[] = ["restrooms"];
     render(<AmenityBadges amenities={amenities} />);
 
-    const badge = screen.getByText("camping");
+    const badge = screen.getByText("restrooms");
     expect(badge).toHaveClass("capitalize");
   });
 
@@ -100,8 +100,6 @@ describe("AmenityBadges", () => {
 
   it("should render all amenity types", () => {
     const amenities: Amenity[] = [
-      "camping",
-      "cabins",
       "restrooms",
       "showers",
       "food",
@@ -110,8 +108,6 @@ describe("AmenityBadges", () => {
     ];
     render(<AmenityBadges amenities={amenities} />);
 
-    expect(screen.getByText("camping")).toBeInTheDocument();
-    expect(screen.getByText("cabins")).toBeInTheDocument();
     expect(screen.getByText("restrooms")).toBeInTheDocument();
     expect(screen.getByText("showers")).toBeInTheDocument();
     expect(screen.getByText("food")).toBeInTheDocument();
@@ -124,6 +120,6 @@ describe("AmenityBadges", () => {
     render(<AmenityBadges amenities={amenities} />);
 
     expect(screen.getByText("restrooms")).toBeInTheDocument();
-    expect(screen.queryByText("camping")).not.toBeInTheDocument();
+    expect(screen.queryByText("showers")).not.toBeInTheDocument();
   });
 });

@@ -9,7 +9,14 @@ import {
 } from "@/components/ui/select";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Slider } from "@/components/ui/slider";
-import { ALL_AMENITIES, ALL_TERRAIN_TYPES, ALL_VEHICLE_TYPES } from "@/lib/constants";
+import {
+  ALL_AMENITIES,
+  ALL_CAMPING_TYPES,
+  ALL_TERRAIN_TYPES,
+  ALL_VEHICLE_TYPES,
+} from "@/lib/constants";
+import { formatCamping } from "@/lib/formatting";
+import type { Camping } from "@/lib/types";
 
 interface SearchFiltersPanelProps {
   searchQuery: string;
@@ -21,6 +28,8 @@ interface SearchFiltersPanelProps {
   onTerrainsChange: (terrains: string[]) => void;
   selectedAmenities: string[];
   onAmenitiesChange: (amenities: string[]) => void;
+  selectedCamping: string[];
+  onCampingChange: (camping: string[]) => void;
   selectedVehicleTypes: string[];
   onVehicleTypesChange: (vehicleTypes: string[]) => void;
   minTrailMiles: number;
@@ -42,6 +51,8 @@ export function SearchFiltersPanel({
   onTerrainsChange,
   selectedAmenities,
   onAmenitiesChange,
+  selectedCamping,
+  onCampingChange,
   selectedVehicleTypes,
   onVehicleTypesChange,
   minTrailMiles,
@@ -69,6 +80,14 @@ export function SearchFiltersPanel({
       onAmenitiesChange(selectedAmenities.filter((a) => a !== amenity));
     } else {
       onAmenitiesChange([...selectedAmenities, amenity]);
+    }
+  };
+
+  const handleCampingToggle = (camping: string) => {
+    if (selectedCamping.includes(camping)) {
+      onCampingChange(selectedCamping.filter((c) => c !== camping));
+    } else {
+      onCampingChange([...selectedCamping, camping]);
     }
   };
 
@@ -145,7 +164,7 @@ export function SearchFiltersPanel({
             />
             <label
               htmlFor={`terrain-${terrain}`}
-              className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70 cursor-pointer"
+              className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70 cursor-pointer capitalize"
             >
               {terrain}
             </label>
@@ -164,9 +183,28 @@ export function SearchFiltersPanel({
             />
             <label
               htmlFor={`amenity-${amenity}`}
-              className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70 cursor-pointer"
+              className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70 cursor-pointer capitalize"
             >
               {amenity}
+            </label>
+          </div>
+        ))}
+      </div>
+
+      <div className="mt-4 text-sm font-semibold mb-2">Camping</div>
+      <div className="space-y-2">
+        {ALL_CAMPING_TYPES.map((camping) => (
+          <div key={camping} className="flex items-center space-x-2">
+            <Checkbox
+              id={`camping-${camping}`}
+              checked={selectedCamping.includes(camping)}
+              onCheckedChange={() => handleCampingToggle(camping)}
+            />
+            <label
+              htmlFor={`camping-${camping}`}
+              className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70 cursor-pointer"
+            >
+              {formatCamping(camping as Camping)}
             </label>
           </div>
         ))}

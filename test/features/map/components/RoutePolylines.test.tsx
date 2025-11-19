@@ -31,7 +31,8 @@ describe("RoutePolylines", () => {
     terrain: [],
     difficulty: [],
     amenities: [],
-    vehicleTypes: [],
+    
+      camping: [],vehicleTypes: [],
   };
 
   const mockPark2: Park = {
@@ -42,7 +43,8 @@ describe("RoutePolylines", () => {
     terrain: [],
     difficulty: [],
     amenities: [],
-    vehicleTypes: [],
+    
+      camping: [],vehicleTypes: [],
   };
 
   const mockPark3: Park = {
@@ -53,7 +55,8 @@ describe("RoutePolylines", () => {
     terrain: [],
     difficulty: [],
     amenities: [],
-    vehicleTypes: [],
+    
+      camping: [],vehicleTypes: [],
   };
 
   it("should return null when less than 2 parks", () => {

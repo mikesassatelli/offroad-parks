@@ -1,12 +1,14 @@
 // Legacy types for backward compatibility
-export type Amenity =
-  | "camping"
-  | "cabins"
-  | "restrooms"
-  | "showers"
-  | "food"
-  | "fuel"
-  | "repair";
+export type Amenity = "restrooms" | "showers" | "food" | "fuel" | "repair";
+
+export type Camping =
+  | "tent"
+  | "rv30A"
+  | "rv50A"
+  | "fullHookup"
+  | "cabin"
+  | "groupSite"
+  | "backcountry";
 
 export type Terrain = "sand" | "rocks" | "mud" | "trails" | "hills";
 
@@ -41,6 +43,7 @@ export type DbPark = {
   terrain: Array<{ id?: string; parkId?: string; terrain: Terrain }>;
   difficulty: Array<{ id?: string; parkId?: string; difficulty: Difficulty }>;
   amenities: Array<{ id?: string; parkId?: string; amenity: Amenity }>;
+  camping: Array<{ id?: string; parkId?: string; camping: Camping }>;
   vehicleTypes: Array<{ id?: string; parkId?: string; vehicleType: VehicleType }>;
   photos?: Array<{ id?: string; parkId?: string; userId?: string | null; url: string; caption?: string | null; status?: string; createdAt?: Date; updatedAt?: Date }>;
 };
@@ -59,6 +62,7 @@ export type Park = {
   dayPassUSD?: number;
   terrain: Terrain[];
   amenities: Amenity[];
+  camping: Camping[];
   difficulty: Difficulty[];
   vehicleTypes: VehicleType[];
   notes?: string;
@@ -83,6 +87,7 @@ export function transformDbPark(dbPark: DbPark): Park {
     dayPassUSD: dbPark.dayPassUSD ?? undefined,
     terrain: dbPark.terrain.map((t) => t.terrain),
     amenities: dbPark.amenities.map((a) => a.amenity),
+    camping: dbPark.camping.map((c) => c.camping),
     difficulty: dbPark.difficulty.map((d) => d.difficulty),
     vehicleTypes: dbPark.vehicleTypes.map((v) => v.vehicleType),
     notes: dbPark.notes ?? undefined,

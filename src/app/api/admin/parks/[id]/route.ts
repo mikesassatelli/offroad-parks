@@ -61,7 +61,14 @@ export async function PATCH(request: Request, { params }: RouteParams) {
     const { id } = await params;
     const body = await request.json();
 
-    const { terrain, difficulty, amenities, vehicleTypes, ...parkData } = body;
+    const {
+      terrain,
+      difficulty,
+      amenities,
+      camping,
+      vehicleTypes,
+      ...parkData
+    } = body;
 
     // Update park with relations
     const park = await prisma.park.update({
@@ -81,6 +88,10 @@ export async function PATCH(request: Request, { params }: RouteParams) {
           deleteMany: {},
           create: amenities?.map((a: string) => ({ amenity: a })) || [],
         },
+        camping: {
+          deleteMany: {},
+          create: camping?.map((c: string) => ({ camping: c })) || [],
+        },
         vehicleTypes: {
           deleteMany: {},
           create:
@@ -91,6 +102,7 @@ export async function PATCH(request: Request, { params }: RouteParams) {
         terrain: true,
         difficulty: true,
         amenities: true,
+        camping: true,
         vehicleTypes: true,
       },
     });

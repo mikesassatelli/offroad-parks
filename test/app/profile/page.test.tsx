@@ -78,6 +78,7 @@ describe("ProfilePage", () => {
             terrain: true,
             difficulty: true,
             amenities: true,
+            camping: true,
             vehicleTypes: true,
             photos: {
               where: { status: "APPROVED" },
@@ -114,7 +115,8 @@ describe("ProfilePage", () => {
           terrain: [],
           difficulty: [],
           amenities: [],
-          vehicleTypes: [],
+          
+      camping: [],vehicleTypes: [],
           photos: [{ url: "https://example.com/photo.jpg" }],
           createdAt: new Date(),
           updatedAt: new Date(),
@@ -162,7 +164,8 @@ describe("ProfilePage", () => {
           terrain: [],
           difficulty: [],
           amenities: [],
-          vehicleTypes: [],
+          
+      camping: [],vehicleTypes: [],
           photos: [],
           createdAt: new Date(),
           updatedAt: new Date(),
@@ -211,7 +214,8 @@ describe("ProfilePage", () => {
           terrain: [],
           difficulty: [],
           amenities: [],
-          vehicleTypes: [],
+          
+      camping: [],vehicleTypes: [],
           photos: [{ url: "https://example.com/hero.jpg" }],
           createdAt: new Date(),
           updatedAt: new Date(),
@@ -271,7 +275,8 @@ describe("ProfilePage", () => {
           terrain: [],
           difficulty: [],
           amenities: [],
-          vehicleTypes: [],
+          
+      camping: [],vehicleTypes: [],
           photos: [], // Empty photos array
           createdAt: new Date(),
           updatedAt: new Date(),

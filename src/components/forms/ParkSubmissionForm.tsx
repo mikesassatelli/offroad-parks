@@ -16,9 +16,12 @@ import {
 import { Checkbox } from "@/components/ui/checkbox";
 import {
   ALL_AMENITIES,
+  ALL_CAMPING_TYPES,
   ALL_TERRAIN_TYPES,
   ALL_VEHICLE_TYPES,
 } from "@/lib/constants";
+import { formatCamping } from "@/lib/formatting";
+import type { Camping } from "@/lib/types";
 import { US_STATES } from "@/lib/constants";
 import { Image as ImageIcon, Loader2, X } from "lucide-react";
 import Image from "next/image";
@@ -40,6 +43,7 @@ interface FormData {
   terrain: string[];
   difficulty: string[];
   amenities: string[];
+  camping: string[];
   vehicleTypes: string[];
 }
 
@@ -81,6 +85,7 @@ export function ParkSubmissionForm({
       terrain: [],
       difficulty: [],
       amenities: [],
+      camping: [],
       vehicleTypes: [],
     },
   );
@@ -110,7 +115,7 @@ export function ParkSubmissionForm({
   };
 
   const handleCheckboxChange = (
-    field: "terrain" | "difficulty" | "amenities" | "vehicleTypes",
+    field: "terrain" | "difficulty" | "amenities" | "camping" | "vehicleTypes",
     value: string,
   ) => {
     setFormData((prev) => ({
@@ -475,6 +480,30 @@ export function ParkSubmissionForm({
                 className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70 capitalize"
               >
                 {amenity}
+              </label>
+            </div>
+          ))}
+        </div>
+      </div>
+
+      {/* Camping */}
+      <div>
+        <Label className="mb-3 block">Camping Options</Label>
+        <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
+          {ALL_CAMPING_TYPES.map((camping) => (
+            <div key={camping} className="flex items-center space-x-2">
+              <Checkbox
+                id={`camping-${camping}`}
+                checked={formData.camping.includes(camping)}
+                onCheckedChange={() =>
+                  handleCheckboxChange("camping", camping)
+                }
+              />
+              <label
+                htmlFor={`camping-${camping}`}
+                className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
+              >
+                {formatCamping(camping as Camping)}
               </label>
             </div>
           ))}

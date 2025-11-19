@@ -62,8 +62,9 @@ describe("UserProfileClient", () => {
       name: "Test Park 1",
       state: "California",
       coords: { lat: 34, lng: -118 },terrain: ["sand"],
-      amenities: ["camping"],
-      difficulty: ["moderate"],
+      amenities: [],
+      
+    camping: [],difficulty: ["moderate"],
       vehicleTypes: [],
     },
     {
@@ -72,7 +73,8 @@ describe("UserProfileClient", () => {
       state: "Arizona",
       coords: { lat: 33, lng: -111 },terrain: ["rocks"],
       amenities: ["restrooms"],
-      difficulty: ["difficult"],
+      
+    camping: [],difficulty: ["difficult"],
       vehicleTypes: [],
     },
   ];
@@ -198,7 +200,8 @@ describe("UserProfileClient", () => {
       state: "Texas",
       coords: { lat: 30, lng: -98 },terrain: [],
       amenities: [],
-      difficulty: [],
+      
+    camping: [],difficulty: [],
       vehicleTypes: [],
     };
 

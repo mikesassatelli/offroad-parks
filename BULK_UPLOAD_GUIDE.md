@@ -29,8 +29,9 @@ The Bulk Park Upload feature allows admin users to upload multiple parks at once
 - `milesOfTrails` - Total trail miles (integer)
 - `acres` - Park size in acres (integer)
 - `notes` - Additional notes (max 2000 characters)
-- `utvAllowed` - Whether UTVs are allowed (true/false, defaults to true)
 - `amenities` - Comma-separated amenity types
+- `camping` - Comma-separated camping types
+- `vehicleTypes` - Comma-separated vehicle types
 
 ### Valid Values
 
@@ -48,13 +49,26 @@ The Bulk Park Upload feature allows admin users to upload multiple parks at once
 - extreme
 
 **Amenity Types:**
-- camping
-- cabins
 - restrooms
 - showers
 - food
 - fuel
 - repair
+
+**Camping Types:**
+- tent
+- rv30A
+- rv50A
+- fullHookup
+- cabin
+- groupSite
+- backcountry
+
+**Vehicle Types:**
+- motorcycle
+- atv
+- sxs
+- fullSize
 
 **States:**
 All US states as two-letter codes (e.g., UT, CO, AZ, CA, etc.)
@@ -62,10 +76,10 @@ All US states as two-letter codes (e.g., UT, CO, AZ, CA, etc.)
 ### CSV Example
 
 ```csv
-name,slug,city,state,latitude,longitude,website,phone,dayPassUSD,milesOfTrails,acres,notes,utvAllowed,terrain,difficulty,amenities
-Example Offroad Park,example-offroad-park,Moab,UT,38.5733,-109.5498,https://example.com,555-123-4567,50,100,5000,Great park with stunning views,true,"rocks,trails,hills","moderate,difficult","camping,restrooms,fuel"
-Desert Adventure Park,,Phoenix,AZ,33.4484,-112.0740,,,25,50,2000,Perfect for beginners,true,sand,easy,"restrooms,food"
-Mountain Trails Park,mountain-trails,Denver,CO,,,https://mountaintrails.com,555-987-6543,,,3000,,true,"trails,hills","moderate,difficult,extreme",camping
+name,slug,city,state,latitude,longitude,website,phone,dayPassUSD,milesOfTrails,acres,notes,terrain,difficulty,amenities,camping,vehicleTypes
+Example Offroad Park,example-offroad-park,Moab,UT,38.5733,-109.5498,https://example.com,555-123-4567,50,100,5000,Great park with stunning views,"rocks,trails,hills","moderate,difficult","restrooms,fuel","tent,rv30A,rv50A","atv,sxs,motorcycle"
+Desert Adventure Park,,Phoenix,AZ,33.4484,-112.0740,,,25,50,2000,Perfect for beginners,sand,easy,"restrooms,food",tent,"atv,motorcycle"
+Mountain Trails Park,mountain-trails,Denver,CO,,,https://mountaintrails.com,555-987-6543,,,3000,,"trails,hills","moderate,difficult,extreme",,cabin,sxs
 ```
 
 ## JSON Format
@@ -87,10 +101,11 @@ JSON files should contain an array of park objects:
     "milesOfTrails": 100,
     "acres": 5000,
     "notes": "Great park with stunning views",
-    "utvAllowed": true,
     "terrain": ["rocks", "trails", "hills"],
     "difficulty": ["moderate", "difficult"],
-    "amenities": ["camping", "restrooms", "fuel"]
+    "amenities": ["restrooms", "fuel"],
+    "camping": ["tent", "rv30A", "rv50A"],
+    "vehicleTypes": ["atv", "sxs", "motorcycle"]
   },
   {
     "name": "Desert Adventure Park",
@@ -102,10 +117,11 @@ JSON files should contain an array of park objects:
     "milesOfTrails": 50,
     "acres": 2000,
     "notes": "Perfect for beginners",
-    "utvAllowed": true,
     "terrain": ["sand"],
     "difficulty": ["easy"],
-    "amenities": ["restrooms", "food"]
+    "amenities": ["restrooms", "food"],
+    "camping": ["tent"],
+    "vehicleTypes": ["atv", "motorcycle"]
   }
 ]
 ```
@@ -149,6 +165,8 @@ The system validates all data before insertion:
 - **Terrain:** At least one required, all must be valid types
 - **Difficulty:** At least one required, all must be valid levels
 - **Amenities:** Optional, all must be valid types if provided
+- **Camping:** Optional, all must be valid types if provided
+- **Vehicle Types:** Optional, all must be valid types if provided
 - **Website:** Must be valid URL format if provided
 - **Phone:** Max 15 digits (formatting characters removed)
 - **Coordinates:** Latitude must be -90 to 90, longitude -180 to 180
@@ -185,8 +203,8 @@ The system validates all data before insertion:
 - In CSV, use comma-separated values
 - In JSON, use an array with at least one item
 
-**"Invalid terrain types" / "Invalid difficulty levels" / "Invalid amenities"**
-- Check spelling matches exactly (lowercase)
+**"Invalid terrain types" / "Invalid difficulty levels" / "Invalid amenities" / "Invalid camping types" / "Invalid vehicle types"**
+- Check spelling matches exactly (lowercase for terrain/difficulty/amenities, camelCase for camping/vehicleTypes)
 - Remove any invalid or custom values
 - Refer to the valid values list above
 
@@ -213,10 +231,11 @@ The system validates all data before insertion:
       "milesOfTrails": number | null,
       "acres": number | null,
       "notes": "string (optional)",
-      "utvAllowed": boolean,
       "terrain": ["string"],
       "difficulty": ["string"],
-      "amenities": ["string"] (optional)
+      "amenities": ["string"] (optional),
+      "camping": ["string"] (optional),
+      "vehicleTypes": ["string"] (optional)
     }
   ]
 }
@@ -244,7 +263,7 @@ The system validates all data before insertion:
 - **Phone Sanitization:** Non-digit characters automatically removed
 - **Status:** All parks set to APPROVED (no review needed)
 - **Submitter:** Admin user ID recorded as submitter
-- **Relations:** Terrain, difficulty, and amenities stored in junction tables
+- **Relations:** Terrain, difficulty, amenities, camping, and vehicleTypes stored in junction tables
 
 ## File Locations
 

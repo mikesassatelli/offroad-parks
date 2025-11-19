@@ -26,8 +26,9 @@ describe("ParkAttributesCards", () => {
     state: "California",
     coords: { lat: 34, lng: -118 },
     terrain: ["sand", "rocks", "mud"],
-    amenities: ["camping", "restrooms", "showers"],
-    difficulty: ["easy", "moderate", "difficult"],
+    amenities: ["restrooms", "showers"],
+    
+    camping: [],difficulty: ["easy", "moderate", "difficult"],
     vehicleTypes: [],
   };
 
@@ -74,7 +75,6 @@ describe("ParkAttributesCards", () => {
   it("should render amenity badges", () => {
     render(<ParkAttributesCards park={mockPark} />);
 
-    expect(screen.getByText("camping")).toBeInTheDocument();
     expect(screen.getByText("restrooms")).toBeInTheDocument();
     expect(screen.getByText("showers")).toBeInTheDocument();
   });
@@ -82,8 +82,8 @@ describe("ParkAttributesCards", () => {
   it("should render amenity badges with default variant", () => {
     render(<ParkAttributesCards park={mockPark} />);
 
-    const campingBadge = screen.getByText("camping");
-    expect(campingBadge).toHaveClass("capitalize");
+    const restroomsBadge = screen.getByText("restrooms");
+    expect(restroomsBadge).toHaveClass("capitalize");
   });
 
   it("should handle empty terrain array", () => {
@@ -107,7 +107,7 @@ describe("ParkAttributesCards", () => {
     render(<ParkAttributesCards park={parkNoAmenities} />);
 
     expect(screen.getByText("Amenities")).toBeInTheDocument();
-    expect(screen.queryByText("camping")).not.toBeInTheDocument();
+    expect(screen.queryByText("restrooms")).not.toBeInTheDocument();
   });
 
   it("should handle park with all empty arrays", () => {
@@ -118,7 +118,8 @@ describe("ParkAttributesCards", () => {
       coords: { lat: 30, lng: -98 },
       terrain: [],
       amenities: [],
-      difficulty: [],
+      
+    camping: [],difficulty: [],
     vehicleTypes: [],
     };
 
@@ -134,14 +135,15 @@ describe("ParkAttributesCards", () => {
       ...mockPark,
       terrain: ["sand"],
       difficulty: ["easy"],
-      amenities: ["camping"],
-      vehicleTypes: [],
+      amenities: ["restrooms"],
+
+      camping: [],vehicleTypes: [],
     };
 
     render(<ParkAttributesCards park={singleItemPark} />);
 
     expect(screen.getByText("sand")).toBeInTheDocument();
     expect(screen.getByText("easy")).toBeInTheDocument();
-    expect(screen.getByText("camping")).toBeInTheDocument();
+    expect(screen.getByText("restrooms")).toBeInTheDocument();
   });
 });

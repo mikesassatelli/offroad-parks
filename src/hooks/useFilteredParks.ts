@@ -12,6 +12,7 @@ export function useFilteredParks({ parks }: UseFilteredParksProps) {
   const [selectedState, setSelectedState] = useState<string | undefined>();
   const [selectedTerrains, setSelectedTerrains] = useState<string[]>([]);
   const [selectedAmenities, setSelectedAmenities] = useState<string[]>([]);
+  const [selectedCamping, setSelectedCamping] = useState<string[]>([]);
   const [selectedVehicleTypes, setSelectedVehicleTypes] = useState<string[]>([]);
   const [minTrailMiles, setMinTrailMiles] = useState<number>(0);
   const [minAcres, setMinAcres] = useState<number>(0);
@@ -70,6 +71,13 @@ export function useFilteredParks({ parks }: UseFilteredParksProps) {
       );
     }
 
+    // Apply camping filter (multi-select - park must have at least one selected camping type)
+    if (selectedCamping.length > 0) {
+      filteredList = filteredList.filter((park) =>
+        park.camping.some((c) => selectedCamping.includes(c)),
+      );
+    }
+
     // Apply vehicle type filter (multi-select - park must have at least one selected vehicle type)
     if (selectedVehicleTypes.length > 0) {
       filteredList = filteredList.filter((park) =>
@@ -110,6 +118,7 @@ export function useFilteredParks({ parks }: UseFilteredParksProps) {
     selectedState,
     selectedTerrains,
     selectedAmenities,
+    selectedCamping,
     selectedVehicleTypes,
     minTrailMiles,
     minAcres,
@@ -121,6 +130,7 @@ export function useFilteredParks({ parks }: UseFilteredParksProps) {
     setSelectedState(undefined);
     setSelectedTerrains([]);
     setSelectedAmenities([]);
+    setSelectedCamping([]);
     setSelectedVehicleTypes([]);
     setMinTrailMiles(0);
     setMinAcres(0);
@@ -135,6 +145,8 @@ export function useFilteredParks({ parks }: UseFilteredParksProps) {
     setSelectedTerrains,
     selectedAmenities,
     setSelectedAmenities,
+    selectedCamping,
+    setSelectedCamping,
     selectedVehicleTypes,
     setSelectedVehicleTypes,
     minTrailMiles,

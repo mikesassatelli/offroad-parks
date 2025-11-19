@@ -44,8 +44,9 @@ describe("ParkDetailsDialog", () => {
     dayPassUSD: 25,
     milesOfTrails: 50,
     acres: 1000,terrain: ["sand", "rocks"],
-    amenities: ["camping", "restrooms"],
-    difficulty: ["moderate"],
+    amenities: ["restrooms"],
+    
+    camping: [],difficulty: ["moderate"],
     vehicleTypes: [],
     notes: "Great park for beginners!",
     website: "https://testpark.com",
@@ -250,7 +251,6 @@ describe("ParkDetailsDialog", () => {
       <ParkDetailsDialog park={mockPark} isOpen={true} onClose={mockOnClose} />,
     );
 
-    expect(screen.getByText("camping")).toBeInTheDocument();
     expect(screen.getByText("restrooms")).toBeInTheDocument();
   });
 
@@ -259,9 +259,9 @@ describe("ParkDetailsDialog", () => {
       <ParkDetailsDialog park={mockPark} isOpen={true} onClose={mockOnClose} />,
     );
 
-    const campingBadge = screen.getByText("camping");
-    expect(campingBadge).toHaveAttribute("data-variant", "secondary");
-    expect(campingBadge).toHaveClass("capitalize");
+    const restroomsBadge = screen.getByText("restrooms");
+    expect(restroomsBadge).toHaveAttribute("data-variant", "secondary");
+    expect(restroomsBadge).toHaveClass("capitalize");
   });
 
   it("should display verification disclaimer", () => {
@@ -337,7 +337,8 @@ describe("ParkDetailsDialog", () => {
       name: "Minimal Park",
       state: "Texas",terrain: [],
       amenities: [],
-      difficulty: [],
+      
+    camping: [],difficulty: [],
       vehicleTypes: [],
     };
 

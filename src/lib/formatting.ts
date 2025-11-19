@@ -1,3 +1,5 @@
+import type { Camping } from "@/lib/types";
+
 export function formatCurrency(value?: number): string {
   return typeof value === "number" ? `$${value.toFixed(0)}` : "—";
 }
@@ -20,4 +22,17 @@ export function formatPhone(phone?: string): string {
 
   // Return as-is if not a standard format
   return phone;
+}
+
+export function formatCamping(camping: Camping): string {
+  const campingLabels: Record<Camping, string> = {
+    tent: "Tent",
+    rv30A: "RV 30A",
+    rv50A: "RV 50A",
+    fullHookup: "Full Hookup",
+    cabin: "Cabin",
+    groupSite: "Group Site",
+    backcountry: "Backcountry / Walk-in",
+  };
+  return campingLabels[camping];
 }

@@ -36,7 +36,8 @@ describe("MapBoundsHandler", () => {
     terrain: [],
     difficulty: [],
     amenities: [],
-    vehicleTypes: [],
+    
+      camping: [],vehicleTypes: [],
   };
 
   it("should render without crashing", () => {

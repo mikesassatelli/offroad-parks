@@ -10,7 +10,8 @@ describe("useRouteBuilder", () => {
     coords: { lat: 34.0522, lng: -118.2437 }, // Los Angeles
     terrain: ["sand"],
     amenities: [],
-    difficulty: ["easy"],
+    
+    camping: [],difficulty: ["easy"],
     vehicleTypes: [],
   };
 
@@ -21,7 +22,8 @@ describe("useRouteBuilder", () => {
     coords: { lat: 37.7749, lng: -122.4194 }, // San Francisco
     terrain: ["rocks"],
     amenities: [],
-    difficulty: ["moderate"],
+    
+    camping: [],difficulty: ["moderate"],
     vehicleTypes: [],
   };
 
@@ -32,7 +34,8 @@ describe("useRouteBuilder", () => {
     coords: { lat: 36.7783, lng: -119.4179 }, // Between LA and SF
     terrain: ["mud"],
     amenities: [],
-    difficulty: ["difficult"],
+    
+    camping: [],difficulty: ["difficult"],
     vehicleTypes: [],
   };
 
@@ -42,7 +45,8 @@ describe("useRouteBuilder", () => {
     state: "TX",
     terrain: ["sand"],
     amenities: [],
-    difficulty: ["easy"],
+    
+    camping: [],difficulty: ["easy"],
     vehicleTypes: [],
   };
 
