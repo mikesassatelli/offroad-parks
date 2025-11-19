@@ -962,6 +962,8 @@ describe("ParkSubmissionForm", () => {
       longitude: "-122.4194",
       website: "https://example.com",
       phone: "5551234567",
+      campingWebsite: "",
+      campingPhone: "",
       dayPassUSD: "25.50",
       milesOfTrails: "100",
       acres: "5000",

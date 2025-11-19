@@ -142,10 +142,11 @@ describe("ParkContactSidebar", () => {
     expect(screen.queryByText("Official Website")).not.toBeInTheDocument();
   });
 
-  it("should have sticky positioning", () => {
+  it("should not have sticky positioning on card itself", () => {
     const { container } = render(<ParkContactSidebar park={basePark} />);
 
+    // Sticky positioning is now on the parent container in ParkDetailPage
     const card = container.querySelector(".sticky");
-    expect(card).toBeInTheDocument();
+    expect(card).not.toBeInTheDocument();
   });
 });

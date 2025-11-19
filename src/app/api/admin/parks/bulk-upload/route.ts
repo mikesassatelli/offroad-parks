@@ -33,6 +33,8 @@ interface BulkParkInput {
   longitude?: number | null;
   website?: string;
   phone?: string;
+  campingWebsite?: string;
+  campingPhone?: string;
   dayPassUSD?: number | null;
   milesOfTrails?: number | null;
   acres?: number | null;
@@ -364,9 +366,12 @@ export async function POST(
           ? park.slug
           : await generateUniqueSlug(park.name);
 
-        // Sanitize phone (remove non-digits)
+        // Sanitize phone numbers (remove non-digits)
         const sanitizedPhone = park.phone
           ? park.phone.replace(/\D/g, "")
+          : undefined;
+        const sanitizedCampingPhone = park.campingPhone
+          ? park.campingPhone.replace(/\D/g, "")
           : undefined;
 
         // Create park
@@ -380,6 +385,8 @@ export async function POST(
             longitude: park.longitude ?? null,
             website: park.website || null,
             phone: sanitizedPhone || null,
+            campingWebsite: park.campingWebsite || null,
+            campingPhone: sanitizedCampingPhone || null,
             dayPassUSD: park.dayPassUSD ?? null,
             milesOfTrails: park.milesOfTrails ?? null,
             acres: park.acres ?? null,

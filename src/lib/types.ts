@@ -31,6 +31,8 @@ export type DbPark = {
   longitude: number | null;
   website: string | null;
   phone: string | null;
+  campingWebsite: string | null;
+  campingPhone: string | null;
   dayPassUSD: number | null;
   milesOfTrails: number | null;
   acres: number | null;
@@ -56,6 +58,8 @@ export type Park = {
   state: string;
   website?: string;
   phone?: string;
+  campingWebsite?: string;
+  campingPhone?: string;
   coords?: { lat: number; lng: number };
   acres?: number;
   milesOfTrails?: number;
@@ -78,6 +82,8 @@ export function transformDbPark(dbPark: DbPark): Park {
     state: dbPark.state,
     website: dbPark.website ?? undefined,
     phone: dbPark.phone ?? undefined,
+    campingWebsite: dbPark.campingWebsite ?? undefined,
+    campingPhone: dbPark.campingPhone ?? undefined,
     coords:
       dbPark.latitude && dbPark.longitude
         ? { lat: dbPark.latitude, lng: dbPark.longitude }

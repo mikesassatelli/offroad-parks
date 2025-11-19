@@ -78,6 +78,8 @@ model Park {
   longitude     Float?
   website       String?
   phone         String?
+  campingWebsite String?
+  campingPhone   String?
   dayPassUSD    Float?
   milesOfTrails Int?
   acres         Int?

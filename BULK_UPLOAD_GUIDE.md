@@ -25,6 +25,8 @@ The Bulk Park Upload feature allows admin users to upload multiple parks at once
 - `longitude` - Longitude coordinate (-180 to 180)
 - `website` - Park website URL
 - `phone` - Phone number (any format, will be sanitized)
+- `campingWebsite` - Camping reservations website URL
+- `campingPhone` - Camping reservations phone number (any format, will be sanitized)
 - `dayPassUSD` - Day pass price in USD
 - `milesOfTrails` - Total trail miles (integer)
 - `acres` - Park size in acres (integer)
@@ -76,10 +78,10 @@ All US states as two-letter codes (e.g., UT, CO, AZ, CA, etc.)
 ### CSV Example
 
 ```csv
-name,slug,city,state,latitude,longitude,website,phone,dayPassUSD,milesOfTrails,acres,notes,terrain,difficulty,amenities,camping,vehicleTypes
-Example Offroad Park,example-offroad-park,Moab,UT,38.5733,-109.5498,https://example.com,555-123-4567,50,100,5000,Great park with stunning views,"rocks,trails,hills","moderate,difficult","restrooms,fuel","tent,rv30A,rv50A","atv,sxs,motorcycle"
-Desert Adventure Park,,Phoenix,AZ,33.4484,-112.0740,,,25,50,2000,Perfect for beginners,sand,easy,"restrooms,food",tent,"atv,motorcycle"
-Mountain Trails Park,mountain-trails,Denver,CO,,,https://mountaintrails.com,555-987-6543,,,3000,,"trails,hills","moderate,difficult,extreme",,cabin,sxs
+name,slug,city,state,latitude,longitude,website,phone,campingWebsite,campingPhone,dayPassUSD,milesOfTrails,acres,notes,terrain,difficulty,amenities,camping,vehicleTypes
+Example Offroad Park,example-offroad-park,Moab,UT,38.5733,-109.5498,https://example.com,555-123-4567,https://reservations.example.com,555-987-6543,50,100,5000,Great park with stunning views,"rocks,trails,hills","moderate,difficult","restrooms,fuel","tent,rv30A,rv50A","atv,sxs,motorcycle"
+Desert Adventure Park,,Phoenix,AZ,33.4484,-112.0740,,,,,25,50,2000,Perfect for beginners,sand,easy,"restrooms,food",tent,"atv,motorcycle"
+Mountain Trails Park,mountain-trails,Denver,CO,,,https://mountaintrails.com,555-987-6543,,,,,3000,,"trails,hills","moderate,difficult,extreme",,cabin,sxs
 ```
 
 ## JSON Format
@@ -97,6 +99,8 @@ JSON files should contain an array of park objects:
     "longitude": -109.5498,
     "website": "https://example.com",
     "phone": "555-123-4567",
+    "campingWebsite": "https://reservations.example.com",
+    "campingPhone": "555-987-6543",
     "dayPassUSD": 50,
     "milesOfTrails": 100,
     "acres": 5000,
@@ -169,6 +173,8 @@ The system validates all data before insertion:
 - **Vehicle Types:** Optional, all must be valid types if provided
 - **Website:** Must be valid URL format if provided
 - **Phone:** Max 15 digits (formatting characters removed)
+- **Camping Website:** Must be valid URL format if provided
+- **Camping Phone:** Max 15 digits (formatting characters removed)
 - **Coordinates:** Latitude must be -90 to 90, longitude -180 to 180
 - **Numeric Fields:** Cannot be negative
 - **Notes:** Max 2000 characters
@@ -227,6 +233,8 @@ The system validates all data before insertion:
       "longitude": number | null,
       "website": "string (optional)",
       "phone": "string (optional)",
+      "campingWebsite": "string (optional)",
+      "campingPhone": "string (optional)",
       "dayPassUSD": number | null,
       "milesOfTrails": number | null,
       "acres": number | null,
@@ -260,7 +268,7 @@ The system validates all data before insertion:
 
 - **Transaction-Based:** All parks in a batch are created atomically
 - **Slug Generation:** Automatic slug generation with uniqueness checks
-- **Phone Sanitization:** Non-digit characters automatically removed
+- **Phone Sanitization:** Non-digit characters automatically removed from phone and campingPhone
 - **Status:** All parks set to APPROVED (no review needed)
 - **Submitter:** Admin user ID recorded as submitter
 - **Relations:** Terrain, difficulty, amenities, camping, and vehicleTypes stored in junction tables

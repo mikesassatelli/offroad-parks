@@ -55,6 +55,8 @@ export default async function EditParkPage({ params }: EditParkPageProps) {
     longitude: park.longitude?.toString() || "",
     website: park.website || "",
     phone: park.phone || "",
+    campingWebsite: park.campingWebsite || "",
+    campingPhone: park.campingPhone || "",
     dayPassUSD: park.dayPassUSD?.toString() || "",
     milesOfTrails: park.milesOfTrails?.toString() || "",
     acres: park.acres?.toString() || "",

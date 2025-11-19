@@ -82,6 +82,8 @@ type DbPark = {
   longitude: number | null;
   website: string | null;
   phone: string | null;
+  campingWebsite: string | null;  // Separate camping reservations website
+  campingPhone: string | null;    // Separate camping reservations phone
   dayPassUSD: number | null;
   milesOfTrails: number | null;
   acres: number | null;
@@ -92,6 +94,7 @@ type DbPark = {
   terrain: Array<{ terrain: Terrain }>;
   difficulty: Array<{ difficulty: Difficulty }>;
   amenities: Array<{ amenity: Amenity }>;
+  camping: Array<{ camping: Camping }>;
 };
 ```
 
@@ -105,6 +108,8 @@ type Park = {
   state: string;
   website?: string;
   phone?: string;
+  campingWebsite?: string; // Separate camping reservations website
+  campingPhone?: string;   // Separate camping reservations phone
   coords?: { lat: number; lng: number };  // Restructured from lat/lng
   dayPassUSD?: number;
   milesOfTrails?: number;
@@ -114,7 +119,8 @@ type Park = {
   // Categorical data (flattened to simple arrays)
   terrain: Terrain[];      // ["sand", "rocks"]
   difficulty: Difficulty[]; // ["moderate", "difficult"]
-  amenities: Amenity[];    // ["camping", "restrooms"]
+  amenities: Amenity[];    // ["restrooms", "fuel"]
+  camping: Camping[];      // ["tent", "rv30A"]
 
   heroImage?: string | null;
 };

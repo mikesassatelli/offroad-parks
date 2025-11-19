@@ -35,6 +35,8 @@ interface FormData {
   longitude: string;
   website: string;
   phone: string;
+  campingWebsite: string;
+  campingPhone: string;
   dayPassUSD: string;
   milesOfTrails: string;
   acres: string;
@@ -77,6 +79,8 @@ export function ParkSubmissionForm({
       longitude: "",
       website: "",
       phone: "",
+      campingWebsite: "",
+      campingPhone: "",
       dayPassUSD: "",
       milesOfTrails: "",
       acres: "",
@@ -95,8 +99,8 @@ export function ParkSubmissionForm({
   ) => {
     const { name, value } = e.target;
 
-    // Sanitize phone number - strip all non-numeric characters
-    if (name === "phone") {
+    // Sanitize phone numbers - strip all non-numeric characters
+    if (name === "phone" || name === "campingPhone") {
       const sanitized = value.replace(/\D/g, "");
       setFormData((prev) => ({ ...prev, [name]: sanitized }));
       return;
@@ -508,6 +512,44 @@ export function ParkSubmissionForm({
             </div>
           ))}
         </div>
+
+        {/* Camping Contact Info */}
+        {formData.camping.length > 0 && (
+          <div className="mt-4 pt-4 border-t border-gray-200">
+            <Label className="mb-3 block text-sm text-gray-600">
+              Camping Reservations (Optional)
+            </Label>
+            <div className="grid md:grid-cols-2 gap-4">
+              <div>
+                <Label htmlFor="campingWebsite" className="text-sm">
+                  Camping Website
+                </Label>
+                <Input
+                  id="campingWebsite"
+                  name="campingWebsite"
+                  type="url"
+                  value={formData.campingWebsite}
+                  onChange={handleInputChange}
+                  placeholder="https://reservations..."
+                />
+              </div>
+              <div>
+                <Label htmlFor="campingPhone" className="text-sm">
+                  Camping Phone
+                </Label>
+                <Input
+                  id="campingPhone"
+                  name="campingPhone"
+                  type="tel"
+                  value={formData.campingPhone}
+                  onChange={handleInputChange}
+                  placeholder="5551234567"
+                  maxLength={15}
+                />
+              </div>
+            </div>
+          </div>
+        )}
       </div>
 
       {/* Vehicle Types */}
