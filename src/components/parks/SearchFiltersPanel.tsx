@@ -1,5 +1,4 @@
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
 import {
   Select,
   SelectContent,
@@ -14,13 +13,12 @@ import {
   ALL_CAMPING_TYPES,
   ALL_TERRAIN_TYPES,
   ALL_VEHICLE_TYPES,
+  MIN_RATING_FILTERS,
 } from "@/lib/constants";
 import { formatCamping } from "@/lib/formatting";
 import type { Camping } from "@/lib/types";
 
 interface SearchFiltersPanelProps {
-  searchQuery: string;
-  onSearchQueryChange: (query: string) => void;
   selectedState: string | undefined;
   onStateChange: (state: string | undefined) => void;
   availableStates: string[];
@@ -38,12 +36,12 @@ interface SearchFiltersPanelProps {
   minAcres: number;
   onMinAcresChange: (acres: number) => void;
   maxAcres: number;
+  minRating: string;
+  onMinRatingChange: (rating: string) => void;
   onClearFilters: () => void;
 }
 
 export function SearchFiltersPanel({
-  searchQuery,
-  onSearchQueryChange,
   selectedState,
   onStateChange,
   availableStates,
@@ -61,10 +59,16 @@ export function SearchFiltersPanel({
   minAcres,
   onMinAcresChange,
   maxAcres,
+  minRating,
+  onMinRatingChange,
   onClearFilters,
 }: SearchFiltersPanelProps) {
   const handleStateChange = (value: string) => {
     onStateChange(value === "__all" ? undefined : value);
+  };
+
+  const handleMinRatingChange = (value: string) => {
+    onMinRatingChange(value === "__any" ? "" : value);
   };
 
   const handleTerrainToggle = (terrain: string) => {
@@ -101,15 +105,6 @@ export function SearchFiltersPanel({
 
   return (
     <div className="md:col-span-1 bg-white p-4 rounded-2xl shadow-sm border">
-      <div className="text-sm font-semibold mb-2">Search</div>
-      <Input
-        placeholder="Search by name, city, state…"
-        value={searchQuery}
-        onChange={(e) => onSearchQueryChange(e.target.value)}
-      />
-
-      <div className="h-px bg-gray-200 my-4" />
-
       <div className="text-sm font-semibold mb-2">State</div>
       <Select
         onValueChange={handleStateChange}
@@ -239,6 +234,26 @@ export function SearchFiltersPanel({
           onValueChange={(values) => onMinAcresChange(values[0])}
         />
       </div>
+
+      <div className="mt-4 text-sm font-semibold mb-2">Minimum Rating</div>
+      <Select
+        onValueChange={handleMinRatingChange}
+        value={minRating || "__any"}
+      >
+        <SelectTrigger>
+          <SelectValue placeholder="Any Rating" />
+        </SelectTrigger>
+        <SelectContent>
+          {MIN_RATING_FILTERS.map((filter) => (
+            <SelectItem
+              key={filter.value || "__any"}
+              value={filter.value || "__any"}
+            >
+              {filter.label}
+            </SelectItem>
+          ))}
+        </SelectContent>
+      </Select>
 
       <div className="mt-4 flex gap-2">
         <Button variant="secondary" onClick={onClearFilters}>

@@ -15,6 +15,9 @@ vi.mock("@/lib/prisma", () => ({
     userFavorite: {
       findMany: vi.fn(),
     },
+    parkReview: {
+      findMany: vi.fn(),
+    },
   },
 }));
 
@@ -23,10 +26,11 @@ vi.mock("next/navigation", () => ({
 }));
 
 vi.mock("@/components/profile/UserProfileClient", () => ({
-  UserProfileClient: ({ parks, user }: any) => (
+  UserProfileClient: ({ parks, reviews, user }: any) => (
     <div data-testid="user-profile-client">
       <div data-testid="user-name">{user.name}</div>
       <div data-testid="parks-count">{parks.length} parks</div>
+      <div data-testid="reviews-count">{reviews.length} reviews</div>
     </div>
   ),
 }));
@@ -54,6 +58,7 @@ describe("ProfilePage", () => {
       user: { id: "user-1", name: "John Doe", email: "john@example.com" },
     } as any);
     vi.mocked(prisma.userFavorite.findMany).mockResolvedValue([]);
+    vi.mocked(prisma.parkReview.findMany).mockResolvedValue([]);
 
     const component = await ProfilePage();
     render(component);
@@ -67,6 +72,7 @@ describe("ProfilePage", () => {
       user: { id: "user-1", name: "John Doe" },
     } as any);
     vi.mocked(prisma.userFavorite.findMany).mockResolvedValue([]);
+    vi.mocked(prisma.parkReview.findMany).mockResolvedValue([]);
 
     await ProfilePage();
 
@@ -135,6 +141,7 @@ describe("ProfilePage", () => {
     vi.mocked(prisma.userFavorite.findMany).mockResolvedValue(
       mockFavorites as any,
     );
+    vi.mocked(prisma.parkReview.findMany).mockResolvedValue([]);
 
     const component = await ProfilePage();
     render(component);
@@ -184,6 +191,7 @@ describe("ProfilePage", () => {
     vi.mocked(prisma.userFavorite.findMany).mockResolvedValue(
       mockFavorites as any,
     );
+    vi.mocked(prisma.parkReview.findMany).mockResolvedValue([]);
 
     const component = await ProfilePage();
     render(component);
@@ -234,6 +242,7 @@ describe("ProfilePage", () => {
     vi.mocked(prisma.userFavorite.findMany).mockResolvedValue(
       mockFavorites as any,
     );
+    vi.mocked(prisma.parkReview.findMany).mockResolvedValue([]);
 
     const component = await ProfilePage();
     render(component);
@@ -246,6 +255,7 @@ describe("ProfilePage", () => {
       user: { id: "user-1", name: "John Doe" },
     } as any);
     vi.mocked(prisma.userFavorite.findMany).mockResolvedValue([]);
+    vi.mocked(prisma.parkReview.findMany).mockResolvedValue([]);
 
     const component = await ProfilePage();
     render(component);
@@ -295,6 +305,7 @@ describe("ProfilePage", () => {
     vi.mocked(prisma.userFavorite.findMany).mockResolvedValue(
       mockFavorites as any,
     );
+    vi.mocked(prisma.parkReview.findMany).mockResolvedValue([]);
 
     const component = await ProfilePage();
     render(component);

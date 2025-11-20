@@ -1,16 +1,17 @@
 import { prisma } from "@/lib/prisma";
-import { Camera, CheckCircle, Clock, MapPin } from "lucide-react";
+import { Camera, CheckCircle, Clock, MapPin, MessageSquare } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
 
 export default async function AdminDashboard() {
   // Fetch statistics
-  const [totalParks, pendingParks, totalUsers, pendingPhotos] =
+  const [totalParks, pendingParks, totalUsers, pendingPhotos, pendingReviews] =
     await Promise.all([
       prisma.park.count(),
       prisma.park.count({ where: { status: "PENDING" } }),
       prisma.user.count(),
       prisma.parkPhoto.count({ where: { status: "PENDING" } }),
+      prisma.parkReview.count({ where: { status: "PENDING" } }),
     ]);
 
   // Get recent pending parks
@@ -65,6 +66,12 @@ export default async function AdminDashboard() {
       value: pendingPhotos,
       icon: Camera,
       color: "bg-purple-500",
+    },
+    {
+      name: "Pending Reviews",
+      value: pendingReviews,
+      icon: MessageSquare,
+      color: "bg-orange-500",
     },
     {
       name: "Total Users",

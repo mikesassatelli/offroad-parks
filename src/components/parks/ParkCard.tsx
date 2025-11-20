@@ -1,6 +1,7 @@
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { StarRating, DifficultyRating } from "@/components/reviews";
 import { formatCurrency } from "@/lib/formatting";
 import type { Park } from "@/lib/types";
 import { Camera, MapPin, Star, StarOff } from "lucide-react";
@@ -83,9 +84,14 @@ export function ParkCard({
           <CardTitle className="leading-tight text-lg text-card-foreground">
             {park.name}
           </CardTitle>
-          <div className="flex items-center gap-2 text-sm text-muted-foreground mt-1">
-            <MapPin className="w-4 h-4" />
-            <span>{locationDisplay}</span>
+          <div className="flex items-center justify-between mt-1">
+            <div className="flex items-center gap-2 text-sm text-muted-foreground">
+              <MapPin className="w-4 h-4" />
+              <span>{locationDisplay}</span>
+            </div>
+            {park.averageRating && (
+              <StarRating rating={park.averageRating} size="sm" />
+            )}
           </div>
         </CardHeader>
         <CardContent className="pt-0 space-y-3 flex-1 flex flex-col">
@@ -109,6 +115,12 @@ export function ParkCard({
               <span className="text-muted-foreground">Acres:</span>{" "}
               <span className="font-medium">{acresDisplay}</span>
             </div>
+            {park.averageDifficulty && (
+              <div className="flex items-center gap-1">
+                <span className="text-muted-foreground">Difficulty:</span>{" "}
+                <DifficultyRating rating={Math.round(park.averageDifficulty)} size="sm" />
+              </div>
+            )}
           </div>
           <div className="flex flex-wrap gap-1.5 mt-auto">
             {park.amenities.map((amenity) => (

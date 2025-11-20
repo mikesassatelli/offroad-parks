@@ -1,7 +1,8 @@
 import { redirect } from "next/navigation";
 import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
-import { transformDbPark } from "@/lib/types";
+import { transformDbPark, transformDbReview } from "@/lib/types";
+import type { DbReview } from "@/lib/types";
 import { UserProfileClient } from "@/components/profile/UserProfileClient";
 
 export default async function ProfilePage() {
@@ -47,5 +48,34 @@ export default async function ProfilePage() {
       heroImage: f.park.photos[0]?.url || null,
     }));
 
-  return <UserProfileClient parks={favoritedParks} user={session.user} />;
+  // Fetch user's reviews
+  const userReviews = await prisma.parkReview.findMany({
+    where: { userId: session.user.id },
+    include: {
+      user: {
+        select: {
+          id: true,
+          name: true,
+          image: true,
+        },
+      },
+      park: {
+        select: {
+          name: true,
+          slug: true,
+          state: true,
+        },
+      },
+      _count: {
+        select: { helpfulVotes: true },
+      },
+    },
+    orderBy: { createdAt: "desc" },
+  });
+
+  const reviews = userReviews.map((review) =>
+    transformDbReview(review as DbReview, session.user?.id)
+  );
+
+  return <UserProfileClient parks={favoritedParks} reviews={reviews} user={session.user} />;
 }

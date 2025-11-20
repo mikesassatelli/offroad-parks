@@ -1,7 +1,7 @@
 import { useMemo, useState } from "react";
 import type { Park } from "@/lib/types";
 
-export type SortOption = "name" | "price" | "miles";
+export type SortOption = "name" | "price" | "miles" | "acres" | "rating" | "difficulty-high" | "difficulty-low";
 
 interface UseFilteredParksProps {
   parks: Park[];
@@ -16,6 +16,7 @@ export function useFilteredParks({ parks }: UseFilteredParksProps) {
   const [selectedVehicleTypes, setSelectedVehicleTypes] = useState<string[]>([]);
   const [minTrailMiles, setMinTrailMiles] = useState<number>(0);
   const [minAcres, setMinAcres] = useState<number>(0);
+  const [minRating, setMinRating] = useState<string>("");
   const [sortOption, setSortOption] = useState<SortOption>("name");
 
   const availableStates = useMemo(
@@ -99,15 +100,31 @@ export function useFilteredParks({ parks }: UseFilteredParksProps) {
       );
     }
 
+    // Apply minimum rating filter
+    if (minRating) {
+      const minRatingValue = parseFloat(minRating);
+      filteredList = filteredList.filter(
+        (park) => (park.averageRating ?? 0) >= minRatingValue,
+      );
+    }
+
     // Apply sorting
     filteredList.sort((parkA, parkB) => {
       if (sortOption === "name") {
         return parkA.name.localeCompare(parkB.name);
       } else if (sortOption === "price") {
         return (parkA.dayPassUSD ?? Infinity) - (parkB.dayPassUSD ?? Infinity);
-      } else {
-        // sortOption === "miles"
+      } else if (sortOption === "miles") {
         return (parkB.milesOfTrails ?? 0) - (parkA.milesOfTrails ?? 0);
+      } else if (sortOption === "acres") {
+        return (parkB.acres ?? 0) - (parkA.acres ?? 0);
+      } else if (sortOption === "rating") {
+        return (parkB.averageRating ?? 0) - (parkA.averageRating ?? 0);
+      } else if (sortOption === "difficulty-high") {
+        return (parkB.averageDifficulty ?? 0) - (parkA.averageDifficulty ?? 0);
+      } else {
+        // sortOption === "difficulty-low"
+        return (parkA.averageDifficulty ?? Infinity) - (parkB.averageDifficulty ?? Infinity);
       }
     });
 
@@ -122,6 +139,7 @@ export function useFilteredParks({ parks }: UseFilteredParksProps) {
     selectedVehicleTypes,
     minTrailMiles,
     minAcres,
+    minRating,
     sortOption,
   ]);
 
@@ -134,6 +152,7 @@ export function useFilteredParks({ parks }: UseFilteredParksProps) {
     setSelectedVehicleTypes([]);
     setMinTrailMiles(0);
     setMinAcres(0);
+    setMinRating("");
   };
 
   return {
@@ -155,6 +174,8 @@ export function useFilteredParks({ parks }: UseFilteredParksProps) {
     minAcres,
     setMinAcres,
     maxAcres,
+    minRating,
+    setMinRating,
     sortOption,
     setSortOption,
     availableStates,

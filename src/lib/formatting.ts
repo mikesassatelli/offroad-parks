@@ -1,4 +1,9 @@
-import type { Camping } from "@/lib/types";
+import type {
+  Camping,
+  RecommendedDuration,
+  VehicleType,
+  VisitCondition,
+} from "@/lib/types";
 
 export function formatCurrency(value?: number): string {
   return typeof value === "number" ? `$${value.toFixed(0)}` : "—";
@@ -35,4 +40,62 @@ export function formatCamping(camping: Camping): string {
     backcountry: "Backcountry / Walk-in",
   };
   return campingLabels[camping];
+}
+
+export function formatVisitCondition(condition: VisitCondition): string {
+  const labels: Record<VisitCondition, string> = {
+    dry: "Dry",
+    muddy: "Muddy",
+    snow: "Snow",
+    wet: "Wet",
+    mixed: "Mixed",
+  };
+  return labels[condition];
+}
+
+export function formatRecommendedDuration(duration: RecommendedDuration): string {
+  const labels: Record<RecommendedDuration, string> = {
+    quickRide: "Quick Ride",
+    halfDay: "Half Day",
+    fullDay: "Full Day",
+    overnight: "Overnight",
+  };
+  return labels[duration];
+}
+
+export function formatVehicleType(vehicleType: VehicleType): string {
+  const labels: Record<VehicleType, string> = {
+    motorcycle: "Motorcycle",
+    atv: "ATV",
+    sxs: "SxS / UTV",
+    fullSize: "Full Size 4x4",
+  };
+  return labels[vehicleType];
+}
+
+export function formatRating(rating: number): string {
+  return rating.toFixed(1);
+}
+
+export function formatDate(dateString: string): string {
+  const date = new Date(dateString);
+  return date.toLocaleDateString("en-US", {
+    year: "numeric",
+    month: "short",
+    day: "numeric",
+  });
+}
+
+export function formatRelativeDate(dateString: string): string {
+  const date = new Date(dateString);
+  const now = new Date();
+  const diffMs = now.getTime() - date.getTime();
+  const diffDays = Math.floor(diffMs / (1000 * 60 * 60 * 24));
+
+  if (diffDays === 0) return "Today";
+  if (diffDays === 1) return "Yesterday";
+  if (diffDays < 7) return `${diffDays} days ago`;
+  if (diffDays < 30) return `${Math.floor(diffDays / 7)} weeks ago`;
+  if (diffDays < 365) return `${Math.floor(diffDays / 30)} months ago`;
+  return `${Math.floor(diffDays / 365)} years ago`;
 }

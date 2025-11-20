@@ -1,6 +1,6 @@
 import { fireEvent, render, screen } from "@testing-library/react";
 import { UserProfileClient } from "@/components/profile/UserProfileClient";
-import type { Park } from "@/lib/types";
+import type { Park, Review } from "@/lib/types";
 import { vi } from "vitest";
 
 // Mock Next.js modules
@@ -16,6 +16,33 @@ vi.mock("next/link", () => ({
 
 vi.mock("next-auth/react", () => ({
   SessionProvider: ({ children }: any) => <div>{children}</div>,
+  useSession: () => ({
+    data: {
+      user: {
+        name: "John Doe",
+        email: "john@example.com",
+        image: null,
+        role: "USER",
+      },
+    },
+    status: "authenticated",
+  }),
+}));
+
+vi.mock("@/components/layout/AppHeader", () => ({
+  AppHeader: ({ showBackButton }: { showBackButton?: boolean }) => (
+    <header className="sticky top-0 z-10 bg-card/95 backdrop-blur-sm border-b border-border shadow-sm">
+      <div className="max-w-7xl mx-auto px-6 py-5 flex items-center gap-3">
+        {showBackButton && (
+          // eslint-disable-next-line @next/next/no-html-link-for-pages
+          <a href="/">Back to Parks</a>
+        )}
+        {/* eslint-disable-next-line @next/next/no-html-link-for-pages */}
+        <a href="/">🏞️ UTV Parks</a>
+        <span>beta</span>
+      </div>
+    </header>
+  ),
 }));
 
 // Mock components
@@ -80,7 +107,7 @@ describe("UserProfileClient", () => {
   ];
 
   it("should render user profile header", () => {
-    render(<UserProfileClient parks={[]} user={mockUser} />);
+    render(<UserProfileClient parks={[]} reviews={[]} user={mockUser} />);
 
     expect(screen.getByText("John Doe")).toBeInTheDocument();
     expect(screen.getByText("john@example.com")).toBeInTheDocument();
@@ -88,14 +115,14 @@ describe("UserProfileClient", () => {
 
   it('should display "My Profile" when user has no name', () => {
     const userWithoutName = { ...mockUser, name: null };
-    render(<UserProfileClient parks={[]} user={userWithoutName} />);
+    render(<UserProfileClient parks={[]} reviews={[]} user={userWithoutName} />);
 
     expect(screen.getByText("My Profile")).toBeInTheDocument();
   });
 
   it("should render app title with link to home", () => {
     const { container } = render(
-      <UserProfileClient parks={[]} user={mockUser} />,
+      <UserProfileClient parks={[]} reviews={[]} user={mockUser} />,
     );
 
     const homeLink = container.querySelector('a[href="/"]');
@@ -104,43 +131,43 @@ describe("UserProfileClient", () => {
   });
 
   it("should display beta badge", () => {
-    render(<UserProfileClient parks={[]} user={mockUser} />);
+    render(<UserProfileClient parks={[]} reviews={[]} user={mockUser} />);
 
     expect(screen.getByText("beta")).toBeInTheDocument();
   });
 
   it("should display My Favorites heading", () => {
-    render(<UserProfileClient parks={[]} user={mockUser} />);
+    render(<UserProfileClient parks={[]} reviews={[]} user={mockUser} />);
 
     expect(screen.getByText("My Favorites")).toBeInTheDocument();
   });
 
   it("should display park count with correct pluralization (0 parks)", () => {
-    render(<UserProfileClient parks={[]} user={mockUser} />);
+    render(<UserProfileClient parks={[]} reviews={[]} user={mockUser} />);
 
     expect(screen.getByText("(0 parks)")).toBeInTheDocument();
   });
 
   it("should display park count with correct pluralization (1 park)", () => {
-    render(<UserProfileClient parks={[mockParks[0]]} user={mockUser} />);
+    render(<UserProfileClient parks={[mockParks[0]]} reviews={[]} user={mockUser} />);
 
     expect(screen.getByText("(1 park)")).toBeInTheDocument();
   });
 
   it("should display park count with correct pluralization (2 parks)", () => {
-    render(<UserProfileClient parks={mockParks} user={mockUser} />);
+    render(<UserProfileClient parks={mockParks} reviews={[]} user={mockUser} />);
 
     expect(screen.getByText("(2 parks)")).toBeInTheDocument();
   });
 
   it("should render Back to Parks button", () => {
-    render(<UserProfileClient parks={[]} user={mockUser} />);
+    render(<UserProfileClient parks={[]} reviews={[]} user={mockUser} />);
 
     expect(screen.getByText("Back to Parks")).toBeInTheDocument();
   });
 
   it("should show empty state when no favorites", () => {
-    render(<UserProfileClient parks={[]} user={mockUser} />);
+    render(<UserProfileClient parks={[]} reviews={[]} user={mockUser} />);
 
     expect(screen.getByText("No favorites yet")).toBeInTheDocument();
     expect(
@@ -149,25 +176,27 @@ describe("UserProfileClient", () => {
   });
 
   it("should show Browse Parks button in empty state", () => {
-    render(<UserProfileClient parks={[]} user={mockUser} />);
+    render(<UserProfileClient parks={[]} reviews={[]} user={mockUser} />);
 
-    expect(screen.getByText("Browse Parks")).toBeInTheDocument();
+    // Should have two Browse Parks buttons (one for favorites, one for reviews)
+    const browseParksButtons = screen.getAllByText("Browse Parks");
+    expect(browseParksButtons.length).toBe(2);
   });
 
   it("should not show empty state when parks exist", () => {
-    render(<UserProfileClient parks={mockParks} user={mockUser} />);
+    render(<UserProfileClient parks={mockParks} reviews={[]} user={mockUser} />);
 
     expect(screen.queryByText("No favorites yet")).not.toBeInTheDocument();
   });
 
   it("should render ParkCard for each park", () => {
-    render(<UserProfileClient parks={mockParks} user={mockUser} />);
+    render(<UserProfileClient parks={mockParks} reviews={[]} user={mockUser} />);
 
     expect(screen.getAllByTestId("park-card")).toHaveLength(2);
   });
 
   it("should display park names", () => {
-    render(<UserProfileClient parks={mockParks} user={mockUser} />);
+    render(<UserProfileClient parks={mockParks} reviews={[]} user={mockUser} />);
 
     expect(screen.getByText("Test Park 1")).toBeInTheDocument();
     expect(screen.getByText("Test Park 2")).toBeInTheDocument();
@@ -175,7 +204,7 @@ describe("UserProfileClient", () => {
 
   it("should render user icon", () => {
     const { container } = render(
-      <UserProfileClient parks={[]} user={mockUser} />,
+      <UserProfileClient parks={[]} reviews={[]} user={mockUser} />,
     );
 
     // Lucide renders as SVG with aria-hidden
@@ -185,7 +214,7 @@ describe("UserProfileClient", () => {
 
   it("should render heart icons", () => {
     const { container } = render(
-      <UserProfileClient parks={[]} user={mockUser} />,
+      <UserProfileClient parks={[]} reviews={[]} user={mockUser} />,
     );
 
     // Should have heart icons for favorites section
@@ -200,19 +229,19 @@ describe("UserProfileClient", () => {
       state: "Texas",
       coords: { lat: 30, lng: -98 },terrain: [],
       amenities: [],
-      
+
     camping: [],difficulty: [],
       vehicleTypes: [],
     };
 
-    render(<UserProfileClient parks={[minimalPark]} user={mockUser} />);
+    render(<UserProfileClient parks={[minimalPark]} reviews={[]} user={mockUser} />);
 
     expect(screen.getByText("Minimal Park")).toBeInTheDocument();
   });
 
   it("should call toggleFavorite when favorite button is clicked", async () => {
     mockToggleFavorite.mockResolvedValue(undefined);
-    render(<UserProfileClient parks={mockParks} user={mockUser} />);
+    render(<UserProfileClient parks={mockParks} reviews={[]} user={mockUser} />);
 
     // Find and click the favorite button for the first park
     const favoriteButtons = screen.getAllByText("Favorite");
@@ -225,7 +254,7 @@ describe("UserProfileClient", () => {
     mockToggleFavorite.mockResolvedValue(undefined);
     mockIsFavorite.mockReturnValue(true);
 
-    render(<UserProfileClient parks={mockParks} user={mockUser} />);
+    render(<UserProfileClient parks={mockParks} reviews={[]} user={mockUser} />);
 
     // Find and click the unfavorite button for the first park
     const unfavoriteButtons = screen.getAllByText("Unfavorite");
@@ -236,7 +265,7 @@ describe("UserProfileClient", () => {
 
   it("should render SessionProvider wrapper", () => {
     const { container } = render(
-      <UserProfileClient parks={[]} user={mockUser} />,
+      <UserProfileClient parks={[]} reviews={[]} user={mockUser} />,
     );
 
     // SessionProvider is mocked to render a div wrapper
@@ -245,7 +274,7 @@ describe("UserProfileClient", () => {
 
   it("should render grid layout for park cards", () => {
     const { container } = render(
-      <UserProfileClient parks={mockParks} user={mockUser} />,
+      <UserProfileClient parks={mockParks} reviews={[]} user={mockUser} />,
     );
 
     const grid = container.querySelector(".grid");
@@ -256,7 +285,7 @@ describe("UserProfileClient", () => {
 
   it("should render sticky header", () => {
     const { container } = render(
-      <UserProfileClient parks={[]} user={mockUser} />,
+      <UserProfileClient parks={[]} reviews={[]} user={mockUser} />,
     );
 
     const header = container.querySelector("header");
@@ -266,7 +295,7 @@ describe("UserProfileClient", () => {
 
   it("should render Back to Parks link with correct href", () => {
     const { container } = render(
-      <UserProfileClient parks={[]} user={mockUser} />,
+      <UserProfileClient parks={[]} reviews={[]} user={mockUser} />,
     );
 
     const links = container.querySelectorAll('a[href="/"]');
