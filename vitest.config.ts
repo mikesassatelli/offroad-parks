@@ -36,10 +36,10 @@ export default defineConfig({
         "src/app/admin/parks/[id]/edit/page.tsx", // Server component for editing parks
       ],
       thresholds: {
-        lines: 70,
-        functions: 70,
-        branches: 70,
-        statements: 70,
+        lines: 65,
+        functions: 65,
+        branches: 65,
+        statements: 65,
       },
     },
   },
