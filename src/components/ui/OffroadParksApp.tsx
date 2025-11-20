@@ -7,6 +7,7 @@ import { useFilteredParks } from "@/hooks/useFilteredParks";
 import { useFavorites } from "@/hooks/useFavorites";
 import { useRouteBuilder } from "@/hooks/useRouteBuilder";
 import { AppHeader } from "@/components/layout/AppHeader";
+import { SearchHeader } from "@/components/layout/SearchHeader";
 import { SearchFiltersPanel } from "@/components/parks/SearchFiltersPanel";
 import { ParkCard } from "@/components/parks/ParkCard";
 import { RouteList } from "@/features/route-planner/RouteList";
@@ -46,6 +47,8 @@ function OffroadParksAppInner({ parks }: OffroadParksAppProps) {
     minAcres,
     setMinAcres,
     maxAcres,
+    minRating,
+    setMinRating,
     sortOption,
     setSortOption,
     availableStates,
@@ -77,17 +80,22 @@ function OffroadParksAppInner({ parks }: OffroadParksAppProps) {
 
   return (
     <div className="min-h-screen bg-background">
-      <AppHeader
+      {/* Sticky header */}
+      <div className="sticky top-0 z-20">
+        <AppHeader user={user} />
+      </div>
+
+      {/* Search and sort bar */}
+      <SearchHeader
+        searchQuery={searchQuery}
+        onSearchQueryChange={setSearchQuery}
         sortOption={sortOption}
         onSortChange={setSortOption}
-        user={user}
       />
 
-      <main className="max-w-7xl mx-auto px-6 py-8">
+      <main className="max-w-7xl mx-auto px-6 pb-8">
         <div className="grid lg:grid-cols-5 gap-6 items-start">
           <SearchFiltersPanel
-            searchQuery={searchQuery}
-            onSearchQueryChange={setSearchQuery}
             selectedState={selectedState}
             onStateChange={setSelectedState}
             availableStates={availableStates}
@@ -105,6 +113,8 @@ function OffroadParksAppInner({ parks }: OffroadParksAppProps) {
             minAcres={minAcres}
             onMinAcresChange={setMinAcres}
             maxAcres={maxAcres}
+            minRating={minRating}
+            onMinRatingChange={setMinRating}
             onClearFilters={clearAllFilters}
           />
 

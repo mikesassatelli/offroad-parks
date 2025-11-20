@@ -70,6 +70,59 @@ vi.mock("next/dynamic", () => ({
   },
 }));
 
+// Mock review components and hooks
+vi.mock("@/components/reviews", () => ({
+  RatingBadge: ({ rating, reviewCount }: any) => (
+    <div data-testid="rating-badge">
+      {rating ?? "No rating"} ({reviewCount ?? 0})
+    </div>
+  ),
+  ReviewList: ({ reviews }: any) => (
+    <div data-testid="review-list">{reviews.length} reviews</div>
+  ),
+  ReviewForm: () => <div data-testid="review-form">Review Form</div>,
+}));
+
+vi.mock("@/hooks/useReviews", () => ({
+  useReviews: () => ({
+    reviews: [],
+    isLoading: false,
+    error: null,
+    pagination: { page: 1, limit: 10, total: 0, totalPages: 0 },
+    setPage: vi.fn(),
+    refresh: vi.fn(),
+  }),
+}));
+
+vi.mock("@/hooks/useParkReview", () => ({
+  useParkReview: () => ({
+    userReview: null,
+    isLoading: false,
+    isSubmitting: false,
+    error: null,
+    createReview: vi.fn(),
+    updateReview: vi.fn(),
+    deleteReview: vi.fn(),
+    loadUserReview: vi.fn(),
+  }),
+}));
+
+vi.mock("@/features/parks/detail/components/CampingInfoCard", () => ({
+  CampingInfoCard: () => <div data-testid="camping-info-card">Camping Info</div>,
+}));
+
+// Mock AppHeader
+vi.mock("@/components/layout/AppHeader", () => ({
+  AppHeader: ({ showBackButton }: { showBackButton?: boolean }) => (
+    <header data-testid="app-header">
+      {showBackButton && (
+        // eslint-disable-next-line @next/next/no-html-link-for-pages
+        <a href="/" role="button" aria-label="Back to Parks">Back to Parks</a>
+      )}
+    </header>
+  ),
+}));
+
 // Mock UI components
 vi.mock("@/components/ui/button", () => ({
   Button: ({ children, onClick, className, ...props }: any) => (
@@ -158,14 +211,12 @@ describe("ParkDetailPage", () => {
     ).toBeInTheDocument();
   });
 
-  it("should navigate to home when back button clicked", async () => {
-    const user = userEvent.setup();
+  it("should have back button link to home", () => {
+    const { container } = render(<ParkDetailPage park={mockPark} photos={[]} />);
 
-    render(<ParkDetailPage park={mockPark} photos={[]} />);
-
-    await user.click(screen.getByRole("button", { name: /back to parks/i }));
-
-    expect(mockPush).toHaveBeenCalledWith("/");
+    const backLink = container.querySelector('a[href="/"]');
+    expect(backLink).toBeInTheDocument();
+    expect(backLink?.textContent).toContain("Back to Parks");
   });
 
   it("should render park overview card", () => {
@@ -289,14 +340,10 @@ describe("ParkDetailPage", () => {
     expect(container.querySelector(".lg\\:col-span-1")).toBeInTheDocument();
   });
 
-  it("should render header with sticky positioning", () => {
-    const { container } = render(
-      <ParkDetailPage park={mockPark} photos={[]} />,
-    );
+  it("should render AppHeader component", () => {
+    render(<ParkDetailPage park={mockPark} photos={[]} />);
 
-    const header = container.querySelector("header");
-    expect(header).toHaveClass("backdrop-blur-sm");
-    expect(header).toHaveClass("border-b");
+    expect(screen.getByTestId("app-header")).toBeInTheDocument();
   });
 
   it("should render photo gallery card with Camera icon", () => {

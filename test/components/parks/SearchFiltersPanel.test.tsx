@@ -11,12 +11,6 @@ vi.mock("@/components/ui/button", () => ({
   ),
 }));
 
-vi.mock("@/components/ui/input", () => ({
-  Input: ({ value, onChange, placeholder }: any) => (
-    <input value={value} onChange={onChange} placeholder={placeholder} />
-  ),
-}));
-
 vi.mock("@/components/ui/select", () => ({
   Select: ({ children, onValueChange, value }: any) => (
     <div data-testid="select" data-value={value} data-onvaluechange="handler">
@@ -65,8 +59,6 @@ vi.mock("@/components/ui/slider", () => ({
 
 describe("SearchFiltersPanel", () => {
   const mockProps = {
-    searchQuery: "",
-    onSearchQueryChange: vi.fn(),
     selectedState: undefined,
     onStateChange: vi.fn(),
     availableStates: ["California", "Arizona", "Nevada"],
@@ -84,36 +76,13 @@ describe("SearchFiltersPanel", () => {
     minAcres: 0,
     onMinAcresChange: vi.fn(),
     maxAcres: 10000,
+    minRating: "",
+    onMinRatingChange: vi.fn(),
     onClearFilters: vi.fn(),
   };
 
   beforeEach(() => {
     vi.clearAllMocks();
-  });
-
-  it("should render search input with placeholder", () => {
-    render(<SearchFiltersPanel {...mockProps} />);
-
-    const input = screen.getByPlaceholderText("Search by name, city, state…");
-    expect(input).toBeInTheDocument();
-  });
-
-  it("should render search input with current query", () => {
-    render(<SearchFiltersPanel {...mockProps} searchQuery="test park" />);
-
-    const input = screen.getByPlaceholderText(
-      "Search by name, city, state…",
-    ) as HTMLInputElement;
-    expect(input.value).toBe("test park");
-  });
-
-  it("should call onSearchQueryChange when search input changes", () => {
-    render(<SearchFiltersPanel {...mockProps} />);
-
-    const input = screen.getByPlaceholderText("Search by name, city, state…");
-    fireEvent.change(input, { target: { value: "new query" } });
-
-    expect(mockProps.onSearchQueryChange).toHaveBeenCalledWith("new query");
   });
 
   it("should render state filter label", () => {
@@ -307,7 +276,6 @@ describe("SearchFiltersPanel", () => {
   it("should have correct structure with labels and inputs", () => {
     render(<SearchFiltersPanel {...mockProps} />);
 
-    expect(screen.getByText("Search")).toBeInTheDocument();
     expect(screen.getByText("State")).toBeInTheDocument();
     expect(screen.getByText("Terrain")).toBeInTheDocument();
     expect(screen.getByText("Amenities")).toBeInTheDocument();
@@ -318,18 +286,12 @@ describe("SearchFiltersPanel", () => {
     render(
       <SearchFiltersPanel
         {...mockProps}
-        searchQuery="desert"
         selectedState="Arizona"
         selectedTerrains={["sand"]}
         selectedAmenities={["restrooms"]}
         selectedCamping={["tent"]}
       />,
     );
-
-    const input = screen.getByPlaceholderText(
-      "Search by name, city, state…",
-    ) as HTMLInputElement;
-    expect(input.value).toBe("desert");
 
     const sandCheckbox = screen.getByRole("checkbox", { name: /sand/i }) as HTMLInputElement;
     expect(sandCheckbox.checked).toBe(true);
@@ -346,16 +308,6 @@ describe("SearchFiltersPanel", () => {
 
     const resetButton = screen.getByText("Reset");
     expect(resetButton).toHaveAttribute("data-variant", "secondary");
-  });
-
-  it("should call onSearchQueryChange with inline handler", () => {
-    render(<SearchFiltersPanel {...mockProps} />);
-
-    const input = screen.getByPlaceholderText("Search by name, city, state…");
-    // Test the inline (e) => onSearchQueryChange(e.target.value) handler
-    fireEvent.change(input, { target: { value: "test" } });
-
-    expect(mockProps.onSearchQueryChange).toHaveBeenCalledWith("test");
   });
 
   it('should call onStateChange with undefined when "__all" is selected', () => {

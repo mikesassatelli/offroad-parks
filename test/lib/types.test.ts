@@ -21,6 +21,11 @@ describe("transformDbPark", () => {
       status: "APPROVED",
       submitterId: null,
       submitterName: null,
+      averageRating: 4.5,
+      averageDifficulty: 3.5,
+      averageTerrain: 4.2,
+      averageFacilities: 3.8,
+      reviewCount: 10,
       createdAt: new Date("2024-01-01"),
       updatedAt: new Date("2024-01-01"),
       terrain: [{ terrain: "sand" }, { terrain: "rocks" }],
@@ -51,6 +56,11 @@ describe("transformDbPark", () => {
       amenities: ["restrooms", "showers"],
       camping: [],
       vehicleTypes: [],
+      averageRating: 4.5,
+      averageDifficulty: 3.5,
+      averageTerrain: 4.2,
+      averageFacilities: 3.8,
+      reviewCount: 10,
     });
   });
 
@@ -74,12 +84,17 @@ describe("transformDbPark", () => {
       status: "APPROVED",
       submitterId: null,
       submitterName: null,
+      averageRating: null,
+      averageDifficulty: null,
+      averageTerrain: null,
+      averageFacilities: null,
+      reviewCount: 0,
       createdAt: new Date("2024-01-01"),
       updatedAt: new Date("2024-01-01"),
       terrain: [],
       difficulty: [],
       amenities: [],
-      
+
       camping: [],vehicleTypes: [],
     };
 
@@ -93,6 +108,8 @@ describe("transformDbPark", () => {
       coords: undefined,
       website: undefined,
       phone: undefined,
+      campingWebsite: undefined,
+      campingPhone: undefined,
       dayPassUSD: undefined,
       milesOfTrails: undefined,
       acres: undefined,
@@ -100,8 +117,13 @@ describe("transformDbPark", () => {
       terrain: [],
       difficulty: [],
       amenities: [],
-      
-      camping: [],vehicleTypes: [],
+      camping: [],
+      vehicleTypes: [],
+      averageRating: undefined,
+      averageDifficulty: undefined,
+      averageTerrain: undefined,
+      averageFacilities: undefined,
+      reviewCount: 0,
     });
   });
 
@@ -125,12 +147,17 @@ describe("transformDbPark", () => {
       status: "APPROVED",
       submitterId: null,
       submitterName: null,
+      averageRating: null,
+      averageDifficulty: null,
+      averageTerrain: null,
+      averageFacilities: null,
+      reviewCount: 0,
       createdAt: new Date("2024-01-01"),
       updatedAt: new Date("2024-01-01"),
       terrain: [],
       difficulty: [],
       amenities: [],
-      
+
       camping: [],vehicleTypes: [],
     };
 
@@ -158,12 +185,17 @@ describe("transformDbPark", () => {
       status: "APPROVED",
       submitterId: null,
       submitterName: null,
+      averageRating: null,
+      averageDifficulty: null,
+      averageTerrain: null,
+      averageFacilities: null,
+      reviewCount: 0,
       createdAt: new Date("2024-01-01"),
       updatedAt: new Date("2024-01-01"),
       terrain: [],
       difficulty: [],
       amenities: [],
-      
+
       camping: [],vehicleTypes: [],
     };
 
@@ -191,6 +223,11 @@ describe("transformDbPark", () => {
       status: "APPROVED",
       submitterId: null,
       submitterName: null,
+      averageRating: null,
+      averageDifficulty: null,
+      averageTerrain: null,
+      averageFacilities: null,
+      reviewCount: 0,
       createdAt: new Date("2024-01-01"),
       updatedAt: new Date("2024-01-01"),
       terrain: [
@@ -202,7 +239,7 @@ describe("transformDbPark", () => {
       ],
       difficulty: [],
       amenities: [],
-      
+
       camping: [],vehicleTypes: [],
     };
 
@@ -230,6 +267,11 @@ describe("transformDbPark", () => {
       status: "APPROVED",
       submitterId: null,
       submitterName: null,
+      averageRating: null,
+      averageDifficulty: null,
+      averageTerrain: null,
+      averageFacilities: null,
+      reviewCount: 0,
       createdAt: new Date("2024-01-01"),
       updatedAt: new Date("2024-01-01"),
       terrain: [],
@@ -240,7 +282,7 @@ describe("transformDbPark", () => {
         { difficulty: "extreme" },
       ],
       amenities: [],
-      
+
       camping: [],vehicleTypes: [],
     };
 
@@ -273,6 +315,11 @@ describe("transformDbPark", () => {
       status: "APPROVED",
       submitterId: null,
       submitterName: null,
+      averageRating: null,
+      averageDifficulty: null,
+      averageTerrain: null,
+      averageFacilities: null,
+      reviewCount: 0,
       createdAt: new Date("2024-01-01"),
       updatedAt: new Date("2024-01-01"),
       terrain: [],
@@ -318,12 +365,17 @@ describe("transformDbPark", () => {
       status: "APPROVED",
       submitterId: null,
       submitterName: null,
+      averageRating: null,
+      averageDifficulty: null,
+      averageTerrain: null,
+      averageFacilities: null,
+      reviewCount: 0,
       createdAt: new Date("2024-01-01"),
       updatedAt: new Date("2024-01-01"),
       terrain: [],
       difficulty: [],
       amenities: [],
-      
+
       camping: [],vehicleTypes: [],
     };
 

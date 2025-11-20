@@ -90,6 +90,13 @@ type DbPark = {
   notes: string | null;
   status: ParkStatus;
 
+  // Aggregated review data (calculated fields)
+  averageRating: number | null;      // Average overall rating from approved reviews
+  averageDifficulty: number | null;  // Average difficulty rating from approved reviews
+  averageTerrain: number | null;     // Average terrain rating from approved reviews
+  averageFacilities: number | null;  // Average facilities rating from approved reviews
+  reviewCount: number;               // Count of approved reviews
+
   // Junction table relations (array of objects)
   terrain: Array<{ terrain: Terrain }>;
   difficulty: Array<{ difficulty: Difficulty }>;
@@ -121,6 +128,13 @@ type Park = {
   difficulty: Difficulty[]; // ["moderate", "difficult"]
   amenities: Amenity[];    // ["restrooms", "fuel"]
   camping: Camping[];      // ["tent", "rv30A"]
+
+  // Aggregated review data (calculated fields)
+  averageRating?: number;      // Average overall rating from approved reviews
+  averageDifficulty?: number;  // Average difficulty rating from approved reviews
+  averageTerrain?: number;     // Average terrain rating from approved reviews
+  averageFacilities?: number;  // Average facilities rating from approved reviews
+  reviewCount?: number;        // Count of approved reviews
 
   heroImage?: string | null;
 };
@@ -1814,6 +1828,482 @@ When adding new categorical data, test:
 
 ---
 
+---
+
+## Reviews & Ratings System
+
+### Overview
+
+The Reviews & Ratings System allows authenticated users to leave detailed reviews for parks. This is separate from trail condition reports and focuses on overall park experience ratings.
+
+### Database Models
+
+#### ParkReview Model
+
+```prisma
+model ParkReview {
+  id                  String               @id @default(cuid())
+  parkId              String
+  userId              String
+
+  // Rating fields (1-5 scale)
+  overallRating       Int
+  terrainRating       Int
+  facilitiesRating    Int
+  difficultyRating    Int
+
+  // Content fields
+  title               String?
+  body                String
+  visitDate           DateTime?
+  vehicleType         VehicleType?
+  visitCondition      VisitCondition?
+  recommendedDuration RecommendedDuration?
+  recommendedFor      String?
+
+  // Status for moderation
+  status              ReviewStatus         @default(PENDING)
+
+  // Timestamps
+  createdAt           DateTime             @default(now())
+  updatedAt           DateTime             @updatedAt
+
+  // Relations
+  park                Park                 @relation(fields: [parkId], references: [id], onDelete: Cascade)
+  user                User                 @relation(fields: [userId], references: [id], onDelete: Cascade)
+  helpfulVotes        ReviewHelpfulVote[]
+
+  @@unique([userId, parkId])  // One review per user per park
+}
+```
+
+#### ReviewHelpfulVote Model
+
+```prisma
+model ReviewHelpfulVote {
+  id        String     @id @default(cuid())
+  userId    String
+  reviewId  String
+  createdAt DateTime   @default(now())
+
+  user      User       @relation(fields: [userId], references: [id], onDelete: Cascade)
+  review    ParkReview @relation(fields: [reviewId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, reviewId])  // One vote per user per review
+}
+```
+
+#### Review Status Enum
+
+```prisma
+enum ReviewStatus {
+  PENDING   // New or edited - awaiting moderation
+  APPROVED  // Visible to all users
+  HIDDEN    // Soft-deleted by admin
+}
+```
+
+#### Supporting Enums
+
+```prisma
+enum VisitCondition {
+  dry
+  muddy
+  snow
+  wet
+  mixed
+}
+
+enum RecommendedDuration {
+  quickRide
+  halfDay
+  fullDay
+  overnight
+}
+```
+
+### Park Aggregation Fields
+
+The `Park` model includes computed rating fields:
+
+```prisma
+model Park {
+  // ... existing fields
+
+  // Aggregated review data
+  averageRating     Float?   // Average overall rating from approved reviews
+  averageDifficulty Float?   // Average difficulty rating from approved reviews
+  averageTerrain    Float?   // Average terrain rating from approved reviews
+  averageFacilities Float?   // Average facilities rating from approved reviews
+  reviewCount       Int      @default(0)
+
+  // Relation
+  reviews           ParkReview[]
+}
+```
+
+These fields are recalculated whenever reviews are:
+- Created and approved
+- Edited (status returns to PENDING)
+- Approved/hidden/restored by admin
+- Deleted
+
+**Display Locations:**
+- `averageRating` - Park cards and park detail page header (with star icons)
+- `averageDifficulty` - Park cards and park detail page header (with mountain icons)
+- `averageTerrain` - Park detail page header only (with star icons)
+- `averageFacilities` - Park detail page header only (with star icons)
+
+### Data Flow
+
+#### Review Submission Flow
+
+```
+┌─────────────────┐
+│   User submits  │
+│   review form   │
+└────────┬────────┘
+         │
+         ↓
+┌─────────────────┐
+│   API creates   │  status: PENDING
+│   ParkReview    │  (awaits moderation)
+└────────┬────────┘
+         │
+         ↓
+┌─────────────────┐
+│   Admin approves│  status: APPROVED
+│   via dashboard │  → recalculate ratings
+└────────┬────────┘
+         │
+         ↓
+┌─────────────────┐
+│   Review visible│  Shows on park page
+│   to all users  │  + included in ratings
+└─────────────────┘
+```
+
+#### Rating Recalculation
+
+```typescript
+// src/lib/review-utils.ts
+export async function recalculateParkRatings(parkId: string): Promise<void> {
+  const aggregation = await prisma.parkReview.aggregate({
+    where: { parkId, status: "APPROVED" },
+    _avg: {
+      overallRating: true,
+      difficultyRating: true,
+      terrainRating: true,
+      facilitiesRating: true,
+    },
+    _count: { id: true },
+  });
+
+  await prisma.park.update({
+    where: { id: parkId },
+    data: {
+      averageRating: aggregation._avg.overallRating,
+      averageDifficulty: aggregation._avg.difficultyRating,
+      averageTerrain: aggregation._avg.terrainRating,
+      averageFacilities: aggregation._avg.facilitiesRating,
+      reviewCount: aggregation._count.id,
+    },
+  });
+}
+```
+
+### API Routes
+
+| Endpoint | Method | Description | Auth Required |
+|----------|--------|-------------|---------------|
+| `/api/parks/[slug]/reviews` | GET | Get paginated reviews for a park | No |
+| `/api/parks/[slug]/reviews` | POST | Create a review | Yes |
+| `/api/reviews/[id]` | PUT | Update own review | Yes (owner) |
+| `/api/reviews/[id]` | DELETE | Delete own review | Yes (owner) |
+| `/api/reviews/[id]/helpful` | POST | Toggle helpful vote | Yes |
+| `/api/reviews/recent` | GET | Get recent approved reviews | No |
+| `/api/reviews/user` | GET | Get user's reviews | Yes |
+| `/api/admin/reviews` | GET | Get all reviews (filtered) | Admin |
+| `/api/admin/reviews/[id]/approve` | POST | Approve a review | Admin |
+| `/api/admin/reviews/[id]/hide` | POST | Soft-delete a review | Admin |
+| `/api/admin/reviews/[id]/restore` | POST | Restore a hidden review | Admin |
+| `/api/admin/reviews/[id]` | DELETE | Hard delete a review | Admin |
+
+### Moderation Workflow
+
+1. **New Reviews**: `status: PENDING` → awaits admin approval
+2. **Edited Reviews**: `status: PENDING` → awaits re-approval
+3. **Admin Approve**: `status: APPROVED` → visible, included in ratings
+4. **Admin Hide**: `status: HIDDEN` → soft-deleted, excluded from ratings
+5. **Admin Restore**: `status: APPROVED` → visible again
+6. **Admin/User Delete**: Record removed completely
+
+### TypeScript Types
+
+#### Client Types (`src/lib/types.ts`)
+
+```typescript
+export type ReviewStatus = "PENDING" | "APPROVED" | "HIDDEN";
+export type VisitCondition = "dry" | "muddy" | "snow" | "wet" | "mixed";
+export type RecommendedDuration = "quickRide" | "halfDay" | "fullDay" | "overnight";
+
+export type DbReview = {
+  id: string;
+  parkId: string;
+  userId: string;
+  overallRating: number;
+  terrainRating: number;
+  facilitiesRating: number;
+  difficultyRating: number;
+  title: string | null;
+  body: string;
+  visitDate: Date | null;
+  vehicleType: VehicleType | null;
+  visitCondition: VisitCondition | null;
+  recommendedDuration: RecommendedDuration | null;
+  recommendedFor: string | null;
+  status: ReviewStatus;
+  createdAt: Date;
+  updatedAt: Date;
+  user: {
+    id: string;
+    name: string | null;
+    image: string | null;
+  };
+  park?: {
+    slug: string;
+    name: string;
+    state: string;
+  };
+  _count: {
+    helpfulVotes: number;
+  };
+};
+
+export type Review = {
+  id: string;
+  parkId: string;
+  userId: string;
+  userName: string;
+  userImage?: string;
+  overallRating: number;
+  terrainRating: number;
+  facilitiesRating: number;
+  difficultyRating: number;
+  title?: string;
+  body: string;
+  visitDate?: string;
+  vehicleType?: VehicleType;
+  visitCondition?: VisitCondition;
+  recommendedDuration?: RecommendedDuration;
+  recommendedFor?: string;
+  helpfulCount: number;
+  hasVotedHelpful?: boolean;
+  createdAt: string;
+  parkSlug?: string;
+  parkName?: string;
+  parkState?: string;
+};
+```
+
+### Constants (`src/lib/constants.ts`)
+
+```typescript
+export const ALL_VISIT_CONDITIONS: VisitCondition[] = [
+  "dry",
+  "muddy",
+  "snow",
+  "wet",
+  "mixed",
+];
+
+export const ALL_RECOMMENDED_DURATIONS: RecommendedDuration[] = [
+  "quickRide",
+  "halfDay",
+  "fullDay",
+  "overnight",
+];
+
+export const RATING_OPTIONS = [1, 2, 3, 4, 5];
+
+export const MIN_RATING_FILTERS = ["3", "3.5", "4", "4.5"];
+```
+
+### Formatting Functions (`src/lib/formatting.ts`)
+
+```typescript
+export function formatVisitCondition(condition: VisitCondition): string {
+  const labels: Record<VisitCondition, string> = {
+    dry: "Dry",
+    muddy: "Muddy",
+    snow: "Snow",
+    wet: "Wet",
+    mixed: "Mixed",
+  };
+  return labels[condition];
+}
+
+export function formatRecommendedDuration(duration: RecommendedDuration): string {
+  const labels: Record<RecommendedDuration, string> = {
+    quickRide: "Quick Ride",
+    halfDay: "Half Day",
+    fullDay: "Full Day",
+    overnight: "Overnight",
+  };
+  return labels[duration];
+}
+
+export function formatRating(rating: number): string {
+  return rating.toFixed(1);
+}
+
+export function formatDate(dateString: string): string {
+  const date = new Date(dateString);
+  return date.toLocaleDateString("en-US", {
+    year: "numeric",
+    month: "short",
+    day: "numeric",
+  });
+}
+
+export function formatRelativeDate(dateString: string): string {
+  // Returns "Today", "Yesterday", "3 days ago", etc.
+}
+```
+
+### Components
+
+#### Review Components (`src/components/reviews/`)
+
+| Component | Description |
+|-----------|-------------|
+| `StarRating` | Display star rating (read-only) |
+| `StarRatingInput` | Interactive star rating input |
+| `RatingBadge` | Compact rating display with optional count |
+| `ReviewSummary` | Shows average rating and breakdown |
+| `ReviewCard` | Full review display with votes/actions |
+| `ReviewList` | Paginated list of reviews |
+| `ReviewForm` | Create/edit review form |
+
+#### Admin Components
+
+| Component | Description |
+|-----------|-------------|
+| `ReviewModerationTable` | Table for managing reviews |
+
+### Hooks
+
+#### `useReviews(parkSlug)` - Fetch reviews for a park
+
+```typescript
+const {
+  reviews,
+  pagination,
+  isLoading,
+  fetchPage,
+} = useReviews(parkSlug);
+```
+
+#### `useParkReview(parkSlug)` - Manage user's review for a park
+
+```typescript
+const {
+  userReview,
+  isLoading,
+  createReview,
+  updateReview,
+  deleteReview,
+  refetch,
+} = useParkReview(parkSlug);
+```
+
+#### `useHelpfulVote()` - Toggle helpful votes
+
+```typescript
+const { toggleHelpful, isLoading } = useHelpfulVote();
+
+const result = await toggleHelpful(reviewId);
+// { success: true, hasVoted: true, helpfulCount: 5 }
+```
+
+#### `useFilteredParks()` - Includes rating filter
+
+```typescript
+const {
+  minRating,
+  setMinRating,
+  // ... other filters
+} = useFilteredParks({ parks });
+```
+
+### Pages
+
+| Page | Route | Description |
+|------|-------|-------------|
+| Recent Reviews | `/reviews` | Public page showing recent approved reviews |
+| Admin Moderation | `/admin/reviews` | Admin page for managing all reviews |
+
+### Park Integration
+
+#### Park Card (`src/components/parks/ParkCard.tsx`)
+
+- Shows `RatingBadge` with average rating and review count
+- Appears below park name
+
+#### Park Detail Page
+
+- Shows review summary and breakdown
+- Lists all approved reviews
+- Provides form for authenticated users to add/edit review
+
+#### Search Filters (`src/components/parks/SearchFiltersPanel.tsx`)
+
+- "Minimum Rating" filter (3+, 3.5+, 4+, 4.5+)
+- Filters parks by `averageRating`
+
+#### Sorting
+
+- "Highest Rated" sort option added to useFilteredParks
+
+### Testing
+
+#### Test Files Created
+
+- `test/app/api/parks/[slug]/reviews/route.test.ts`
+- `test/app/api/reviews/[id]/route.test.ts`
+- `test/app/api/reviews/[id]/helpful/route.test.ts`
+- `test/components/reviews/StarRating.test.tsx`
+- `test/components/reviews/RatingBadge.test.tsx`
+- `test/hooks/useHelpfulVote.test.tsx`
+- `test/lib/formatting.test.ts` (extended with new formatters)
+
+### Adding New Review Fields
+
+To add a new field to reviews (e.g., "crowdLevel"):
+
+1. **Update Prisma Schema** - Add to `ParkReview` model
+2. **Push to Database** - `npm run db:push`
+3. **Update Types** - Add to `DbReview` and `Review` in `src/lib/types.ts`
+4. **Update Transform** - Add to `transformDbReview()`
+5. **Update Constants** - If enum, add to `src/lib/constants.ts`
+6. **Update Formatting** - If display formatting needed
+7. **Update API Routes** - Include in creation/update
+8. **Update Form** - Add input to `ReviewForm`
+9. **Update Display** - Show in `ReviewCard`
+10. **Write Tests** - Cover new field
+
+### Business Rules
+
+1. **One review per user per park** - Enforced by unique constraint
+2. **Users cannot vote on their own reviews** - Checked in API
+3. **Edited reviews return to PENDING** - Must be re-approved
+4. **Only APPROVED reviews count toward ratings** - Aggregation filter
+5. **Helpful votes are toggle-based** - Click again to remove
+6. **Users can hard delete their reviews** - Admin can also hard delete
+7. **Admins can soft delete (hide)** - Preserves data for potential restore
+
+---
+
 ## Usage Examples for Prompting
 
 When requesting changes, reference this document:
@@ -1831,6 +2321,11 @@ When requesting changes, reference this document:
 **Checking consistency:**
 ```
 "Verify all terrain types follow the 3-layer pattern in PARK_DATA_MODEL.md"
+```
+
+**Adding review fields:**
+```
+"Following the Reviews & Ratings System section in PARK_DATA_MODEL.md, add a 'crowdLevel' field to reviews"
 ```
 
 This document serves as the **single source of truth** for park data model extensions.

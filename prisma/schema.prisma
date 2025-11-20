@@ -49,6 +49,8 @@ model User {
   submittedParks Park[]         @relation("SubmittedParks")
   favorites      UserFavorite[]
   uploadedPhotos ParkPhoto[]
+  reviews        ParkReview[]
+  helpfulVotes   ReviewHelpfulVote[]
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -86,6 +88,13 @@ model Park {
   notes         String?    @db.Text
   status        ParkStatus @default(PENDING)
 
+  // Aggregated review data
+  averageRating     Float?
+  averageDifficulty Float?
+  averageTerrain    Float?
+  averageFacilities Float?
+  reviewCount       Int        @default(0)
+
   submittedBy   User?   @relation("SubmittedParks", fields: [submitterId], references: [id])
   submitterId   String?
   submitterName String? // For anonymous submissions
@@ -97,12 +106,14 @@ model Park {
   vehicleTypes ParkVehicleType[]
   favorites    UserFavorite[]
   photos       ParkPhoto[]
+  reviews      ParkReview[]
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
   @@index([status])
   @@index([state])
+  @@index([averageRating])
 }
 
 enum ParkStatus {
@@ -243,4 +254,80 @@ enum PhotoStatus {
   PENDING
   APPROVED
   REJECTED
+}
+
+// Review System
+enum ReviewStatus {
+  PENDING
+  APPROVED
+  HIDDEN
+}
+
+enum VisitCondition {
+  dry
+  muddy
+  snow
+  wet
+  mixed
+}
+
+enum RecommendedDuration {
+  quickRide
+  halfDay
+  fullDay
+  overnight
+}
+
+model ParkReview {
+  id                  String              @id @default(cuid())
+  parkId              String
+  userId              String
+
+  // Ratings (1-5)
+  overallRating       Int
+  terrainRating       Int
+  facilitiesRating    Int
+  difficultyRating    Int
+
+  // Content
+  title               String?
+  body                String              @db.Text
+  visitDate           DateTime?
+
+  // Optional fields
+  vehicleType         VehicleType?
+  visitCondition      VisitCondition?
+  recommendedDuration RecommendedDuration?
+  recommendedFor      String?
+
+  // Status
+  status              ReviewStatus        @default(PENDING)
+
+  // Relations
+  park                Park                @relation(fields: [parkId], references: [id], onDelete: Cascade)
+  user                User                @relation(fields: [userId], references: [id], onDelete: Cascade)
+  helpfulVotes        ReviewHelpfulVote[]
+
+  createdAt           DateTime            @default(now())
+  updatedAt           DateTime            @updatedAt
+
+  @@unique([userId, parkId])
+  @@index([parkId])
+  @@index([userId])
+  @@index([status])
+  @@index([createdAt])
+}
+
+model ReviewHelpfulVote {
+  id        String   @id @default(cuid())
+  reviewId  String
+  userId    String
+
+  review    ParkReview @relation(fields: [reviewId], references: [id], onDelete: Cascade)
+  user      User       @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  createdAt DateTime @default(now())
+
+  @@unique([userId, reviewId])
+  @@index([reviewId])
 }

@@ -17,6 +17,9 @@ vi.mock("@/lib/prisma", () => ({
       count: vi.fn(),
       findMany: vi.fn(),
     },
+    parkReview: {
+      count: vi.fn(),
+    },
   },
 }));
 
@@ -43,6 +46,7 @@ describe("AdminDashboard", () => {
     vi.mocked(prisma.park.count).mockResolvedValue(0);
     vi.mocked(prisma.user.count).mockResolvedValue(0);
     vi.mocked(prisma.parkPhoto.count).mockResolvedValue(0);
+    vi.mocked(prisma.parkReview.count).mockResolvedValue(0);
     vi.mocked(prisma.park.findMany).mockResolvedValue([]);
     vi.mocked(prisma.parkPhoto.findMany).mockResolvedValue([]);
 
@@ -62,6 +66,7 @@ describe("AdminDashboard", () => {
     });
     vi.mocked(prisma.user.count).mockResolvedValue(100);
     vi.mocked(prisma.parkPhoto.count).mockResolvedValue(10);
+    vi.mocked(prisma.parkReview.count).mockResolvedValue(0);
     vi.mocked(prisma.park.findMany).mockResolvedValue([]);
     vi.mocked(prisma.parkPhoto.findMany).mockResolvedValue([]);
 
@@ -80,6 +85,7 @@ describe("AdminDashboard", () => {
     });
     vi.mocked(prisma.user.count).mockResolvedValue(100);
     vi.mocked(prisma.parkPhoto.count).mockResolvedValue(5);
+    vi.mocked(prisma.parkReview.count).mockResolvedValue(0);
     vi.mocked(prisma.park.findMany).mockResolvedValue([]);
     vi.mocked(prisma.parkPhoto.findMany).mockResolvedValue([]);
 
@@ -94,6 +100,7 @@ describe("AdminDashboard", () => {
     vi.mocked(prisma.park.count).mockResolvedValue(0);
     vi.mocked(prisma.user.count).mockResolvedValue(0);
     vi.mocked(prisma.parkPhoto.count).mockResolvedValue(8);
+    vi.mocked(prisma.parkReview.count).mockResolvedValue(0);
     vi.mocked(prisma.park.findMany).mockResolvedValue([]);
     vi.mocked(prisma.parkPhoto.findMany).mockResolvedValue([]);
 
@@ -108,6 +115,7 @@ describe("AdminDashboard", () => {
     vi.mocked(prisma.park.count).mockResolvedValue(0);
     vi.mocked(prisma.user.count).mockResolvedValue(250);
     vi.mocked(prisma.parkPhoto.count).mockResolvedValue(0);
+    vi.mocked(prisma.parkReview.count).mockResolvedValue(0);
     vi.mocked(prisma.park.findMany).mockResolvedValue([]);
     vi.mocked(prisma.parkPhoto.findMany).mockResolvedValue([]);
 
@@ -122,6 +130,7 @@ describe("AdminDashboard", () => {
     vi.mocked(prisma.park.count).mockResolvedValue(0);
     vi.mocked(prisma.user.count).mockResolvedValue(0);
     vi.mocked(prisma.parkPhoto.count).mockResolvedValue(0);
+    vi.mocked(prisma.parkReview.count).mockResolvedValue(0);
     vi.mocked(prisma.park.findMany).mockResolvedValue([]);
     vi.mocked(prisma.parkPhoto.findMany).mockResolvedValue([]);
 
@@ -135,6 +144,7 @@ describe("AdminDashboard", () => {
     vi.mocked(prisma.park.count).mockResolvedValue(0);
     vi.mocked(prisma.user.count).mockResolvedValue(0);
     vi.mocked(prisma.parkPhoto.count).mockResolvedValue(0);
+    vi.mocked(prisma.parkReview.count).mockResolvedValue(0);
     vi.mocked(prisma.park.findMany).mockResolvedValue([]);
     vi.mocked(prisma.parkPhoto.findMany).mockResolvedValue([]);
 
@@ -148,6 +158,7 @@ describe("AdminDashboard", () => {
     vi.mocked(prisma.park.count).mockResolvedValue(0);
     vi.mocked(prisma.user.count).mockResolvedValue(0);
     vi.mocked(prisma.parkPhoto.count).mockResolvedValue(0);
+    vi.mocked(prisma.parkReview.count).mockResolvedValue(0);
 
     const mockPendingParks = [
       {
@@ -189,6 +200,7 @@ describe("AdminDashboard", () => {
     vi.mocked(prisma.park.count).mockResolvedValue(0);
     vi.mocked(prisma.user.count).mockResolvedValue(0);
     vi.mocked(prisma.parkPhoto.count).mockResolvedValue(0);
+    vi.mocked(prisma.parkReview.count).mockResolvedValue(0);
 
     const mockPendingParks = [
       {
@@ -219,6 +231,7 @@ describe("AdminDashboard", () => {
     vi.mocked(prisma.park.count).mockResolvedValue(0);
     vi.mocked(prisma.user.count).mockResolvedValue(0);
     vi.mocked(prisma.parkPhoto.count).mockResolvedValue(0);
+    vi.mocked(prisma.parkReview.count).mockResolvedValue(0);
 
     const mockPendingParks = [
       {
@@ -253,6 +266,7 @@ describe("AdminDashboard", () => {
     vi.mocked(prisma.park.count).mockResolvedValue(0);
     vi.mocked(prisma.user.count).mockResolvedValue(0);
     vi.mocked(prisma.parkPhoto.count).mockResolvedValue(0);
+    vi.mocked(prisma.parkReview.count).mockResolvedValue(0);
     vi.mocked(prisma.park.findMany).mockResolvedValue([]);
     vi.mocked(prisma.parkPhoto.findMany).mockResolvedValue([]);
 
@@ -266,6 +280,7 @@ describe("AdminDashboard", () => {
     vi.mocked(prisma.park.count).mockResolvedValue(0);
     vi.mocked(prisma.user.count).mockResolvedValue(0);
     vi.mocked(prisma.parkPhoto.count).mockResolvedValue(0);
+    vi.mocked(prisma.parkReview.count).mockResolvedValue(0);
     vi.mocked(prisma.park.findMany).mockResolvedValue([]);
     vi.mocked(prisma.parkPhoto.findMany).mockResolvedValue([]);
 
@@ -280,6 +295,7 @@ describe("AdminDashboard", () => {
     vi.mocked(prisma.park.count).mockResolvedValue(0);
     vi.mocked(prisma.user.count).mockResolvedValue(0);
     vi.mocked(prisma.parkPhoto.count).mockResolvedValue(0);
+    vi.mocked(prisma.parkReview.count).mockResolvedValue(0);
     vi.mocked(prisma.park.findMany).mockResolvedValue([]);
     vi.mocked(prisma.parkPhoto.findMany).mockResolvedValue([]);
 
@@ -293,6 +309,7 @@ describe("AdminDashboard", () => {
     vi.mocked(prisma.park.count).mockResolvedValue(0);
     vi.mocked(prisma.user.count).mockResolvedValue(0);
     vi.mocked(prisma.parkPhoto.count).mockResolvedValue(0);
+    vi.mocked(prisma.parkReview.count).mockResolvedValue(0);
     vi.mocked(prisma.park.findMany).mockResolvedValue([]);
 
     const mockPhotos = [
@@ -321,10 +338,11 @@ describe("AdminDashboard", () => {
     expect(images[0]).toHaveAttribute("src", "https://example.com/photo1.jpg");
   });
 
-  it("should render all four stat cards", async () => {
+  it("should render all five stat cards", async () => {
     vi.mocked(prisma.park.count).mockResolvedValue(10);
     vi.mocked(prisma.user.count).mockResolvedValue(50);
     vi.mocked(prisma.parkPhoto.count).mockResolvedValue(5);
+    vi.mocked(prisma.parkReview.count).mockResolvedValue(3);
     vi.mocked(prisma.park.findMany).mockResolvedValue([]);
     vi.mocked(prisma.parkPhoto.findMany).mockResolvedValue([]);
 
@@ -334,6 +352,7 @@ describe("AdminDashboard", () => {
     expect(screen.getByText("Total Parks")).toBeInTheDocument();
     expect(screen.getByText("Pending Parks")).toBeInTheDocument();
     expect(screen.getByText("Pending Photos")).toBeInTheDocument();
+    expect(screen.getByText("Pending Reviews")).toBeInTheDocument();
     expect(screen.getByText("Total Users")).toBeInTheDocument();
   });
 
@@ -341,6 +360,7 @@ describe("AdminDashboard", () => {
     vi.mocked(prisma.park.count).mockResolvedValue(0);
     vi.mocked(prisma.user.count).mockResolvedValue(0);
     vi.mocked(prisma.parkPhoto.count).mockResolvedValue(0);
+    vi.mocked(prisma.parkReview.count).mockResolvedValue(0);
     vi.mocked(prisma.park.findMany).mockResolvedValue([]);
     vi.mocked(prisma.parkPhoto.findMany).mockResolvedValue([]);
 
@@ -358,6 +378,7 @@ describe("AdminDashboard", () => {
     vi.mocked(prisma.park.count).mockResolvedValue(0);
     vi.mocked(prisma.user.count).mockResolvedValue(0);
     vi.mocked(prisma.parkPhoto.count).mockResolvedValue(0);
+    vi.mocked(prisma.parkReview.count).mockResolvedValue(0);
     vi.mocked(prisma.park.findMany).mockResolvedValue([]);
     vi.mocked(prisma.parkPhoto.findMany).mockResolvedValue([]);
 

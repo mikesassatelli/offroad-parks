@@ -92,26 +92,6 @@ describe("UserMenu", () => {
     expect(screen.getByText("john@example.com")).toBeInTheDocument();
   });
 
-  it("should render My Favorites link", () => {
-    const { container } = render(
-      <UserMenu user={regularUser} onSignOut={mockOnSignOut} />,
-    );
-
-    const favoritesLink = container.querySelector('a[href="/profile"]');
-    expect(favoritesLink).toBeInTheDocument();
-    expect(screen.getByText("My Favorites")).toBeInTheDocument();
-  });
-
-  it("should render Submit Park link", () => {
-    const { container } = render(
-      <UserMenu user={regularUser} onSignOut={mockOnSignOut} />,
-    );
-
-    const submitLink = container.querySelector('a[href="/submit"]');
-    expect(submitLink).toBeInTheDocument();
-    expect(screen.getByText("Submit Park")).toBeInTheDocument();
-  });
-
   it("should render Sign Out option", () => {
     render(<UserMenu user={regularUser} onSignOut={mockOnSignOut} />);
 
@@ -150,12 +130,12 @@ describe("UserMenu", () => {
     expect(adminLink).toBeInTheDocument();
   });
 
-  it("should have extra separator before Admin Panel", () => {
+  it("should have separator before Admin Panel and before Sign Out", () => {
     render(<UserMenu user={adminUser} onSignOut={mockOnSignOut} />);
 
     const separators = screen.getAllByTestId("dropdown-separator");
-    // Should have 3 separators for admin: after user info, before admin panel, after admin panel
-    expect(separators.length).toBeGreaterThanOrEqual(3);
+    // Should have 2 separators for admin: before admin panel, before sign out
+    expect(separators.length).toBe(2);
   });
 
   it("should render user icons", () => {

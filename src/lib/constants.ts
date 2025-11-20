@@ -1,4 +1,11 @@
-import type { Amenity, Camping, Terrain, VehicleType } from "@/lib/types";
+import type {
+  Amenity,
+  Camping,
+  RecommendedDuration,
+  Terrain,
+  VehicleType,
+  VisitCondition,
+} from "@/lib/types";
 
 export const ALL_AMENITIES: Amenity[] = [
   "restrooms",
@@ -84,4 +91,29 @@ export const US_STATES = [
   "West Virginia",
   "Wisconsin",
   "Wyoming",
+];
+
+// Review system constants
+export const ALL_VISIT_CONDITIONS: VisitCondition[] = [
+  "dry",
+  "muddy",
+  "snow",
+  "wet",
+  "mixed",
+];
+
+export const ALL_RECOMMENDED_DURATIONS: RecommendedDuration[] = [
+  "quickRide",
+  "halfDay",
+  "fullDay",
+  "overnight",
+];
+
+export const RATING_OPTIONS = [1, 2, 3, 4, 5] as const;
+
+export const MIN_RATING_FILTERS = [
+  { value: "", label: "Any Rating" },
+  { value: "3", label: "3+ Stars" },
+  { value: "4", label: "4+ Stars" },
+  { value: "4.5", label: "4.5+ Stars" },
 ];
