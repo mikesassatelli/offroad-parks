@@ -46,24 +46,34 @@ describe("Park Detail Page", () => {
     id: "park-1",
     slug: "test-park",
     name: "Test Park",
-    state: "California",
-    city: "Los Angeles",
     latitude: 34.0522,
     longitude: -118.2437,
     dayPassUSD: 25,
     milesOfTrails: 50,
-    acres: 1000,website: "https://testpark.com",
+    acres: 1000,
+    website: "https://testpark.com",
     phone: "5551234567",
     notes: "Great park for beginners",
     status: "APPROVED",
     createdAt: new Date(),
     updatedAt: new Date(),
     createdBy: "user-1",
-    terrain: [{ id: "1", name: "sand", parkId: "park-1" }],
-    difficulty: [{ id: "1", level: "moderate", parkId: "park-1" }],
-    amenities: [{ id: "1", name: "camping", parkId: "park-1" }],
-    
-      camping: [],vehicleTypes: [],
+    terrain: [{ id: "1", terrain: "sand", parkId: "park-1" }],
+    amenities: [{ id: "1", amenity: "camping", parkId: "park-1" }],
+    camping: [],
+    vehicleTypes: [],
+    address: {
+      id: "addr-1",
+      parkId: "park-1",
+      streetAddress: null,
+      streetAddress2: null,
+      city: "Los Angeles",
+      state: "California",
+      zipCode: null,
+      county: null,
+      latitude: null,
+      longitude: null,
+    },
   };
 
   const mockPhotos = [
@@ -143,7 +153,14 @@ describe("Park Detail Page", () => {
     });
 
     it("should handle park without city in description", async () => {
-      const parkWithoutCity = { ...mockDbPark, city: null, notes: null };
+      const parkWithoutCity = {
+        ...mockDbPark,
+        notes: null,
+        address: {
+          ...mockDbPark.address,
+          city: null,
+        },
+      };
       vi.mocked(prisma.park.findUnique).mockResolvedValue(
         parkWithoutCity as any,
       );
@@ -247,10 +264,10 @@ describe("Park Detail Page", () => {
         },
         include: {
           terrain: true,
-          difficulty: true,
           amenities: true,
           camping: true,
           vehicleTypes: true,
+          address: true,
         },
       });
     });

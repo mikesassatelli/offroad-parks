@@ -30,10 +30,13 @@ describe("AdminParksPage", () => {
       status: "PENDING",
       createdAt: new Date(),
       terrain: [],
-      difficulty: [],
       amenities: [],
-      
-      camping: [],vehicleTypes: [],
+      camping: [],
+      vehicleTypes: [],
+      address: {
+        city: "Test City",
+        state: "CA",
+      },
       submittedBy: {
         id: "user-1",
         name: "John Doe",
@@ -47,10 +50,10 @@ describe("AdminParksPage", () => {
       status: "APPROVED",
       createdAt: new Date(),
       terrain: [],
-      difficulty: [],
       amenities: [],
-      
-      camping: [],vehicleTypes: [],
+      camping: [],
+      vehicleTypes: [],
+      address: null,
       submittedBy: null,
     },
   ];
@@ -93,10 +96,10 @@ describe("AdminParksPage", () => {
       where: {},
       include: {
         terrain: true,
-        difficulty: true,
         amenities: true,
         camping: true,
         vehicleTypes: true,
+        address: true,
         submittedBy: {
           select: {
             id: true,

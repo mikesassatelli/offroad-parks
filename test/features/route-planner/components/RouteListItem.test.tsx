@@ -25,13 +25,11 @@ describe("RouteListItem", () => {
   const mockPark: Park = {
     id: "park-1",
     name: "Test Park",
-    state: "California",
-    city: "Los Angeles",
+    address: { city: "Los Angeles", state: "California" },
     coords: { lat: 34.0522, lng: -118.2437 },
     terrain: [],
     amenities: [],
-    
-    camping: [],difficulty: [],
+    camping: [],
     vehicleTypes: [],
   };
 
@@ -64,7 +62,10 @@ describe("RouteListItem", () => {
   });
 
   it("should render park location without city when not provided", () => {
-    const parkWithoutCity = { ...mockPark, city: undefined };
+    const parkWithoutCity = {
+      ...mockPark,
+      address: { state: "California" },
+    };
 
     render(<RouteListItem {...defaultProps} park={parkWithoutCity} />);
 

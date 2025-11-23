@@ -19,10 +19,10 @@ export async function GET(_request: Request, { params }: RouteParams) {
       },
       include: {
         terrain: true,
-        difficulty: true,
         amenities: true,
         camping: true,
         vehicleTypes: true,
+        address: true,
       },
     });
 

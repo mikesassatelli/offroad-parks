@@ -27,9 +27,9 @@ export function ParkDetailsDialog({
     return null;
   }
 
-  const locationDisplay = park.city
-    ? `${park.city}, ${park.state}`
-    : park.state;
+  const locationDisplay = park.address.city
+    ? `${park.address.city}, ${park.address.state}`
+    : park.address.state;
   const trailMilesDisplay = park.milesOfTrails ?? "—";
   const formattedDayPass = formatCurrency(park.dayPassUSD);
 

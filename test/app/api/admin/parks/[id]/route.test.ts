@@ -152,18 +152,19 @@ describe("PATCH /api/admin/parks/[id]", () => {
 
   const validUpdateData = {
     name: "Updated Park",
-    state: "CA",
-    city: "Los Angeles",
     latitude: 34.0522,
     longitude: -118.2437,
     dayPassUSD: 30,
     milesOfTrails: 60,
     acres: 1200,
     terrain: ["sand", "rocks"],
-    difficulty: ["moderate"],
     amenities: ["restrooms"],
-    
-      camping: [],vehicleTypes: [],
+    camping: [],
+    vehicleTypes: [],
+    address: {
+      city: "Los Angeles",
+      state: "CA",
+    },
   };
 
   it("should return 401 when user is not authenticated", async () => {
@@ -227,7 +228,6 @@ describe("PATCH /api/admin/parks/[id]", () => {
       id: "park-123",
       ...validUpdateData,
       terrain: validUpdateData.terrain.map((t) => ({ terrain: t })),
-      difficulty: validUpdateData.difficulty.map((d) => ({ difficulty: d })),
       amenities: validUpdateData.amenities.map((a) => ({ amenity: a })),
       slug: "updated-park",
       status: "APPROVED",
@@ -260,7 +260,7 @@ describe("PATCH /api/admin/parks/[id]", () => {
     expect(revalidatePath).toHaveBeenCalledWith("/parks/updated-park");
   });
 
-  it("should update park with terrain, difficulty, and amenities relations", async () => {
+  it("should update park with terrain and amenities relations", async () => {
     // Arrange
     vi.mocked(auth).mockResolvedValue({
       user: { id: "admin-123", role: "ADMIN" },
@@ -287,14 +287,9 @@ describe("PATCH /api/admin/parks/[id]", () => {
       where: { id: "park-123" },
       data: expect.objectContaining({
         name: "Updated Park",
-        state: "CA",
         terrain: {
           deleteMany: {},
           create: [{ terrain: "sand" }, { terrain: "rocks" }],
-        },
-        difficulty: {
-          deleteMany: {},
-          create: [{ difficulty: "moderate" }],
         },
         amenities: {
           deleteMany: {},
@@ -308,18 +303,30 @@ describe("PATCH /api/admin/parks/[id]", () => {
           deleteMany: {},
           create: [],
         },
+        address: {
+          upsert: {
+            create: expect.objectContaining({
+              city: "Los Angeles",
+              state: "CA",
+            }),
+            update: expect.objectContaining({
+              city: "Los Angeles",
+              state: "CA",
+            }),
+          },
+        },
       }),
       include: {
         terrain: true,
-        difficulty: true,
         amenities: true,
         camping: true,
         vehicleTypes: true,
+        address: true,
       },
     });
   });
 
-  it("should handle empty arrays for terrain, difficulty, and amenities", async () => {
+  it("should handle empty arrays for terrain and amenities", async () => {
     // Arrange
     vi.mocked(auth).mockResolvedValue({
       user: { id: "admin-123", role: "ADMIN" },
@@ -330,10 +337,9 @@ describe("PATCH /api/admin/parks/[id]", () => {
     const dataWithEmptyArrays = {
       ...validUpdateData,
       terrain: [],
-      difficulty: [],
       amenities: [],
-      
-      camping: [],vehicleTypes: [],
+      camping: [],
+      vehicleTypes: [],
     };
 
     const request = new Request(
@@ -358,10 +364,6 @@ describe("PATCH /api/admin/parks/[id]", () => {
             deleteMany: {},
             create: [],
           },
-          difficulty: {
-            deleteMany: {},
-            create: [],
-          },
           amenities: {
             deleteMany: {},
             create: [],
@@ -381,7 +383,6 @@ describe("PATCH /api/admin/parks/[id]", () => {
 
     const dataWithoutRelations = {
       name: "Updated Park",
-      state: "CA",
     };
 
     const request = new Request(
@@ -403,12 +404,7 @@ describe("PATCH /api/admin/parks/[id]", () => {
       expect.objectContaining({
         data: expect.objectContaining({
           name: "Updated Park",
-          state: "CA",
           terrain: {
-            deleteMany: {},
-            create: [],
-          },
-          difficulty: {
             deleteMany: {},
             create: [],
           },
@@ -501,10 +497,9 @@ describe("PATCH /api/admin/parks/[id]", () => {
     const partialUpdate = {
       name: "New Name Only",
       terrain: ["sand"],
-      difficulty: ["easy"],
       amenities: [],
-      
-      camping: [],vehicleTypes: [],
+      camping: [],
+      vehicleTypes: [],
     };
 
     const request = new Request(

@@ -63,12 +63,40 @@ export async function PATCH(request: Request, { params }: RouteParams) {
 
     const {
       terrain,
-      difficulty,
       amenities,
       camping,
       vehicleTypes,
+      address,
       ...parkData
     } = body;
+
+    // Build address update operation
+    const addressOperation = address
+      ? {
+          upsert: {
+            create: {
+              streetAddress: address.streetAddress || null,
+              streetAddress2: address.streetAddress2 || null,
+              city: address.city || null,
+              state: address.state || null,
+              zipCode: address.zipCode || null,
+              county: address.county || null,
+              latitude: address.latitude || null,
+              longitude: address.longitude || null,
+            },
+            update: {
+              streetAddress: address.streetAddress || null,
+              streetAddress2: address.streetAddress2 || null,
+              city: address.city || null,
+              state: address.state || null,
+              zipCode: address.zipCode || null,
+              county: address.county || null,
+              latitude: address.latitude || null,
+              longitude: address.longitude || null,
+            },
+          },
+        }
+      : {};
 
     // Update park with relations
     const park = await prisma.park.update({
@@ -79,10 +107,6 @@ export async function PATCH(request: Request, { params }: RouteParams) {
         terrain: {
           deleteMany: {},
           create: terrain?.map((t: string) => ({ terrain: t })) || [],
-        },
-        difficulty: {
-          deleteMany: {},
-          create: difficulty?.map((d: string) => ({ difficulty: d })) || [],
         },
         amenities: {
           deleteMany: {},
@@ -97,13 +121,14 @@ export async function PATCH(request: Request, { params }: RouteParams) {
           create:
             vehicleTypes?.map((v: string) => ({ vehicleType: v })) || [],
         },
+        address: addressOperation,
       },
       include: {
         terrain: true,
-        difficulty: true,
         amenities: true,
         camping: true,
         vehicleTypes: true,
+        address: true,
       },
     });
 

@@ -78,6 +78,12 @@ describe("SearchFiltersPanel", () => {
     maxAcres: 10000,
     minRating: "",
     onMinRatingChange: vi.fn(),
+    selectedOwnership: "",
+    onOwnershipChange: vi.fn(),
+    permitRequired: "",
+    onPermitRequiredChange: vi.fn(),
+    membershipRequired: "",
+    onMembershipRequiredChange: vi.fn(),
     onClearFilters: vi.fn(),
   };
 
@@ -112,18 +118,11 @@ describe("SearchFiltersPanel", () => {
   });
 
   it('should render "All" option in state filter', () => {
-    const { container } = render(<SearchFiltersPanel {...mockProps} />);
-
-    // Find all "All" text nodes (state, terrain, amenity filters)
-    const allOptions = screen.getAllByText("All");
-    expect(allOptions.length).toBeGreaterThan(0);
-  });
-
-  it('should render "All" option in state filter', () => {
     render(<SearchFiltersPanel {...mockProps} />);
 
-    const allOption = screen.getByText("All");
-    expect(allOption).toBeInTheDocument();
+    // Find all "All" text nodes (state and ownership filters)
+    const allOptions = screen.getAllByText("All");
+    expect(allOptions.length).toBeGreaterThanOrEqual(2);
   });
 
   it("should render checkboxes for terrains, amenities, camping, and vehicle types", () => {
@@ -252,17 +251,17 @@ describe("SearchFiltersPanel", () => {
     render(<SearchFiltersPanel {...mockProps} />);
 
     // Check for some terrain types (from ALL_TERRAIN_TYPES constant)
-    expect(screen.getByText("sand")).toBeInTheDocument();
-    expect(screen.getByText("rocks")).toBeInTheDocument();
-    expect(screen.getByText("mud")).toBeInTheDocument();
+    expect(screen.getByText("Sand")).toBeInTheDocument();
+    expect(screen.getByText("Rocks")).toBeInTheDocument();
+    expect(screen.getByText("Mud")).toBeInTheDocument();
   });
 
   it("should render amenities from constants", () => {
     render(<SearchFiltersPanel {...mockProps} />);
 
     // Check for some amenities (from ALL_AMENITIES constant)
-    expect(screen.getByText("restrooms")).toBeInTheDocument();
-    expect(screen.getByText("showers")).toBeInTheDocument();
+    expect(screen.getByText("Restrooms")).toBeInTheDocument();
+    expect(screen.getByText("Showers")).toBeInTheDocument();
   });
 
   it("should render camping types from constants", () => {

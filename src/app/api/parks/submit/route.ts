@@ -4,7 +4,7 @@ import { prisma } from "@/lib/prisma";
 import type {
   Amenity,
   Camping,
-  Difficulty,
+  Ownership,
   Terrain,
   VehicleType,
 } from "@prisma/client";
@@ -14,8 +14,6 @@ export const runtime = "nodejs";
 interface SubmitParkRequest {
   name: string;
   slug: string;
-  city?: string;
-  state: string;
   latitude?: number | null;
   longitude?: number | null;
   website?: string;
@@ -28,10 +26,31 @@ interface SubmitParkRequest {
   notes?: string;
   submitterName?: string;
   terrain: string[];
-  difficulty: string[];
   amenities: string[];
   camping?: string[];
   vehicleTypes?: string[];
+  // New operational fields
+  datesOpen?: string;
+  contactEmail?: string;
+  ownership?: string;
+  permitRequired?: boolean;
+  permitType?: string;
+  membershipRequired?: boolean;
+  maxVehicleWidthInches?: number | null;
+  flagsRequired?: boolean;
+  sparkArrestorRequired?: boolean;
+  noiseLimitDBA?: number | null;
+  // Address fields (state is required)
+  address: {
+    streetAddress?: string;
+    streetAddress2?: string;
+    city?: string;
+    state: string;
+    zipCode?: string;
+    county?: string;
+    latitude?: number;
+    longitude?: number;
+  };
 }
 
 export async function POST(request: Request) {
@@ -48,7 +67,7 @@ export async function POST(request: Request) {
     const data: SubmitParkRequest = await request.json();
 
     // Validate required fields
-    if (!data.name || !data.state) {
+    if (!data.name || !data.address?.state) {
       return NextResponse.json(
         { error: "Name and state are required" },
         { status: 400 },
@@ -58,13 +77,6 @@ export async function POST(request: Request) {
     if (!data.terrain || data.terrain.length === 0) {
       return NextResponse.json(
         { error: "At least one terrain type is required" },
-        { status: 400 },
-      );
-    }
-
-    if (!data.difficulty || data.difficulty.length === 0) {
-      return NextResponse.json(
-        { error: "At least one difficulty level is required" },
         { status: 400 },
       );
     }
@@ -93,8 +105,6 @@ export async function POST(request: Request) {
       data: {
         name: data.name,
         slug,
-        city: data.city || null,
-        state: data.state,
         latitude: data.latitude || null,
         longitude: data.longitude || null,
         website: data.website || null,
@@ -107,16 +117,22 @@ export async function POST(request: Request) {
         notes: data.notes || null,
         submitterId: session.user.id,
         submitterName: data.submitterName || null,
+        // New operational fields
+        datesOpen: data.datesOpen || null,
+        contactEmail: data.contactEmail || null,
+        ownership: data.ownership ? (data.ownership as Ownership) : null,
+        permitRequired: data.permitRequired ?? null,
+        permitType: data.permitType || null,
+        membershipRequired: data.membershipRequired ?? null,
+        maxVehicleWidthInches: data.maxVehicleWidthInches || null,
+        flagsRequired: data.flagsRequired ?? null,
+        sparkArrestorRequired: data.sparkArrestorRequired ?? null,
+        noiseLimitDBA: data.noiseLimitDBA || null,
         // Admin submissions are auto-approved
         status: isAdmin ? "APPROVED" : "PENDING",
         terrain: {
           create: data.terrain.map((t) => ({
             terrain: t as Terrain,
-          })),
-        },
-        difficulty: {
-          create: data.difficulty.map((d) => ({
-            difficulty: d as Difficulty,
           })),
         },
         amenities: {
@@ -134,13 +150,26 @@ export async function POST(request: Request) {
             vehicleType: v as VehicleType,
           })),
         },
+        // Create address (state is required)
+        address: {
+          create: {
+            streetAddress: data.address.streetAddress || null,
+            streetAddress2: data.address.streetAddress2 || null,
+            city: data.address.city || null,
+            state: data.address.state, // Required
+            zipCode: data.address.zipCode || null,
+            county: data.address.county || null,
+            latitude: data.address.latitude || null,
+            longitude: data.address.longitude || null,
+          },
+        },
       },
       include: {
         terrain: true,
-        difficulty: true,
         amenities: true,
         camping: true,
         vehicleTypes: true,
+        address: true,
       },
     });
 

@@ -13,10 +13,10 @@ export default async function Page() {
     },
     include: {
       terrain: true,
-      difficulty: true,
       amenities: true,
       camping: true,
       vehicleTypes: true,
+      address: true,
       photos: {
         where: {
           status: "APPROVED",

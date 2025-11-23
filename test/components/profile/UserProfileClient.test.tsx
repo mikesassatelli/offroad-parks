@@ -87,21 +87,21 @@ describe("UserProfileClient", () => {
     {
       id: "park-1",
       name: "Test Park 1",
-      state: "California",
-      coords: { lat: 34, lng: -118 },terrain: ["sand"],
+      address: { state: "California" },
+      coords: { lat: 34, lng: -118 },
+      terrain: ["sand"],
       amenities: [],
-      
-    camping: [],difficulty: ["moderate"],
+      camping: [],
       vehicleTypes: [],
     },
     {
       id: "park-2",
       name: "Test Park 2",
-      state: "Arizona",
-      coords: { lat: 33, lng: -111 },terrain: ["rocks"],
+      address: { state: "Arizona" },
+      coords: { lat: 33, lng: -111 },
+      terrain: ["rocks"],
       amenities: ["restrooms"],
-      
-    camping: [],difficulty: ["difficult"],
+      camping: [],
       vehicleTypes: [],
     },
   ];
@@ -226,11 +226,11 @@ describe("UserProfileClient", () => {
     const minimalPark: Park = {
       id: "minimal",
       name: "Minimal Park",
-      state: "Texas",
-      coords: { lat: 30, lng: -98 },terrain: [],
+      address: { state: "Texas" },
+      coords: { lat: 30, lng: -98 },
+      terrain: [],
       amenities: [],
-
-    camping: [],difficulty: [],
+      camping: [],
       vehicleTypes: [],
     };
 

@@ -31,8 +31,8 @@ export function ParkMarker({
             )}
           </div>
           <div className="text-sm text-gray-600 mb-2">
-            {park.city ? `${park.city}, ` : ""}
-            {park.state}
+            {park.address.city ? `${park.address.city}, ` : ""}
+            {park.address.state}
           </div>
           <div className="text-sm space-y-1">
             <div>

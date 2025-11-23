@@ -29,10 +29,10 @@ export default async function EditParkPage({ params }: EditParkPageProps) {
     where: { id },
     include: {
       terrain: true,
-      difficulty: true,
       amenities: true,
       camping: true,
       vehicleTypes: true,
+      address: true,
       photos: {
         where: {
           status: "APPROVED",
@@ -49,8 +49,6 @@ export default async function EditParkPage({ params }: EditParkPageProps) {
   const initialData = {
     name: park.name,
     slug: park.slug,
-    city: park.city || "",
-    state: park.state,
     latitude: park.latitude?.toString() || "",
     longitude: park.longitude?.toString() || "",
     website: park.website || "",
@@ -63,10 +61,27 @@ export default async function EditParkPage({ params }: EditParkPageProps) {
     notes: park.notes || "",
     submitterName: "",
     terrain: park.terrain.map((t) => t.terrain),
-    difficulty: park.difficulty.map((d) => d.difficulty),
     amenities: park.amenities.map((a) => a.amenity),
     camping: park.camping.map((c) => c.camping),
     vehicleTypes: park.vehicleTypes.map((v) => v.vehicleType),
+    // New scalar fields
+    datesOpen: park.datesOpen || "",
+    contactEmail: park.contactEmail || "",
+    ownership: park.ownership || "",
+    permitRequired: park.permitRequired || false,
+    permitType: park.permitType || "",
+    membershipRequired: park.membershipRequired || false,
+    maxVehicleWidthInches: park.maxVehicleWidthInches?.toString() || "",
+    flagsRequired: park.flagsRequired || false,
+    sparkArrestorRequired: park.sparkArrestorRequired || false,
+    noiseLimitDBA: park.noiseLimitDBA?.toString() || "",
+    // Address fields
+    streetAddress: park.address?.streetAddress || "",
+    streetAddress2: park.address?.streetAddress2 || "",
+    addressCity: park.address?.city || "",
+    addressState: park.address?.state || "",
+    zipCode: park.address?.zipCode || "",
+    county: park.address?.county || "",
   };
 
   return (

@@ -1,6 +1,9 @@
 import type {
+  Amenity,
   Camping,
+  Ownership,
   RecommendedDuration,
+  Terrain,
   VehicleType,
   VisitCondition,
 } from "@/lib/types";
@@ -98,4 +101,51 @@ export function formatRelativeDate(dateString: string): string {
   if (diffDays < 30) return `${Math.floor(diffDays / 7)} weeks ago`;
   if (diffDays < 365) return `${Math.floor(diffDays / 30)} months ago`;
   return `${Math.floor(diffDays / 365)} years ago`;
+}
+
+export function formatOwnership(ownership: Ownership): string {
+  const labels: Record<Ownership, string> = {
+    private: "Private",
+    public: "Public",
+    mixed: "Mixed",
+    unknown: "Unknown",
+  };
+  return labels[ownership];
+}
+
+export function formatAmenity(amenity: Amenity): string {
+  const labels: Record<Amenity, string> = {
+    restrooms: "Restrooms",
+    showers: "Showers",
+    food: "Food",
+    fuel: "Fuel",
+    repair: "Repair",
+    boatRamp: "Boat Ramp",
+    loadingRamp: "Loading Ramp",
+    picnicTable: "Picnic Table",
+    shelter: "Shelter",
+    grill: "Grill",
+    playground: "Playground",
+    wifi: "WiFi",
+    fishing: "Fishing",
+    airStation: "Air Station",
+    trailMaps: "Trail Maps",
+    rentals: "Rentals",
+    training: "Training",
+    firstAid: "First Aid",
+    store: "Store",
+  };
+  return labels[amenity];
+}
+
+export function formatTerrain(terrain: Terrain): string {
+  const labels: Record<Terrain, string> = {
+    sand: "Sand",
+    rocks: "Rocks",
+    mud: "Mud",
+    trails: "Trails",
+    hills: "Hills",
+    motocrossTrack: "Motocross Track",
+  };
+  return labels[terrain];
 }

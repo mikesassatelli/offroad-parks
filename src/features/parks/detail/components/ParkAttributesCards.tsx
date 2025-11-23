@@ -29,26 +29,6 @@ export function ParkAttributesCards({ park }: ParkAttributesCardsProps) {
         </CardContent>
       </Card>
 
-      {/* Difficulty Card */}
-      <Card>
-        <CardHeader>
-          <CardTitle>Difficulty Levels</CardTitle>
-        </CardHeader>
-        <CardContent>
-          <div className="flex flex-wrap gap-2">
-            {park.difficulty.map((level) => (
-              <Badge
-                key={level}
-                variant="secondary"
-                className="capitalize text-sm"
-              >
-                {level}
-              </Badge>
-            ))}
-          </div>
-        </CardContent>
-      </Card>
-
       {/* Amenities Card */}
       <Card>
         <CardHeader>

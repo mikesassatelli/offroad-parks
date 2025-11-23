@@ -41,7 +41,11 @@ export async function GET(request: Request) {
           id: true,
           name: true,
           slug: true,
-          state: true,
+          address: {
+            select: {
+              state: true,
+            },
+          },
         },
       },
       helpfulVotes: currentUserId

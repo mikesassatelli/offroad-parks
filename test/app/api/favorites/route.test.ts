@@ -56,10 +56,13 @@ describe("GET /api/favorites", () => {
           name: "Favorite Park 1",
           slug: "favorite-park-1",
           terrain: [{ terrain: "sand" }],
-          difficulty: [{ difficulty: "moderate" }],
           amenities: [{ amenity: "restrooms" }],
-
-      camping: [],vehicleTypes: [],
+          camping: [],
+          vehicleTypes: [],
+          address: {
+            city: "Test City",
+            state: "CA",
+          },
         },
       },
       {
@@ -72,10 +75,10 @@ describe("GET /api/favorites", () => {
           name: "Favorite Park 2",
           slug: "favorite-park-2",
           terrain: [{ terrain: "rocks" }],
-          difficulty: [{ difficulty: "difficult" }],
           amenities: [],
-          
-      camping: [],vehicleTypes: [],
+          camping: [],
+          vehicleTypes: [],
+          address: null,
         },
       },
     ];
@@ -101,10 +104,10 @@ describe("GET /api/favorites", () => {
         park: {
           include: {
             terrain: true,
-            difficulty: true,
             amenities: true,
             camping: true,
             vehicleTypes: true,
+            address: true,
           },
         },
       },

@@ -49,6 +49,12 @@ function OffroadParksAppInner({ parks }: OffroadParksAppProps) {
     maxAcres,
     minRating,
     setMinRating,
+    selectedOwnership,
+    setSelectedOwnership,
+    permitRequired,
+    setPermitRequired,
+    membershipRequired,
+    setMembershipRequired,
     sortOption,
     setSortOption,
     availableStates,
@@ -115,6 +121,12 @@ function OffroadParksAppInner({ parks }: OffroadParksAppProps) {
             maxAcres={maxAcres}
             minRating={minRating}
             onMinRatingChange={setMinRating}
+            selectedOwnership={selectedOwnership}
+            onOwnershipChange={setSelectedOwnership}
+            permitRequired={permitRequired}
+            onPermitRequiredChange={setPermitRequired}
+            membershipRequired={membershipRequired}
+            onMembershipRequiredChange={setMembershipRequired}
             onClearFilters={clearAllFilters}
           />
 

@@ -1,8 +1,8 @@
 import { ALL_AMENITIES, ALL_TERRAIN_TYPES, US_STATES } from "@/lib/constants";
 
 describe("ALL_AMENITIES", () => {
-  it("should contain all 5 amenity types", () => {
-    expect(ALL_AMENITIES).toHaveLength(5);
+  it("should contain all 19 amenity types", () => {
+    expect(ALL_AMENITIES).toHaveLength(19);
   });
 
   it("should contain expected amenities", () => {
@@ -11,6 +11,9 @@ describe("ALL_AMENITIES", () => {
     expect(ALL_AMENITIES).toContain("food");
     expect(ALL_AMENITIES).toContain("fuel");
     expect(ALL_AMENITIES).toContain("repair");
+    expect(ALL_AMENITIES).toContain("boatRamp");
+    expect(ALL_AMENITIES).toContain("loadingRamp");
+    expect(ALL_AMENITIES).toContain("store");
   });
 
   it("should not have duplicates", () => {
@@ -20,8 +23,8 @@ describe("ALL_AMENITIES", () => {
 });
 
 describe("ALL_TERRAIN_TYPES", () => {
-  it("should contain all 5 terrain types", () => {
-    expect(ALL_TERRAIN_TYPES).toHaveLength(5);
+  it("should contain all 6 terrain types", () => {
+    expect(ALL_TERRAIN_TYPES).toHaveLength(6);
   });
 
   it("should contain expected terrain types", () => {
@@ -30,6 +33,7 @@ describe("ALL_TERRAIN_TYPES", () => {
     expect(ALL_TERRAIN_TYPES).toContain("mud");
     expect(ALL_TERRAIN_TYPES).toContain("trails");
     expect(ALL_TERRAIN_TYPES).toContain("hills");
+    expect(ALL_TERRAIN_TYPES).toContain("motocrossTrack");
   });
 
   it("should not have duplicates", () => {

@@ -22,21 +22,31 @@ describe("GET /api/parks/[slug]", () => {
       id: "1",
       name: "Test Park",
       slug: "test-park",
-      city: "Test City",
-      state: "CA",
       latitude: 34.0522,
       longitude: -118.2437,
       website: "https://test.com",
       phone: "5551234567",
       dayPassUSD: 25,
       milesOfTrails: 50,
-      acres: 1000,notes: "Great park",
+      acres: 1000,
+      notes: "Great park",
       status: "APPROVED",
       terrain: [{ terrain: "sand" as const }],
-      difficulty: [{ difficulty: "moderate" as const }],
       amenities: [{ amenity: "restrooms" as const }],
-
-      camping: [],vehicleTypes: [],
+      camping: [],
+      vehicleTypes: [],
+      address: {
+        id: "addr-1",
+        parkId: "1",
+        streetAddress: null,
+        streetAddress2: null,
+        city: "Test City",
+        state: "CA",
+        zipCode: null,
+        county: null,
+        latitude: null,
+        longitude: null,
+      },
     };
 
     vi.mocked(prisma.park.findUnique).mockResolvedValue(mockPark as any);
@@ -53,19 +63,21 @@ describe("GET /api/parks/[slug]", () => {
     expect(data).toEqual({
       id: "test-park", // slug used as id
       name: "Test Park",
-      city: "Test City",
-      state: "CA",
       coords: { lat: 34.0522, lng: -118.2437 },
       website: "https://test.com",
       phone: "5551234567",
       dayPassUSD: 25,
       milesOfTrails: 50,
-      acres: 1000,notes: "Great park",
+      acres: 1000,
+      notes: "Great park",
       terrain: ["sand"],
-      difficulty: ["moderate"],
       amenities: ["restrooms"],
-
-      camping: [],vehicleTypes: [],
+      camping: [],
+      vehicleTypes: [],
+      address: {
+        city: "Test City",
+        state: "CA",
+      },
     });
 
     expect(prisma.park.findUnique).toHaveBeenCalledWith({
@@ -75,10 +87,10 @@ describe("GET /api/parks/[slug]", () => {
       },
       include: {
         terrain: true,
-        difficulty: true,
         amenities: true,
         camping: true,
         vehicleTypes: true,
+        address: true,
       },
     });
   });
@@ -151,21 +163,31 @@ describe("GET /api/parks/[slug]", () => {
       id: "1",
       name: "Minimal Park",
       slug: "minimal-park",
-      city: null,
-      state: "TX",
       latitude: null,
       longitude: null,
       website: null,
       phone: null,
       dayPassUSD: null,
       milesOfTrails: null,
-      acres: null,notes: null,
+      acres: null,
+      notes: null,
       status: "APPROVED",
       terrain: [],
-      difficulty: [],
       amenities: [],
-      
-      camping: [],vehicleTypes: [],
+      camping: [],
+      vehicleTypes: [],
+      address: {
+        id: "addr-1",
+        parkId: "1",
+        streetAddress: null,
+        streetAddress2: null,
+        city: null,
+        state: "TX",
+        zipCode: null,
+        county: null,
+        latitude: null,
+        longitude: null,
+      },
     };
 
     vi.mocked(prisma.park.findUnique).mockResolvedValue(mockPark as any);
@@ -181,19 +203,13 @@ describe("GET /api/parks/[slug]", () => {
     expect(data).toEqual({
       id: "minimal-park",
       name: "Minimal Park",
-      city: undefined,
-      state: "TX",
-      coords: undefined,
-      website: undefined,
-      phone: undefined,
-      dayPassUSD: undefined,
-      milesOfTrails: undefined,
-      acres: undefined,notes: undefined,
       terrain: [],
-      difficulty: [],
       amenities: [],
-      
-      camping: [],vehicleTypes: [],
+      camping: [],
+      vehicleTypes: [],
+      address: {
+        state: "TX",
+      },
     });
   });
 

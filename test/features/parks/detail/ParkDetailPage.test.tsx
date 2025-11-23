@@ -149,13 +149,14 @@ describe("ParkDetailPage", () => {
   const mockPark: Park = {
     id: "test-park",
     name: "Test Park",
-    state: "California",
-    city: "Los Angeles",
+    address: {
+      state: "California",
+      city: "Los Angeles",
+    },
     coords: { lat: 34.0522, lng: -118.2437 },
     terrain: ["sand", "rocks"],
     amenities: [],
-    
-    camping: [],difficulty: ["moderate"],
+    camping: [],
     vehicleTypes: [],
   };
 
@@ -196,7 +197,7 @@ describe("ParkDetailPage", () => {
   });
 
   it("should render park location without city when not provided", () => {
-    const parkWithoutCity = { ...mockPark, city: undefined };
+    const parkWithoutCity = { ...mockPark, address: { state: "California" } };
 
     render(<ParkDetailPage park={parkWithoutCity} photos={[]} />);
 
@@ -372,7 +373,7 @@ describe("ParkDetailPage", () => {
   });
 
   it("should handle park with null city", () => {
-    const parkWithNullCity = { ...mockPark, city: undefined };
+    const parkWithNullCity = { ...mockPark, address: { state: "California" } };
 
     render(<ParkDetailPage park={parkWithNullCity} photos={[]} />);
 

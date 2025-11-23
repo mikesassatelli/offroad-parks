@@ -17,20 +17,19 @@ import { Checkbox } from "@/components/ui/checkbox";
 import {
   ALL_AMENITIES,
   ALL_CAMPING_TYPES,
+  ALL_OWNERSHIP_TYPES,
   ALL_TERRAIN_TYPES,
   ALL_VEHICLE_TYPES,
+  US_STATES,
 } from "@/lib/constants";
-import { formatCamping } from "@/lib/formatting";
-import type { Camping } from "@/lib/types";
-import { US_STATES } from "@/lib/constants";
+import { formatCamping, formatOwnership } from "@/lib/formatting";
+import type { Camping, Ownership } from "@/lib/types";
 import { Image as ImageIcon, Loader2, X } from "lucide-react";
 import Image from "next/image";
 
 interface FormData {
   name: string;
   slug: string;
-  city: string;
-  state: string;
   latitude: string;
   longitude: string;
   website: string;
@@ -43,10 +42,28 @@ interface FormData {
   notes: string;
   submitterName: string;
   terrain: string[];
-  difficulty: string[];
   amenities: string[];
   camping: string[];
   vehicleTypes: string[];
+  // Operations fields
+  datesOpen: string;
+  contactEmail: string;
+  ownership: string;
+  // Requirements fields
+  permitRequired: boolean;
+  permitType: string;
+  membershipRequired: boolean;
+  maxVehicleWidthInches: string;
+  flagsRequired: boolean;
+  sparkArrestorRequired: boolean;
+  noiseLimitDBA: string;
+  // Address fields
+  streetAddress: string;
+  streetAddress2: string;
+  addressCity: string;
+  addressState: string;
+  zipCode: string;
+  county: string;
 }
 
 interface ParkSubmissionFormProps {
@@ -55,8 +72,6 @@ interface ParkSubmissionFormProps {
   parkId?: string;
   existingPhotoCount?: number;
 }
-
-const DIFFICULTY_LEVELS = ["easy", "moderate", "difficult", "extreme"];
 
 export function ParkSubmissionForm({
   isAdminForm = false,
@@ -73,8 +88,6 @@ export function ParkSubmissionForm({
     initialData || {
       name: "",
       slug: "",
-      city: "",
-      state: "",
       latitude: "",
       longitude: "",
       website: "",
@@ -87,10 +100,28 @@ export function ParkSubmissionForm({
       notes: "",
       submitterName: "",
       terrain: [],
-      difficulty: [],
       amenities: [],
       camping: [],
       vehicleTypes: [],
+      // Operations fields
+      datesOpen: "",
+      contactEmail: "",
+      ownership: "",
+      // Requirements fields
+      permitRequired: false,
+      permitType: "",
+      membershipRequired: false,
+      maxVehicleWidthInches: "",
+      flagsRequired: false,
+      sparkArrestorRequired: false,
+      noiseLimitDBA: "",
+      // Address fields
+      streetAddress: "",
+      streetAddress2: "",
+      addressCity: "",
+      addressState: "",
+      zipCode: "",
+      county: "",
     },
   );
 
@@ -119,7 +150,7 @@ export function ParkSubmissionForm({
   };
 
   const handleCheckboxChange = (
-    field: "terrain" | "difficulty" | "amenities" | "camping" | "vehicleTypes",
+    field: "terrain" | "amenities" | "camping" | "vehicleTypes",
     value: string,
   ) => {
     setFormData((prev) => ({
@@ -195,6 +226,21 @@ export function ParkSubmissionForm({
             ? parseInt(formData.milesOfTrails)
             : null,
           acres: formData.acres ? parseInt(formData.acres) : null,
+          maxVehicleWidthInches: formData.maxVehicleWidthInches
+            ? parseInt(formData.maxVehicleWidthInches)
+            : null,
+          noiseLimitDBA: formData.noiseLimitDBA
+            ? parseInt(formData.noiseLimitDBA)
+            : null,
+          ownership: formData.ownership || null,
+          address: {
+            streetAddress: formData.streetAddress || null,
+            streetAddress2: formData.streetAddress2 || null,
+            city: formData.addressCity || null,
+            state: formData.addressState || null,
+            zipCode: formData.zipCode || null,
+            county: formData.county || null,
+          },
         }),
       });
 
@@ -283,25 +329,14 @@ export function ParkSubmissionForm({
         )}
 
         <div>
-          <Label htmlFor="city">City</Label>
-          <Input
-            id="city"
-            name="city"
-            value={formData.city}
-            onChange={handleInputChange}
-            maxLength={50}
-          />
-        </div>
-
-        <div>
-          <Label htmlFor="state">State *</Label>
+          <Label htmlFor="addressState">State *</Label>
           <Select
-            value={formData.state}
+            value={formData.addressState}
             onValueChange={(value) =>
-              setFormData((prev) => ({ ...prev, state: value }))
+              setFormData((prev) => ({ ...prev, addressState: value }))
             }
           >
-            <SelectTrigger id="state">
+            <SelectTrigger id="addressState">
               <SelectValue placeholder="Select state" />
             </SelectTrigger>
             <SelectContent>
@@ -312,6 +347,62 @@ export function ParkSubmissionForm({
               ))}
             </SelectContent>
           </Select>
+        </div>
+
+        <div>
+          <Label htmlFor="addressCity">City</Label>
+          <Input
+            id="addressCity"
+            name="addressCity"
+            value={formData.addressCity}
+            onChange={handleInputChange}
+            maxLength={50}
+          />
+        </div>
+
+        <div>
+          <Label htmlFor="streetAddress">Street Address</Label>
+          <Input
+            id="streetAddress"
+            name="streetAddress"
+            value={formData.streetAddress}
+            onChange={handleInputChange}
+            maxLength={200}
+          />
+        </div>
+
+        <div>
+          <Label htmlFor="streetAddress2">Street Address 2</Label>
+          <Input
+            id="streetAddress2"
+            name="streetAddress2"
+            value={formData.streetAddress2}
+            onChange={handleInputChange}
+            placeholder="Suite, Unit, etc."
+            maxLength={100}
+          />
+        </div>
+
+        <div>
+          <Label htmlFor="zipCode">ZIP Code</Label>
+          <Input
+            id="zipCode"
+            name="zipCode"
+            value={formData.zipCode}
+            onChange={handleInputChange}
+            maxLength={10}
+          />
+        </div>
+
+        <div>
+          <Label htmlFor="county">County</Label>
+          <Input
+            id="county"
+            name="county"
+            value={formData.county}
+            onChange={handleInputChange}
+            maxLength={50}
+          />
         </div>
 
         <div>
@@ -363,6 +454,56 @@ export function ParkSubmissionForm({
             placeholder="5551234567"
             maxLength={15}
           />
+        </div>
+
+        {/* Operations Section */}
+        <div className="col-span-1 md:col-span-2">
+          <Label className="mb-3 block text-base font-semibold">Operations</Label>
+        </div>
+
+        <div>
+          <Label htmlFor="datesOpen">Dates/Hours Open</Label>
+          <Input
+            id="datesOpen"
+            name="datesOpen"
+            value={formData.datesOpen}
+            onChange={handleInputChange}
+            placeholder="e.g., Year-round or April-October"
+            maxLength={100}
+          />
+        </div>
+
+        <div>
+          <Label htmlFor="contactEmail">Contact Email</Label>
+          <Input
+            id="contactEmail"
+            name="contactEmail"
+            type="email"
+            value={formData.contactEmail}
+            onChange={handleInputChange}
+            placeholder="info@park.com"
+          />
+        </div>
+
+        <div>
+          <Label htmlFor="ownership">Ownership</Label>
+          <Select
+            value={formData.ownership}
+            onValueChange={(value) =>
+              setFormData((prev) => ({ ...prev, ownership: value }))
+            }
+          >
+            <SelectTrigger id="ownership">
+              <SelectValue placeholder="Select ownership type" />
+            </SelectTrigger>
+            <SelectContent>
+              {ALL_OWNERSHIP_TYPES.map((ownership) => (
+                <SelectItem key={ownership} value={ownership}>
+                  {formatOwnership(ownership as Ownership)}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
         </div>
 
         <div>
@@ -436,30 +577,6 @@ export function ParkSubmissionForm({
                 className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70 capitalize"
               >
                 {terrain}
-              </label>
-            </div>
-          ))}
-        </div>
-      </div>
-
-      {/* Difficulty Levels */}
-      <div>
-        <Label className="mb-3 block">Difficulty Levels *</Label>
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
-          {DIFFICULTY_LEVELS.map((difficulty) => (
-            <div key={difficulty} className="flex items-center space-x-2">
-              <Checkbox
-                id={`difficulty-${difficulty}`}
-                checked={formData.difficulty.includes(difficulty)}
-                onCheckedChange={() =>
-                  handleCheckboxChange("difficulty", difficulty)
-                }
-              />
-              <label
-                htmlFor={`difficulty-${difficulty}`}
-                className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70 capitalize"
-              >
-                {difficulty}
               </label>
             </div>
           ))}
@@ -579,6 +696,118 @@ export function ParkSubmissionForm({
               </label>
             </div>
           ))}
+        </div>
+      </div>
+
+      {/* Requirements & Regulations */}
+      <div>
+        <Label className="mb-3 block text-base font-semibold">Requirements & Regulations</Label>
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+          <div className="flex items-center space-x-2">
+            <Checkbox
+              id="permitRequired"
+              checked={formData.permitRequired}
+              onCheckedChange={(checked) =>
+                setFormData((prev) => ({ ...prev, permitRequired: !!checked }))
+              }
+            />
+            <label
+              htmlFor="permitRequired"
+              className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
+            >
+              Permit Required
+            </label>
+          </div>
+
+          {formData.permitRequired && (
+            <div>
+              <Label htmlFor="permitType">Permit Type</Label>
+              <Input
+                id="permitType"
+                name="permitType"
+                value={formData.permitType}
+                onChange={handleInputChange}
+                placeholder="e.g., OHV sticker, Day use permit"
+                maxLength={100}
+              />
+            </div>
+          )}
+
+          <div className="flex items-center space-x-2">
+            <Checkbox
+              id="membershipRequired"
+              checked={formData.membershipRequired}
+              onCheckedChange={(checked) =>
+                setFormData((prev) => ({ ...prev, membershipRequired: !!checked }))
+              }
+            />
+            <label
+              htmlFor="membershipRequired"
+              className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
+            >
+              Membership Required
+            </label>
+          </div>
+
+          <div className="flex items-center space-x-2">
+            <Checkbox
+              id="flagsRequired"
+              checked={formData.flagsRequired}
+              onCheckedChange={(checked) =>
+                setFormData((prev) => ({ ...prev, flagsRequired: !!checked }))
+              }
+            />
+            <label
+              htmlFor="flagsRequired"
+              className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
+            >
+              Whip Flags Required
+            </label>
+          </div>
+
+          <div className="flex items-center space-x-2">
+            <Checkbox
+              id="sparkArrestorRequired"
+              checked={formData.sparkArrestorRequired}
+              onCheckedChange={(checked) =>
+                setFormData((prev) => ({ ...prev, sparkArrestorRequired: !!checked }))
+              }
+            />
+            <label
+              htmlFor="sparkArrestorRequired"
+              className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
+            >
+              Spark Arrestor Required
+            </label>
+          </div>
+
+          <div>
+            <Label htmlFor="maxVehicleWidthInches">Max Vehicle Width (inches)</Label>
+            <Input
+              id="maxVehicleWidthInches"
+              name="maxVehicleWidthInches"
+              type="number"
+              min="0"
+              max="200"
+              value={formData.maxVehicleWidthInches}
+              onChange={handleInputChange}
+              placeholder="e.g., 65"
+            />
+          </div>
+
+          <div>
+            <Label htmlFor="noiseLimitDBA">Noise Limit (dBA)</Label>
+            <Input
+              id="noiseLimitDBA"
+              name="noiseLimitDBA"
+              type="number"
+              min="0"
+              max="150"
+              value={formData.noiseLimitDBA}
+              onChange={handleInputChange}
+              placeholder="e.g., 96"
+            />
+          </div>
         </div>
       </div>
 

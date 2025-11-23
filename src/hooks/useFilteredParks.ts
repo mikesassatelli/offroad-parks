@@ -17,10 +17,13 @@ export function useFilteredParks({ parks }: UseFilteredParksProps) {
   const [minTrailMiles, setMinTrailMiles] = useState<number>(0);
   const [minAcres, setMinAcres] = useState<number>(0);
   const [minRating, setMinRating] = useState<string>("");
+  const [selectedOwnership, setSelectedOwnership] = useState<string>("");
+  const [permitRequired, setPermitRequired] = useState<string>("");
+  const [membershipRequired, setMembershipRequired] = useState<string>("");
   const [sortOption, setSortOption] = useState<SortOption>("name");
 
   const availableStates = useMemo(
-    () => Array.from(new Set(parks.map((park) => park.state))).sort(),
+    () => Array.from(new Set(parks.map((park) => park.address.state))).sort(),
     [parks],
   );
 
@@ -45,7 +48,7 @@ export function useFilteredParks({ parks }: UseFilteredParksProps) {
     if (searchQuery.trim()) {
       const searchTerm = searchQuery.toLowerCase();
       filteredList = filteredList.filter((park) =>
-        [park.name, park.city, park.state, park.notes]
+        [park.name, park.address.city, park.address.state, park.notes]
           .filter(Boolean)
           .some((value) => value!.toLowerCase().includes(searchTerm)),
       );
@@ -54,7 +57,7 @@ export function useFilteredParks({ parks }: UseFilteredParksProps) {
     // Apply state filter
     if (selectedState) {
       filteredList = filteredList.filter(
-        (park) => park.state === selectedState,
+        (park) => park.address.state === selectedState,
       );
     }
 
@@ -108,6 +111,27 @@ export function useFilteredParks({ parks }: UseFilteredParksProps) {
       );
     }
 
+    // Filter by ownership
+    if (selectedOwnership) {
+      filteredList = filteredList.filter(
+        (park) => park.ownership === selectedOwnership,
+      );
+    }
+
+    // Filter by permit required
+    if (permitRequired === "yes") {
+      filteredList = filteredList.filter((park) => park.permitRequired === true);
+    } else if (permitRequired === "no") {
+      filteredList = filteredList.filter((park) => park.permitRequired !== true);
+    }
+
+    // Filter by membership required
+    if (membershipRequired === "yes") {
+      filteredList = filteredList.filter((park) => park.membershipRequired === true);
+    } else if (membershipRequired === "no") {
+      filteredList = filteredList.filter((park) => park.membershipRequired !== true);
+    }
+
     // Apply sorting
     filteredList.sort((parkA, parkB) => {
       if (sortOption === "name") {
@@ -140,6 +164,9 @@ export function useFilteredParks({ parks }: UseFilteredParksProps) {
     minTrailMiles,
     minAcres,
     minRating,
+    selectedOwnership,
+    permitRequired,
+    membershipRequired,
     sortOption,
   ]);
 
@@ -153,6 +180,9 @@ export function useFilteredParks({ parks }: UseFilteredParksProps) {
     setMinTrailMiles(0);
     setMinAcres(0);
     setMinRating("");
+    setSelectedOwnership("");
+    setPermitRequired("");
+    setMembershipRequired("");
   };
 
   return {
@@ -176,6 +206,12 @@ export function useFilteredParks({ parks }: UseFilteredParksProps) {
     maxAcres,
     minRating,
     setMinRating,
+    selectedOwnership,
+    setSelectedOwnership,
+    permitRequired,
+    setPermitRequired,
+    membershipRequired,
+    setMembershipRequired,
     sortOption,
     setSortOption,
     availableStates,

@@ -105,7 +105,7 @@ describe("Homepage", () => {
     );
   });
 
-  it("should include terrain, difficulty, and amenities", async () => {
+  it("should include terrain, amenities, camping, vehicleTypes, and address", async () => {
     vi.mocked(prisma.park.findMany).mockResolvedValue([]);
 
     await Page();
@@ -114,8 +114,10 @@ describe("Homepage", () => {
       expect.objectContaining({
         include: expect.objectContaining({
           terrain: true,
-          difficulty: true,
           amenities: true,
+          camping: true,
+          vehicleTypes: true,
+          address: true,
         }),
       }),
     );

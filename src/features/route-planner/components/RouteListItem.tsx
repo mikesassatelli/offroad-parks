@@ -51,8 +51,8 @@ export function RouteListItem({
             </span>
           </div>
           <div className="text-xs text-gray-500 ml-7">
-            {park.city ? `${park.city}, ` : ""}
-            {park.state}
+            {park.address.city ? `${park.address.city}, ` : ""}
+            {park.address.state}
           </div>
         </Link>
       </div>

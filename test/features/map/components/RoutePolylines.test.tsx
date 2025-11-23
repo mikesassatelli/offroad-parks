@@ -26,37 +26,34 @@ describe("RoutePolylines", () => {
   const mockPark1: Park = {
     id: "park-1",
     name: "Park One",
-    state: "CA",
+    address: { state: "CA" },
     coords: { lat: 34.0522, lng: -118.2437 },
     terrain: [],
-    difficulty: [],
     amenities: [],
-    
-      camping: [],vehicleTypes: [],
+    camping: [],
+    vehicleTypes: [],
   };
 
   const mockPark2: Park = {
     id: "park-2",
     name: "Park Two",
-    state: "CA",
+    address: { state: "CA" },
     coords: { lat: 36.7783, lng: -119.4179 },
     terrain: [],
-    difficulty: [],
     amenities: [],
-    
-      camping: [],vehicleTypes: [],
+    camping: [],
+    vehicleTypes: [],
   };
 
   const mockPark3: Park = {
     id: "park-3",
     name: "Park Three",
-    state: "NV",
+    address: { state: "NV" },
     coords: { lat: 36.1699, lng: -115.1398 },
     terrain: [],
-    difficulty: [],
     amenities: [],
-    
-      camping: [],vehicleTypes: [],
+    camping: [],
+    vehicleTypes: [],
   };
 
   it("should return null when less than 2 parks", () => {
