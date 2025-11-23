@@ -268,7 +268,7 @@ describe("SearchFiltersPanel", () => {
     render(<SearchFiltersPanel {...mockProps} />);
 
     // Check for some camping types (from ALL_CAMPING_TYPES constant)
-    expect(screen.getByText("Tent")).toBeInTheDocument();
+    expect(screen.getByText("Tent / Primitive")).toBeInTheDocument();
     expect(screen.getByText("RV 30A")).toBeInTheDocument();
   });
 
