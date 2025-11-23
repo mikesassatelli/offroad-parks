@@ -22,8 +22,8 @@ import {
   ALL_VEHICLE_TYPES,
   US_STATES,
 } from "@/lib/constants";
-import { formatCamping, formatOwnership } from "@/lib/formatting";
-import type { Camping, Ownership } from "@/lib/types";
+import { formatAmenity, formatCamping, formatOwnership, formatTerrain } from "@/lib/formatting";
+import type { Amenity, Camping, Ownership, Terrain } from "@/lib/types";
 import { Image as ImageIcon, Loader2, X } from "lucide-react";
 import Image from "next/image";
 
@@ -574,9 +574,9 @@ export function ParkSubmissionForm({
               />
               <label
                 htmlFor={`terrain-${terrain}`}
-                className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70 capitalize"
+                className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
               >
-                {terrain}
+                {formatTerrain(terrain as Terrain)}
               </label>
             </div>
           ))}
@@ -598,9 +598,9 @@ export function ParkSubmissionForm({
               />
               <label
                 htmlFor={`amenity-${amenity}`}
-                className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70 capitalize"
+                className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
               >
-                {amenity}
+                {formatAmenity(amenity as Amenity)}
               </label>
             </div>
           ))}

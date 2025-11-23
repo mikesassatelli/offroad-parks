@@ -1,0 +1,256 @@
+# Offroad Parks Backlog
+# Canonical source of truth for project planning
+# Structure: Epics → Stories (OP-IDs) → Tasks
+
+epics:
+  # Epic 1: Reviews & User-Generated Content
+  - id: E1
+    key: reviews
+    name: "Reviews & User-Generated Content"
+    description: "Reviews, trip reports, recent reviews, archival of closed parks."
+    stories:
+      - key: OP-15
+        title: "Park Reviews & Ratings System"
+        status: done
+        type: feature
+        githubIssue: 16
+        needsRefinement: false
+        notes: "Implemented permanent trip reports, ratings, helpful votes, moderation, review UI, and aggregation."
+        tasks: []
+
+      - key: OP-19
+        title: "Expand Recent Reviews Page Functionality"
+        status: backlog
+        type: feature
+        githubIssue: 21
+        needsRefinement: true
+        notes: "Park thumbnail & metadata, filters (rating, vehicle type, state), pagination or infinite scroll, 'Read More' links, performance review."
+        tasks: []
+
+      - key: OP-29
+        title: "Seed Closed/Destroyed Parks for Archival"
+        status: backlog
+        type: feature
+        githubIssue: 30
+        needsRefinement: true
+        notes: "Add archived parks dataset, UI treatment for archived parks, exclude from normal search results."
+        tasks: []
+
+  # Epic 2: Park Data Model & Content Expansion
+  - id: E2
+    key: data-model
+    name: "Park Data Model & Content Expansion"
+    description: "Schema improvements, new fields, and data enrichment."
+    stories:
+      - key: OP-3
+        title: "Expand Park Information Schema / Amenities"
+        status: done
+        type: feature
+        githubIssue: 15
+        needsRefinement: false
+        notes: "Added amenities + operational data fields."
+        tasks: []
+
+      - key: OP-22
+        title: "Refactor dayPassUSD into Rich Pricing Fields"
+        status: backlog
+        type: refactor
+        githubIssue: 23
+        needsRefinement: true
+        notes: "Replace dayPassUSD, membership fee, rider fee, vehicle/entry fees, form + UI updates, data migration."
+        tasks: []
+
+      - key: OP-23
+        title: "Surface New Camping Data in Camping Info Card"
+        status: backlog
+        type: feature
+        githubIssue: 24
+        needsRefinement: false
+        notes: "Add new camping field display, icons/badges, handle missing data."
+        tasks: []
+
+      - key: OP-24
+        title: "Surface New Operational Attributes on Detail & Search Cards"
+        status: backlog
+        type: feature
+        githubIssue: 25
+        needsRefinement: false
+        notes: "Hours open, public/private ownership, permit & membership requirements, max vehicle width, flags & spark arrestor rules, visual badges."
+        tasks: []
+
+      - key: OP-25
+        title: "Add Average Recommended Stay to Park Detail Page"
+        status: backlog
+        type: feature
+        githubIssue: 26
+        needsRefinement: false
+        notes: "Show typical stay duration (chip/text)."
+        tasks: []
+
+      - key: OP-26
+        title: "Update Contact/Location Card with Full Address"
+        status: backlog
+        type: feature
+        githubIssue: 27
+        needsRefinement: false
+        notes: "Full address, contact email, operational context."
+        tasks: []
+
+  # Epic 3: Park UI & Layout Improvements
+  - id: E3
+    key: ui
+    name: "Park UI & Layout Improvements"
+    description: "Visual improvements, layout optimizations, and UX enhancements."
+    stories:
+      - key: OP-2
+        title: "Favorites Button Overlap Bug"
+        status: done
+        type: bug
+        githubIssue: 14
+        needsRefinement: false
+        notes: "Fixed favorites button overlap issue."
+        tasks: []
+
+      - key: OP-16
+        title: "Sticky Header w/ Breadcrumbs & Refactored Search Bar"
+        status: done
+        type: feature
+        githubIssue: 17
+        needsRefinement: false
+        notes: "Implemented sticky header with breadcrumbs and improved search bar."
+        tasks: []
+
+      - key: OP-18
+        title: "Refactor Park Detail Layout to Reduce Scrolling"
+        status: backlog
+        type: refactor
+        githubIssue: 20
+        needsRefinement: false
+        notes: "Reduce vertical scrolling, possibly tabs/collapsible sections, maintain mobile UX."
+        tasks: []
+
+      - key: OP-20
+        title: "Fix Park Submission/Edit Amenity Labels"
+        status: done
+        type: bug
+        githubIssue: 19
+        needsRefinement: false
+        notes: "Human-friendly labels, group amenities."
+        tasks: []
+
+  # Epic 4: Search, Discovery & Filtering
+  - id: E4
+    key: search
+    name: "Search, Discovery & Filtering"
+    description: "Search improvements, filtering, sorting, and discovery features."
+    stories:
+      - key: OP-21
+        title: "Spike: Validate Filters/Sorts After Schema Expansion"
+        status: backlog
+        type: spike
+        githubIssue: 22
+        needsRefinement: true
+        notes: "Review filters/sorts, identify gaps, propose new sorts."
+        tasks: []
+
+      - key: OP-28
+        title: "Smart/AI-Powered Nearby Services"
+        status: backlog
+        type: feature
+        githubIssue: 29
+        needsRefinement: true
+        notes: "Fuel, diesel, campgrounds, water, RV dump, API/AI lookup, show on park detail."
+        tasks: []
+
+  # Epic 5: Infrastructure & Environment
+  - id: E5
+    key: infra
+    name: "Infrastructure & Environment"
+    description: "Database, deployment, and infrastructure improvements."
+    stories:
+      - key: OP-17
+        title: "Expanded Schema Aggregations Implemented"
+        status: done
+        type: infra
+        githubIssue: 18
+        needsRefinement: false
+        notes: "Implemented schema aggregations for reviews and ratings."
+        tasks: []
+
+      - key: OP-27
+        title: "Add Dev DB & Migrate to Neon-Managed Postgres"
+        status: backlog
+        type: infra
+        githubIssue: 28
+        needsRefinement: false
+        notes: "Dev DB, prod/dev migration, env vars, backups + branching."
+        tasks: []
+
+  # Epic 6: Map, Routing & Conditions (Future)
+  - id: E6
+    key: map
+    name: "Map, Routing & Conditions"
+    description: "Map features, routing, trail conditions, and location-based services."
+    stories:
+      - key: OP-30
+        title: "Trail Condition Reports"
+        status: backlog
+        type: feature
+        githubIssue: null
+        needsRefinement: true
+        notes: "User-submitted trail condition reports with timestamps."
+        tasks: []
+
+      - key: OP-31
+        title: "Saved & Shareable Routes"
+        status: backlog
+        type: feature
+        githubIssue: null
+        needsRefinement: true
+        notes: "Save routes to profile, share via link."
+        tasks: []
+
+      - key: OP-32
+        title: "Route Optimization & Turn-by-Turn"
+        status: backlog
+        type: feature
+        githubIssue: null
+        needsRefinement: true
+        notes: "Optimize multi-stop routes, turn-by-turn directions."
+        tasks: []
+
+      - key: OP-33
+        title: "Weather Integration"
+        status: backlog
+        type: feature
+        githubIssue: null
+        needsRefinement: true
+        notes: "Current and forecast weather for parks."
+        tasks: []
+
+      - key: OP-34
+        title: "Parks Near Me (Geolocation)"
+        status: backlog
+        type: feature
+        githubIssue: null
+        needsRefinement: true
+        notes: "Find parks based on user's current location."
+        tasks: []
+
+      - key: OP-35
+        title: "Smart Recommendations"
+        status: backlog
+        type: feature
+        githubIssue: null
+        needsRefinement: true
+        notes: "AI-powered park recommendations based on preferences."
+        tasks: []
+
+      - key: OP-36
+        title: "Visit Tracking & Achievements"
+        status: backlog
+        type: feature
+        githubIssue: null
+        needsRefinement: true
+        notes: "Track visited parks, earn badges/achievements."
+        tasks: []

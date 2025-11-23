@@ -34,7 +34,7 @@ export function formatPhone(phone?: string): string {
 
 export function formatCamping(camping: Camping): string {
   const campingLabels: Record<Camping, string> = {
-    tent: "Tent",
+    tent: "Tent / Primitive",
     rv30A: "RV 30A",
     rv50A: "RV 50A",
     fullHookup: "Full Hookup",
