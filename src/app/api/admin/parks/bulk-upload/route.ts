@@ -6,29 +6,20 @@ import {
   ALL_AMENITIES,
   ALL_CAMPING_TYPES,
   ALL_VEHICLE_TYPES,
+  ALL_OWNERSHIP_TYPES,
   US_STATES,
 } from "@/lib/constants";
 import type {
   Terrain,
-  Difficulty,
   Amenity,
   Camping,
   VehicleType,
+  Ownership,
 } from "@/lib/types";
-
-// Difficulty levels array
-const ALL_DIFFICULTY_LEVELS: Difficulty[] = [
-  "easy",
-  "moderate",
-  "difficult",
-  "extreme",
-];
 
 interface BulkParkInput {
   name: string;
   slug?: string;
-  city?: string;
-  state: string;
   latitude?: number | null;
   longitude?: number | null;
   website?: string;
@@ -40,10 +31,27 @@ interface BulkParkInput {
   acres?: number | null;
   notes?: string;
   terrain: string[];
-  difficulty: string[];
   amenities?: string[];
   camping?: string[];
   vehicleTypes?: string[];
+  // New scalar fields
+  datesOpen?: string;
+  contactEmail?: string;
+  ownership?: string;
+  permitRequired?: boolean;
+  permitType?: string;
+  membershipRequired?: boolean;
+  maxVehicleWidthInches?: number | null;
+  flagsRequired?: boolean;
+  sparkArrestorRequired?: boolean;
+  noiseLimitDBA?: number | null;
+  // Address fields (flat in CSV/JSON) - state is required
+  streetAddress?: string;
+  streetAddress2?: string;
+  city?: string;
+  state: string;
+  zipCode?: string;
+  county?: string;
 }
 
 interface ValidationError {
@@ -112,26 +120,6 @@ function validateParkEntry(
         row: rowIndex,
         field: "terrain",
         message: `Invalid terrain types: ${invalidTerrain.join(", ")}. Valid options: ${ALL_TERRAIN_TYPES.join(", ")}`,
-      });
-    }
-  }
-
-  // Difficulty validation
-  if (!park.difficulty || park.difficulty.length === 0) {
-    errors.push({
-      row: rowIndex,
-      field: "difficulty",
-      message: "At least one difficulty level is required",
-    });
-  } else {
-    const invalidDifficulty = park.difficulty.filter(
-      (d) => !ALL_DIFFICULTY_LEVELS.includes(d as Difficulty)
-    );
-    if (invalidDifficulty.length > 0) {
-      errors.push({
-        row: rowIndex,
-        field: "difficulty",
-        message: `Invalid difficulty levels: ${invalidDifficulty.join(", ")}. Valid options: ${ALL_DIFFICULTY_LEVELS.join(", ")}`,
       });
     }
   }
@@ -266,6 +254,55 @@ function validateParkEntry(
     });
   }
 
+  // Ownership validation
+  if (park.ownership && park.ownership.trim().length > 0) {
+    if (!ALL_OWNERSHIP_TYPES.includes(park.ownership as Ownership)) {
+      errors.push({
+        row: rowIndex,
+        field: "ownership",
+        message: `Invalid ownership type. Valid options: ${ALL_OWNERSHIP_TYPES.join(", ")}`,
+      });
+    }
+  }
+
+  // Contact email validation
+  if (park.contactEmail && park.contactEmail.trim().length > 0) {
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailRegex.test(park.contactEmail)) {
+      errors.push({
+        row: rowIndex,
+        field: "contactEmail",
+        message: "Invalid email format",
+      });
+    }
+  }
+
+  // maxVehicleWidthInches validation (non-negative)
+  if (
+    park.maxVehicleWidthInches !== undefined &&
+    park.maxVehicleWidthInches !== null &&
+    park.maxVehicleWidthInches < 0
+  ) {
+    errors.push({
+      row: rowIndex,
+      field: "maxVehicleWidthInches",
+      message: "Max vehicle width cannot be negative",
+    });
+  }
+
+  // noiseLimitDBA validation (non-negative)
+  if (
+    park.noiseLimitDBA !== undefined &&
+    park.noiseLimitDBA !== null &&
+    park.noiseLimitDBA < 0
+  ) {
+    errors.push({
+      row: rowIndex,
+      field: "noiseLimitDBA",
+      message: "Noise limit cannot be negative",
+    });
+  }
+
   return errors;
 }
 
@@ -379,8 +416,6 @@ export async function POST(
           data: {
             name: park.name,
             slug,
-            city: park.city || null,
-            state: park.state,
             latitude: park.latitude ?? null,
             longitude: park.longitude ?? null,
             website: park.website || null,
@@ -393,6 +428,32 @@ export async function POST(
             notes: park.notes || null,
             status: "APPROVED", // Admin bulk uploads are pre-approved
             submitterId: session.user?.id || "",
+            // New scalar fields
+            datesOpen: park.datesOpen || null,
+            contactEmail: park.contactEmail || null,
+            ownership: (park.ownership as Ownership) || null,
+            permitRequired: park.permitRequired ?? null,
+            permitType: park.permitType || null,
+            membershipRequired: park.membershipRequired ?? null,
+            maxVehicleWidthInches: park.maxVehicleWidthInches ?? null,
+            flagsRequired: park.flagsRequired ?? null,
+            sparkArrestorRequired: park.sparkArrestorRequired ?? null,
+            noiseLimitDBA: park.noiseLimitDBA ?? null,
+          },
+        });
+
+        // Create Address record (state is required)
+        await tx.address.create({
+          data: {
+            parkId: createdPark.id,
+            streetAddress: park.streetAddress || null,
+            streetAddress2: park.streetAddress2 || null,
+            city: park.city || null,
+            state: park.state, // Required
+            zipCode: park.zipCode || null,
+            county: park.county || null,
+            latitude: park.latitude ?? null,
+            longitude: park.longitude ?? null,
           },
         });
 
@@ -403,18 +464,6 @@ export async function POST(
               data: {
                 parkId: createdPark.id,
                 terrain: terrainType as Terrain,
-              },
-            })
-          )
-        );
-
-        // Create difficulty relations
-        await Promise.all(
-          park.difficulty.map((difficultyLevel) =>
-            tx.parkDifficulty.create({
-              data: {
-                parkId: createdPark.id,
-                difficulty: difficultyLevel as Difficulty,
               },
             })
           )

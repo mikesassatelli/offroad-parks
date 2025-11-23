@@ -74,8 +74,6 @@ model Park {
   id            String     @id @default(cuid())
   name          String
   slug          String     @unique
-  city          String?
-  state         String
   latitude      Float?
   longitude     Float?
   website       String?
@@ -88,31 +86,43 @@ model Park {
   notes         String?    @db.Text
   status        ParkStatus @default(PENDING)
 
+  // New operational fields
+  datesOpen              String?
+  contactEmail           String?
+  ownership              Ownership?
+  permitRequired         Boolean?
+  permitType             String?
+  membershipRequired     Boolean?
+  maxVehicleWidthInches  Int?
+  flagsRequired          Boolean?
+  sparkArrestorRequired  Boolean?
+  noiseLimitDBA          Int?
+
   // Aggregated review data
-  averageRating     Float?
-  averageDifficulty Float?
-  averageTerrain    Float?
-  averageFacilities Float?
-  reviewCount       Int        @default(0)
+  averageRating            Float?
+  averageDifficulty        Float?
+  averageTerrain           Float?
+  averageFacilities        Float?
+  reviewCount              Int                   @default(0)
+  averageRecommendedStay   RecommendedDuration?
 
   submittedBy   User?   @relation("SubmittedParks", fields: [submitterId], references: [id])
   submitterId   String?
   submitterName String? // For anonymous submissions
 
   terrain      ParkTerrain[]
-  difficulty   ParkDifficulty[]
   amenities    ParkAmenity[]
   camping      ParkCamping[]
   vehicleTypes ParkVehicleType[]
   favorites    UserFavorite[]
   photos       ParkPhoto[]
   reviews      ParkReview[]
+  address      Address?
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
   @@index([status])
-  @@index([state])
   @@index([averageRating])
 }
 
@@ -132,16 +142,6 @@ model ParkTerrain {
   park Park @relation(fields: [parkId], references: [id], onDelete: Cascade)
 
   @@unique([parkId, terrain])
-}
-
-model ParkDifficulty {
-  id         String     @id @default(cuid())
-  parkId     String
-  difficulty Difficulty
-
-  park Park @relation(fields: [parkId], references: [id], onDelete: Cascade)
-
-  @@unique([parkId, difficulty])
 }
 
 model ParkAmenity {
@@ -181,13 +181,7 @@ enum Terrain {
   mud
   trails
   hills
-}
-
-enum Difficulty {
-  easy
-  moderate
-  difficult
-  extreme
+  motocrossTrack
 }
 
 enum Amenity {
@@ -196,6 +190,20 @@ enum Amenity {
   food
   fuel
   repair
+  boatRamp
+  loadingRamp
+  picnicTable
+  shelter
+  grill
+  playground
+  wifi
+  fishing
+  airStation
+  trailMaps
+  rentals
+  training
+  firstAid
+  store
 }
 
 enum Camping {
@@ -213,6 +221,31 @@ enum VehicleType {
   atv
   sxs
   fullSize
+}
+
+enum Ownership {
+  private
+  public
+  mixed
+  unknown
+}
+
+// Address Model (one-to-one with Park)
+model Address {
+  id             String  @id @default(cuid())
+  parkId         String  @unique
+  streetAddress  String?
+  streetAddress2 String?
+  city           String?
+  state          String  // Required for state-based filtering
+  zipCode        String?
+  county         String?
+  latitude       Float?
+  longitude      Float?
+
+  park Park @relation(fields: [parkId], references: [id], onDelete: Cascade)
+
+  @@index([state])
 }
 
 // User Favorites

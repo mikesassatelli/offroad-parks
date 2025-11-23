@@ -22,7 +22,7 @@
 
 **Terrain Types** (`Terrain` enum)
 ```typescript
-"sand" | "rocks" | "mud" | "trails" | "hills"
+"sand" | "rocks" | "mud" | "trails" | "hills" | "motocrossTrack"
 ```
 
 **Difficulty Levels** (`Difficulty` enum)
@@ -32,7 +32,12 @@
 
 **Amenities** (`Amenity` enum)
 ```typescript
-"restrooms" | "showers" | "food" | "fuel" | "repair"
+"restrooms" | "showers" | "food" | "fuel" | "repair" | "boatRamp" | "loadingRamp" | "picnicTable" | "shelter" | "grill" | "playground" | "wifi" | "fishing" | "airStation" | "trailMaps" | "rentals" | "training" | "firstAid" | "store"
+```
+
+**Ownership** (`Ownership` enum)
+```typescript
+"private" | "public" | "mixed" | "unknown"
 ```
 
 **Camping** (`Camping` enum)
@@ -90,18 +95,49 @@ type DbPark = {
   notes: string | null;
   status: ParkStatus;
 
+  // Operational fields
+  datesOpen: string | null;           // e.g., "Year-round" or "April-October"
+  contactEmail: string | null;
+  ownership: Ownership | null;        // "private" | "public" | "mixed" | "unknown"
+  permitRequired: boolean | null;
+  permitType: string | null;          // Description of permit type
+  membershipRequired: boolean | null;
+  maxVehicleWidthInches: number | null;
+  flagsRequired: boolean | null;      // Whip flags
+  sparkArrestorRequired: boolean | null;
+  noiseLimitDBA: number | null;
+
   // Aggregated review data (calculated fields)
   averageRating: number | null;      // Average overall rating from approved reviews
   averageDifficulty: number | null;  // Average difficulty rating from approved reviews
   averageTerrain: number | null;     // Average terrain rating from approved reviews
   averageFacilities: number | null;  // Average facilities rating from approved reviews
   reviewCount: number;               // Count of approved reviews
+  averageRecommendedStay: RecommendedDuration | null;  // Most frequent from reviews
 
   // Junction table relations (array of objects)
   terrain: Array<{ terrain: Terrain }>;
   difficulty: Array<{ difficulty: Difficulty }>;
   amenities: Array<{ amenity: Amenity }>;
   camping: Array<{ camping: Camping }>;
+  vehicleTypes: Array<{ vehicleType: VehicleType }>;
+
+  // One-to-one relation
+  address?: DbAddress | null;
+};
+
+// Address relation type
+type DbAddress = {
+  id: string;
+  parkId: string;
+  streetAddress: string | null;
+  streetAddress2: string | null;
+  city: string | null;
+  state: string | null;
+  zipCode: string | null;
+  county: string | null;
+  latitude: number | null;
+  longitude: number | null;
 };
 ```
 
@@ -123,11 +159,27 @@ type Park = {
   acres?: number;
   notes?: string;
 
+  // Operational fields
+  datesOpen?: string;
+  contactEmail?: string;
+  ownership?: Ownership;
+  permitRequired?: boolean;
+  permitType?: string;
+  membershipRequired?: boolean;
+  maxVehicleWidthInches?: number;
+  flagsRequired?: boolean;
+  sparkArrestorRequired?: boolean;
+  noiseLimitDBA?: number;
+
   // Categorical data (flattened to simple arrays)
   terrain: Terrain[];      // ["sand", "rocks"]
   difficulty: Difficulty[]; // ["moderate", "difficult"]
   amenities: Amenity[];    // ["restrooms", "fuel"]
   camping: Camping[];      // ["tent", "rv30A"]
+  vehicleTypes: VehicleType[]; // ["motorcycle", "atv", "sxs"]
+
+  // Address (one-to-one relation, flattened)
+  address?: Address;
 
   // Aggregated review data (calculated fields)
   averageRating?: number;      // Average overall rating from approved reviews
@@ -135,8 +187,21 @@ type Park = {
   averageTerrain?: number;     // Average terrain rating from approved reviews
   averageFacilities?: number;  // Average facilities rating from approved reviews
   reviewCount?: number;        // Count of approved reviews
+  averageRecommendedStay?: RecommendedDuration;  // Most frequent from reviews
 
   heroImage?: string | null;
+};
+
+// Client Address type (null → undefined transformation)
+type Address = {
+  streetAddress?: string;
+  streetAddress2?: string;
+  city?: string;
+  state?: string;
+  zipCode?: string;
+  county?: string;
+  latitude?: number;
+  longitude?: number;
 };
 ```
 

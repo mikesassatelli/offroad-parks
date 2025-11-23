@@ -31,13 +31,12 @@ describe("MapBoundsHandler", () => {
   const mockPark: Park = {
     id: "park-1",
     name: "Test Park",
-    state: "CA",
+    address: { state: "CA" },
     coords: { lat: 34.0522, lng: -118.2437 },
     terrain: [],
-    difficulty: [],
     amenities: [],
-    
-      camping: [],vehicleTypes: [],
+    camping: [],
+    vehicleTypes: [],
   };
 
   it("should render without crashing", () => {

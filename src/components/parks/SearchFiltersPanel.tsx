@@ -11,12 +11,13 @@ import { Slider } from "@/components/ui/slider";
 import {
   ALL_AMENITIES,
   ALL_CAMPING_TYPES,
+  ALL_OWNERSHIP_TYPES,
   ALL_TERRAIN_TYPES,
   ALL_VEHICLE_TYPES,
   MIN_RATING_FILTERS,
 } from "@/lib/constants";
-import { formatCamping } from "@/lib/formatting";
-import type { Camping } from "@/lib/types";
+import { formatAmenity, formatCamping, formatOwnership, formatTerrain } from "@/lib/formatting";
+import type { Amenity, Camping, Terrain } from "@/lib/types";
 
 interface SearchFiltersPanelProps {
   selectedState: string | undefined;
@@ -38,6 +39,12 @@ interface SearchFiltersPanelProps {
   maxAcres: number;
   minRating: string;
   onMinRatingChange: (rating: string) => void;
+  selectedOwnership: string;
+  onOwnershipChange: (ownership: string) => void;
+  permitRequired: string;
+  onPermitRequiredChange: (value: string) => void;
+  membershipRequired: string;
+  onMembershipRequiredChange: (value: string) => void;
   onClearFilters: () => void;
 }
 
@@ -61,6 +68,12 @@ export function SearchFiltersPanel({
   maxAcres,
   minRating,
   onMinRatingChange,
+  selectedOwnership,
+  onOwnershipChange,
+  permitRequired,
+  onPermitRequiredChange,
+  membershipRequired,
+  onMembershipRequiredChange,
   onClearFilters,
 }: SearchFiltersPanelProps) {
   const handleStateChange = (value: string) => {
@@ -69,6 +82,18 @@ export function SearchFiltersPanel({
 
   const handleMinRatingChange = (value: string) => {
     onMinRatingChange(value === "__any" ? "" : value);
+  };
+
+  const handleOwnershipChange = (value: string) => {
+    onOwnershipChange(value === "__all" ? "" : value);
+  };
+
+  const handlePermitRequiredChange = (value: string) => {
+    onPermitRequiredChange(value === "__any" ? "" : value);
+  };
+
+  const handleMembershipRequiredChange = (value: string) => {
+    onMembershipRequiredChange(value === "__any" ? "" : value);
   };
 
   const handleTerrainToggle = (terrain: string) => {
@@ -159,9 +184,9 @@ export function SearchFiltersPanel({
             />
             <label
               htmlFor={`terrain-${terrain}`}
-              className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70 cursor-pointer capitalize"
+              className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70 cursor-pointer"
             >
-              {terrain}
+              {formatTerrain(terrain as Terrain)}
             </label>
           </div>
         ))}
@@ -178,9 +203,9 @@ export function SearchFiltersPanel({
             />
             <label
               htmlFor={`amenity-${amenity}`}
-              className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70 cursor-pointer capitalize"
+              className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70 cursor-pointer"
             >
-              {amenity}
+              {formatAmenity(amenity as Amenity)}
             </label>
           </div>
         ))}
@@ -252,6 +277,54 @@ export function SearchFiltersPanel({
               {filter.label}
             </SelectItem>
           ))}
+        </SelectContent>
+      </Select>
+
+      <div className="mt-4 text-sm font-semibold mb-2">Ownership</div>
+      <Select
+        onValueChange={handleOwnershipChange}
+        value={selectedOwnership || "__all"}
+      >
+        <SelectTrigger>
+          <SelectValue placeholder="All" />
+        </SelectTrigger>
+        <SelectContent>
+          <SelectItem value="__all">All</SelectItem>
+          {ALL_OWNERSHIP_TYPES.map((ownership) => (
+            <SelectItem key={ownership} value={ownership}>
+              {formatOwnership(ownership)}
+            </SelectItem>
+          ))}
+        </SelectContent>
+      </Select>
+
+      <div className="mt-4 text-sm font-semibold mb-2">Permit Required</div>
+      <Select
+        onValueChange={handlePermitRequiredChange}
+        value={permitRequired || "__any"}
+      >
+        <SelectTrigger>
+          <SelectValue placeholder="Any" />
+        </SelectTrigger>
+        <SelectContent>
+          <SelectItem value="__any">Any</SelectItem>
+          <SelectItem value="yes">Required</SelectItem>
+          <SelectItem value="no">Not Required</SelectItem>
+        </SelectContent>
+      </Select>
+
+      <div className="mt-4 text-sm font-semibold mb-2">Membership Required</div>
+      <Select
+        onValueChange={handleMembershipRequiredChange}
+        value={membershipRequired || "__any"}
+      >
+        <SelectTrigger>
+          <SelectValue placeholder="Any" />
+        </SelectTrigger>
+        <SelectContent>
+          <SelectItem value="__any">Any</SelectItem>
+          <SelectItem value="yes">Required</SelectItem>
+          <SelectItem value="no">Not Required</SelectItem>
         </SelectContent>
       </Select>
 

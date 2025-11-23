@@ -18,10 +18,10 @@ export async function GET() {
       park: {
         include: {
           terrain: true,
-          difficulty: true,
           amenities: true,
           camping: true,
           vehicleTypes: true,
+          address: true,
         },
       },
     },

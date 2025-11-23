@@ -164,18 +164,22 @@ describe("AdminDashboard", () => {
       {
         id: "park-1",
         name: "Test Park One",
-        city: "Los Angeles",
-        state: "California",
         createdAt: new Date("2024-01-15"),
         submitterName: "John Doe",
+        address: {
+          city: "Los Angeles",
+          state: "California",
+        },
       },
       {
         id: "park-2",
         name: "Test Park Two",
-        city: null,
-        state: "Nevada",
         createdAt: new Date("2024-01-20"),
         submitterName: null,
+        address: {
+          city: null,
+          state: "Nevada",
+        },
       },
     ];
 
@@ -206,10 +210,12 @@ describe("AdminDashboard", () => {
       {
         id: "park-1",
         name: "Test Park",
-        city: "Test City",
-        state: "Test State",
         createdAt: new Date("2024-01-15"),
         submitterName: null,
+        address: {
+          city: "Test City",
+          state: "Test State",
+        },
       },
     ];
 
@@ -237,10 +243,12 @@ describe("AdminDashboard", () => {
       {
         id: "park-123",
         name: "Test Park",
-        city: "Test City",
-        state: "Test State",
         createdAt: new Date(),
         submitterName: "Test User",
+        address: {
+          city: "Test City",
+          state: "Test State",
+        },
       },
     ];
 

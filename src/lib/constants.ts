@@ -1,6 +1,7 @@
 import type {
   Amenity,
   Camping,
+  Ownership,
   RecommendedDuration,
   Terrain,
   VehicleType,
@@ -13,6 +14,20 @@ export const ALL_AMENITIES: Amenity[] = [
   "food",
   "fuel",
   "repair",
+  "boatRamp",
+  "loadingRamp",
+  "picnicTable",
+  "shelter",
+  "grill",
+  "playground",
+  "wifi",
+  "fishing",
+  "airStation",
+  "trailMaps",
+  "rentals",
+  "training",
+  "firstAid",
+  "store",
 ];
 
 export const ALL_CAMPING_TYPES: Camping[] = [
@@ -31,6 +46,7 @@ export const ALL_TERRAIN_TYPES: Terrain[] = [
   "mud",
   "trails",
   "hills",
+  "motocrossTrack",
 ];
 
 export const ALL_VEHICLE_TYPES: VehicleType[] = [
@@ -116,4 +132,12 @@ export const MIN_RATING_FILTERS = [
   { value: "3", label: "3+ Stars" },
   { value: "4", label: "4+ Stars" },
   { value: "4.5", label: "4.5+ Stars" },
+];
+
+// Ownership types
+export const ALL_OWNERSHIP_TYPES: Ownership[] = [
+  "private",
+  "public",
+  "mixed",
+  "unknown",
 ];

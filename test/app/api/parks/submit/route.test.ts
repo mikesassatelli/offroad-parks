@@ -24,8 +24,6 @@ describe("POST /api/parks/submit", () => {
 
   const validParkData = {
     name: "Test Park",
-    state: "CA",
-    city: "Test City",
     latitude: 34.0522,
     longitude: -118.2437,
     website: "https://test.com",
@@ -35,10 +33,13 @@ describe("POST /api/parks/submit", () => {
     acres: 1000,
     notes: "Great park",
     terrain: ["sand", "rocks"],
-    difficulty: ["moderate"],
     amenities: ["restrooms"],
-    
-      camping: [],vehicleTypes: [],
+    camping: [],
+    vehicleTypes: [],
+    address: {
+      city: "Test City",
+      state: "CA",
+    },
   };
 
   it("should return 401 when user is not authenticated", async () => {
@@ -93,7 +94,6 @@ describe("POST /api/parks/submit", () => {
       status: "PENDING",
       ...validParkData,
       terrain: validParkData.terrain.map((t) => ({ terrain: t })),
-      difficulty: validParkData.difficulty.map((d) => ({ difficulty: d })),
       amenities: validParkData.amenities.map((a) => ({ amenity: a })),
     };
 
@@ -137,7 +137,6 @@ describe("POST /api/parks/submit", () => {
       status: "APPROVED",
       ...validParkData,
       terrain: validParkData.terrain.map((t) => ({ terrain: t })),
-      difficulty: validParkData.difficulty.map((d) => ({ difficulty: d })),
       amenities: validParkData.amenities.map((a) => ({ amenity: a })),
     };
 
@@ -196,7 +195,7 @@ describe("POST /api/parks/submit", () => {
       user: { id: "user-123" },
     } as any);
 
-    const invalidData = { ...validParkData, state: "" };
+    const invalidData = { ...validParkData, address: { city: "Test City", state: "" } };
 
     const request = new Request("http://localhost:3000/api/parks/submit", {
       method: "POST",
@@ -236,30 +235,6 @@ describe("POST /api/parks/submit", () => {
     expect(data).toEqual({ error: "At least one terrain type is required" });
   });
 
-  it("should return 400 when difficulty is empty", async () => {
-    // Arrange
-    vi.mocked(auth).mockResolvedValue({
-      user: { id: "user-123" },
-    } as any);
-
-    const invalidData = { ...validParkData, difficulty: [] };
-
-    const request = new Request("http://localhost:3000/api/parks/submit", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(invalidData),
-    });
-
-    // Act
-    const response = await POST(request);
-    const data = await response.json();
-
-    // Assert
-    expect(response.status).toBe(400);
-    expect(data).toEqual({
-      error: "At least one difficulty level is required",
-    });
-  });
 
   it("should generate slug from park name when not provided", async () => {
     // Arrange
@@ -410,12 +385,13 @@ describe("POST /api/parks/submit", () => {
 
     const minimalData = {
       name: "Minimal Park",
-      state: "TX",
       terrain: ["sand"],
-      difficulty: ["easy"],
       amenities: [],
-      
-      camping: [],vehicleTypes: [],
+      camping: [],
+      vehicleTypes: [],
+      address: {
+        state: "TX",
+      },
     };
 
     const request = new Request("http://localhost:3000/api/parks/submit", {
@@ -431,7 +407,6 @@ describe("POST /api/parks/submit", () => {
     expect(prisma.park.create).toHaveBeenCalledWith(
       expect.objectContaining({
         data: expect.objectContaining({
-          city: null,
           latitude: null,
           longitude: null,
           website: null,
@@ -445,7 +420,7 @@ describe("POST /api/parks/submit", () => {
     );
   });
 
-  it("should include terrain, difficulty, and amenities in created park", async () => {
+  it("should include terrain and amenities in created park", async () => {
     // Arrange
     vi.mocked(auth).mockResolvedValue({
       user: { id: "user-123" },
@@ -470,9 +445,6 @@ describe("POST /api/parks/submit", () => {
           terrain: {
             create: [{ terrain: "sand" }, { terrain: "rocks" }],
           },
-          difficulty: {
-            create: [{ difficulty: "moderate" }],
-          },
           amenities: {
             create: [{ amenity: "restrooms" }],
           },
@@ -482,13 +454,19 @@ describe("POST /api/parks/submit", () => {
           vehicleTypes: {
             create: [],
           },
+          address: {
+            create: expect.objectContaining({
+              city: "Test City",
+              state: "CA",
+            }),
+          },
         }),
         include: {
           terrain: true,
-          difficulty: true,
           amenities: true,
           camping: true,
           vehicleTypes: true,
+          address: true,
         },
       }),
     );

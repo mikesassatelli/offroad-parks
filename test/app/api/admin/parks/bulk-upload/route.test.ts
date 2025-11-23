@@ -17,10 +17,10 @@ vi.mock("@/lib/prisma", () => ({
     parkTerrain: {
       create: vi.fn(),
     },
-    parkDifficulty: {
+    parkAmenity: {
       create: vi.fn(),
     },
-    parkAmenity: {
+    address: {
       create: vi.fn(),
     },
     $transaction: vi.fn(),
@@ -41,10 +41,9 @@ describe("POST /api/admin/parks/bulk-upload", () => {
       name: "Test Park 1",
       state: "Utah",
       terrain: ["sand", "rocks"],
-      difficulty: ["moderate"],
       amenities: [],
-      
-      camping: [],vehicleTypes: [],
+      camping: [],
+      vehicleTypes: [],
     },
   ];
 
@@ -205,7 +204,6 @@ describe("POST /api/admin/parks/bulk-upload", () => {
             id: "park-1",
             name: "Test Park 1",
             slug: "test-park-1",
-            state: "Utah",
             status: "APPROVED",
             submitterId: "user-123",
             createdAt: new Date(),
@@ -216,10 +214,10 @@ describe("POST /api/admin/parks/bulk-upload", () => {
         parkTerrain: {
           create: vi.fn().mockResolvedValue({}),
         },
-        parkDifficulty: {
+        parkAmenity: {
           create: vi.fn().mockResolvedValue({}),
         },
-        parkAmenity: {
+        address: {
           create: vi.fn().mockResolvedValue({}),
         },
       };

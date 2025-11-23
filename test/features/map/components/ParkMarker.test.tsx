@@ -26,17 +26,15 @@ describe("ParkMarker", () => {
   const mockPark: Park = {
     id: "park-1",
     name: "Test Park",
-    state: "CA",
-    city: "Los Angeles",
+    address: { city: "Los Angeles", state: "CA" },
     coords: { lat: 34.0522, lng: -118.2437 },
     milesOfTrails: 50,
     dayPassUSD: 25,
     acres: 1000,
     terrain: [],
-    difficulty: [],
     amenities: [],
-    
-      camping: [],vehicleTypes: [],
+    camping: [],
+    vehicleTypes: [],
   };
 
   it("should return null when park has no coordinates", () => {
@@ -73,7 +71,10 @@ describe("ParkMarker", () => {
   });
 
   it("should display state only when no city", () => {
-    const parkNoCity = { ...mockPark, city: undefined };
+    const parkNoCity = {
+      ...mockPark,
+      address: { state: "CA" },
+    };
     render(<ParkMarker park={parkNoCity} isInRoute={false} routeIndex={0} />);
 
     expect(screen.getByText("CA")).toBeInTheDocument();

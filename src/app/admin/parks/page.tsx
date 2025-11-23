@@ -31,10 +31,10 @@ export default async function AdminParksPage({
     where: whereClause,
     include: {
       terrain: true,
-      difficulty: true,
       amenities: true,
       camping: true,
       vehicleTypes: true,
+      address: true,
       submittedBy: {
         select: {
           id: true,

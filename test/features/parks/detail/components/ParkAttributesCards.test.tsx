@@ -23,20 +23,18 @@ describe("ParkAttributesCards", () => {
   const mockPark: Park = {
     id: "park-1",
     name: "Test Park",
-    state: "California",
+    address: { state: "California" },
     coords: { lat: 34, lng: -118 },
     terrain: ["sand", "rocks", "mud"],
     amenities: ["restrooms", "showers"],
-    
-    camping: [],difficulty: ["easy", "moderate", "difficult"],
+    camping: [],
     vehicleTypes: [],
   };
 
-  it("should render all three cards", () => {
+  it("should render all two cards", () => {
     render(<ParkAttributesCards park={mockPark} />);
 
     expect(screen.getByText("Terrain Types")).toBeInTheDocument();
-    expect(screen.getByText("Difficulty Levels")).toBeInTheDocument();
     expect(screen.getByText("Amenities")).toBeInTheDocument();
   });
 
@@ -56,21 +54,6 @@ describe("ParkAttributesCards", () => {
     expect(sandBadge).toHaveClass("capitalize");
   });
 
-  it("should render difficulty badges", () => {
-    render(<ParkAttributesCards park={mockPark} />);
-
-    expect(screen.getByText("easy")).toBeInTheDocument();
-    expect(screen.getByText("moderate")).toBeInTheDocument();
-    expect(screen.getByText("difficult")).toBeInTheDocument();
-  });
-
-  it("should render difficulty badges with secondary variant", () => {
-    render(<ParkAttributesCards park={mockPark} />);
-
-    const easyBadge = screen.getByText("easy");
-    expect(easyBadge).toHaveAttribute("data-variant", "secondary");
-    expect(easyBadge).toHaveClass("capitalize");
-  });
 
   it("should render amenity badges", () => {
     render(<ParkAttributesCards park={mockPark} />);
@@ -94,13 +77,6 @@ describe("ParkAttributesCards", () => {
     expect(screen.queryByText("sand")).not.toBeInTheDocument();
   });
 
-  it("should handle empty difficulty array", () => {
-    const parkNoDifficulty = { ...mockPark, difficulty: [] };
-    render(<ParkAttributesCards park={parkNoDifficulty} />);
-
-    expect(screen.getByText("Difficulty Levels")).toBeInTheDocument();
-    expect(screen.queryByText("easy")).not.toBeInTheDocument();
-  });
 
   it("should handle empty amenities array", () => {
     const parkNoAmenities = { ...mockPark, amenities: [] };
@@ -114,19 +90,17 @@ describe("ParkAttributesCards", () => {
     const minimalPark: Park = {
       id: "minimal",
       name: "Minimal Park",
-      state: "Texas",
+      address: { state: "Texas" },
       coords: { lat: 30, lng: -98 },
       terrain: [],
       amenities: [],
-      
-    camping: [],difficulty: [],
-    vehicleTypes: [],
+      camping: [],
+      vehicleTypes: [],
     };
 
     render(<ParkAttributesCards park={minimalPark} />);
 
     expect(screen.getByText("Terrain Types")).toBeInTheDocument();
-    expect(screen.getByText("Difficulty Levels")).toBeInTheDocument();
     expect(screen.getByText("Amenities")).toBeInTheDocument();
   });
 
@@ -134,16 +108,14 @@ describe("ParkAttributesCards", () => {
     const singleItemPark: Park = {
       ...mockPark,
       terrain: ["sand"],
-      difficulty: ["easy"],
       amenities: ["restrooms"],
-
-      camping: [],vehicleTypes: [],
+      camping: [],
+      vehicleTypes: [],
     };
 
     render(<ParkAttributesCards park={singleItemPark} />);
 
     expect(screen.getByText("sand")).toBeInTheDocument();
-    expect(screen.getByText("easy")).toBeInTheDocument();
     expect(screen.getByText("restrooms")).toBeInTheDocument();
   });
 });

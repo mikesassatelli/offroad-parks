@@ -7,45 +7,50 @@ describe("useFilteredParks", () => {
     {
       id: "park-1",
       name: "Awesome Sand Park",
-      city: "Los Angeles",
-      state: "California",
+      address: {
+        city: "Los Angeles",
+        state: "California",
+      },
       coords: { lat: 34, lng: -118 },
       dayPassUSD: 25,
       milesOfTrails: 50,
-      acres: 1000,terrain: ["sand", "rocks"],
+      acres: 1000,
+      terrain: ["sand", "rocks"],
       amenities: ["restrooms"],
-      
-    camping: [],difficulty: ["moderate"],
+      camping: [],
       vehicleTypes: [],
       notes: "Great for beginners",
     },
     {
       id: "park-2",
       name: "Rocky Mountain Trail",
-      city: "Denver",
-      state: "Colorado",
+      address: {
+        city: "Denver",
+        state: "Colorado",
+      },
       coords: { lat: 39, lng: -104 },
       dayPassUSD: 35,
       milesOfTrails: 100,
-      acres: 2000,terrain: ["rocks", "mud"],
+      acres: 2000,
+      terrain: ["rocks", "mud"],
       amenities: ["fuel"],
-      
-    camping: [],difficulty: ["difficult"],
+      camping: [],
       vehicleTypes: [],
       notes: "Advanced riders only",
     },
     {
       id: "park-3",
       name: "Beach Dunes",
-      city: undefined,
-      state: "California",
+      address: {
+        state: "California",
+      },
       coords: undefined,
       dayPassUSD: undefined,
       milesOfTrails: 20,
-      acres: undefined,terrain: ["sand"],
+      acres: undefined,
+      terrain: ["sand"],
       amenities: [],
-      
-    camping: [],difficulty: ["easy"],
+      camping: [],
       vehicleTypes: [],
     },
   ];
@@ -134,7 +139,7 @@ describe("useFilteredParks", () => {
 
     expect(result.current.filteredParks).toHaveLength(2);
     expect(
-      result.current.filteredParks.every((p) => p.state === "California"),
+      result.current.filteredParks.every((p) => p.address.state === "California"),
     ).toBe(true);
   });
 
@@ -172,7 +177,7 @@ describe("useFilteredParks", () => {
 
     expect(result.current.filteredParks).toHaveLength(2);
     expect(
-      result.current.filteredParks.every((p) => p.state === "California"),
+      result.current.filteredParks.every((p) => p.address.state === "California"),
     ).toBe(true);
     expect(
       result.current.filteredParks.every((p) => p.terrain.includes("sand")),

@@ -31,7 +31,11 @@ export async function GET() {
           id: true,
           name: true,
           slug: true,
-          state: true,
+          address: {
+            select: {
+              state: true,
+            },
+          },
         },
       },
       _count: {

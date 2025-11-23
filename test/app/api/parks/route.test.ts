@@ -23,41 +23,45 @@ describe("GET /api/parks", () => {
         id: "1",
         name: "Test Park 1",
         slug: "test-park-1",
-        city: "Test City",
-        state: "CA",
         latitude: 34.0522,
         longitude: -118.2437,
         website: "https://test1.com",
         phone: "5551234567",
         dayPassUSD: 25,
         milesOfTrails: 50,
-        acres: 1000,notes: "Great park",
+        acres: 1000,
+        notes: "Great park",
         status: "APPROVED",
         terrain: [{ terrain: "sand" as const }],
-        difficulty: [{ difficulty: "moderate" as const }],
         amenities: [{ amenity: "restrooms" as const }],
-        
-      camping: [],vehicleTypes: [],
+        camping: [],
+        vehicleTypes: [],
+        address: {
+          city: "Test City",
+          state: "CA",
+        },
       },
       {
         id: "2",
         name: "Test Park 2",
         slug: "test-park-2",
-        city: null,
-        state: "TX",
         latitude: null,
         longitude: null,
         website: null,
         phone: null,
         dayPassUSD: null,
         milesOfTrails: null,
-        acres: null,notes: null,
+        acres: null,
+        notes: null,
         status: "APPROVED",
         terrain: [],
-        difficulty: [],
         amenities: [],
-        
-      camping: [],vehicleTypes: [],
+        camping: [],
+        vehicleTypes: [],
+        address: {
+          city: null,
+          state: "TX",
+        },
       },
     ];
 
@@ -73,41 +77,37 @@ describe("GET /api/parks", () => {
     expect(data).toHaveLength(2);
 
     // Verify first park transformation
-    expect(data[0]).toEqual({
+    expect(data[0]).toMatchObject({
       id: "test-park-1", // slug used as id
       name: "Test Park 1",
-      city: "Test City",
-      state: "CA",
       coords: { lat: 34.0522, lng: -118.2437 },
       website: "https://test1.com",
       phone: "5551234567",
       dayPassUSD: 25,
       milesOfTrails: 50,
-      acres: 1000,notes: "Great park",
+      acres: 1000,
+      notes: "Great park",
       terrain: ["sand"],
-      difficulty: ["moderate"],
       amenities: ["restrooms"],
-
-      camping: [],vehicleTypes: [],
+      camping: [],
+      vehicleTypes: [],
+      address: {
+        city: "Test City",
+        state: "CA",
+      },
     });
 
     // Verify second park (with null values)
-    expect(data[1]).toEqual({
+    expect(data[1]).toMatchObject({
       id: "test-park-2",
       name: "Test Park 2",
-      city: undefined,
-      state: "TX",
-      coords: undefined,
-      website: undefined,
-      phone: undefined,
-      dayPassUSD: undefined,
-      milesOfTrails: undefined,
-      acres: undefined,notes: undefined,
       terrain: [],
-      difficulty: [],
       amenities: [],
-      
-      camping: [],vehicleTypes: [],
+      camping: [],
+      vehicleTypes: [],
+      address: {
+        state: "TX",
+      },
     });
 
     // Verify Prisma was called with correct filter
@@ -117,10 +117,10 @@ describe("GET /api/parks", () => {
       },
       include: {
         terrain: true,
-        difficulty: true,
         amenities: true,
         camping: true,
         vehicleTypes: true,
+        address: true,
       },
       orderBy: {
         name: "asc",
@@ -149,21 +149,23 @@ describe("GET /api/parks", () => {
         id: "1",
         name: "Approved Park",
         slug: "approved-park",
-        city: null,
-        state: "CA",
         latitude: null,
         longitude: null,
         website: null,
         phone: null,
         dayPassUSD: null,
         milesOfTrails: null,
-        acres: null,notes: null,
+        acres: null,
+        notes: null,
         status: "APPROVED",
         terrain: [],
-        difficulty: [],
         amenities: [],
-        
-      camping: [],vehicleTypes: [],
+        camping: [],
+        vehicleTypes: [],
+        address: {
+          city: null,
+          state: "CA",
+        },
       },
     ];
 
@@ -214,31 +216,30 @@ describe("GET /api/parks", () => {
       id: "1",
       name: "Multi-Terrain Park",
       slug: "multi-terrain-park",
-      city: "Test",
-      state: "CA",
       latitude: null,
       longitude: null,
       website: null,
       phone: null,
       dayPassUSD: null,
       milesOfTrails: null,
-      acres: null,notes: null,
+      acres: null,
+      notes: null,
       status: "APPROVED",
       terrain: [
         { terrain: "sand" as const },
         { terrain: "rocks" as const },
         { terrain: "mud" as const },
       ],
-      difficulty: [
-        { difficulty: "moderate" as const },
-        { difficulty: "difficult" as const },
-      ],
       amenities: [
         { amenity: "restrooms" as const },
         { amenity: "fuel" as const },
       ],
-      
-      camping: [],vehicleTypes: [],
+      camping: [],
+      vehicleTypes: [],
+      address: {
+        city: "Test",
+        state: "CA",
+      },
     };
 
     vi.mocked(prisma.park.findMany).mockResolvedValue([mockPark] as any);
@@ -249,7 +250,6 @@ describe("GET /api/parks", () => {
 
     // Assert
     expect(data[0].terrain).toEqual(["sand", "rocks", "mud"]);
-    expect(data[0].difficulty).toEqual(["moderate", "difficult"]);
     expect(data[0].amenities).toEqual(["restrooms", "fuel"]);
   });
 

@@ -1,5 +1,24 @@
 // Legacy types for backward compatibility
-export type Amenity = "restrooms" | "showers" | "food" | "fuel" | "repair";
+export type Amenity =
+  | "restrooms"
+  | "showers"
+  | "food"
+  | "fuel"
+  | "repair"
+  | "boatRamp"
+  | "loadingRamp"
+  | "picnicTable"
+  | "shelter"
+  | "grill"
+  | "playground"
+  | "wifi"
+  | "fishing"
+  | "airStation"
+  | "trailMaps"
+  | "rentals"
+  | "training"
+  | "firstAid"
+  | "store";
 
 export type Camping =
   | "tent"
@@ -10,14 +29,21 @@ export type Camping =
   | "groupSite"
   | "backcountry";
 
-export type Terrain = "sand" | "rocks" | "mud" | "trails" | "hills";
-
-export type Difficulty = "easy" | "moderate" | "difficult" | "extreme";
+export type Terrain =
+  | "sand"
+  | "rocks"
+  | "mud"
+  | "trails"
+  | "hills"
+  | "motocrossTrack";
 
 export type VehicleType = "motorcycle" | "atv" | "sxs" | "fullSize";
 
 // Status enum from Prisma
 export type ParkStatus = "PENDING" | "APPROVED" | "REJECTED" | "DRAFT";
+
+// Ownership type
+export type Ownership = "private" | "public" | "mixed" | "unknown";
 
 // Review system types
 export type ReviewStatus = "PENDING" | "APPROVED" | "HIDDEN";
@@ -30,14 +56,38 @@ export type RecommendedDuration =
   | "fullDay"
   | "overnight";
 
+// Address type for park location details (database format with null)
+export type DbAddress = {
+  id: string;
+  parkId: string;
+  streetAddress: string | null;
+  streetAddress2: string | null;
+  city: string | null;
+  state: string; // Required for state-based filtering
+  zipCode: string | null;
+  county: string | null;
+  latitude: number | null;
+  longitude: number | null;
+};
+
+// Address type for client (transformed format with undefined)
+export type Address = {
+  streetAddress?: string;
+  streetAddress2?: string;
+  city?: string;
+  state: string; // Required for state-based filtering
+  zipCode?: string;
+  county?: string;
+  latitude?: number;
+  longitude?: number;
+};
+
 // Database park type - matches Prisma Park model with includes
 // This is a flexible type that accepts the actual Prisma query results
 export type DbPark = {
   id: string;
   name: string;
   slug: string;
-  city: string | null;
-  state: string;
   latitude: number | null;
   longitude: number | null;
   website: string | null;
@@ -49,20 +99,36 @@ export type DbPark = {
   acres: number | null;
   notes: string | null;
   status: ParkStatus;
+  // New operational fields
+  datesOpen: string | null;
+  contactEmail: string | null;
+  ownership: Ownership | null;
+  permitRequired: boolean | null;
+  permitType: string | null;
+  membershipRequired: boolean | null;
+  maxVehicleWidthInches: number | null;
+  flagsRequired: boolean | null;
+  sparkArrestorRequired: boolean | null;
+  noiseLimitDBA: number | null;
+  // Submitter info
   submitterId: string | null;
   submitterName: string | null;
+  // Aggregated review data
   averageRating: number | null;
   averageDifficulty: number | null;
   averageTerrain: number | null;
   averageFacilities: number | null;
   reviewCount: number;
+  averageRecommendedStay: RecommendedDuration | null;
+  // Timestamps
   createdAt: Date;
   updatedAt: Date;
+  // Relations
   terrain: Array<{ id?: string; parkId?: string; terrain: Terrain }>;
-  difficulty: Array<{ id?: string; parkId?: string; difficulty: Difficulty }>;
   amenities: Array<{ id?: string; parkId?: string; amenity: Amenity }>;
   camping: Array<{ id?: string; parkId?: string; camping: Camping }>;
   vehicleTypes: Array<{ id?: string; parkId?: string; vehicleType: VehicleType }>;
+  address: DbAddress | null; // May be null from Prisma, but we ensure it exists for approved parks
   photos?: Array<{ id?: string; parkId?: string; userId?: string | null; url: string; caption?: string | null; status?: string; createdAt?: Date; updatedAt?: Date }>;
 };
 
@@ -70,8 +136,6 @@ export type DbPark = {
 export type Park = {
   id: string;
   name: string;
-  city?: string;
-  state: string;
   website?: string;
   phone?: string;
   campingWebsite?: string;
@@ -83,15 +147,29 @@ export type Park = {
   terrain: Terrain[];
   amenities: Amenity[];
   camping: Camping[];
-  difficulty: Difficulty[];
   vehicleTypes: VehicleType[];
   notes?: string;
   heroImage?: string | null;
+  // New operational fields
+  datesOpen?: string;
+  contactEmail?: string;
+  ownership?: Ownership;
+  permitRequired?: boolean;
+  permitType?: string;
+  membershipRequired?: boolean;
+  maxVehicleWidthInches?: number;
+  flagsRequired?: boolean;
+  sparkArrestorRequired?: boolean;
+  noiseLimitDBA?: number;
+  // Address (required - has state for filtering)
+  address: Address;
+  // Aggregated review data
   averageRating?: number;
   averageDifficulty?: number;
   averageTerrain?: number;
   averageFacilities?: number;
   reviewCount?: number;
+  averageRecommendedStay?: RecommendedDuration;
 };
 
 // Database review type - matches Prisma ParkReview model with includes
@@ -122,7 +200,9 @@ export type DbReview = {
     id: string;
     name: string;
     slug: string;
-    state: string;
+    address: {
+      state: string;
+    };
   };
   helpfulVotes?: Array<{ id: string; userId: string }>;
   _count?: {
@@ -160,11 +240,13 @@ export type Review = {
 
 // Transform database park to client park
 export function transformDbPark(dbPark: DbPark): Park {
+  // Address is required for approved parks, but may be null in DB
+  // Use fallback state "Unknown" if somehow missing
+  const address = dbPark.address ?? { state: "Unknown", streetAddress: null, streetAddress2: null, city: null, zipCode: null, county: null, latitude: null, longitude: null };
+
   return {
     id: dbPark.slug, // Use slug as id for URL compatibility
     name: dbPark.name,
-    city: dbPark.city ?? undefined,
-    state: dbPark.state,
     website: dbPark.website ?? undefined,
     phone: dbPark.phone ?? undefined,
     campingWebsite: dbPark.campingWebsite ?? undefined,
@@ -179,14 +261,37 @@ export function transformDbPark(dbPark: DbPark): Park {
     terrain: dbPark.terrain.map((t) => t.terrain),
     amenities: dbPark.amenities.map((a) => a.amenity),
     camping: dbPark.camping.map((c) => c.camping),
-    difficulty: dbPark.difficulty.map((d) => d.difficulty),
     vehicleTypes: dbPark.vehicleTypes.map((v) => v.vehicleType),
     notes: dbPark.notes ?? undefined,
+    // New operational fields
+    datesOpen: dbPark.datesOpen ?? undefined,
+    contactEmail: dbPark.contactEmail ?? undefined,
+    ownership: dbPark.ownership ?? undefined,
+    permitRequired: dbPark.permitRequired ?? undefined,
+    permitType: dbPark.permitType ?? undefined,
+    membershipRequired: dbPark.membershipRequired ?? undefined,
+    maxVehicleWidthInches: dbPark.maxVehicleWidthInches ?? undefined,
+    flagsRequired: dbPark.flagsRequired ?? undefined,
+    sparkArrestorRequired: dbPark.sparkArrestorRequired ?? undefined,
+    noiseLimitDBA: dbPark.noiseLimitDBA ?? undefined,
+    // Address (required - has state for filtering)
+    address: {
+      streetAddress: address.streetAddress ?? undefined,
+      streetAddress2: address.streetAddress2 ?? undefined,
+      city: address.city ?? undefined,
+      state: address.state, // Required
+      zipCode: address.zipCode ?? undefined,
+      county: address.county ?? undefined,
+      latitude: address.latitude ?? undefined,
+      longitude: address.longitude ?? undefined,
+    },
+    // Aggregated review data
     averageRating: dbPark.averageRating ?? undefined,
     averageDifficulty: dbPark.averageDifficulty ?? undefined,
     averageTerrain: dbPark.averageTerrain ?? undefined,
     averageFacilities: dbPark.averageFacilities ?? undefined,
     reviewCount: dbPark.reviewCount ?? undefined,
+    averageRecommendedStay: dbPark.averageRecommendedStay ?? undefined,
   };
 }
 
@@ -200,7 +305,7 @@ export function transformDbReview(
     parkId: dbReview.parkId,
     parkSlug: dbReview.park?.slug,
     parkName: dbReview.park?.name,
-    parkState: dbReview.park?.state,
+    parkState: dbReview.park?.address?.state,
     userId: dbReview.userId,
     userName: dbReview.user.name || "Anonymous",
     userImage: dbReview.user.image ?? undefined,

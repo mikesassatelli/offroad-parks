@@ -9,8 +9,6 @@ interface Park {
   id: string;
   name: string;
   slug: string;
-  city: string | null;
-  state: string;
   status: ParkStatus;
   createdAt: Date;
   submitterName: string | null;
@@ -20,8 +18,11 @@ interface Park {
     email: string | null;
   } | null;
   terrain: Array<{ terrain: string }>;
-  difficulty: Array<{ difficulty: string }>;
   amenities: Array<{ amenity: string }>;
+  address: {
+    city: string | null;
+    state: string;
+  } | null;
 }
 
 interface Props {
@@ -175,8 +176,8 @@ export function ParkManagementTable({ parks, highlightId }: Props) {
                 </td>
                 <td className="px-6 py-4 whitespace-nowrap">
                   <div className="text-sm text-gray-900">
-                    {park.city ? `${park.city}, ` : ""}
-                    {park.state}
+                    {park.address?.city ? `${park.address.city}, ` : ""}
+                    {park.address?.state ?? "Unknown"}
                   </div>
                 </td>
                 <td className="px-6 py-4 whitespace-nowrap">

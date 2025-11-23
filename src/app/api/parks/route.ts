@@ -10,10 +10,10 @@ export async function GET() {
       },
       include: {
         terrain: true,
-        difficulty: true,
         amenities: true,
         camping: true,
         vehicleTypes: true,
+        address: true,
       },
       orderBy: {
         name: "asc",

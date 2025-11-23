@@ -59,35 +59,32 @@ describe("RouteList", () => {
     {
       id: "park-1",
       name: "Park One",
-      state: "California",
+      address: { state: "California" },
       coords: { lat: 34.0522, lng: -118.2437 },
       terrain: [],
       amenities: [],
-      
-    camping: [],difficulty: [],
-    vehicleTypes: [],
+      camping: [],
+      vehicleTypes: [],
     },
     {
       id: "park-2",
       name: "Park Two",
-      state: "Nevada",
+      address: { state: "Nevada" },
       coords: { lat: 36.1699, lng: -115.1398 },
       terrain: [],
       amenities: [],
-      
-    camping: [],difficulty: [],
-    vehicleTypes: [],
+      camping: [],
+      vehicleTypes: [],
     },
     {
       id: "park-3",
       name: "Park Three",
-      state: "Arizona",
+      address: { state: "Arizona" },
       coords: { lat: 33.4484, lng: -112.074 },
       terrain: [],
       amenities: [],
-      
-    camping: [],difficulty: [],
-    vehicleTypes: [],
+      camping: [],
+      vehicleTypes: [],
     },
   ];
 

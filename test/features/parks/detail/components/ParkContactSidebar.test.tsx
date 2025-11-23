@@ -19,12 +19,13 @@ describe("ParkContactSidebar", () => {
   const basePark: Park = {
     id: "park-1",
     name: "Test Park",
-    state: "California",
+    address: {
+      state: "California",
+    },
     coords: { lat: 34.0522, lng: -118.2437 },
     terrain: [],
     amenities: [],
-    
-    camping: [],difficulty: [],
+    camping: [],
     vehicleTypes: [],
   };
 
@@ -126,12 +127,13 @@ describe("ParkContactSidebar", () => {
     const minimalPark: Park = {
       id: "minimal",
       name: "Minimal Park",
-      state: "Texas",
+      address: {
+        state: "Texas",
+      },
       coords: { lat: 30, lng: -98 },
       terrain: [],
       amenities: [],
-      
-    camping: [],difficulty: [],
+      camping: [],
       vehicleTypes: [],
     };
 

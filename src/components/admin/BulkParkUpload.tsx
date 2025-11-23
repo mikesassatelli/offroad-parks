@@ -3,22 +3,11 @@
 import { useState, useRef } from "react";
 import * as Papa from "papaparse";
 import { Button } from "@/components/ui/button";
-import { ALL_TERRAIN_TYPES, ALL_AMENITIES, ALL_CAMPING_TYPES, ALL_VEHICLE_TYPES, US_STATES } from "@/lib/constants";
-import type { Difficulty } from "@/lib/types";
-
-// Difficulty levels array
-const ALL_DIFFICULTY_LEVELS: Difficulty[] = [
-  "easy",
-  "moderate",
-  "difficult",
-  "extreme",
-];
+import { ALL_TERRAIN_TYPES, ALL_AMENITIES, ALL_CAMPING_TYPES, ALL_VEHICLE_TYPES, ALL_OWNERSHIP_TYPES, US_STATES } from "@/lib/constants";
 
 interface BulkParkInput {
   name: string;
   slug?: string;
-  city?: string;
-  state: string;
   latitude?: number | null;
   longitude?: number | null;
   website?: string;
@@ -30,9 +19,26 @@ interface BulkParkInput {
   acres?: number | null;
   notes?: string;
   terrain: string[];
-  difficulty: string[];
   amenities?: string[];
   vehicleTypes?: string[];
+  // New scalar fields
+  datesOpen?: string;
+  contactEmail?: string;
+  ownership?: string;
+  permitRequired?: boolean;
+  permitType?: string;
+  membershipRequired?: boolean;
+  maxVehicleWidthInches?: number | null;
+  flagsRequired?: boolean;
+  sparkArrestorRequired?: boolean;
+  noiseLimitDBA?: number | null;
+  // Address fields (flat in CSV/JSON) - state is required
+  streetAddress?: string;
+  streetAddress2?: string;
+  city?: string;
+  state: string;
+  zipCode?: string;
+  county?: string;
 }
 
 interface ValidationError {
@@ -83,6 +89,23 @@ function parseInteger(value: string | undefined): number | null {
 }
 
 /**
+ * Parses boolean fields from CSV (returns undefined if empty/invalid)
+ */
+function parseBoolean(value: string | undefined): boolean | undefined {
+  if (!value || value.trim().length === 0) {
+    return undefined;
+  }
+  const normalized = value.trim().toLowerCase();
+  if (normalized === "true" || normalized === "yes" || normalized === "1") {
+    return true;
+  }
+  if (normalized === "false" || normalized === "no" || normalized === "0") {
+    return false;
+  }
+  return undefined;
+}
+
+/**
  * Downloads a CSV template file
  */
 function downloadCSVTemplate() {
@@ -102,10 +125,27 @@ function downloadCSVTemplate() {
     "acres",
     "notes",
     "terrain",
-    "difficulty",
     "amenities",
     "camping",
     "vehicleTypes",
+    // New scalar fields
+    "datesOpen",
+    "contactEmail",
+    "ownership",
+    "permitRequired",
+    "permitType",
+    "membershipRequired",
+    "maxVehicleWidthInches",
+    "flagsRequired",
+    "sparkArrestorRequired",
+    "noiseLimitDBA",
+    // Address fields
+    "streetAddress",
+    "streetAddress2",
+    "city",
+    "state",
+    "zipCode",
+    "county",
   ];
 
   const exampleRow = [
@@ -128,6 +168,26 @@ function downloadCSVTemplate() {
     "restrooms,fuel",
     "tent,rv30A,rv50A",
     "atv,sxs,motorcycle",
+    // New scalar fields
+    "Year-round",
+    "info@example.com",
+    "private",
+    "true",
+    "Day use permit",
+    "false",
+    "72",
+    "true",
+    "true",
+    "96",
+    // Address fields
+    "123 Trail Road",
+    "Suite 100",
+    "Moab",
+    "UT",
+    "84532",
+    "Grand",
+    "38.5733",
+    "-109.5498",
   ];
 
   const csv = Papa.unparse([headers, exampleRow]);
@@ -176,9 +236,24 @@ export function BulkParkUpload() {
           acres: parseInteger(row.acres),
           notes: row.notes || undefined,
           terrain: parseArrayField(row.terrain),
-          difficulty: parseArrayField(row.difficulty),
           amenities: parseArrayField(row.amenities),
           vehicleTypes: parseArrayField(row.vehicleTypes),
+          // New scalar fields
+          datesOpen: row.datesOpen || undefined,
+          contactEmail: row.contactEmail || undefined,
+          ownership: row.ownership || undefined,
+          permitRequired: parseBoolean(row.permitRequired),
+          permitType: row.permitType || undefined,
+          membershipRequired: parseBoolean(row.membershipRequired),
+          maxVehicleWidthInches: parseInteger(row.maxVehicleWidthInches),
+          flagsRequired: parseBoolean(row.flagsRequired),
+          sparkArrestorRequired: parseBoolean(row.sparkArrestorRequired),
+          noiseLimitDBA: parseInteger(row.noiseLimitDBA),
+          // Address fields
+          streetAddress: row.streetAddress || undefined,
+          streetAddress2: row.streetAddress2 || undefined,
+          zipCode: row.zipCode || undefined,
+          county: row.county || undefined,
         }));
 
         setParks(parsedParks);
@@ -233,9 +308,24 @@ export function BulkParkUpload() {
           acres: park.acres ?? null,
           notes: park.notes,
           terrain: Array.isArray(park.terrain) ? park.terrain : [],
-          difficulty: Array.isArray(park.difficulty) ? park.difficulty : [],
           amenities: Array.isArray(park.amenities) ? park.amenities : [],
           vehicleTypes: Array.isArray(park.vehicleTypes) ? park.vehicleTypes : [],
+          // New scalar fields
+          datesOpen: park.datesOpen,
+          contactEmail: park.contactEmail,
+          ownership: park.ownership,
+          permitRequired: park.permitRequired,
+          permitType: park.permitType,
+          membershipRequired: park.membershipRequired,
+          maxVehicleWidthInches: park.maxVehicleWidthInches ?? null,
+          flagsRequired: park.flagsRequired,
+          sparkArrestorRequired: park.sparkArrestorRequired,
+          noiseLimitDBA: park.noiseLimitDBA ?? null,
+          // Address fields
+          streetAddress: park.streetAddress,
+          streetAddress2: park.streetAddress2,
+          zipCode: park.zipCode,
+          county: park.county,
         }));
 
         setParks(parsedParks);
@@ -369,16 +459,13 @@ export function BulkParkUpload() {
         <h3 className="font-semibold">Format Guide</h3>
         <div className="text-sm space-y-2">
           <div>
-            <strong>Required fields:</strong> name, state, terrain (comma-separated), difficulty (comma-separated)
+            <strong>Required fields:</strong> name, state, terrain (comma-separated)
           </div>
           <div>
             <strong>Valid states:</strong> {US_STATES.join(", ")}
           </div>
           <div>
             <strong>Valid terrain types:</strong> {ALL_TERRAIN_TYPES.join(", ")}
-          </div>
-          <div>
-            <strong>Valid difficulty levels:</strong> {ALL_DIFFICULTY_LEVELS.join(", ")}
           </div>
           <div>
             <strong>Valid amenities:</strong> {ALL_AMENITIES.join(", ")}
@@ -388,6 +475,18 @@ export function BulkParkUpload() {
           </div>
           <div>
             <strong>Valid vehicle types:</strong> {ALL_VEHICLE_TYPES.join(", ")}
+          </div>
+          <div>
+            <strong>Valid ownership types:</strong> {ALL_OWNERSHIP_TYPES.join(", ")}
+          </div>
+          <div>
+            <strong>Boolean fields:</strong> permitRequired, membershipRequired, flagsRequired, sparkArrestorRequired - use &quot;true&quot;/&quot;false&quot; or &quot;yes&quot;/&quot;no&quot;
+          </div>
+          <div>
+            <strong>Numeric fields:</strong> maxVehicleWidthInches, noiseLimitDBA - must be non-negative integers
+          </div>
+          <div>
+            <strong>Address fields:</strong> streetAddress, streetAddress2, city, state (required), zipCode, county
           </div>
           <div>
             <strong>Array fields (CSV):</strong> Use comma-separated values
@@ -437,9 +536,6 @@ export function BulkParkUpload() {
                   <th className="px-4 py-2 text-left font-medium">Name</th>
                   <th className="px-4 py-2 text-left font-medium">State</th>
                   <th className="px-4 py-2 text-left font-medium">Terrain</th>
-                  <th className="px-4 py-2 text-left font-medium">
-                    Difficulty
-                  </th>
                   <th className="px-4 py-2 text-left font-medium">Coords</th>
                 </tr>
               </thead>
@@ -453,11 +549,6 @@ export function BulkParkUpload() {
                     <td className="px-4 py-2">{park.state}</td>
                     <td className="px-4 py-2">
                       {park.terrain.join(", ") || (
-                        <span className="text-destructive">Missing</span>
-                      )}
-                    </td>
-                    <td className="px-4 py-2">
-                      {park.difficulty.join(", ") || (
                         <span className="text-destructive">Missing</span>
                       )}
                     </td>

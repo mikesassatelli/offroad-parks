@@ -25,9 +25,9 @@ export function ParkCard({
     onToggleFavorite(park.id);
   };
 
-  const locationDisplay = park.city
-    ? `${park.city}, ${park.state}`
-    : park.state;
+  const locationDisplay = park.address.city
+    ? `${park.address.city}, ${park.address.state}`
+    : park.address.state;
   const formattedDayPass = formatCurrency(park.dayPassUSD);
   const trailMilesDisplay = park.milesOfTrails ?? "—";
   const acresDisplay = park.acres ?? "—";

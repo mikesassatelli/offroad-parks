@@ -22,10 +22,14 @@ export default async function AdminDashboard() {
     select: {
       id: true,
       name: true,
-      city: true,
-      state: true,
       createdAt: true,
       submitterName: true,
+      address: {
+        select: {
+          city: true,
+          state: true,
+        },
+      },
     },
   });
 
@@ -136,8 +140,8 @@ export default async function AdminDashboard() {
                       {park.name}
                     </h3>
                     <p className="text-sm text-gray-600">
-                      {park.city ? `${park.city}, ` : ""}
-                      {park.state}
+                      {park.address?.city ? `${park.address.city}, ` : ""}
+                      {park.address?.state}
                     </p>
                     <p className="text-xs text-gray-500 mt-1">
                       Submitted by: {park.submitterName || "Anonymous"} •{" "}

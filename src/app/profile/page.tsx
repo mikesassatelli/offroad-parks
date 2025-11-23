@@ -19,10 +19,10 @@ export default async function ProfilePage() {
       park: {
         include: {
           terrain: true,
-          difficulty: true,
           amenities: true,
           camping: true,
           vehicleTypes: true,
+          address: true,
           photos: {
             where: {
               status: "APPROVED",
@@ -61,9 +61,14 @@ export default async function ProfilePage() {
       },
       park: {
         select: {
+          id: true,
           name: true,
           slug: true,
-          state: true,
+          address: {
+            select: {
+              state: true,
+            },
+          },
         },
       },
       _count: {

@@ -6,47 +6,43 @@ describe("useRouteBuilder", () => {
   const mockPark1: Park = {
     id: "park-1",
     name: "Park 1",
-    state: "CA",
+    address: { state: "CA" },
     coords: { lat: 34.0522, lng: -118.2437 }, // Los Angeles
     terrain: ["sand"],
     amenities: [],
-    
-    camping: [],difficulty: ["easy"],
+    camping: [],
     vehicleTypes: [],
   };
 
   const mockPark2: Park = {
     id: "park-2",
     name: "Park 2",
-    state: "CA",
+    address: { state: "CA" },
     coords: { lat: 37.7749, lng: -122.4194 }, // San Francisco
     terrain: ["rocks"],
     amenities: [],
-    
-    camping: [],difficulty: ["moderate"],
+    camping: [],
     vehicleTypes: [],
   };
 
   const mockPark3: Park = {
     id: "park-3",
     name: "Park 3",
-    state: "CA",
+    address: { state: "CA" },
     coords: { lat: 36.7783, lng: -119.4179 }, // Between LA and SF
     terrain: ["mud"],
     amenities: [],
-    
-    camping: [],difficulty: ["difficult"],
+    camping: [],
     vehicleTypes: [],
   };
 
   const mockParkNoCoords: Park = {
     id: "park-no-coords",
     name: "Park Without Coords",
-    state: "TX",
+    address: { state: "TX" },
     terrain: ["sand"],
     amenities: [],
-    
-    camping: [],difficulty: ["easy"],
+    camping: [],
     vehicleTypes: [],
   };
 

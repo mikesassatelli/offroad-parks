@@ -17,16 +17,14 @@ describe("ParkOverviewCard", () => {
   const mockPark: Park = {
     id: "park-1",
     name: "Test Park",
-    state: "California",
-    city: "Los Angeles",
+    address: { city: "Los Angeles", state: "California" },
     coords: { lat: 34, lng: -118 },
     dayPassUSD: 25,
     milesOfTrails: 50,
     acres: 1000,
     terrain: ["sand"],
     amenities: [],
-    
-    camping: [],difficulty: ["moderate"],
+    camping: [],
     vehicleTypes: [],
     notes: "Great park for off-roading",
   };
@@ -106,12 +104,11 @@ describe("ParkOverviewCard", () => {
     const minimalPark: Park = {
       id: "minimal",
       name: "Minimal Park",
-      state: "Texas",
+      address: { state: "Texas" },
       coords: { lat: 30, lng: -98 },
       terrain: [],
       amenities: [],
-      
-    camping: [],difficulty: [],
+      camping: [],
       vehicleTypes: [],
     };
 

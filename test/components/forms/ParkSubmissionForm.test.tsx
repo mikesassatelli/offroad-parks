@@ -354,15 +354,6 @@ describe("ParkSubmissionForm", () => {
     expect(sandCheckbox).toBeChecked();
   });
 
-  it("should handle difficulty checkbox selection", async () => {
-    render(<ParkSubmissionForm />);
-
-    const easyCheckbox = screen.getByRole("checkbox", { name: /easy/i });
-    fireEvent.click(easyCheckbox);
-
-    expect(easyCheckbox).toBeChecked();
-  });
-
   it("should handle amenities checkbox selection", async () => {
     render(<ParkSubmissionForm />);
 
@@ -798,12 +789,13 @@ describe("ParkSubmissionForm", () => {
   it("should handle state selection change", () => {
     render(<ParkSubmissionForm />);
 
-    // Find and click the select to trigger onValueChange
-    const selectElement = screen.getByTestId("select");
-    fireEvent.click(selectElement);
+    // Find and click the first select (state) to trigger onValueChange
+    const selectElements = screen.getAllByTestId("select");
+    const stateSelect = selectElements[0];
+    fireEvent.click(stateSelect);
 
     // The mock will call onValueChange with 'California'
-    expect(selectElement.getAttribute("data-value")).toBe("California");
+    expect(stateSelect.getAttribute("data-value")).toBe("California");
   });
 
   it("should call router.back when cancel button is clicked", () => {
@@ -956,8 +948,6 @@ describe("ParkSubmissionForm", () => {
     const mockInitialData = {
       name: "Existing Park",
       slug: "existing-park",
-      city: "Test City",
-      state: "California",
       latitude: "37.7749",
       longitude: "-122.4194",
       website: "https://example.com",
@@ -970,10 +960,25 @@ describe("ParkSubmissionForm", () => {
       notes: "Test notes",
       submitterName: "",
       terrain: ["sand", "rocks"],
-      difficulty: ["moderate", "difficult"],
       amenities: ["restrooms"],
-      
-      camping: [],vehicleTypes: [],
+      camping: [],
+      vehicleTypes: [],
+      datesOpen: "",
+      contactEmail: "",
+      ownership: "",
+      permitRequired: false,
+      permitType: "",
+      membershipRequired: false,
+      maxVehicleWidthInches: "",
+      flagsRequired: false,
+      sparkArrestorRequired: false,
+      noiseLimitDBA: "",
+      streetAddress: "",
+      streetAddress2: "",
+      addressCity: "Test City",
+      addressState: "California",
+      zipCode: "",
+      county: "",
     };
 
     it("should render form with initial data in edit mode", () => {
@@ -1259,26 +1264,6 @@ describe("ParkSubmissionForm", () => {
       expect(sandCheckbox).toBeChecked();
       expect(rocksCheckbox).toBeChecked();
       expect(mudCheckbox).not.toBeChecked();
-    });
-
-    it("should check difficulty checkboxes based on initial data", () => {
-      render(
-        <ParkSubmissionForm
-          isAdminForm={true}
-          initialData={mockInitialData}
-          parkId="park-123"
-        />,
-      );
-
-      const easyCheckbox = screen.getByLabelText(/^easy$/i);
-      const moderateCheckbox = screen.getByLabelText(/moderate/i);
-      const difficultCheckbox = screen.getByLabelText(/^difficult$/i);
-      const extremeCheckbox = screen.getByLabelText(/extreme/i);
-
-      expect(easyCheckbox).not.toBeChecked();
-      expect(moderateCheckbox).toBeChecked();
-      expect(difficultCheckbox).toBeChecked();
-      expect(extremeCheckbox).not.toBeChecked();
     });
 
     it("should check amenity checkboxes based on initial data", () => {

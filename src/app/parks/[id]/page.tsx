@@ -34,10 +34,10 @@ export async function generateMetadata({ params }: ParkPageProps) {
     },
     include: {
       terrain: true,
-      difficulty: true,
       amenities: true,
       camping: true,
       vehicleTypes: true,
+      address: true,
     },
   });
 
@@ -53,7 +53,7 @@ export async function generateMetadata({ params }: ParkPageProps) {
     title: `${park.name} - UTV Parks`,
     description:
       park.notes ||
-      `Information about ${park.name} in ${park.city ? `${park.city}, ` : ""}${park.state}`,
+      `Information about ${park.name} in ${park.address.city ? `${park.address.city}, ` : ""}${park.address.state}`,
   };
 }
 
@@ -68,10 +68,10 @@ export default async function ParkPage({ params }: ParkPageProps) {
     },
     include: {
       terrain: true,
-      difficulty: true,
       amenities: true,
       camping: true,
       vehicleTypes: true,
+      address: true,
     },
   });
 
