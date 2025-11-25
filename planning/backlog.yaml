@@ -27,15 +27,6 @@ epics:
         notes: "Park thumbnail & metadata, filters (rating, vehicle type, state), pagination or infinite scroll, 'Read More' links, performance review."
         tasks: []
 
-      - key: OP-29
-        title: "Seed Closed/Destroyed Parks for Archival"
-        status: backlog
-        type: feature
-        githubIssue: 30
-        needsRefinement: true
-        notes: "Add archived parks dataset, UI treatment for archived parks, exclude from normal search results."
-        tasks: []
-
   # Epic 2: Park Data Model & Content Expansion
   - id: E2
     key: data-model
@@ -60,40 +51,22 @@ epics:
         notes: "Replace dayPassUSD, membership fee, rider fee, vehicle/entry fees, form + UI updates, data migration."
         tasks: []
 
-      - key: OP-23
-        title: "Surface New Camping Data in Camping Info Card"
+      - key: OP-29
+        title: "Seed Closed/Destroyed Parks for Archival"
         status: backlog
         type: feature
-        githubIssue: 24
-        needsRefinement: false
-        notes: "Add new camping field display, icons/badges, handle missing data."
+        githubIssue: 30
+        needsRefinement: true
+        notes: "Add archived parks dataset, UI treatment for archived parks, exclude from normal search results."
         tasks: []
 
-      - key: OP-24
-        title: "Surface New Operational Attributes on Detail & Search Cards"
+      - key: OP-51
+        title: "Seed Additional Parks Data"
         status: backlog
         type: feature
-        githubIssue: 25
-        needsRefinement: false
-        notes: "Hours open, public/private ownership, permit & membership requirements, max vehicle width, flags & spark arrestor rules, visual badges."
-        tasks: []
-
-      - key: OP-25
-        title: "Add Average Recommended Stay to Park Detail Page"
-        status: backlog
-        type: feature
-        githubIssue: 26
-        needsRefinement: false
-        notes: "Show typical stay duration (chip/text)."
-        tasks: []
-
-      - key: OP-26
-        title: "Update Contact/Location Card with Full Address"
-        status: backlog
-        type: feature
-        githubIssue: 27
-        needsRefinement: false
-        notes: "Full address, contact email, operational context."
+        githubIssue: 46
+        needsRefinement: true
+        notes: "Expand parks database, add parks from underrepresented regions, complete data for all fields."
         tasks: []
 
   # Epic 3: Park UI & Layout Improvements
@@ -138,6 +111,42 @@ epics:
         notes: "Human-friendly labels, group amenities."
         tasks: []
 
+      - key: OP-23
+        title: "Surface New Camping Data in Camping Info Card"
+        status: backlog
+        type: feature
+        githubIssue: 24
+        needsRefinement: false
+        notes: "Add new camping field display, icons/badges, handle missing data."
+        tasks: []
+
+      - key: OP-24
+        title: "Surface New Operational Attributes on Detail & Search Cards"
+        status: backlog
+        type: feature
+        githubIssue: 25
+        needsRefinement: false
+        notes: "Hours open, public/private ownership, permit & membership requirements, max vehicle width, flags & spark arrestor rules, visual badges."
+        tasks: []
+
+      - key: OP-25
+        title: "Add Average Recommended Stay to Park Detail Page"
+        status: backlog
+        type: feature
+        githubIssue: 26
+        needsRefinement: false
+        notes: "Show typical stay duration (chip/text)."
+        tasks: []
+
+      - key: OP-26
+        title: "Update Contact/Location Card with Full Address"
+        status: backlog
+        type: feature
+        githubIssue: 27
+        needsRefinement: false
+        notes: "Full address, contact email, operational context."
+        tasks: []
+
   # Epic 4: Search, Discovery & Filtering
   - id: E4
     key: search
@@ -160,6 +169,15 @@ epics:
         githubIssue: 29
         needsRefinement: true
         notes: "Fuel, diesel, campgrounds, water, RV dump, API/AI lookup, show on park detail."
+        tasks: []
+
+      - key: OP-56
+        title: "Parks Near Me (Geolocation)"
+        status: backlog
+        type: feature
+        githubIssue: 51
+        needsRefinement: true
+        notes: "Geolocation detection, distance-based filtering, sort by proximity, distance display on cards, privacy-conscious client-side calculations."
         tasks: []
 
   # Epic 5: Infrastructure & Environment
@@ -190,17 +208,8 @@ epics:
   - id: E6
     key: map
     name: "Map, Routing & Conditions"
-    description: "Map features, routing, trail conditions, and location-based services."
+    description: "Map features, routing, and location-based services."
     stories:
-      - key: OP-30
-        title: "Trail Condition Reports"
-        status: backlog
-        type: feature
-        githubIssue: null
-        needsRefinement: true
-        notes: "User-submitted trail condition reports with timestamps."
-        tasks: []
-
       - key: OP-31
         title: "Saved & Shareable Routes"
         status: backlog
@@ -253,4 +262,232 @@ epics:
         githubIssue: null
         needsRefinement: true
         notes: "Track visited parks, earn badges/achievements."
+        tasks: []
+
+  # Epic 7: Trail Conditions
+  - id: E7
+    key: trail-conditions
+    name: "Trail Conditions"
+    description: "User-submitted trail condition reports with community voting and freshness tracking."
+    stories:
+      - key: OP-37
+        title: "Data Model & API"
+        status: backlog
+        type: feature
+        githubIssue: 32
+        needsRefinement: true
+        notes: "TrailCondition model, condition statuses, weather notes, timestamps, vote counts, API endpoints."
+        tasks: []
+
+      - key: OP-38
+        title: "Submission UI"
+        status: backlog
+        type: feature
+        githubIssue: 33
+        needsRefinement: false
+        notes: "Condition submission form, status selector, weather notes, auth required, validation."
+        tasks: []
+
+      - key: OP-39
+        title: "Display & Voting"
+        status: backlog
+        type: feature
+        githubIssue: 34
+        needsRefinement: false
+        notes: "Display conditions on park detail, upvote/downvote, visual indicators, sorting."
+        tasks: []
+
+      - key: OP-40
+        title: "Expiry & Freshness Logic"
+        status: backlog
+        type: feature
+        githubIssue: 35
+        needsRefinement: false
+        notes: "Freshness thresholds, visual indicators, filter expired conditions, API support."
+        tasks: []
+
+      - key: OP-41
+        title: "Park Card Integration"
+        status: backlog
+        type: feature
+        githubIssue: 36
+        needsRefinement: false
+        notes: "Show condition badge on ParkCard, display status and age, only show fresh conditions."
+        tasks: []
+
+  # Epic 8: Saved & Shareable Routes
+  - id: E8
+    key: routes
+    name: "Saved & Shareable Routes"
+    description: "Users can build, save, and share routes between home, parks, and custom locations."
+    stories:
+      - key: OP-42
+        title: "Data Model & API"
+        status: backlog
+        type: feature
+        githubIssue: 37
+        needsRefinement: true
+        notes: "Route model with waypoints, metadata, ownership, API endpoints, share token generation."
+        tasks: []
+
+      - key: OP-43
+        title: "Route Builder UI"
+        status: backlog
+        type: feature
+        githubIssue: 38
+        needsRefinement: true
+        notes: "Route builder component, map integration, waypoints (home/parks/custom), drag-and-drop reordering, distance/time calculations."
+        tasks: []
+
+      - key: OP-44
+        title: "Route Sharing"
+        status: backlog
+        type: feature
+        githubIssue: 39
+        needsRefinement: true
+        notes: "Unique share tokens/slugs, public route view, copy link, public/private toggle, Open Graph meta tags."
+        tasks: []
+
+      - key: OP-45
+        title: "Profile Integration"
+        status: backlog
+        type: feature
+        githubIssue: 40
+        needsRefinement: false
+        notes: "Routes tab in user profile, list saved routes, edit/delete actions, route card component."
+        tasks: []
+
+      - key: OP-46
+        title: "GPX Export & Mapping Services"
+        status: backlog
+        type: feature
+        githubIssue: 41
+        needsRefinement: true
+        notes: "Generate GPX file, download button, open in Google Maps/Apple Maps, consider Gaia GPS/onX."
+        tasks: []
+
+      - key: OP-47
+        title: "Public Route Gallery"
+        status: backlog
+        type: feature
+        githubIssue: 42
+        needsRefinement: true
+        notes: "Browse public routes, search/filter by region/parks, sort by popularity/date/distance, featured routes. Stretch feature."
+        tasks: []
+
+  # Epic 9: Tech Debt
+  - id: E9
+    key: tech-debt
+    name: "Tech Debt"
+    description: "Type safety improvements, test quality, and code reuse."
+    stories:
+      - key: OP-48
+        title: "Improve Type Safety Across Codebase"
+        status: backlog
+        type: refactor
+        githubIssue: 43
+        needsRefinement: true
+        notes: "Remove any types, stricter API types, improve Prisma transformations, session types, compiler options."
+        tasks: []
+
+      - key: OP-49
+        title: "Test Suite Quality Audit"
+        status: backlog
+        type: refactor
+        githubIssue: 44
+        needsRefinement: true
+        notes: "Audit test quality, remove low-value tests, add critical path tests, improve organization."
+        tasks: []
+
+      - key: OP-50
+        title: "Promote Code Reuse & Reduce Duplication"
+        status: backlog
+        type: refactor
+        githubIssue: 45
+        needsRefinement: true
+        notes: "Extract shared components, create reusable hooks, consolidate API patterns, document patterns."
+        tasks: []
+
+  # Epic 10: Weather Integration
+  - id: E10
+    key: weather
+    name: "Weather Integration"
+    description: "Weather data for outdoor activity planning with caching and performance optimization."
+    stories:
+      - key: OP-52
+        title: "Weather API Integration & Caching"
+        status: backlog
+        type: feature
+        githubIssue: 47
+        needsRefinement: true
+        notes: "API provider selection, server-side caching, TTL strategy, background refresh, rate limiting."
+        tasks: []
+
+      - key: OP-53
+        title: "Current & Forecast Weather Display"
+        status: backlog
+        type: feature
+        githubIssue: 48
+        needsRefinement: false
+        notes: "Weather widget on park detail, current conditions, 5-7 day forecast, hourly forecast, icons."
+        tasks: []
+
+      - key: OP-54
+        title: "Weather Alerts & Warnings"
+        status: backlog
+        type: feature
+        githubIssue: 49
+        needsRefinement: true
+        notes: "NWS alerts, severity levels, park closure indicators, alert prominence."
+        tasks: []
+
+      - key: OP-55
+        title: "Rain Likelihood on Park Cards"
+        status: backlog
+        type: feature
+        githubIssue: 50
+        needsRefinement: false
+        notes: "Rain badge on ParkCard, color-coded probability, batch fetching for efficiency."
+        tasks: []
+
+  # Epic 11: Engagement & Gamification
+  - id: E11
+    key: engagement
+    name: "Engagement & Gamification"
+    description: "Visit tracking, achievements, public profiles, and social features to drive user engagement."
+    stories:
+      - key: OP-57
+        title: "Visit Tracking"
+        status: backlog
+        type: feature
+        githubIssue: 52
+        needsRefinement: true
+        notes: "Mark as visited button, visit date tracking, visit history, visit map visualization, visit stats."
+        tasks: []
+
+      - key: OP-58
+        title: "Achievements & Badges System"
+        status: backlog
+        type: feature
+        githubIssue: 53
+        needsRefinement: true
+        notes: "Achievement definitions with tiers, progress tracking, badge icons, unlock notifications, display on profile."
+        tasks: []
+
+      - key: OP-59
+        title: "Public User Profiles"
+        status: backlog
+        type: feature
+        githubIssue: 54
+        needsRefinement: true
+        notes: "Public profile page, privacy settings, display achievements/visits/routes, profile URL sharing."
+        tasks: []
+
+      - key: OP-60
+        title: "Leaderboards & Community Stats"
+        status: backlog
+        type: feature
+        githubIssue: 55
+        needsRefinement: true
+        notes: "Global leaderboards, time-based filters, user ranking, opt-in/out, community stats overview."
         tasks: []
