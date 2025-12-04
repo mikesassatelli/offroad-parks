@@ -112,8 +112,6 @@ function downloadCSVTemplate() {
   const headers = [
     "name",
     "slug",
-    "city",
-    "state",
     "latitude",
     "longitude",
     "website",
@@ -151,8 +149,6 @@ function downloadCSVTemplate() {
   const exampleRow = [
     "Example Offroad Park",
     "example-offroad-park",
-    "Moab",
-    "UT",
     "38.5733",
     "-109.5498",
     "https://example.com",
@@ -164,7 +160,6 @@ function downloadCSVTemplate() {
     "5000",
     "Great park with stunning views",
     "rocks,trails,hills",
-    "moderate,difficult",
     "restrooms,fuel",
     "tent,rv30A,rv50A",
     "atv,sxs,motorcycle",
@@ -186,8 +181,6 @@ function downloadCSVTemplate() {
     "UT",
     "84532",
     "Grand",
-    "38.5733",
-    "-109.5498",
   ];
 
   const csv = Papa.unparse([headers, exampleRow]);
