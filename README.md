@@ -1,6 +1,7 @@
 # Offroad Parks
 
 A modern web application for discovering and exploring offroad parks and UTV trails across the United States. Built with Next.js 16, TypeScript, Prisma, and PostgreSQL.
+<!-- retrigger build -->
 
 ## Features
 
