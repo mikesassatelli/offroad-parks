@@ -7,7 +7,7 @@ export function RouteListEmpty() {
         <CardTitle className="text-lg">Route Planner</CardTitle>
       </CardHeader>
       <CardContent>
-        <p className="text-sm text-gray-500">
+        <p className="text-sm text-muted-foreground">
           Click &ldquo;Add to Route&rdquo; on park markers to build your trip.
         </p>
       </CardContent>

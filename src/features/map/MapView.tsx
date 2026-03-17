@@ -36,7 +36,7 @@ export function MapView({
   }, [parksWithCoordinates]);
 
   return (
-    <div className="h-[calc(100vh-12rem)] w-full rounded-2xl overflow-hidden border shadow-sm">
+    <div className="h-[calc(100vh-12rem)] w-full rounded-lg overflow-hidden border shadow-sm">
       <MapContainer
         center={centerPosition}
         zoom={4}
@@ -69,7 +69,7 @@ export function MapView({
         })}
       </MapContainer>
       {parksWithCoordinates.length < parks.length && (
-        <div className="absolute bottom-4 left-1/2 -translate-x-1/2 bg-white px-4 py-2 rounded-full shadow-md text-sm text-gray-600 z-[1000]">
+        <div className="absolute bottom-4 left-1/2 -translate-x-1/2 bg-card px-4 py-2 rounded-full shadow-md text-sm text-muted-foreground z-[1000]">
           Showing {parksWithCoordinates.length} of {parks.length} parks with
           coordinates
         </div>

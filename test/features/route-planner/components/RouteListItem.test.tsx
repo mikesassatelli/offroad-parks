@@ -186,7 +186,7 @@ describe("RouteListItem", () => {
     );
 
     const draggable = container.firstChild as HTMLElement;
-    expect(draggable.className).toContain("border-blue-500");
+    expect(draggable.className).toContain("border-primary");
   });
 
   it("should not apply drag over border when isDragOver is false", () => {

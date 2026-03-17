@@ -176,7 +176,7 @@ export function PhotoGallery({
                       {photos[selectedIndex].user.name}
                     </p>
                   )}
-                  <p className="text-gray-400 text-xs mt-1">
+                  <p className="text-muted-foreground/60 text-xs mt-1">
                     {new Date(
                       photos[selectedIndex].createdAt,
                     ).toLocaleDateString()}

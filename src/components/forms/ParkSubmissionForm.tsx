@@ -632,8 +632,8 @@ export function ParkSubmissionForm({
 
         {/* Camping Contact Info */}
         {formData.camping.length > 0 && (
-          <div className="mt-4 pt-4 border-t border-gray-200">
-            <Label className="mb-3 block text-sm text-gray-600">
+          <div className="mt-4 pt-4 border-t border-border">
+            <Label className="mb-3 block text-sm text-muted-foreground">
               Camping Reservations (Optional)
             </Label>
             <div className="grid md:grid-cols-2 gap-4">

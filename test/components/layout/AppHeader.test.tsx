@@ -40,7 +40,7 @@ describe("AppHeader", () => {
   it("should render the app title", () => {
     render(<AppHeader />);
 
-    expect(screen.getByText(/UTV Parks/)).toBeInTheDocument();
+    expect(screen.getByText(/Offroad Parks/)).toBeInTheDocument();
   });
 
   it("should display beta badge", () => {

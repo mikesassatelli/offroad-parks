@@ -27,14 +27,14 @@ export function CampingInfoCard({ park }: CampingInfoCardProps) {
       <CardContent className="space-y-4">
         {/* Camping Types */}
         <div>
-          <h3 className="text-sm font-semibold text-gray-600 mb-2">
+          <h3 className="text-sm font-semibold text-muted-foreground mb-2">
             Available Options
           </h3>
           <div className="flex flex-wrap gap-2">
             {park.camping.map((camping) => (
               <span
                 key={camping}
-                className="inline-flex items-center px-3 py-1 rounded-full text-sm bg-green-100 text-green-800"
+                className="inline-flex items-center px-3 py-1 rounded-md text-sm bg-secondary text-secondary-foreground"
               >
                 {formatCamping(camping)}
               </span>
@@ -44,8 +44,8 @@ export function CampingInfoCard({ park }: CampingInfoCardProps) {
 
         {/* Camping-Specific Contacts */}
         {hasCampingContacts && (
-          <div className="pt-4 border-t border-gray-200">
-            <h3 className="text-sm font-semibold text-gray-600 mb-2">
+          <div className="pt-4 border-t border-border">
+            <h3 className="text-sm font-semibold text-muted-foreground mb-2">
               Reservations
             </h3>
             <div className="space-y-2">
@@ -54,14 +54,14 @@ export function CampingInfoCard({ park }: CampingInfoCardProps) {
                   href={park.campingWebsite}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="flex items-center gap-2 text-blue-600 hover:underline"
+                  className="flex items-center gap-2 text-primary hover:underline"
                 >
                   <ExternalLink className="w-4 h-4" />
                   Reservations Website
                 </a>
               )}
               {park.campingPhone && (
-                <div className="flex items-center gap-2 text-gray-700">
+                <div className="flex items-center gap-2 text-foreground/80">
                   <Phone className="w-4 h-4" />
                   <a href={`tel:${park.campingPhone}`} className="hover:underline">
                     {formatPhone(park.campingPhone)}
