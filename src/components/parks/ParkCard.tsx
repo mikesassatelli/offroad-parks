@@ -2,8 +2,8 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { StarRating, DifficultyRating } from "@/components/reviews";
-import { formatCurrency } from "@/lib/formatting";
-import type { Park } from "@/lib/types";
+import { formatCurrency, formatAmenity, formatTerrain } from "@/lib/formatting";
+import type { Amenity, Park, Terrain } from "@/lib/types";
 import { Camera, MapPin, Star, StarOff } from "lucide-react";
 import Link from "next/link";
 import Image from "next/image";
@@ -97,8 +97,8 @@ export function ParkCard({
         <CardContent className="pt-0 space-y-3 flex-1 flex flex-col">
           <div className="flex flex-wrap gap-1.5">
             {park.terrain.map((terrain) => (
-              <Badge key={terrain} variant="outline" className="capitalize">
-                {terrain}
+              <Badge key={terrain} variant="outline">
+                {formatTerrain(terrain as Terrain)}
               </Badge>
             ))}
           </div>
@@ -124,8 +124,8 @@ export function ParkCard({
           </div>
           <div className="flex flex-wrap gap-1.5 mt-auto">
             {park.amenities.map((amenity) => (
-              <Badge key={amenity} className="capitalize" variant="secondary">
-                {amenity}
+              <Badge key={amenity} variant="secondary">
+                {formatAmenity(amenity as Amenity)}
               </Badge>
             ))}
           </div>
