@@ -8,8 +8,8 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
-import type { Park } from "@/lib/types";
-import { formatCurrency } from "@/lib/formatting";
+import type { Amenity, Park, Terrain } from "@/lib/types";
+import { formatAmenity, formatCurrency, formatTerrain } from "@/lib/formatting";
 import { ExternalLink } from "lucide-react";
 
 interface ParkDetailsDialogProps {
@@ -60,15 +60,15 @@ export function ParkDetailsDialog({
           {park.phone && <p>Phone: {park.phone}</p>}
           <div className="flex flex-wrap gap-1">
             {park.terrain.map((terrain) => (
-              <Badge key={terrain} variant="outline" className="capitalize">
-                {terrain}
+              <Badge key={terrain} variant="outline">
+                {formatTerrain(terrain as Terrain)}
               </Badge>
             ))}
           </div>
           <div className="flex flex-wrap gap-1">
             {park.amenities.map((amenity) => (
-              <Badge key={amenity} className="capitalize" variant="secondary">
-                {amenity}
+              <Badge key={amenity} variant="secondary">
+                {formatAmenity(amenity as Amenity)}
               </Badge>
             ))}
           </div>

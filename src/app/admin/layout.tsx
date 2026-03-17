@@ -105,6 +105,13 @@ export default async function AdminLayout({
               <span className="font-medium">Photos</span>
             </Link>
             <Link
+              href="/admin/photos/bulk-upload"
+              className="flex items-center gap-3 px-4 py-3 text-gray-700 rounded-lg hover:bg-gray-100 transition-colors pl-8"
+            >
+              <Upload className="w-4 h-4" />
+              <span className="font-medium text-sm">Bulk Photo Upload</span>
+            </Link>
+            <Link
               href="/admin/reviews"
               className="flex items-center gap-3 px-4 py-3 text-gray-700 rounded-lg hover:bg-gray-100 transition-colors"
             >

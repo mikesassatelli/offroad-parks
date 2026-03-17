@@ -234,8 +234,8 @@ describe("ParkDetailsDialog", () => {
       <ParkDetailsDialog park={mockPark} isOpen={true} onClose={mockOnClose} />,
     );
 
-    expect(screen.getByText("sand")).toBeInTheDocument();
-    expect(screen.getByText("rocks")).toBeInTheDocument();
+    expect(screen.getByText("Sand")).toBeInTheDocument();
+    expect(screen.getByText("Rocks")).toBeInTheDocument();
   });
 
   it("should render terrain badges with outline variant", () => {
@@ -243,9 +243,8 @@ describe("ParkDetailsDialog", () => {
       <ParkDetailsDialog park={mockPark} isOpen={true} onClose={mockOnClose} />,
     );
 
-    const sandBadge = screen.getByText("sand");
+    const sandBadge = screen.getByText("Sand");
     expect(sandBadge).toHaveAttribute("data-variant", "outline");
-    expect(sandBadge).toHaveClass("capitalize");
   });
 
   it("should render amenity badges", () => {
@@ -253,7 +252,7 @@ describe("ParkDetailsDialog", () => {
       <ParkDetailsDialog park={mockPark} isOpen={true} onClose={mockOnClose} />,
     );
 
-    expect(screen.getByText("restrooms")).toBeInTheDocument();
+    expect(screen.getByText("Restrooms")).toBeInTheDocument();
   });
 
   it("should render amenity badges with secondary variant", () => {
@@ -261,9 +260,8 @@ describe("ParkDetailsDialog", () => {
       <ParkDetailsDialog park={mockPark} isOpen={true} onClose={mockOnClose} />,
     );
 
-    const restroomsBadge = screen.getByText("restrooms");
+    const restroomsBadge = screen.getByText("Restrooms");
     expect(restroomsBadge).toHaveAttribute("data-variant", "secondary");
-    expect(restroomsBadge).toHaveClass("capitalize");
   });
 
   it("should display verification disclaimer", () => {
