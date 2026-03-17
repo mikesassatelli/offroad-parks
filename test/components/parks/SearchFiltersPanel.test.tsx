@@ -2,6 +2,13 @@ import { fireEvent, render, screen } from "@testing-library/react";
 import { SearchFiltersPanel } from "@/components/parks/SearchFiltersPanel";
 import { vi } from "vitest";
 
+// Mock collapsible to always render children (no hide/show in tests)
+vi.mock("@/components/ui/collapsible", () => ({
+  Collapsible: ({ children, defaultOpen, ...props }: any) => <div {...props}>{children}</div>,
+  CollapsibleTrigger: ({ children, ...props }: any) => <button {...props}>{children}</button>,
+  CollapsibleContent: ({ children }: any) => <div>{children}</div>,
+}));
+
 // Mock UI components
 vi.mock("@/components/ui/button", () => ({
   Button: ({ children, onClick, variant }: any) => (
@@ -161,12 +168,10 @@ describe("SearchFiltersPanel", () => {
     expect(mockProps.onClearFilters).toHaveBeenCalledTimes(1);
   });
 
-  it("should render tip message", () => {
+  it("should render Filters header", () => {
     render(<SearchFiltersPanel {...mockProps} />);
 
-    expect(
-      screen.getByText("Tip: Star favorites to plan a weekend loop."),
-    ).toBeInTheDocument();
+    expect(screen.getByText("Filters")).toBeInTheDocument();
   });
 
   it("should set state select value to __all when no state selected", () => {
@@ -302,11 +307,11 @@ describe("SearchFiltersPanel", () => {
     expect(tentCheckbox.checked).toBe(true);
   });
 
-  it("should render Reset button with secondary variant", () => {
+  it("should render Reset button with ghost variant", () => {
     render(<SearchFiltersPanel {...mockProps} />);
 
     const resetButton = screen.getByText("Reset");
-    expect(resetButton).toHaveAttribute("data-variant", "secondary");
+    expect(resetButton).toHaveAttribute("data-variant", "ghost");
   });
 
   it('should call onStateChange with undefined when "__all" is selected', () => {

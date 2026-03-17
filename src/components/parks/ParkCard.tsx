@@ -34,7 +34,7 @@ export function ParkCard({
 
   return (
     <Link href={`/parks/${park.id}`} className="block h-full">
-      <Card className="rounded-2xl border-2 border-border/50 shadow-sm hover:shadow-lg hover:border-primary/30 hover:-translate-y-0.5 transition-all duration-200 cursor-pointer h-full flex flex-col overflow-hidden bg-gradient-to-br from-card to-card/80">
+      <Card className="rounded-lg border border-border shadow-sm hover:shadow-md hover:border-primary/40 transition-all duration-150 cursor-pointer h-full flex flex-col overflow-hidden bg-card">
         {/* Hero Image */}
         {park.heroImage ? (
           <div className="relative h-48 w-full overflow-hidden bg-muted">

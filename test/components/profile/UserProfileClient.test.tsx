@@ -38,7 +38,7 @@ vi.mock("@/components/layout/AppHeader", () => ({
           <a href="/">Back to Parks</a>
         )}
         {/* eslint-disable-next-line @next/next/no-html-link-for-pages */}
-        <a href="/">🏞️ UTV Parks</a>
+        <a href="/">Offroad Parks</a>
         <span>beta</span>
       </div>
     </header>
@@ -127,7 +127,7 @@ describe("UserProfileClient", () => {
 
     const homeLink = container.querySelector('a[href="/"]');
     expect(homeLink).toBeInTheDocument();
-    expect(screen.getByText(/UTV Parks/)).toBeInTheDocument();
+    expect(screen.getByText(/Offroad Parks/)).toBeInTheDocument();
   });
 
   it("should display beta badge", () => {

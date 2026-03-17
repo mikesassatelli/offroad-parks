@@ -26,7 +26,7 @@ export function RouteListHeader({
         </Button>
       </div>
       {totalDistance > 0 && (
-        <p className="text-sm text-gray-600">
+        <p className="text-sm text-muted-foreground">
           Total distance:{" "}
           <span className="font-semibold">{totalDistance} mi</span> (as the crow
           flies)

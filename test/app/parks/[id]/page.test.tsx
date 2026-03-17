@@ -133,7 +133,7 @@ describe("Park Detail Page", () => {
         params: Promise.resolve({ id: "test-park" }),
       });
 
-      expect(metadata.title).toBe("Test Park - UTV Parks");
+      expect(metadata.title).toBe("Test Park - Offroad Parks");
       expect(metadata.description).toBe("Great park for beginners");
     });
 

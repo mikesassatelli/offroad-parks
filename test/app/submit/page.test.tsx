@@ -75,7 +75,7 @@ describe("SubmitParkPage", () => {
     const component = await SubmitParkPage();
     render(component);
 
-    const logoLink = screen.getByRole("link", { name: /utv parks/i });
+    const logoLink = screen.getByRole("link", { name: /offroad parks/i });
     expect(logoLink).toHaveAttribute("href", "/");
   });
 

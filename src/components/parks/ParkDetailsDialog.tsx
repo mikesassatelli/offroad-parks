@@ -44,7 +44,7 @@ export function ParkDetailsDialog({
           </DialogDescription>
         </DialogHeader>
         <div className="space-y-3 text-sm">
-          {park.notes && <p className="text-gray-700">{park.notes}</p>}
+          {park.notes && <p className="text-foreground/80">{park.notes}</p>}
           {park.website && (
             <p>
               <a
@@ -74,7 +74,7 @@ export function ParkDetailsDialog({
           </div>
         </div>
         <div className="mt-4 flex items-center justify-between">
-          <div className="text-xs text-gray-500">
+          <div className="text-xs text-muted-foreground">
             Always verify hours, passes, and vehicle regulations before
             visiting.
           </div>

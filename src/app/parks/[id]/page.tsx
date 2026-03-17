@@ -50,7 +50,7 @@ export async function generateMetadata({ params }: ParkPageProps) {
   const park = transformDbPark(dbPark);
 
   return {
-    title: `${park.name} - UTV Parks`,
+    title: `${park.name} - Offroad Parks`,
     description:
       park.notes ||
       `Information about ${park.name} in ${park.address.city ? `${park.address.city}, ` : ""}${park.address.state}`,

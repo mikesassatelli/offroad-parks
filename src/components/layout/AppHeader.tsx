@@ -4,6 +4,7 @@ import { Button } from "@/components/ui/button";
 import { ArrowLeft, CircleUser, LogIn, MessageSquare, PlusCircle } from "lucide-react";
 import Link from "next/link";
 import { UserMenu } from "./UserMenu";
+import { ThemeToggle } from "@/components/ThemeToggle";
 import { signIn, signOut } from "next-auth/react";
 
 interface AppHeaderProps {
@@ -24,7 +25,7 @@ export function AppHeader({ user, showBackButton }: AppHeaderProps) {
 
   return (
     <header className="bg-card/95 backdrop-blur-sm border-b border-border shadow-sm z-20">
-      <div className="max-w-7xl mx-auto px-6 py-5 flex items-center gap-3">
+      <div className="max-w-7xl mx-auto px-6 py-3 flex items-center gap-3">
         {showBackButton && (
           <Button asChild variant="ghost" size="sm" className="mr-2">
             <Link href="/" className="flex items-center gap-2">
@@ -33,10 +34,10 @@ export function AppHeader({ user, showBackButton }: AppHeaderProps) {
             </Link>
           </Button>
         )}
-        <Link href="/" className="text-2xl font-bold tracking-tight text-foreground hover:opacity-80 transition-opacity">
-          🏞️ UTV Parks
+        <Link href="/" className="text-xl font-extrabold uppercase tracking-widest text-foreground hover:text-primary transition-colors">
+          Offroad Parks
         </Link>
-        <span className="ml-1 inline-flex items-center text-xs px-2 py-1 rounded-full bg-primary/10 text-primary border border-primary/20 font-medium">
+        <span className="ml-1 inline-flex items-center text-[10px] px-2 py-0.5 rounded-md bg-primary/15 text-primary border border-primary/25 font-bold uppercase tracking-wider">
           beta
         </span>
         <div className="ml-auto flex items-center gap-3">
@@ -64,7 +65,9 @@ export function AppHeader({ user, showBackButton }: AppHeaderProps) {
           )}
         </div>
 
-        <div className="ml-8">
+        <ThemeToggle />
+
+        <div className="ml-4">
           {user ? (
             <UserMenu user={user} onSignOut={handleSignOut} />
           ) : (

@@ -69,7 +69,7 @@ export function StarRating({
                   ? "fill-yellow-400 text-yellow-400"
                   : halfFilled
                     ? "fill-yellow-400/50 text-yellow-400"
-                    : "fill-none text-gray-300"
+                    : "fill-none text-border"
               )}
             />
           </button>
@@ -126,7 +126,7 @@ export function StarRatingInput({
                   sizeClasses,
                   filled
                     ? "fill-yellow-400 text-yellow-400"
-                    : "fill-none text-gray-300"
+                    : "fill-none text-border"
                 )}
               />
             </button>
@@ -170,7 +170,7 @@ export function DifficultyRating({
               sizeClasses[size],
               filled
                 ? "fill-orange-500 text-orange-500"
-                : "fill-none text-gray-300"
+                : "fill-none text-border"
             )}
           />
         );
@@ -226,7 +226,7 @@ export function DifficultyRatingInput({
                   sizeClasses,
                   filled
                     ? "fill-orange-500 text-orange-500"
-                    : "fill-none text-gray-300"
+                    : "fill-none text-border"
                 )}
               />
             </button>

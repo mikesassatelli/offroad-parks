@@ -30,21 +30,21 @@ export function ParkMarker({
               </span>
             )}
           </div>
-          <div className="text-sm text-gray-600 mb-2">
+          <div className="text-sm text-muted-foreground mb-2">
             {park.address.city ? `${park.address.city}, ` : ""}
             {park.address.state}
           </div>
           <div className="text-sm space-y-1">
             <div>
-              <span className="text-gray-500">Trail miles:</span>{" "}
+              <span className="text-muted-foreground">Trail miles:</span>{" "}
               {park.milesOfTrails ?? "—"}
             </div>
             <div>
-              <span className="text-gray-500">Day pass:</span>{" "}
+              <span className="text-muted-foreground">Day pass:</span>{" "}
               {formatCurrency(park.dayPassUSD)}
             </div>
             <div>
-              <span className="text-gray-500">Acres:</span> {park.acres ?? "—"}
+              <span className="text-muted-foreground">Acres:</span> {park.acres ?? "—"}
             </div>
           </div>
           <div className="flex gap-2 mt-2">
@@ -55,14 +55,14 @@ export function ParkMarker({
                   e.preventDefault();
                   onAddToRoute(park);
                 }}
-                className="text-sm bg-blue-600 text-white px-3 py-1 rounded hover:bg-blue-700 transition cursor-pointer"
+                className="text-sm bg-primary text-primary-foreground px-3 py-1 rounded hover:bg-primary/90 transition cursor-pointer"
               >
                 Add to Route
               </button>
             )}
             <Link
               href={`/parks/${park.id}`}
-              className="text-sm text-blue-600 hover:underline cursor-pointer"
+              className="text-sm text-primary hover:underline cursor-pointer"
             >
               View details →
             </Link>

@@ -14,21 +14,21 @@ export function ParkOverviewCard({ park }: ParkOverviewCardProps) {
         <CardTitle>Overview</CardTitle>
       </CardHeader>
       <CardContent className="space-y-4">
-        {park.notes && <p className="text-gray-700">{park.notes}</p>}
+        {park.notes && <p className="text-foreground/80">{park.notes}</p>}
 
         <div className="grid grid-cols-3 gap-4">
           <div className="flex items-start gap-3">
-            <Mountain className="w-5 h-5 text-gray-500 mt-0.5" />
+            <Mountain className="w-5 h-5 text-muted-foreground mt-0.5" />
             <div>
-              <div className="text-sm text-gray-500">Trail Miles</div>
+              <div className="text-sm text-muted-foreground">Trail Miles</div>
               <div className="font-semibold">{park.milesOfTrails ?? "—"}</div>
             </div>
           </div>
 
           <div className="flex items-start gap-3">
-            <DollarSign className="w-5 h-5 text-gray-500 mt-0.5" />
+            <DollarSign className="w-5 h-5 text-muted-foreground mt-0.5" />
             <div>
-              <div className="text-sm text-gray-500">Day Pass</div>
+              <div className="text-sm text-muted-foreground">Day Pass</div>
               <div className="font-semibold">
                 {formatCurrency(park.dayPassUSD)}
               </div>
@@ -36,9 +36,9 @@ export function ParkOverviewCard({ park }: ParkOverviewCardProps) {
           </div>
 
           <div className="flex items-start gap-3">
-            <Gauge className="w-5 h-5 text-gray-500 mt-0.5" />
+            <Gauge className="w-5 h-5 text-muted-foreground mt-0.5" />
             <div>
-              <div className="text-sm text-gray-500">Acres</div>
+              <div className="text-sm text-muted-foreground">Acres</div>
               <div className="font-semibold">{park.acres ?? "—"}</div>
             </div>
           </div>
