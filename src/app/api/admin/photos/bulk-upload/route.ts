@@ -74,15 +74,21 @@ export async function POST(request: Request) {
           { access: "public" },
         );
 
-        await prisma.parkPhoto.create({
-          data: {
-            parkId: mapping.parkId,
-            userId: session.user.id,
-            url: blob.url,
-            caption: mapping.caption || null,
-            status: "APPROVED",
-          },
+        // Guard against duplicate URLs — skip if this blob URL is already recorded
+        const existing = await prisma.parkPhoto.findUnique({
+          where: { url: blob.url },
         });
+        if (!existing) {
+          await prisma.parkPhoto.create({
+            data: {
+              parkId: mapping.parkId,
+              userId: session.user.id,
+              url: blob.url,
+              caption: mapping.caption || null,
+              status: "APPROVED",
+            },
+          });
+        }
 
         results.push({ parkId: mapping.parkId, success: true });
       } catch (error) {

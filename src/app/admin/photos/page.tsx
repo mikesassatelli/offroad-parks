@@ -27,6 +27,23 @@ export default async function AdminPhotosPage() {
   const approvedCount = photos.filter((p) => p.status === "APPROVED").length;
   const rejectedCount = photos.filter((p) => p.status === "REJECTED").length;
 
+  // Parks with no approved photos (need attention)
+  const parkPhotoMap = new Map<string, { name: string; hasApproved: boolean }>();
+  for (const photo of photos) {
+    const existing = parkPhotoMap.get(photo.parkId);
+    if (!existing) {
+      parkPhotoMap.set(photo.parkId, {
+        name: photo.park.name,
+        hasApproved: photo.status === "APPROVED",
+      });
+    } else if (photo.status === "APPROVED") {
+      existing.hasApproved = true;
+    }
+  }
+  const noPhotoCount = Array.from(parkPhotoMap.values()).filter(
+    (p) => !p.hasApproved,
+  ).length;
+
   return (
     <div>
       <div className="mb-8">
@@ -35,26 +52,26 @@ export default async function AdminPhotosPage() {
           Photo Moderation
         </h1>
         <p className="text-gray-600">
-          Review and moderate user-submitted park photos
+          Review, moderate, and audit park photos
         </p>
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
+      <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
         <div className="bg-white rounded-lg border border-gray-200 p-4">
-          <div className="text-2xl font-bold text-orange-600">
-            {pendingCount}
-          </div>
+          <div className="text-2xl font-bold text-orange-600">{pendingCount}</div>
           <div className="text-sm text-gray-600">Pending Review</div>
         </div>
         <div className="bg-white rounded-lg border border-gray-200 p-4">
-          <div className="text-2xl font-bold text-green-600">
-            {approvedCount}
-          </div>
+          <div className="text-2xl font-bold text-green-600">{approvedCount}</div>
           <div className="text-sm text-gray-600">Approved</div>
         </div>
         <div className="bg-white rounded-lg border border-gray-200 p-4">
           <div className="text-2xl font-bold text-red-600">{rejectedCount}</div>
           <div className="text-sm text-gray-600">Rejected</div>
+        </div>
+        <div className="bg-white rounded-lg border border-orange-200 p-4">
+          <div className="text-2xl font-bold text-orange-500">{noPhotoCount}</div>
+          <div className="text-sm text-gray-600">Parks Without Approved Photo</div>
         </div>
       </div>
 

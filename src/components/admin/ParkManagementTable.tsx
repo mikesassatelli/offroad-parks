@@ -32,6 +32,14 @@ interface Props {
 
 export function ParkManagementTable({ parks, highlightId }: Props) {
   const [processingId, setProcessingId] = useState<string | null>(null);
+  const [search, setSearch] = useState("");
+
+  const filteredParks = parks.filter(
+    (p) =>
+      p.name.toLowerCase().includes(search.toLowerCase()) ||
+      (p.address?.city ?? "").toLowerCase().includes(search.toLowerCase()) ||
+      (p.address?.state ?? "").toLowerCase().includes(search.toLowerCase()),
+  );
 
   const handleApprove = async (parkId: string) => {
     setProcessingId(parkId);
@@ -120,7 +128,7 @@ export function ParkManagementTable({ parks, highlightId }: Props) {
     );
   };
 
-  if (parks.length === 0) {
+  if (filteredParks.length === 0) {
     return (
       <div className="bg-white rounded-lg shadow border border-gray-200 p-12 text-center">
         <MapPin className="w-12 h-12 text-gray-400 mx-auto mb-4" />
@@ -136,6 +144,15 @@ export function ParkManagementTable({ parks, highlightId }: Props) {
 
   return (
     <div className="bg-white rounded-lg shadow border border-gray-200 overflow-hidden">
+      <div className="px-6 py-3 border-b border-gray-200">
+        <input
+          type="text"
+          placeholder="Search by name, city, or state..."
+          value={search}
+          onChange={(e) => setSearch(e.target.value)}
+          className="w-full max-w-sm px-4 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent"
+        />
+      </div>
       <div className="overflow-x-auto">
         <table className="min-w-full divide-y divide-gray-200">
           <thead className="bg-gray-50">
@@ -161,7 +178,7 @@ export function ParkManagementTable({ parks, highlightId }: Props) {
             </tr>
           </thead>
           <tbody className="bg-white divide-y divide-gray-200">
-            {parks.map((park) => (
+            {filteredParks.map((park) => (
               <tr
                 key={park.id}
                 className={`hover:bg-gray-50 transition-colors ${

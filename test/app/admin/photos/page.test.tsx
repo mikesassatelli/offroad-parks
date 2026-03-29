@@ -71,7 +71,7 @@ describe("AdminPhotosPage", () => {
     render(component);
 
     expect(
-      screen.getByText(/review and moderate user-submitted park photos/i),
+      screen.getByText(/review, moderate, and audit park photos/i),
     ).toBeInTheDocument();
   });
 
@@ -216,7 +216,7 @@ describe("AdminPhotosPage", () => {
 
     const statsGrid = container.querySelector(".grid");
     expect(statsGrid).toBeInTheDocument();
-    expect(statsGrid).toHaveClass("md:grid-cols-3");
+    expect(statsGrid).toHaveClass("md:grid-cols-4");
   });
 
   it("should render camera icon", async () => {
