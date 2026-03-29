@@ -24,6 +24,20 @@ vi.mock("@vercel/blob", () => ({
   put: vi.fn(),
 }));
 
+/**
+ * Creates a mock Request whose formData() method returns a stub directly,
+ * bypassing Node.js/undici multipart stream parsing which fails with File objects.
+ */
+function mockFormDataRequest(
+  url: string,
+  fields: Record<string, File | string | null> = {},
+): Request {
+  const stubFormData = { get: (key: string) => fields[key] ?? null };
+  return {
+    formData: () => Promise.resolve(stubFormData),
+  } as unknown as Request;
+}
+
 describe("POST /api/parks/[slug]/photos", () => {
   const mockPark = {
     id: "park-123",
@@ -81,11 +95,9 @@ describe("POST /api/parks/[slug]/photos", () => {
     } as any);
     vi.mocked(prisma.park.findUnique).mockResolvedValue(mockPark as any);
 
-    const formData = new FormData();
-    const request = new Request("http://localhost/api/parks/test-park/photos", {
-      method: "POST",
-      body: formData,
-    });
+    const request = mockFormDataRequest(
+      "http://localhost/api/parks/test-park/photos",
+    );
     const params = Promise.resolve({ slug: "test-park" });
 
     const response = await POST(request, { params });
@@ -102,13 +114,10 @@ describe("POST /api/parks/[slug]/photos", () => {
     vi.mocked(prisma.park.findUnique).mockResolvedValue(mockPark as any);
 
     const file = new File(["content"], "test.pdf", { type: "application/pdf" });
-    const formData = new FormData();
-    formData.append("file", file);
-
-    const request = new Request("http://localhost/api/parks/test-park/photos", {
-      method: "POST",
-      body: formData,
-    });
+    const request = mockFormDataRequest(
+      "http://localhost/api/parks/test-park/photos",
+      { file },
+    );
     const params = Promise.resolve({ slug: "test-park" });
 
     const response = await POST(request, { params });
@@ -127,13 +136,10 @@ describe("POST /api/parks/[slug]/photos", () => {
     // Create a file larger than 5MB
     const largeContent = new ArrayBuffer(6 * 1024 * 1024); // 6MB
     const file = new File([largeContent], "large.jpg", { type: "image/jpeg" });
-    const formData = new FormData();
-    formData.append("file", file);
-
-    const request = new Request("http://localhost/api/parks/test-park/photos", {
-      method: "POST",
-      body: formData,
-    });
+    const request = mockFormDataRequest(
+      "http://localhost/api/parks/test-park/photos",
+      { file },
+    );
     const params = Promise.resolve({ slug: "test-park" });
 
     const response = await POST(request, { params });
@@ -158,14 +164,10 @@ describe("POST /api/parks/[slug]/photos", () => {
     } as any);
 
     const file = new File(["content"], "test.jpg", { type: "image/jpeg" });
-    const formData = new FormData();
-    formData.append("file", file);
-    formData.append("caption", "Test caption");
-
-    const request = new Request("http://localhost/api/parks/test-park/photos", {
-      method: "POST",
-      body: formData,
-    });
+    const request = mockFormDataRequest(
+      "http://localhost/api/parks/test-park/photos",
+      { file, caption: "Test caption" },
+    );
     const params = Promise.resolve({ slug: "test-park" });
 
     const response = await POST(request, { params });
@@ -209,13 +211,10 @@ describe("POST /api/parks/[slug]/photos", () => {
     } as any);
 
     const file = new File(["content"], "test.jpg", { type: "image/jpeg" });
-    const formData = new FormData();
-    formData.append("file", file);
-
-    const request = new Request("http://localhost/api/parks/test-park/photos", {
-      method: "POST",
-      body: formData,
-    });
+    const request = mockFormDataRequest(
+      "http://localhost/api/parks/test-park/photos",
+      { file },
+    );
     const params = Promise.resolve({ slug: "test-park" });
 
     const response = await POST(request, { params });
@@ -242,13 +241,10 @@ describe("POST /api/parks/[slug]/photos", () => {
     } as any);
 
     const file = new File(["content"], "test.jpeg", { type: "image/jpeg" });
-    const formData = new FormData();
-    formData.append("file", file);
-
-    const request = new Request("http://localhost/api/parks/test-park/photos", {
-      method: "POST",
-      body: formData,
-    });
+    const request = mockFormDataRequest(
+      "http://localhost/api/parks/test-park/photos",
+      { file },
+    );
     const params = Promise.resolve({ slug: "test-park" });
 
     const response = await POST(request, { params });
@@ -264,13 +260,10 @@ describe("POST /api/parks/[slug]/photos", () => {
     } as any);
 
     const file = new File(["content"], "test.png", { type: "image/png" });
-    const formData = new FormData();
-    formData.append("file", file);
-
-    const request = new Request("http://localhost/api/parks/test-park/photos", {
-      method: "POST",
-      body: formData,
-    });
+    const request = mockFormDataRequest(
+      "http://localhost/api/parks/test-park/photos",
+      { file },
+    );
     const params = Promise.resolve({ slug: "test-park" });
 
     const response = await POST(request, { params });
@@ -286,13 +279,10 @@ describe("POST /api/parks/[slug]/photos", () => {
     } as any);
 
     const file = new File(["content"], "test.webp", { type: "image/webp" });
-    const formData = new FormData();
-    formData.append("file", file);
-
-    const request = new Request("http://localhost/api/parks/test-park/photos", {
-      method: "POST",
-      body: formData,
-    });
+    const request = mockFormDataRequest(
+      "http://localhost/api/parks/test-park/photos",
+      { file },
+    );
     const params = Promise.resolve({ slug: "test-park" });
 
     const response = await POST(request, { params });
@@ -309,13 +299,10 @@ describe("POST /api/parks/[slug]/photos", () => {
       .mockImplementation(() => {});
 
     const file = new File(["content"], "test.jpg", { type: "image/jpeg" });
-    const formData = new FormData();
-    formData.append("file", file);
-
-    const request = new Request("http://localhost/api/parks/test-park/photos", {
-      method: "POST",
-      body: formData,
-    });
+    const request = mockFormDataRequest(
+      "http://localhost/api/parks/test-park/photos",
+      { file },
+    );
     const params = Promise.resolve({ slug: "test-park" });
 
     const response = await POST(request, { params });
@@ -338,13 +325,10 @@ describe("POST /api/parks/[slug]/photos", () => {
     } as any);
 
     const file = new File(["content"], "test.jpg", { type: "image/jpeg" });
-    const formData = new FormData();
-    formData.append("file", file);
-
-    const request = new Request("http://localhost/api/parks/test-park/photos", {
-      method: "POST",
-      body: formData,
-    });
+    const request = mockFormDataRequest(
+      "http://localhost/api/parks/test-park/photos",
+      { file },
+    );
     const params = Promise.resolve({ slug: "test-park" });
 
     const response = await POST(request, { params });

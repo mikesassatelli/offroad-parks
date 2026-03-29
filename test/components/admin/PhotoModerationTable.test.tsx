@@ -45,6 +45,7 @@ describe("PhotoModerationTable", () => {
   const mockPhotos = [
     {
       id: "photo-1",
+      parkId: "park-1",
       url: "https://example.com/photo1.jpg",
       caption: "Beautiful sunset view",
       status: "PENDING",
@@ -60,6 +61,7 @@ describe("PhotoModerationTable", () => {
     },
     {
       id: "photo-2",
+      parkId: "park-2",
       url: "https://example.com/photo2.jpg",
       caption: null,
       status: "APPROVED",
@@ -72,6 +74,7 @@ describe("PhotoModerationTable", () => {
     },
     {
       id: "photo-3",
+      parkId: "park-3",
       url: "https://example.com/photo3.jpg",
       caption: "Rocky terrain",
       status: "REJECTED",
@@ -218,12 +221,11 @@ describe("PhotoModerationTable", () => {
 
     await user.click(approveButton!);
 
-    expect(mockFetch).toHaveBeenCalledWith(
-      "/api/admin/photos/photo-1/approve",
-      {
-        method: "POST",
-      },
-    );
+    expect(mockFetch).toHaveBeenCalledWith("/api/admin/photos/photo-1", {
+      method: "PATCH",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ status: "APPROVED" }),
+    });
 
     await waitFor(() => {
       expect(mockRefresh).toHaveBeenCalled();
@@ -238,8 +240,10 @@ describe("PhotoModerationTable", () => {
 
     await user.click(screen.getByRole("button", { name: "Reject" }));
 
-    expect(mockFetch).toHaveBeenCalledWith("/api/admin/photos/photo-1/reject", {
-      method: "POST",
+    expect(mockFetch).toHaveBeenCalledWith("/api/admin/photos/photo-1", {
+      method: "PATCH",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ status: "REJECTED" }),
     });
 
     await waitFor(() => {
@@ -415,7 +419,7 @@ describe("PhotoModerationTable", () => {
     expect(mockConfirm).toHaveBeenCalledWith(
       "Are you sure you want to delete this photo?",
     );
-    expect(mockFetch).toHaveBeenCalledWith("/api/photos/photo-2", {
+    expect(mockFetch).toHaveBeenCalledWith("/api/admin/photos/photo-2", {
       method: "DELETE",
     });
 
@@ -547,12 +551,11 @@ describe("PhotoModerationTable", () => {
 
     await user.click(approveButton!);
 
-    expect(mockFetch).toHaveBeenCalledWith(
-      "/api/admin/photos/photo-3/approve",
-      {
-        method: "POST",
-      },
-    );
+    expect(mockFetch).toHaveBeenCalledWith("/api/admin/photos/photo-3", {
+      method: "PATCH",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ status: "APPROVED" }),
+    });
 
     await waitFor(() => {
       expect(mockRefresh).toHaveBeenCalled();
@@ -579,7 +582,7 @@ describe("PhotoModerationTable", () => {
     expect(mockConfirm).toHaveBeenCalledWith(
       "Are you sure you want to delete this photo?",
     );
-    expect(mockFetch).toHaveBeenCalledWith("/api/photos/photo-3", {
+    expect(mockFetch).toHaveBeenCalledWith("/api/admin/photos/photo-3", {
       method: "DELETE",
     });
 

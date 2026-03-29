@@ -491,3 +491,324 @@ epics:
         needsRefinement: true
         notes: "Global leaderboards, time-based filters, user ranking, opt-in/out, community stats overview."
         tasks: []
+
+  # ─────────────────────────────────────────────────────────────────────────────
+  # OPERATOR SAAS EPICS (Phase 2–4: Revenue path)
+  # ─────────────────────────────────────────────────────────────────────────────
+
+  # Epic 12: Operator Identity & Multi-tenancy
+  - id: E12
+    key: operator-identity
+    name: "Operator Identity & Multi-tenancy"
+    description: "Operator model, park claim flow, and admin claim queue. Architectural foundation for all operator features."
+    stories:
+      - key: OP-61
+        title: "Operator Model & Schema Migration"
+        status: backlog
+        type: feature
+        githubIssue: null
+        needsRefinement: false
+        notes: |
+          Add Operator, OperatorUser, ParkClaim models to schema.prisma.
+          Add OPERATOR to UserRole enum. Add SubscriptionStatus + SubscriptionTier enums.
+          Fields: stripeCustomerId, stripeSubscriptionId, subscriptionStatus, trialEndsAt, billingEmail.
+          OperatorUser has role: OWNER | MEMBER for future multi-user support.
+          ParkClaim tracks pending/approved/rejected claim requests.
+        tasks: []
+
+      - key: OP-62
+        title: "Park Claim Flow (Consumer Side)"
+        status: backlog
+        type: feature
+        githubIssue: null
+        needsRefinement: false
+        notes: |
+          'Claim this park' CTA on ParkDetailPage (only when park has no operator).
+          Claim form: business name, email, phone, description of ownership.
+          POST /api/parks/[slug]/claim creates ParkClaim (status: PENDING).
+          Confirmation email to claimant.
+        tasks: []
+
+      - key: OP-63
+        title: "Claim Review Admin Queue"
+        status: backlog
+        type: feature
+        githubIssue: null
+        needsRefinement: false
+        notes: |
+          New admin section: /admin/claims.
+          List pending claims with park name, claimant info, date submitted.
+          Approve: creates Operator + OperatorUser records, sets user role to OPERATOR, sends welcome email.
+          Reject: sends rejection email with reason.
+        tasks: []
+
+  # Epic 13: Operator Portal Core
+  - id: E13
+    key: operator-portal
+    name: "Operator Portal Core"
+    description: "Dashboard shell, trail status management, and park listing editor for operators."
+    stories:
+      - key: OP-64
+        title: "Operator Portal Shell & Middleware"
+        status: backlog
+        type: feature
+        githubIssue: null
+        needsRefinement: false
+        notes: |
+          Route: /operator/[parkSlug]/dashboard. Separate layout from /admin.
+          Middleware: check OperatorUser membership and subscriptionStatus.
+          PAST_DUE shows billing banner. CANCELLED shows paywall.
+          Sidebar: Overview, Trail Status, Listing, Waivers (stub), Tickets (stub), Billing.
+          Stats cards: trail status indicator, recent waiver count (stub), active members (stub).
+        tasks: []
+
+      - key: OP-65
+        title: "Operator Trail Status Management"
+        status: backlog
+        type: feature
+        githubIssue: null
+        needsRefinement: false
+        notes: |
+          Builds on TrailCondition model (OP-37). Operator can post pinned status:
+          OPEN / CLOSED / CAUTION / MUDDY / WET / SNOW with optional notes and expiry.
+          isPinned=true + operatorId set for operator posts.
+          Consumer side: pinned operator status shown prominently at top of conditions section
+          with 'Posted by Park Management' badge, visually distinct from community reports.
+          This is the #1 daily engagement feature for operators.
+        tasks: []
+
+      - key: OP-66
+        title: "Operator Park Listing Editor"
+        status: backlog
+        type: feature
+        githubIssue: null
+        needsRefinement: false
+        notes: |
+          Operators edit their park listing without admin moderation queue.
+          PATCH /api/operator/parks/[parkId] — protected by operator middleware, not admin auth.
+          Fields: name, notes, website, phone, datesOpen, rich pricing fields (OP-22 dependency),
+          amenities, terrain, camping, vehicle types, photos (approve/reject/reorder their own photos).
+          Changes applied immediately; audit log stored for admin visibility.
+        tasks: []
+
+  # Epic 14: Billing
+  - id: E14
+    key: billing
+    name: "Billing & Subscriptions"
+    description: "Stripe integration, subscription lifecycle, and billing portal for operators."
+    stories:
+      - key: OP-67
+        title: "Stripe Integration & Subscription Webhooks"
+        status: backlog
+        type: feature
+        githubIssue: null
+        needsRefinement: false
+        notes: |
+          Install stripe package. Add STRIPE_SECRET_KEY, STRIPE_PUBLISHABLE_KEY, STRIPE_WEBHOOK_SECRET env vars.
+          Create Stripe Products: Operator Standard ($149/mo), Operator Premium ($199/mo future).
+          POST /api/billing/create-checkout-session: creates Stripe Checkout session for operator.
+          POST /api/billing/webhook: handle customer.subscription.created/updated/deleted,
+          invoice.payment_failed. Updates Operator.subscriptionStatus accordingly.
+          14-day free trial on claim approval, no credit card required.
+        tasks: []
+
+      - key: OP-68
+        title: "Billing Portal Page"
+        status: backlog
+        type: feature
+        githubIssue: null
+        needsRefinement: false
+        notes: |
+          Route: /operator/[parkSlug]/billing.
+          Shows: current plan, status, next invoice date, trial end date.
+          'Manage Billing' button opens Stripe Customer Portal.
+          Cancellation confirmation flow.
+          Upgrade prompt when on trial.
+        tasks: []
+
+  # Epic 15: Digital Waivers
+  - id: E15
+    key: waivers
+    name: "Digital Waivers"
+    description: "Custom waiver builder, QR kiosk signing mode, and completion log for operators."
+    stories:
+      - key: OP-69
+        title: "Waiver Data Model"
+        status: backlog
+        type: feature
+        githubIssue: null
+        needsRefinement: false
+        notes: |
+          WaiverTemplate: id, operatorId, parkId, title, body (Text), isActive, version, createdAt.
+          WaiverClause: id, templateId, text, required (bool), displayOrder.
+          WaiverCompletion: id, templateId, signerName, signerEmail, signature (Text, base64),
+          ipAddress, userAgent, completedAt. No parkId FK needed (via template).
+        tasks: []
+
+      - key: OP-70
+        title: "Waiver Builder (Operator Portal)"
+        status: backlog
+        type: feature
+        githubIssue: null
+        needsRefinement: true
+        notes: |
+          Operator portal: /operator/[parkSlug]/waivers.
+          Create/edit waiver template: title, rich-text body, add/remove/reorder clauses.
+          Preview mode shows the rider-facing view.
+          Activate/deactivate toggle. Version history (show current version number).
+          GET /api/operator/waivers/[parkSlug] — list templates.
+          POST/PATCH /api/operator/waivers/[id] — create/update.
+        tasks: []
+
+      - key: OP-71
+        title: "QR Kiosk Signing Page"
+        status: backlog
+        type: feature
+        githubIssue: null
+        needsRefinement: false
+        notes: |
+          Public route: /waiver/[parkSlug] — no auth required.
+          Renders active WaiverTemplate. Rider fills name, email (optional), checks clauses, signs.
+          Signature pad component (touch-friendly). Submit POST /api/waivers/[parkSlug]/sign.
+          On completion: confirmation screen for 5s, then auto-reset for next rider.
+          Operator portal shows QR code for this URL (use qrcode package).
+          Mobile-optimized full-screen layout for kiosk tablets.
+        tasks: []
+
+      - key: OP-72
+        title: "Waiver Completion Log"
+        status: backlog
+        type: feature
+        githubIssue: null
+        needsRefinement: false
+        notes: |
+          Operator portal: /operator/[parkSlug]/waivers/completions.
+          Table: date, signer name, email, template version.
+          Search by name/email. Filter by date range.
+          Export to CSV button. Count badge on sidebar nav item.
+        tasks: []
+
+  # Epic 16: Day Pass Ticketing
+  - id: E16
+    key: ticketing
+    name: "Day Pass Ticketing"
+    description: "Online day pass sales, QR ticket generation, and gate scan for operators."
+    stories:
+      - key: OP-73
+        title: "Ticket Data Model & Pricing Config"
+        status: backlog
+        type: feature
+        githubIssue: null
+        needsRefinement: true
+        notes: |
+          TicketType: id, operatorId, parkId, name (Adult/Child/Family), priceUSD, dailyCapacity,
+          isActive. Ticket: id, ticketTypeId, buyerName, buyerEmail, qrToken (unique),
+          stripePaymentIntentId, status (VALID/USED/REFUNDED), purchasedAt, usedAt.
+          Operator sets up ticket types in portal: /operator/[parkSlug]/tickets/settings.
+        tasks: []
+
+      - key: OP-74
+        title: "Consumer Ticket Purchase"
+        status: backlog
+        type: feature
+        githubIssue: null
+        needsRefinement: true
+        notes: |
+          'Buy Day Pass' button on ParkDetailPage (only when operator has active ticket types).
+          Stripe Payment Intents (not subscriptions). POST /api/parks/[slug]/tickets/purchase.
+          Email confirmation with QR code (use nodemailer or Resend).
+          Display remaining capacity if near limit.
+        tasks: []
+
+      - key: OP-75
+        title: "Gate Scan (Operator Mobile)"
+        status: backlog
+        type: feature
+        githubIssue: null
+        needsRefinement: true
+        notes: |
+          Mobile-optimized operator page: /operator/[parkSlug]/tickets/scan.
+          Camera-based QR scanner (use html5-qrcode or jsQR).
+          On scan: POST /api/operator/tickets/validate — checks token, marks USED, returns ticket info.
+          Visual feedback: green checkmark (valid), red X (invalid/already used).
+          Works offline-first with service worker for poor cell coverage at remote parks.
+        tasks: []
+
+  # Epic 17: Membership Management
+  - id: E17
+    key: memberships
+    name: "Membership Management"
+    description: "Annual/recurring memberships sold through the platform with operator payout tracking."
+    stories:
+      - key: OP-76
+        title: "Membership Data Model"
+        status: backlog
+        type: feature
+        githubIssue: null
+        needsRefinement: true
+        notes: |
+          MembershipPlan: id, operatorId, name, priceUSD, interval (MONTHLY/ANNUAL), perks (Text).
+          MembershipSubscription: id, planId, userId, stripeSubscriptionId, status, startsAt, endsAt.
+          Operator payout: platform takes 5-10% of membership revenue; Stripe Connect for payouts.
+          Phase 4 feature — defer until ticketing is stable.
+        tasks: []
+
+  # Epic 0: Data Quality & Photo Remediation (immediate)
+  - id: E0
+    key: data-quality
+    name: "Data Quality & Photo Remediation"
+    description: "Fix duplicate/misassigned photos, add deduplication guards, establish ongoing photo sourcing."
+    stories:
+      - key: OP-00
+        title: "Photo Deduplication Audit & Cleanup"
+        status: in-progress
+        type: bug
+        githubIssue: null
+        needsRefinement: false
+        notes: |
+          Run SQL: SELECT url, COUNT(*) as cnt, array_agg(DISTINCT "parkId") as parks
+          FROM "ParkPhoto" GROUP BY url HAVING COUNT(*) > 1 ORDER BY cnt DESC;
+          For each duplicate: the parkId embedded in the Vercel Blob URL path
+          (parks/{parkId}/{timestamp}-{filename}) is the authoritative assignment.
+          Delete ParkPhoto records where DB parkId != URL-embedded parkId.
+          Add @@unique([url]) constraint to ParkPhoto model in schema.prisma.
+        tasks: []
+
+      - key: OP-00B
+        title: "Admin Photo Reassign Tool"
+        status: backlog
+        type: feature
+        githubIssue: null
+        needsRefinement: false
+        notes: |
+          Add 'Reassign Park' action to PhotoModerationTable.tsx.
+          PATCH /api/admin/photos/[id] endpoint: updates parkId field.
+          Park selector dropdown (search by name). Confirmation dialog.
+          Also useful for ongoing corrections when photos are submitted for wrong park.
+        tasks: []
+
+      - key: OP-00C
+        title: "Bulk Upload Deduplication Guard"
+        status: backlog
+        type: feature
+        githubIssue: null
+        needsRefinement: false
+        notes: |
+          In /api/admin/photos/bulk-upload/route.ts, before prisma.parkPhoto.create:
+          query for existing record with same url. If found, skip and add to 'duplicates'
+          array in response rather than failing silently.
+          Also add @@unique([url]) to ParkPhoto in schema.prisma as DB-level backstop.
+        tasks: []
+
+      - key: OP-00D
+        title: "Community Photo Sourcing CTA"
+        status: backlog
+        type: feature
+        githubIssue: null
+        needsRefinement: false
+        notes: |
+          'Add Photos' CTA on ParkDetailPage for logged-in users (already in UI, needs more prominence).
+          'No approved photos' badge in admin park list to drive attention to photo-sparse parks.
+          Park photographer credit: show contributor name on photo (already have userId FK).
+          Going forward: photos from claimed operators auto-approved; community photos still moderated.
+        tasks: []

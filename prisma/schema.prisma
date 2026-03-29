@@ -278,6 +278,7 @@ model ParkPhoto {
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
+  @@unique([url])
   @@index([parkId])
   @@index([userId])
   @@index([status])
