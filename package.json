@@ -13,6 +13,8 @@
     "test:coverage": "vitest run --coverage",
     "db:push": "prisma db push",
     "db:studio": "prisma studio",
+    "db:seed-reviews": "tsx prisma/seed-reviews.ts",
+    "db:seed-reviews:wipe": "tsx prisma/seed-reviews.ts --wipe",
     "prepare": "husky",
     "format": "prettier --write .",
     "format:check": "prettier --check .",
