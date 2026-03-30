@@ -1,6 +1,6 @@
 import { render, screen } from "@testing-library/react";
 import { CampingInfoCard } from "@/features/parks/detail/components/CampingInfoCard";
-import type { Park } from "@/lib/types";
+import type { Camping, Park } from "@/lib/types";
 import { vi } from "vitest";
 
 vi.mock("@/components/ui/card", () => ({
@@ -31,7 +31,7 @@ describe("CampingInfoCard", () => {
   });
 
   it("should render camping card when camping options exist", () => {
-    const park = { ...basePark, camping: ["tent" as const] };
+    const park = { ...basePark, camping: ["tent" as Camping] };
     render(<CampingInfoCard park={park} />);
     expect(screen.getByText("Camping")).toBeInTheDocument();
   });
@@ -39,7 +39,7 @@ describe("CampingInfoCard", () => {
   it("should display formatted camping type labels", () => {
     const park = {
       ...basePark,
-      camping: ["tent", "rv30A", "cabin"] as const,
+      camping: ["tent", "rv30A", "cabin"] as Camping[],
     };
     render(<CampingInfoCard park={park} />);
     expect(screen.getByText("Tent / Primitive")).toBeInTheDocument();
@@ -48,7 +48,7 @@ describe("CampingInfoCard", () => {
   });
 
   it("should render icons alongside camping labels", () => {
-    const park = { ...basePark, camping: ["tent" as const] };
+    const park = { ...basePark, camping: ["tent" as Camping] };
     const { container } = render(<CampingInfoCard park={park} />);
     const icons = container.querySelectorAll("svg");
     expect(icons.length).toBeGreaterThan(0);
@@ -65,7 +65,7 @@ describe("CampingInfoCard", () => {
         "cabin",
         "groupSite",
         "backcountry",
-      ] as const,
+      ] as Camping[],
     };
     render(<CampingInfoCard park={park} />);
     expect(screen.getByText("Tent / Primitive")).toBeInTheDocument();
@@ -78,7 +78,7 @@ describe("CampingInfoCard", () => {
   });
 
   it("should not show reservations section when no camping contacts", () => {
-    const park = { ...basePark, camping: ["tent" as const] };
+    const park = { ...basePark, camping: ["tent" as Camping] };
     render(<CampingInfoCard park={park} />);
     expect(screen.queryByText("Reservations")).not.toBeInTheDocument();
   });
@@ -86,7 +86,7 @@ describe("CampingInfoCard", () => {
   it("should show reservations website when campingWebsite provided", () => {
     const park = {
       ...basePark,
-      camping: ["tent" as const],
+      camping: ["tent" as Camping],
       campingWebsite: "https://reserve.testpark.com",
     };
     render(<CampingInfoCard park={park} />);
@@ -98,7 +98,7 @@ describe("CampingInfoCard", () => {
   it("should show camping phone when provided", () => {
     const park = {
       ...basePark,
-      camping: ["tent" as const],
+      camping: ["tent" as Camping],
       campingPhone: "5559876543",
     };
     const { container } = render(<CampingInfoCard park={park} />);
@@ -109,7 +109,7 @@ describe("CampingInfoCard", () => {
   it("should show both website and phone in reservations section", () => {
     const park = {
       ...basePark,
-      camping: ["tent" as const],
+      camping: ["tent" as Camping],
       campingWebsite: "https://reserve.testpark.com",
       campingPhone: "5559876543",
     };
