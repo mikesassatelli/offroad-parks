@@ -46,11 +46,12 @@ model User {
   accounts      Account[]
   sessions      Session[]
 
-  submittedParks Park[]         @relation("SubmittedParks")
-  favorites      UserFavorite[]
-  uploadedPhotos ParkPhoto[]
-  reviews        ParkReview[]
-  helpfulVotes   ReviewHelpfulVote[]
+  submittedParks   Park[]           @relation("SubmittedParks")
+  favorites        UserFavorite[]
+  uploadedPhotos   ParkPhoto[]
+  reviews          ParkReview[]
+  helpfulVotes     ReviewHelpfulVote[]
+  trailConditions  TrailCondition[]
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -119,10 +120,11 @@ model Park {
   amenities    ParkAmenity[]
   camping      ParkCamping[]
   vehicleTypes ParkVehicleType[]
-  favorites    UserFavorite[]
-  photos       ParkPhoto[]
-  reviews      ParkReview[]
-  address      Address?
+  favorites        UserFavorite[]
+  photos           ParkPhoto[]
+  reviews          ParkReview[]
+  trailConditions  TrailCondition[]
+  address          Address?
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -354,6 +356,41 @@ model ParkReview {
   @@index([parkId])
   @@index([userId])
   @@index([status])
+  @@index([createdAt])
+}
+
+// Trail Conditions
+enum TrailConditionStatus {
+  OPEN
+  CLOSED
+  CAUTION
+  MUDDY
+  WET
+  SNOW
+}
+
+enum ConditionReportStatus {
+  PUBLISHED
+  PENDING_REVIEW
+}
+
+model TrailCondition {
+  id        String                @id @default(cuid())
+  parkId    String
+  userId    String
+  status    TrailConditionStatus
+  note      String?               @db.Text
+  reportStatus ConditionReportStatus @default(PUBLISHED)
+
+  park      Park                  @relation(fields: [parkId], references: [id], onDelete: Cascade)
+  user      User                  @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  createdAt DateTime              @default(now())
+  updatedAt DateTime              @updatedAt
+
+  @@index([parkId])
+  @@index([userId])
+  @@index([reportStatus])
   @@index([createdAt])
 }
 

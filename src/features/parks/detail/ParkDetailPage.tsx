@@ -17,6 +17,7 @@ import { ParkOperationalCard } from "./components/ParkOperationalCard";
 import { ParkOverviewCard } from "./components/ParkOverviewCard";
 import { CampingInfoCard } from "./components/CampingInfoCard";
 import { ReviewList, ReviewForm, StarRating, DifficultyRating } from "@/components/reviews";
+import { TrailConditionsDisplay } from "@/features/trail-conditions/TrailConditionsDisplay";
 import { useReviews } from "@/hooks/useReviews";
 import { useParkReview } from "@/hooks/useParkReview";
 import { AppHeader } from "@/components/layout/AppHeader";
@@ -353,6 +354,7 @@ function ParkDetailPageInner({
           {/* Sidebar */}
           <div className="lg:col-span-1">
             <div className="sticky top-20 space-y-6">
+              <TrailConditionsDisplay parkSlug={park.id} />
               <ParkContactSidebar park={park} />
               <CampingInfoCard park={park} />
             </div>
