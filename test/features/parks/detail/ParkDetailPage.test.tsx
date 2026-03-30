@@ -111,6 +111,12 @@ vi.mock("@/features/parks/detail/components/CampingInfoCard", () => ({
   CampingInfoCard: () => <div data-testid="camping-info-card">Camping Info</div>,
 }));
 
+vi.mock("@/features/parks/detail/components/ParkOperationalCard", () => ({
+  ParkOperationalCard: () => (
+    <div data-testid="park-operational-card">Operational Details</div>
+  ),
+}));
+
 // Mock AppHeader
 vi.mock("@/components/layout/AppHeader", () => ({
   AppHeader: ({ showBackButton }: { showBackButton?: boolean }) => (
@@ -120,6 +126,20 @@ vi.mock("@/components/layout/AppHeader", () => ({
         <a href="/" role="button" aria-label="Back to Parks">Back to Parks</a>
       )}
     </header>
+  ),
+}));
+
+// Mock Tabs — render all content without hiding inactive tabs
+vi.mock("@/components/ui/tabs", () => ({
+  Tabs: ({ children }: any) => <div data-testid="tabs">{children}</div>,
+  TabsList: ({ children, className }: any) => (
+    <div data-testid="tabs-list" className={className}>{children}</div>
+  ),
+  TabsTrigger: ({ children, value }: any) => (
+    <button data-testid={`tab-trigger-${value}`}>{children}</button>
+  ),
+  TabsContent: ({ children, value }: any) => (
+    <div data-testid={`tab-content-${value}`}>{children}</div>
   ),
 }));
 
@@ -308,7 +328,7 @@ describe("ParkDetailPage", () => {
   it("should render map when coords provided", () => {
     render(<ParkDetailPage park={mockPark} photos={[]} />);
 
-    expect(screen.getByText("Location")).toBeInTheDocument();
+    expect(screen.getAllByText("Location").length).toBeGreaterThan(0);
     expect(screen.getByTestId("map-view")).toBeInTheDocument();
     expect(screen.getByTestId("map-view")).toHaveTextContent("1 parks on map");
   });
@@ -362,6 +382,35 @@ describe("ParkDetailPage", () => {
     render(<ParkDetailPage park={mockPark} photos={[]} />);
 
     expect(screen.getByText(/upload form for test-park/i)).toBeInTheDocument();
+  });
+
+  it("should render tabs with overview, photos, and reviews triggers", () => {
+    render(<ParkDetailPage park={mockPark} photos={mockPhotos} />);
+
+    expect(screen.getByTestId("tab-trigger-overview")).toBeInTheDocument();
+    expect(screen.getByTestId("tab-trigger-photos")).toBeInTheDocument();
+    expect(screen.getByTestId("tab-trigger-reviews")).toBeInTheDocument();
+  });
+
+  it("should render location tab trigger when coords provided", () => {
+    render(<ParkDetailPage park={mockPark} photos={[]} />);
+
+    expect(screen.getByTestId("tab-trigger-location")).toBeInTheDocument();
+  });
+
+  it("should not render location tab trigger when coords not provided", () => {
+    const parkWithoutCoords = { ...mockPark, coords: undefined };
+    render(<ParkDetailPage park={parkWithoutCoords} photos={[]} />);
+
+    expect(screen.queryByTestId("tab-trigger-location")).not.toBeInTheDocument();
+  });
+
+  it("should render overview content with park cards", () => {
+    render(<ParkDetailPage park={mockPark} photos={[]} />);
+
+    expect(screen.getByTestId("tab-content-overview")).toBeInTheDocument();
+    expect(screen.getByTestId("park-overview-card")).toBeInTheDocument();
+    expect(screen.getByTestId("park-attributes-cards")).toBeInTheDocument();
   });
 
   it("should render SessionProvider wrapper", () => {
