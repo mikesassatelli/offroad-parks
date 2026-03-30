@@ -9,7 +9,7 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import type { Amenity, Park, Terrain } from "@/lib/types";
-import { formatAmenity, formatCurrency, formatTerrain } from "@/lib/formatting";
+import { formatAmenity, formatParkPricingSummary, formatTerrain } from "@/lib/formatting";
 import { ExternalLink } from "lucide-react";
 
 interface ParkDetailsDialogProps {
@@ -31,7 +31,7 @@ export function ParkDetailsDialog({
     ? `${park.address.city}, ${park.address.state}`
     : park.address.state;
   const trailMilesDisplay = park.milesOfTrails ?? "—";
-  const formattedDayPass = formatCurrency(park.dayPassUSD);
+  const formattedPricing = formatParkPricingSummary(park);
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
@@ -40,7 +40,7 @@ export function ParkDetailsDialog({
           <DialogTitle>{park.name}</DialogTitle>
           <DialogDescription>
             {locationDisplay} · {trailMilesDisplay} mi trails ·{" "}
-            {formattedDayPass} day pass
+            {formattedPricing}
           </DialogDescription>
         </DialogHeader>
         <div className="space-y-3 text-sm">

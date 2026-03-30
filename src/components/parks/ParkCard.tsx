@@ -2,7 +2,7 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { StarRating, DifficultyRating } from "@/components/reviews";
-import { formatCurrency, formatAmenity, formatTerrain } from "@/lib/formatting";
+import { formatParkPricingSummary, formatAmenity, formatTerrain } from "@/lib/formatting";
 import { formatDistance } from "@/lib/geo";
 import type { Amenity, Park, Terrain } from "@/lib/types";
 import { Camera, MapPin, Star, StarOff } from "lucide-react";
@@ -34,7 +34,7 @@ export function ParkCard({
   const locationDisplay = park.address.city
     ? `${park.address.city}, ${park.address.state}`
     : park.address.state;
-  const formattedDayPass = formatCurrency(park.dayPassUSD);
+  const formattedPricing = formatParkPricingSummary(park);
   const trailMilesDisplay = park.milesOfTrails ?? "—";
   const acresDisplay = park.acres ?? "—";
 
@@ -140,8 +140,8 @@ export function ParkCard({
               <span className="font-medium">{trailMilesDisplay}</span>
             </div>
             <div>
-              <span className="text-muted-foreground">Day pass:</span>{" "}
-              <span className="font-medium">{formattedDayPass}</span>
+              <span className="text-muted-foreground">Pricing:</span>{" "}
+              <span className="font-medium">{formattedPricing}</span>
             </div>
             <div>
               <span className="text-muted-foreground">Acres:</span>{" "}

@@ -81,7 +81,12 @@ model Park {
   phone         String?
   campingWebsite String?
   campingPhone   String?
-  dayPassUSD    Float?
+  // Pricing fields
+  isFree              Boolean?
+  dayPassUSD          Float?
+  vehicleEntryFeeUSD  Float?
+  riderFeeUSD         Float?
+  membershipFeeUSD    Float?
   milesOfTrails Int?
   acres         Int?
   notes         String?    @db.Text

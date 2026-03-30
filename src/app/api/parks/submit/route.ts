@@ -20,7 +20,11 @@ interface SubmitParkRequest {
   phone?: string;
   campingWebsite?: string;
   campingPhone?: string;
+  isFree?: boolean | null;
   dayPassUSD?: number | null;
+  vehicleEntryFeeUSD?: number | null;
+  riderFeeUSD?: number | null;
+  membershipFeeUSD?: number | null;
   milesOfTrails?: number | null;
   acres?: number | null;
   notes?: string;
@@ -111,7 +115,11 @@ export async function POST(request: Request) {
         phone: data.phone || null,
         campingWebsite: data.campingWebsite || null,
         campingPhone: data.campingPhone || null,
+        isFree: data.isFree ?? null,
         dayPassUSD: data.dayPassUSD || null,
+        vehicleEntryFeeUSD: data.vehicleEntryFeeUSD || null,
+        riderFeeUSD: data.riderFeeUSD || null,
+        membershipFeeUSD: data.membershipFeeUSD || null,
         milesOfTrails: data.milesOfTrails || null,
         acres: data.acres || null,
         notes: data.notes || null,
