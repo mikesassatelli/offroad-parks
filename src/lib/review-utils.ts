@@ -1,6 +1,21 @@
 import { prisma } from "@/lib/prisma";
 import type { RecommendedDuration } from "@prisma/client";
 
+// Map enum values to ordinal integers for averaging
+const DURATION_ORDINAL: Record<RecommendedDuration, number> = {
+  quickRide: 1,
+  halfDay: 2,
+  fullDay: 3,
+  overnight: 4,
+};
+
+const ORDINAL_DURATION: Record<number, RecommendedDuration> = {
+  1: "quickRide",
+  2: "halfDay",
+  3: "fullDay",
+  4: "overnight",
+};
+
 /**
  * Recalculate and update the average rating and review count for a park
  * based on its APPROVED reviews only.
@@ -22,8 +37,7 @@ export async function recalculateParkRatings(parkId: string): Promise<void> {
     },
   });
 
-  // Calculate the most frequently recommended duration
-  const averageRecommendedStay = await calculateMostFrequentDuration(parkId);
+  const averageRecommendedStay = await calculateRecommendedStay(parkId);
 
   await prisma.park.update({
     where: { id: parkId },
@@ -39,9 +53,14 @@ export async function recalculateParkRatings(parkId: string): Promise<void> {
 }
 
 /**
- * Calculate the most frequently occurring recommendedDuration from approved reviews
+ * Calculate the recommended stay duration from approved reviews using a
+ * weighted ordinal mean with ceiling rounding. This biases the result
+ * towards longer stays — a tie or near-tie always resolves upward.
+ *
+ * quickRide=1, halfDay=2, fullDay=3, overnight=4
+ * e.g. 4× quickRide + 3× halfDay → mean 1.43 → ceil → 2 → halfDay
  */
-async function calculateMostFrequentDuration(
+export async function calculateRecommendedStay(
   parkId: string
 ): Promise<RecommendedDuration | null> {
   const durationCounts = await prisma.parkReview.groupBy({
@@ -54,17 +73,24 @@ async function calculateMostFrequentDuration(
     _count: {
       recommendedDuration: true,
     },
-    orderBy: {
-      _count: {
-        recommendedDuration: "desc",
-      },
-    },
-    take: 1,
   });
 
-  if (durationCounts.length === 0 || !durationCounts[0].recommendedDuration) {
-    return null;
+  if (durationCounts.length === 0) return null;
+
+  let totalVotes = 0;
+  let weightedSum = 0;
+
+  for (const row of durationCounts) {
+    if (!row.recommendedDuration) continue;
+    const ordinal = DURATION_ORDINAL[row.recommendedDuration];
+    const count = row._count.recommendedDuration;
+    weightedSum += ordinal * count;
+    totalVotes += count;
   }
 
-  return durationCounts[0].recommendedDuration;
+  if (totalVotes === 0) return null;
+
+  const mean = weightedSum / totalVotes;
+  const ceilOrdinal = Math.min(4, Math.ceil(mean)) as 1 | 2 | 3 | 4;
+  return ORDINAL_DURATION[ceilOrdinal];
 }

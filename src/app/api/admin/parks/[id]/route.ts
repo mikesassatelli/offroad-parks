@@ -67,6 +67,13 @@ export async function PATCH(request: Request, { params }: RouteParams) {
       camping,
       vehicleTypes,
       address,
+      // Strip flat address fields sent by the form alongside the nested address object
+      streetAddress: _sa,
+      streetAddress2: _sa2,
+      addressCity: _ac,
+      addressState: _as,
+      zipCode: _zc,
+      county: _co,
       ...parkData
     } = body;
 
