@@ -77,8 +77,10 @@ describe("GET /api/reviews/recent", () => {
 
     expect(data.pagination.page).toBe(2);
     expect(data.pagination.limit).toBe(5);
+    expect(data.pagination.total).toBe(25);
     expect(data.pagination.totalPages).toBe(5);
 
+    // Verify skip/take were called correctly
     expect(prisma.parkReview.findMany).toHaveBeenCalledWith(
       expect.objectContaining({ skip: 5, take: 5 }),
     );
