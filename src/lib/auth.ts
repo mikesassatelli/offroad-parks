@@ -22,9 +22,8 @@ export const authConfig = {
       user: User;
     }): Promise<Session> {
       if (session.user) {
-        session.user.id = user.id;
-        // @ts-expect-error - role doesn't exist on default session type
-        session.user.role = user.role;
+        session.user.id = user.id ?? "";
+        session.user.role = user.role ?? undefined;
       }
       return session;
     },
