@@ -12,6 +12,7 @@ import { SessionProvider, useSession } from "next-auth/react";
 import dynamic from "next/dynamic";
 import { useRouter } from "next/navigation";
 import { ParkAttributesCards } from "./components/ParkAttributesCards";
+import { ParkClaimCTA } from "./components/ParkClaimCTA";
 import { ParkContactSidebar } from "./components/ParkContactSidebar";
 import { ParkOperationalCard } from "./components/ParkOperationalCard";
 import { ParkOverviewCard } from "./components/ParkOverviewCard";
@@ -357,6 +358,11 @@ function ParkDetailPageInner({
               <TrailConditionsDisplay parkSlug={park.id} />
               <ParkContactSidebar park={park} />
               <CampingInfoCard park={park} />
+              <ParkClaimCTA
+                parkSlug={park.id}
+                isLoggedIn={!!session?.user}
+                hasOperator={park.hasOperator}
+              />
             </div>
           </div>
         </div>
