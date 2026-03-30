@@ -144,6 +144,61 @@ describe("ParkContactSidebar", () => {
     expect(screen.queryByText("Official Website")).not.toBeInTheDocument();
   });
 
+  it("should display email link when contactEmail provided", () => {
+    const park = { ...basePark, contactEmail: "info@testpark.com" };
+    render(<ParkContactSidebar park={park} />);
+
+    const link = screen.getByText("info@testpark.com");
+    expect(link).toBeInTheDocument();
+    expect(link).toHaveAttribute("href", "mailto:info@testpark.com");
+  });
+
+  it("should not display email when not provided", () => {
+    render(<ParkContactSidebar park={basePark} />);
+
+    expect(screen.queryByRole("link", { name: /mailto:/i })).not.toBeInTheDocument();
+  });
+
+  it("should display street address when provided", () => {
+    const park = {
+      ...basePark,
+      address: {
+        state: "California",
+        streetAddress: "123 Trail Rd",
+        city: "Barstow",
+        zipCode: "92311",
+      },
+    };
+    render(<ParkContactSidebar park={park} />);
+
+    expect(screen.getByText(/123 Trail Rd/)).toBeInTheDocument();
+    expect(screen.getByText(/Barstow/)).toBeInTheDocument();
+    expect(screen.getByText(/92311/)).toBeInTheDocument();
+  });
+
+  it("should not display address block when only state is present", () => {
+    render(<ParkContactSidebar park={basePark} />);
+
+    // No street address means address block should not render
+    expect(screen.queryByRole("group")).not.toBeInTheDocument();
+  });
+
+  it("should display full address with street address 2 when provided", () => {
+    const park = {
+      ...basePark,
+      address: {
+        state: "California",
+        streetAddress: "123 Trail Rd",
+        streetAddress2: "Gate B",
+        city: "Barstow",
+        zipCode: "92311",
+      },
+    };
+    render(<ParkContactSidebar park={park} />);
+
+    expect(screen.getByText(/Gate B/)).toBeInTheDocument();
+  });
+
   it("should not have sticky positioning on card itself", () => {
     const { container } = render(<ParkContactSidebar park={basePark} />);
 
