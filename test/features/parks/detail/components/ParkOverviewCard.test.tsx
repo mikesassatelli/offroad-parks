@@ -100,6 +100,36 @@ describe("ParkOverviewCard", () => {
     expect(icons.length).toBeGreaterThan(0);
   });
 
+  it("should display typical stay when averageRecommendedStay is set", () => {
+    const parkWithStay = { ...mockPark, averageRecommendedStay: "fullDay" as const };
+    render(<ParkOverviewCard park={parkWithStay} />);
+
+    expect(screen.getByText("Typical Stay")).toBeInTheDocument();
+    expect(screen.getByText("Full Day")).toBeInTheDocument();
+  });
+
+  it("should not display typical stay section when averageRecommendedStay is undefined", () => {
+    render(<ParkOverviewCard park={mockPark} />);
+
+    expect(screen.queryByText("Typical Stay")).not.toBeInTheDocument();
+  });
+
+  it("should format all RecommendedDuration values correctly", () => {
+    const durations = [
+      { value: "quickRide" as const, label: "Quick Ride" },
+      { value: "halfDay" as const, label: "Half Day" },
+      { value: "fullDay" as const, label: "Full Day" },
+      { value: "overnight" as const, label: "Overnight" },
+    ];
+    durations.forEach(({ value, label }) => {
+      const { unmount } = render(
+        <ParkOverviewCard park={{ ...mockPark, averageRecommendedStay: value }} />
+      );
+      expect(screen.getByText(label)).toBeInTheDocument();
+      unmount();
+    });
+  });
+
   it("should handle all undefined optional fields", () => {
     const minimalPark: Park = {
       id: "minimal",
