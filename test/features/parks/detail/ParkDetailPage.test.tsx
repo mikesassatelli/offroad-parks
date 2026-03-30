@@ -111,6 +111,12 @@ vi.mock("@/features/parks/detail/components/CampingInfoCard", () => ({
   CampingInfoCard: () => <div data-testid="camping-info-card">Camping Info</div>,
 }));
 
+vi.mock("@/features/parks/detail/components/ParkOperationalCard", () => ({
+  ParkOperationalCard: () => (
+    <div data-testid="park-operational-card">Operational Details</div>
+  ),
+}));
+
 // Mock AppHeader
 vi.mock("@/components/layout/AppHeader", () => ({
   AppHeader: ({ showBackButton }: { showBackButton?: boolean }) => (
