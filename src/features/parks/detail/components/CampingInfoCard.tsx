@@ -1,15 +1,33 @@
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import type { Park } from "@/lib/types";
+import type { Camping } from "@/lib/types";
 import { formatCamping } from "@/lib/formatting";
 import { formatPhone } from "@/lib/formatting";
-import { Tent, Phone, ExternalLink } from "lucide-react";
+import {
+  ExternalLink,
+  Home,
+  Phone,
+  Tent,
+  TreePine,
+  Truck,
+  Users,
+} from "lucide-react";
+
+const CAMPING_ICONS: Record<Camping, React.ComponentType<{ className?: string }>> = {
+  tent: Tent,
+  rv30A: Truck,
+  rv50A: Truck,
+  fullHookup: Truck,
+  cabin: Home,
+  groupSite: Users,
+  backcountry: TreePine,
+};
 
 interface CampingInfoCardProps {
   park: Park;
 }
 
 export function CampingInfoCard({ park }: CampingInfoCardProps) {
-  // Don't render if no camping options
   if (!park.camping || park.camping.length === 0) {
     return null;
   }
@@ -31,14 +49,18 @@ export function CampingInfoCard({ park }: CampingInfoCardProps) {
             Available Options
           </h3>
           <div className="flex flex-wrap gap-2">
-            {park.camping.map((camping) => (
-              <span
-                key={camping}
-                className="inline-flex items-center px-3 py-1 rounded-md text-sm bg-secondary text-secondary-foreground"
-              >
-                {formatCamping(camping)}
-              </span>
-            ))}
+            {park.camping.map((camping) => {
+              const Icon = CAMPING_ICONS[camping];
+              return (
+                <span
+                  key={camping}
+                  className="inline-flex items-center gap-1.5 px-3 py-1 rounded-md text-sm bg-secondary text-secondary-foreground"
+                >
+                  <Icon className="w-3.5 h-3.5 shrink-0" />
+                  {formatCamping(camping)}
+                </span>
+              );
+            })}
           </div>
         </div>
 
@@ -56,13 +78,13 @@ export function CampingInfoCard({ park }: CampingInfoCardProps) {
                   rel="noopener noreferrer"
                   className="flex items-center gap-2 text-primary hover:underline"
                 >
-                  <ExternalLink className="w-4 h-4" />
+                  <ExternalLink className="w-4 h-4 shrink-0" />
                   Reservations Website
                 </a>
               )}
               {park.campingPhone && (
                 <div className="flex items-center gap-2 text-foreground/80">
-                  <Phone className="w-4 h-4" />
+                  <Phone className="w-4 h-4 shrink-0" />
                   <a href={`tel:${park.campingPhone}`} className="hover:underline">
                     {formatPhone(park.campingPhone)}
                   </a>
