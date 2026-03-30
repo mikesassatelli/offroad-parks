@@ -18,13 +18,12 @@ import {
   ALL_AMENITIES,
   ALL_CAMPING_TYPES,
   ALL_OWNERSHIP_TYPES,
-  ALL_RECOMMENDED_DURATIONS,
   ALL_TERRAIN_TYPES,
   ALL_VEHICLE_TYPES,
   US_STATES,
 } from "@/lib/constants";
-import { formatAmenity, formatCamping, formatOwnership, formatRecommendedDuration, formatTerrain } from "@/lib/formatting";
-import type { Amenity, Camping, Ownership, RecommendedDuration, Terrain } from "@/lib/types";
+import { formatAmenity, formatCamping, formatOwnership, formatTerrain } from "@/lib/formatting";
+import type { Amenity, Camping, Ownership, Terrain } from "@/lib/types";
 import { Image as ImageIcon, Loader2, X } from "lucide-react";
 import Image from "next/image";
 
@@ -65,8 +64,6 @@ interface FormData {
   addressState: string;
   zipCode: string;
   county: string;
-  // Admin-only fields
-  averageRecommendedStay: string;
 }
 
 interface ParkSubmissionFormProps {
@@ -125,8 +122,6 @@ export function ParkSubmissionForm({
       addressState: "",
       zipCode: "",
       county: "",
-      // Admin-only fields
-      averageRecommendedStay: "",
     },
   );
 
@@ -238,7 +233,6 @@ export function ParkSubmissionForm({
             ? parseInt(formData.noiseLimitDBA)
             : null,
           ownership: formData.ownership || null,
-          averageRecommendedStay: (formData.averageRecommendedStay && formData.averageRecommendedStay !== "none") ? formData.averageRecommendedStay : null,
           address: {
             streetAddress: formData.streetAddress || null,
             streetAddress2: formData.streetAddress2 || null,
@@ -511,30 +505,6 @@ export function ParkSubmissionForm({
             </SelectContent>
           </Select>
         </div>
-
-        {isAdminForm && (
-          <div>
-            <Label htmlFor="averageRecommendedStay">Typical Stay</Label>
-            <Select
-              value={formData.averageRecommendedStay}
-              onValueChange={(value) =>
-                setFormData((prev) => ({ ...prev, averageRecommendedStay: value }))
-              }
-            >
-              <SelectTrigger id="averageRecommendedStay">
-                <SelectValue placeholder="Select typical stay duration" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="none">Not set</SelectItem>
-                {ALL_RECOMMENDED_DURATIONS.map((duration) => (
-                  <SelectItem key={duration} value={duration}>
-                    {formatRecommendedDuration(duration as RecommendedDuration)}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-          </div>
-        )}
 
         <div>
           <Label htmlFor="dayPassUSD">Day Pass Price (USD)</Label>

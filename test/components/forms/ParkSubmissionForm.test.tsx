@@ -979,7 +979,6 @@ describe("ParkSubmissionForm", () => {
       addressState: "California",
       zipCode: "",
       county: "",
-      averageRecommendedStay: "",
     };
 
     it("should render form with initial data in edit mode", () => {
@@ -1393,73 +1392,6 @@ describe("ParkSubmissionForm", () => {
       });
 
       alertSpy.mockRestore();
-    });
-
-    it("should show Typical Stay select in admin form", () => {
-      render(
-        <ParkSubmissionForm
-          isAdminForm={true}
-          initialData={mockInitialData}
-          parkId="park-123"
-        />,
-      );
-
-      expect(screen.getByText("Typical Stay")).toBeInTheDocument();
-      expect(screen.getByText("Select typical stay duration")).toBeInTheDocument();
-    });
-
-    it("should not show Typical Stay select in public form", () => {
-      render(<ParkSubmissionForm />);
-
-      expect(screen.queryByText("Typical Stay")).not.toBeInTheDocument();
-    });
-
-    it("should send averageRecommendedStay as null when not set", async () => {
-      const mockFetch = vi.fn().mockResolvedValue({
-        ok: true,
-        json: async () => ({ park: { id: "park-123", slug: "existing-park" } }),
-      });
-      global.fetch = mockFetch;
-
-      const { container } = render(
-        <ParkSubmissionForm
-          isAdminForm={true}
-          initialData={{ ...mockInitialData, averageRecommendedStay: "" }}
-          parkId="park-123"
-        />,
-      );
-
-      const form = container.querySelector("form");
-      fireEvent.submit(form!);
-
-      await waitFor(() => {
-        const body = JSON.parse(mockFetch.mock.calls[0][1].body);
-        expect(body.averageRecommendedStay).toBeNull();
-      });
-    });
-
-    it("should send averageRecommendedStay value when set", async () => {
-      const mockFetch = vi.fn().mockResolvedValue({
-        ok: true,
-        json: async () => ({ park: { id: "park-123", slug: "existing-park" } }),
-      });
-      global.fetch = mockFetch;
-
-      const { container } = render(
-        <ParkSubmissionForm
-          isAdminForm={true}
-          initialData={{ ...mockInitialData, averageRecommendedStay: "fullDay" }}
-          parkId="park-123"
-        />,
-      );
-
-      const form = container.querySelector("form");
-      fireEvent.submit(form!);
-
-      await waitFor(() => {
-        const body = JSON.parse(mockFetch.mock.calls[0][1].body);
-        expect(body.averageRecommendedStay).toBe("fullDay");
-      });
     });
   });
 });
