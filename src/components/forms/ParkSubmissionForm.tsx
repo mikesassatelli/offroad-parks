@@ -36,7 +36,11 @@ interface FormData {
   phone: string;
   campingWebsite: string;
   campingPhone: string;
+  isFree: boolean;
   dayPassUSD: string;
+  vehicleEntryFeeUSD: string;
+  riderFeeUSD: string;
+  membershipFeeUSD: string;
   milesOfTrails: string;
   acres: string;
   notes: string;
@@ -94,7 +98,11 @@ export function ParkSubmissionForm({
       phone: "",
       campingWebsite: "",
       campingPhone: "",
+      isFree: false,
       dayPassUSD: "",
+      vehicleEntryFeeUSD: "",
+      riderFeeUSD: "",
+      membershipFeeUSD: "",
       milesOfTrails: "",
       acres: "",
       notes: "",
@@ -219,8 +227,18 @@ export function ParkSubmissionForm({
           ...formData,
           latitude: formData.latitude ? parseFloat(formData.latitude) : null,
           longitude: formData.longitude ? parseFloat(formData.longitude) : null,
+          isFree: formData.isFree || null,
           dayPassUSD: formData.dayPassUSD
             ? parseFloat(formData.dayPassUSD)
+            : null,
+          vehicleEntryFeeUSD: formData.vehicleEntryFeeUSD
+            ? parseFloat(formData.vehicleEntryFeeUSD)
+            : null,
+          riderFeeUSD: formData.riderFeeUSD
+            ? parseFloat(formData.riderFeeUSD)
+            : null,
+          membershipFeeUSD: formData.membershipFeeUSD
+            ? parseFloat(formData.membershipFeeUSD)
             : null,
           milesOfTrails: formData.milesOfTrails
             ? parseInt(formData.milesOfTrails)
@@ -506,19 +524,79 @@ export function ParkSubmissionForm({
           </Select>
         </div>
 
-        <div>
-          <Label htmlFor="dayPassUSD">Day Pass Price (USD)</Label>
-          <Input
-            id="dayPassUSD"
-            name="dayPassUSD"
-            type="number"
-            step="0.01"
-            min="0"
-            max="9999.99"
-            value={formData.dayPassUSD}
-            onChange={handleInputChange}
-            placeholder="25.00"
-          />
+        {/* Pricing */}
+        <div className="space-y-3">
+          <div className="flex items-center gap-2">
+            <Checkbox
+              id="isFree"
+              checked={formData.isFree}
+              onCheckedChange={(checked) =>
+                setFormData((prev) => ({ ...prev, isFree: !!checked }))
+              }
+            />
+            <Label htmlFor="isFree">This park is free (no fees)</Label>
+          </div>
+
+          {!formData.isFree && (
+            <div className="grid grid-cols-2 gap-3">
+              <div>
+                <Label htmlFor="dayPassUSD">Day Pass (USD)</Label>
+                <Input
+                  id="dayPassUSD"
+                  name="dayPassUSD"
+                  type="number"
+                  step="0.01"
+                  min="0"
+                  max="9999.99"
+                  value={formData.dayPassUSD}
+                  onChange={handleInputChange}
+                  placeholder="25.00"
+                />
+              </div>
+              <div>
+                <Label htmlFor="vehicleEntryFeeUSD">Vehicle Entry (USD)</Label>
+                <Input
+                  id="vehicleEntryFeeUSD"
+                  name="vehicleEntryFeeUSD"
+                  type="number"
+                  step="0.01"
+                  min="0"
+                  max="9999.99"
+                  value={formData.vehicleEntryFeeUSD}
+                  onChange={handleInputChange}
+                  placeholder="15.00"
+                />
+              </div>
+              <div>
+                <Label htmlFor="riderFeeUSD">Per Rider (USD)</Label>
+                <Input
+                  id="riderFeeUSD"
+                  name="riderFeeUSD"
+                  type="number"
+                  step="0.01"
+                  min="0"
+                  max="9999.99"
+                  value={formData.riderFeeUSD}
+                  onChange={handleInputChange}
+                  placeholder="10.00"
+                />
+              </div>
+              <div>
+                <Label htmlFor="membershipFeeUSD">Membership / Annual (USD)</Label>
+                <Input
+                  id="membershipFeeUSD"
+                  name="membershipFeeUSD"
+                  type="number"
+                  step="0.01"
+                  min="0"
+                  max="9999.99"
+                  value={formData.membershipFeeUSD}
+                  onChange={handleInputChange}
+                  placeholder="150.00"
+                />
+              </div>
+            </div>
+          )}
         </div>
 
         <div>

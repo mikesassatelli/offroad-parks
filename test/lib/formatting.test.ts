@@ -1,5 +1,6 @@
 import {
   formatCurrency,
+  formatParkPricingSummary,
   formatPhone,
   formatRating,
   formatDate,
@@ -153,5 +154,49 @@ describe("formatVehicleType", () => {
     expect(formatVehicleType("atv")).toBe("ATV");
     expect(formatVehicleType("fullSize")).toBe("Full Size 4x4");
     expect(formatVehicleType("motorcycle")).toBe("Motorcycle");
+  });
+});
+
+describe("formatParkPricingSummary", () => {
+  it("should return 'Free' when isFree is true", () => {
+    expect(formatParkPricingSummary({ isFree: true })).toBe("Free");
+  });
+
+  it("should return 'Free' and ignore other fees when isFree is true", () => {
+    expect(
+      formatParkPricingSummary({ isFree: true, dayPassUSD: 25 }),
+    ).toBe("Free");
+  });
+
+  it("should return day pass with /day suffix when dayPassUSD is set", () => {
+    expect(formatParkPricingSummary({ dayPassUSD: 25 })).toBe("$25 / day");
+  });
+
+  it("should return vehicle entry label when only vehicleEntryFeeUSD is set", () => {
+    expect(formatParkPricingSummary({ vehicleEntryFeeUSD: 15 })).toBe(
+      "$15 vehicle",
+    );
+  });
+
+  it("should return per rider label when only riderFeeUSD is set", () => {
+    expect(formatParkPricingSummary({ riderFeeUSD: 10 })).toBe(
+      "$10 / rider",
+    );
+  });
+
+  it("should return 'Members only' when only membershipFeeUSD is set", () => {
+    expect(formatParkPricingSummary({ membershipFeeUSD: 150 })).toBe(
+      "Members only",
+    );
+  });
+
+  it("should return '—' when no pricing info is set", () => {
+    expect(formatParkPricingSummary({})).toBe("—");
+  });
+
+  it("should prioritize dayPassUSD over vehicleEntryFeeUSD", () => {
+    expect(
+      formatParkPricingSummary({ dayPassUSD: 25, vehicleEntryFeeUSD: 15 }),
+    ).toBe("$25 / day");
   });
 });
