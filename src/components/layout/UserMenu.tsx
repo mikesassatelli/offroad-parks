@@ -16,7 +16,7 @@ interface UserMenuProps {
     name?: string | null;
     email?: string | null;
     image?: string | null;
-    role?: string;
+    role?: string | null;
   };
   onSignOut: () => void;
 }
