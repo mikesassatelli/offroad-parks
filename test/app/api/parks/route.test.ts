@@ -111,21 +111,22 @@ describe("GET /api/parks", () => {
     });
 
     // Verify Prisma was called with correct filter
-    expect(prisma.park.findMany).toHaveBeenCalledWith({
-      where: {
-        status: "APPROVED",
-      },
-      include: {
-        terrain: true,
-        amenities: true,
-        camping: true,
-        vehicleTypes: true,
-        address: true,
-      },
-      orderBy: {
-        name: "asc",
-      },
-    });
+    expect(prisma.park.findMany).toHaveBeenCalledWith(
+      expect.objectContaining({
+        where: { status: "APPROVED" },
+        include: expect.objectContaining({
+          terrain: true,
+          amenities: true,
+          camping: true,
+          vehicleTypes: true,
+          address: true,
+          trailConditions: expect.objectContaining({
+            where: expect.objectContaining({ reportStatus: "PUBLISHED" }),
+          }),
+        }),
+        orderBy: { name: "asc" },
+      }),
+    );
   });
 
   it("should return empty array when no parks exist", async () => {

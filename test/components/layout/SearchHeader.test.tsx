@@ -14,6 +14,14 @@ vi.mock("@/components/ui/input", () => ({
   ),
 }));
 
+vi.mock("@/components/ui/button", () => ({
+  Button: ({ children, onClick, disabled, title }: any) => (
+    <button onClick={onClick} disabled={disabled} title={title}>
+      {children}
+    </button>
+  ),
+}));
+
 vi.mock("@/components/ui/select", () => ({
   Select: ({ children, onValueChange, value }: any) => (
     <div
@@ -143,6 +151,103 @@ describe("SearchHeader", () => {
     expect(screen.getByText("Lowest Day Pass")).toBeInTheDocument();
     expect(screen.getByText("Most Trail Miles")).toBeInTheDocument();
     expect(screen.getByText("Highest Rated")).toBeInTheDocument();
+  });
+
+  it("should render Nearest First sort option", () => {
+    render(
+      <SearchHeader
+        searchQuery=""
+        onSearchQueryChange={mockOnSearchQueryChange}
+        sortOption="name"
+        onSortChange={mockOnSortChange}
+      />,
+    );
+
+    expect(screen.getByText("Nearest First")).toBeInTheDocument();
+  });
+
+  it("should render Near Me button when locationActive is false", () => {
+    const mockOnUseMyLocation = vi.fn();
+    render(
+      <SearchHeader
+        searchQuery=""
+        onSearchQueryChange={mockOnSearchQueryChange}
+        sortOption="name"
+        onSortChange={mockOnSortChange}
+        locationActive={false}
+        onUseMyLocation={mockOnUseMyLocation}
+      />,
+    );
+
+    const button = screen.getByTitle("Use my location");
+    expect(button).toBeInTheDocument();
+  });
+
+  it("should call onUseMyLocation when Near Me button clicked", () => {
+    const mockOnUseMyLocation = vi.fn();
+    render(
+      <SearchHeader
+        searchQuery=""
+        onSearchQueryChange={mockOnSearchQueryChange}
+        sortOption="name"
+        onSortChange={mockOnSortChange}
+        locationActive={false}
+        onUseMyLocation={mockOnUseMyLocation}
+      />,
+    );
+
+    fireEvent.click(screen.getByTitle("Use my location"));
+    expect(mockOnUseMyLocation).toHaveBeenCalledTimes(1);
+  });
+
+  it("should render active Near Me button when locationActive is true", () => {
+    const mockOnClearLocation = vi.fn();
+    render(
+      <SearchHeader
+        searchQuery=""
+        onSearchQueryChange={mockOnSearchQueryChange}
+        sortOption="name"
+        onSortChange={mockOnSortChange}
+        locationActive={true}
+        onClearLocation={mockOnClearLocation}
+      />,
+    );
+
+    const button = screen.getByTitle("Clear location");
+    expect(button).toBeInTheDocument();
+  });
+
+  it("should call onClearLocation when active Near Me button clicked", () => {
+    const mockOnClearLocation = vi.fn();
+    render(
+      <SearchHeader
+        searchQuery=""
+        onSearchQueryChange={mockOnSearchQueryChange}
+        sortOption="name"
+        onSortChange={mockOnSortChange}
+        locationActive={true}
+        onClearLocation={mockOnClearLocation}
+      />,
+    );
+
+    fireEvent.click(screen.getByTitle("Clear location"));
+    expect(mockOnClearLocation).toHaveBeenCalledTimes(1);
+  });
+
+  it("should disable Near Me button while locationLoading is true", () => {
+    render(
+      <SearchHeader
+        searchQuery=""
+        onSearchQueryChange={mockOnSearchQueryChange}
+        sortOption="name"
+        onSortChange={mockOnSortChange}
+        locationActive={false}
+        locationLoading={true}
+      />,
+    );
+
+    const button = screen.getByTitle("Use my location");
+    expect(button).toBeDisabled();
   });
 
   it("should render filter icon", () => {
