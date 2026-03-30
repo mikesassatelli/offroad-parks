@@ -31,12 +31,12 @@ describe("POST /api/admin/conditions/[id]/approve", () => {
     vi.clearAllMocks();
   });
 
-  it("should return 403 when not authenticated", async () => {
+  it("should return 401 when not authenticated", async () => {
     vi.mocked(auth).mockResolvedValue(null as any);
 
     const req = new Request("http://localhost/api/admin/conditions/cond-1/approve", { method: "POST" });
     const res = await POST(req, { params: Promise.resolve({ id: "cond-1" }) });
-    expect(res.status).toBe(403);
+    expect(res.status).toBe(401);
   });
 
   it("should return 403 when user is not admin", async () => {
