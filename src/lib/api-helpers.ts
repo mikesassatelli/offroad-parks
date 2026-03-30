@@ -3,10 +3,11 @@
  * Use these in API routes to reduce boilerplate.
  */
 import { NextResponse } from "next/server";
+import type { Session } from "next-auth";
 import { auth } from "@/lib/auth";
 
-/** Auth session type from next-auth */
-type AuthSession = Awaited<ReturnType<typeof auth>>;
+/** A session that is guaranteed to have a user (post-auth-guard). */
+type AuthenticatedSession = Session & { user: NonNullable<Session["user"]> };
 
 /**
  * Verify the request comes from an authenticated ADMIN user.
@@ -17,9 +18,7 @@ type AuthSession = Awaited<ReturnType<typeof auth>>;
  *   if (result instanceof NextResponse) return result;
  *   const session = result; // authenticated admin session
  */
-export async function requireAdmin(): Promise<
-  AuthSession & { user: NonNullable<NonNullable<AuthSession>["user"]> } | NextResponse
-> {
+export async function requireAdmin(): Promise<AuthenticatedSession | NextResponse> {
   const session = await auth();
   if (!session?.user?.id) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
@@ -27,19 +26,17 @@ export async function requireAdmin(): Promise<
   if (session.user.role !== "ADMIN") {
     return NextResponse.json({ error: "Forbidden" }, { status: 403 });
   }
-  return session as AuthSession & { user: NonNullable<NonNullable<AuthSession>["user"]> };
+  return session as AuthenticatedSession;
 }
 
 /**
  * Verify the request comes from an authenticated user (any role).
  * Returns the session on success, or a NextResponse 401 on failure.
  */
-export async function requireAuth(): Promise<
-  AuthSession & { user: NonNullable<NonNullable<AuthSession>["user"]> } | NextResponse
-> {
+export async function requireAuth(): Promise<AuthenticatedSession | NextResponse> {
   const session = await auth();
   if (!session?.user?.id) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
-  return session as AuthSession & { user: NonNullable<NonNullable<AuthSession>["user"]> };
+  return session as AuthenticatedSession;
 }
