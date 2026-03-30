@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { transformDbPark } from "@/lib/types";
+import { CONDITION_STALE_AFTER_MS } from "@/lib/trail-conditions";
 
 export async function GET() {
   try {
@@ -14,6 +15,15 @@ export async function GET() {
         camping: true,
         vehicleTypes: true,
         address: true,
+        trailConditions: {
+          where: {
+            reportStatus: "PUBLISHED",
+            createdAt: { gte: new Date(Date.now() - CONDITION_STALE_AFTER_MS) },
+          },
+          orderBy: { createdAt: "desc" },
+          take: 1,
+          select: { id: true, status: true, reportStatus: true, createdAt: true },
+        },
       },
       orderBy: {
         name: "asc",

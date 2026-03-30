@@ -12,6 +12,15 @@ vi.mock("next/image", () => ({
   default: ({ alt, src }: any) => <img alt={alt} src={src} />,
 }));
 
+// Mock ConditionBadge so we can test latestCondition without rendering the full component
+vi.mock("@/features/trail-conditions/ConditionBadge", () => ({
+  ConditionBadge: ({ status }: any) => (
+    <span data-testid="condition-badge" data-status={status}>
+      {status}
+    </span>
+  ),
+}));
+
 describe("ParkCard", () => {
   const mockPark: Park = {
     id: "test-park",
@@ -106,6 +115,61 @@ describe("ParkCard", () => {
 
     expect(mockOnToggleFavorite).toHaveBeenCalledWith("test-park");
     expect(mockOnToggleFavorite).toHaveBeenCalledTimes(1);
+  });
+
+  it("should show condition badge when park has a fresh latestCondition", () => {
+    const parkWithCondition: Park = {
+      ...mockPark,
+      latestCondition: {
+        status: "MUDDY",
+        createdAt: new Date().toISOString(),
+      },
+    };
+
+    render(
+      <ParkCard
+        park={parkWithCondition}
+        isFavorite={false}
+        onToggleFavorite={mockOnToggleFavorite}
+      />,
+    );
+
+    const badge = screen.getByTestId("condition-badge");
+    expect(badge).toBeInTheDocument();
+    expect(badge).toHaveAttribute("data-status", "MUDDY");
+  });
+
+  it("should not show condition badge when latestCondition is stale (>72h old)", () => {
+    const staleDate = new Date(Date.now() - 73 * 60 * 60 * 1000).toISOString();
+    const parkWithStaleCondition: Park = {
+      ...mockPark,
+      latestCondition: {
+        status: "OPEN",
+        createdAt: staleDate,
+      },
+    };
+
+    render(
+      <ParkCard
+        park={parkWithStaleCondition}
+        isFavorite={false}
+        onToggleFavorite={mockOnToggleFavorite}
+      />,
+    );
+
+    expect(screen.queryByTestId("condition-badge")).not.toBeInTheDocument();
+  });
+
+  it("should not show condition badge when no latestCondition", () => {
+    render(
+      <ParkCard
+        park={mockPark}
+        isFavorite={false}
+        onToggleFavorite={mockOnToggleFavorite}
+      />,
+    );
+
+    expect(screen.queryByTestId("condition-badge")).not.toBeInTheDocument();
   });
 
   it("should render hero image when provided", () => {
