@@ -42,6 +42,10 @@ export default async function AdminParksPage({
           email: true,
         },
       },
+      photos: {
+        where: { status: "APPROVED" },
+        select: { id: true },
+      },
     },
     orderBy: [{ status: "asc" }, { createdAt: "desc" }],
   });

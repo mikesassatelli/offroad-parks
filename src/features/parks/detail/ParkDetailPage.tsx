@@ -211,12 +211,20 @@ function ParkDetailPageInner({
                   </CardContent>
                 </Card>
 
-                {session?.user && (
+                {session?.user ? (
                   <PhotoUploadForm
                     parkSlug={park.id}
                     onSuccess={handlePhotoUploadSuccess}
                   />
-                )}
+                ) : photos.length === 0 ? (
+                  <div className="text-center py-6 px-4 border border-dashed border-border rounded-lg bg-muted/30">
+                    <p className="text-sm text-muted-foreground">
+                      {/* eslint-disable-next-line @next/next/no-html-link-for-pages */}
+                      <a href="/api/auth/signin" className="text-primary underline underline-offset-2 font-medium hover:opacity-80">Sign in</a>
+                      {" "}to be the first to add photos for this park.
+                    </p>
+                  </div>
+                ) : null}
               </TabsContent>
 
               {/* Reviews Tab */}

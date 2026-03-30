@@ -40,6 +40,11 @@ vi.mock("lucide-react", () => ({
       <title>User</title>
     </svg>
   ),
+  Camera: ({ className }: any) => (
+    <svg data-icon="camera" className={className}>
+      <title>Camera</title>
+    </svg>
+  ),
 }));
 
 // Mock UI components
@@ -94,7 +99,7 @@ describe("PhotoGallery", () => {
     render(<PhotoGallery photos={[]} />);
 
     expect(screen.getByText(/No photos yet/)).toBeInTheDocument();
-    expect(screen.getByText(/Be the first to upload one!/)).toBeInTheDocument();
+    expect(screen.getByText(/Help other riders by uploading a photo/)).toBeInTheDocument();
   });
 
   it("should render photo grid with all photos", () => {

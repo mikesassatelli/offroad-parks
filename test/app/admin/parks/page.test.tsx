@@ -107,6 +107,10 @@ describe("AdminParksPage", () => {
             email: true,
           },
         },
+        photos: {
+          where: { status: "APPROVED" },
+          select: { id: true },
+        },
       },
       orderBy: [{ status: "asc" }, { createdAt: "desc" }],
     });

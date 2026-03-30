@@ -81,6 +81,8 @@ vi.mock("@/components/reviews", () => ({
     <div data-testid="review-list">{reviews.length} reviews</div>
   ),
   ReviewForm: () => <div data-testid="review-form">Review Form</div>,
+  StarRating: ({ rating }: any) => <span data-testid="star-rating">{rating}</span>,
+  DifficultyRating: ({ rating }: any) => <span data-testid="difficulty-rating">{rating}</span>,
 }));
 
 vi.mock("@/hooks/useReviews", () => ({
@@ -299,6 +301,23 @@ describe("ParkDetailPage", () => {
     render(<ParkDetailPage park={mockPark} photos={[]} />);
 
     expect(screen.queryByTestId("photo-upload-form")).not.toBeInTheDocument();
+  });
+
+  it("should show sign-in CTA when unauthenticated and no photos", () => {
+    vi.mocked(useSession).mockReturnValue({ data: null } as any);
+
+    render(<ParkDetailPage park={mockPark} photos={[]} />);
+
+    expect(screen.getByText(/sign in/i)).toBeInTheDocument();
+    expect(screen.getByText(/to be the first to add photos/i)).toBeInTheDocument();
+  });
+
+  it("should not show sign-in CTA when unauthenticated but photos exist", () => {
+    vi.mocked(useSession).mockReturnValue({ data: null } as any);
+
+    render(<ParkDetailPage park={mockPark} photos={mockPhotos} />);
+
+    expect(screen.queryByText(/to be the first to add photos/i)).not.toBeInTheDocument();
   });
 
   it("should render photo upload form when authenticated", () => {

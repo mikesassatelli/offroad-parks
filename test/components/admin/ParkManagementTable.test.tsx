@@ -23,7 +23,8 @@ describe("ParkManagementTable", () => {
         city: "Los Angeles",
         state: "California",
       },
-      camping: [],vehicleTypes: [],
+      camping: [], vehicleTypes: [],
+      photos: [],
     },
     {
       id: "park-2",
@@ -39,7 +40,8 @@ describe("ParkManagementTable", () => {
         city: null,
         state: "Nevada",
       },
-      camping: [],vehicleTypes: [],
+      camping: [], vehicleTypes: [],
+      photos: [],
     },
     {
       id: "park-3",
@@ -59,7 +61,8 @@ describe("ParkManagementTable", () => {
         city: "Phoenix",
         state: "Arizona",
       },
-      camping: [],vehicleTypes: [],
+      camping: [], vehicleTypes: [],
+      photos: [],
     },
   ];
 
@@ -390,6 +393,24 @@ describe("ParkManagementTable", () => {
     rows.forEach((row) => {
       expect(row).toHaveClass("hover:bg-gray-50");
     });
+  });
+
+  it("should show 'No photos' badge for approved park with no photos", () => {
+    const approvedPark = { ...mockParks[1], photos: [] }; // park-2 is APPROVED
+    render(<ParkManagementTable parks={[approvedPark]} />);
+    expect(screen.getByText("No photos")).toBeInTheDocument();
+  });
+
+  it("should not show 'No photos' badge for approved park with photos", () => {
+    const approvedWithPhotos = { ...mockParks[1], photos: [{ id: "photo-1" }] };
+    render(<ParkManagementTable parks={[approvedWithPhotos]} />);
+    expect(screen.queryByText("No photos")).not.toBeInTheDocument();
+  });
+
+  it("should not show 'No photos' badge for pending park with no photos", () => {
+    const pendingPark = { ...mockParks[0], photos: [] }; // park-1 is PENDING
+    render(<ParkManagementTable parks={[pendingPark]} />);
+    expect(screen.queryByText("No photos")).not.toBeInTheDocument();
   });
 
   it("should render DRAFT status badge", () => {
