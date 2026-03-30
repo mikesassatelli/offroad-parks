@@ -82,6 +82,8 @@ export default async function EditParkPage({ params }: EditParkPageProps) {
     addressState: park.address?.state || "",
     zipCode: park.address?.zipCode || "",
     county: park.address?.county || "",
+    // Admin-only fields
+    averageRecommendedStay: park.averageRecommendedStay || "",
   };
 
   return (
