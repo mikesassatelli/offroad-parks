@@ -11,7 +11,7 @@ import {
   CONDITION_LABELS,
 } from "@/lib/trail-conditions";
 import type { TrailConditionReport } from "@/lib/trail-conditions";
-import { CloudSun } from "lucide-react";
+import { CloudSun, ShieldCheck } from "lucide-react";
 
 interface TrailConditionsDisplayProps {
   parkSlug: string;
@@ -109,9 +109,20 @@ export function TrailConditionsDisplay({ parkSlug }: TrailConditionsDisplayProps
                 >
                   {CONDITION_LABELS[mostRecent.status].label}
                 </Badge>
+                {mostRecent.isOperatorPost && (
+                  <Badge
+                    variant="outline"
+                    className="flex items-center gap-1 text-[10px] py-0 bg-blue-50 text-blue-700 border-blue-200"
+                  >
+                    <ShieldCheck className="w-3 h-3" />
+                    Park Management
+                  </Badge>
+                )}
                 <span className="text-xs text-muted-foreground">
                   reported {formatConditionAge(mostRecent.createdAt)}
-                  {mostRecent.user.name ? ` by ${mostRecent.user.name}` : ""}
+                  {!mostRecent.isOperatorPost && mostRecent.user.name
+                    ? ` by ${mostRecent.user.name}`
+                    : ""}
                 </span>
               </div>
             )}

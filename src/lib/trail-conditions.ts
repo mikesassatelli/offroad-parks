@@ -15,6 +15,7 @@ export interface TrailConditionReport {
   status: TrailConditionStatus;
   note: string | null;
   reportStatus: ConditionReportStatus;
+  isOperatorPost: boolean;
   createdAt: string; // ISO date string
   user: {
     id: string;
