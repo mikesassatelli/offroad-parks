@@ -130,6 +130,7 @@ export type DbPark = {
   vehicleTypes: Array<{ id?: string; parkId?: string; vehicleType: VehicleType }>;
   address: DbAddress | null; // May be null from Prisma, but we ensure it exists for approved parks
   photos?: Array<{ id?: string; parkId?: string; userId?: string | null; url: string; caption?: string | null; status?: string; createdAt?: Date; updatedAt?: Date }>;
+  trailConditions?: Array<{ id: string; status: string; reportStatus: string; createdAt: Date }>;
 };
 
 // Client-facing park type (transformed for UI compatibility)
@@ -170,6 +171,11 @@ export type Park = {
   averageFacilities?: number;
   reviewCount?: number;
   averageRecommendedStay?: RecommendedDuration;
+  // Trail conditions (most recent fresh published report)
+  latestCondition?: {
+    status: string;
+    createdAt: string;
+  };
 };
 
 // Database review type - matches Prisma ParkReview model with includes
@@ -292,6 +298,13 @@ export function transformDbPark(dbPark: DbPark): Park {
     averageFacilities: dbPark.averageFacilities ?? undefined,
     reviewCount: dbPark.reviewCount ?? undefined,
     averageRecommendedStay: dbPark.averageRecommendedStay ?? undefined,
+    // Trail conditions — latest fresh published report
+    latestCondition: dbPark.trailConditions?.[0]
+      ? {
+          status: dbPark.trailConditions[0].status,
+          createdAt: dbPark.trailConditions[0].createdAt.toISOString(),
+        }
+      : undefined,
   };
 }
 

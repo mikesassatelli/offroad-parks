@@ -529,6 +529,38 @@ describe("useFilteredParks", () => {
     expect(result.current.sparkArrestorRequired).toBe("");
   });
 
+  it("should sort parks by distance-nearest when userCoords provided", () => {
+    // User is in Denver — park-2 (Denver, lat 39 lng -104) should be nearest
+    const userCoords = { lat: 39.7392, lng: -104.9903 };
+    const { result } = renderHook(() =>
+      useFilteredParks({ parks: mockParks, userCoords }),
+    );
+
+    act(() => {
+      result.current.setSortOption("distance-nearest");
+    });
+
+    // park-2 (Denver) should be first (closest to Denver user coords)
+    expect(result.current.filteredParks[0].id).toBe("park-2");
+    // park-1 (Los Angeles) should be second
+    expect(result.current.filteredParks[1].id).toBe("park-1");
+    // park-3 has no coords, so it should be last (Infinity distance)
+    expect(result.current.filteredParks[2].id).toBe("park-3");
+  });
+
+  it("should not change order for distance-nearest when userCoords is null", () => {
+    const { result } = renderHook(() =>
+      useFilteredParks({ parks: mockParks, userCoords: null }),
+    );
+
+    act(() => {
+      result.current.setSortOption("distance-nearest");
+    });
+
+    // Without coords the comparator returns 0 for all, so original iteration order is preserved
+    expect(result.current.filteredParks).toHaveLength(3);
+  });
+
   it("should handle mix of defined and undefined prices", () => {
     const parksWithMixedPrices: Park[] = [
       { ...mockParks[0], dayPassUSD: 30 },

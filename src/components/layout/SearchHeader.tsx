@@ -1,7 +1,8 @@
 "use client";
 
-import { Search, Filter } from "lucide-react";
+import { Filter, Locate, LocateFixed, Search } from "lucide-react";
 import { Input } from "@/components/ui/input";
+import { Button } from "@/components/ui/button";
 import {
   Select,
   SelectContent,
@@ -16,6 +17,10 @@ interface SearchHeaderProps {
   onSearchQueryChange: (query: string) => void;
   sortOption: SortOption;
   onSortChange: (option: SortOption) => void;
+  locationActive?: boolean;
+  locationLoading?: boolean;
+  onUseMyLocation?: () => void;
+  onClearLocation?: () => void;
 }
 
 export function SearchHeader({
@@ -23,6 +28,10 @@ export function SearchHeader({
   onSearchQueryChange,
   sortOption,
   onSortChange,
+  locationActive = false,
+  locationLoading = false,
+  onUseMyLocation,
+  onClearLocation,
 }: SearchHeaderProps) {
   const handleSortChange = (value: string) => {
     onSortChange(value as SortOption);
@@ -41,6 +50,32 @@ export function SearchHeader({
           />
         </div>
         <div className="flex items-center gap-2">
+          {locationActive ? (
+            <Button
+              variant="secondary"
+              size="sm"
+              onClick={onClearLocation}
+              className="flex items-center gap-1.5 text-xs h-9"
+              title="Clear location"
+            >
+              <LocateFixed className="w-3.5 h-3.5 text-primary" />
+              <span className="hidden sm:inline">Near Me</span>
+            </Button>
+          ) : (
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={onUseMyLocation}
+              disabled={locationLoading}
+              className="flex items-center gap-1.5 text-xs h-9"
+              title="Use my location"
+            >
+              <Locate className={`w-3.5 h-3.5 ${locationLoading ? "animate-pulse" : ""}`} />
+              <span className="hidden sm:inline">
+                {locationLoading ? "Locating…" : "Near Me"}
+              </span>
+            </Button>
+          )}
           <Filter className="w-4 h-4 text-muted-foreground" />
           <Select onValueChange={handleSortChange} value={sortOption}>
             <SelectTrigger className="w-40">
@@ -48,6 +83,7 @@ export function SearchHeader({
             </SelectTrigger>
             <SelectContent>
               <SelectItem value="name">Name (A–Z)</SelectItem>
+              <SelectItem value="distance-nearest">Nearest First</SelectItem>
               <SelectItem value="price">Lowest Day Pass</SelectItem>
               <SelectItem value="miles">Most Trail Miles</SelectItem>
               <SelectItem value="acres">Most Acres</SelectItem>

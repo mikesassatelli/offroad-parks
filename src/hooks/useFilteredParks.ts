@@ -1,13 +1,20 @@
 import { useMemo, useState } from "react";
 import type { Park } from "@/lib/types";
+import { haversineDistance } from "@/lib/geo";
 
-export type SortOption = "name" | "price" | "miles" | "acres" | "rating" | "difficulty-high" | "difficulty-low" | "most-reviewed";
+export type SortOption = "name" | "price" | "miles" | "acres" | "rating" | "difficulty-high" | "difficulty-low" | "most-reviewed" | "distance-nearest";
+
+export interface UserCoords {
+  lat: number;
+  lng: number;
+}
 
 interface UseFilteredParksProps {
   parks: Park[];
+  userCoords?: UserCoords | null;
 }
 
-export function useFilteredParks({ parks }: UseFilteredParksProps) {
+export function useFilteredParks({ parks, userCoords }: UseFilteredParksProps) {
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedState, setSelectedState] = useState<string | undefined>();
   const [selectedTerrains, setSelectedTerrains] = useState<string[]>([]);
@@ -164,9 +171,18 @@ export function useFilteredParks({ parks }: UseFilteredParksProps) {
         return (parkB.averageDifficulty ?? 0) - (parkA.averageDifficulty ?? 0);
       } else if (sortOption === "difficulty-low") {
         return (parkA.averageDifficulty ?? Infinity) - (parkB.averageDifficulty ?? Infinity);
-      } else {
-        // sortOption === "most-reviewed"
+      } else if (sortOption === "most-reviewed") {
         return (parkB.reviewCount ?? 0) - (parkA.reviewCount ?? 0);
+      } else {
+        // sortOption === "distance-nearest"
+        if (!userCoords) return 0;
+        const distA = parkA.coords
+          ? haversineDistance(userCoords.lat, userCoords.lng, parkA.coords.lat, parkA.coords.lng)
+          : Infinity;
+        const distB = parkB.coords
+          ? haversineDistance(userCoords.lat, userCoords.lng, parkB.coords.lat, parkB.coords.lng)
+          : Infinity;
+        return distA - distB;
       }
     });
 
@@ -188,6 +204,7 @@ export function useFilteredParks({ parks }: UseFilteredParksProps) {
     flagsRequired,
     sparkArrestorRequired,
     sortOption,
+    userCoords,
   ]);
 
   const clearAllFilters = () => {

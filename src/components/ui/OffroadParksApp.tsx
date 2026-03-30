@@ -1,11 +1,12 @@
 "use client";
-import { useState } from "react";
+import { useState, useMemo } from "react";
 import dynamic from "next/dynamic";
 import { SessionProvider, useSession } from "next-auth/react";
 import type { Park } from "@/lib/types";
 import { useFilteredParks } from "@/hooks/useFilteredParks";
 import { useFavorites } from "@/hooks/useFavorites";
 import { useRouteBuilder } from "@/hooks/useRouteBuilder";
+import { haversineDistance } from "@/lib/geo";
 import { AppHeader } from "@/components/layout/AppHeader";
 import { SearchHeader } from "@/components/layout/SearchHeader";
 import { SearchFiltersPanel } from "@/components/parks/SearchFiltersPanel";
@@ -27,6 +28,8 @@ interface OffroadParksAppProps {
 function OffroadParksAppInner({ parks }: OffroadParksAppProps) {
   const { data: session } = useSession();
   const [activeView, setActiveView] = useState<"list" | "map">("list");
+  const [userCoords, setUserCoords] = useState<{ lat: number; lng: number } | null>(null);
+  const [locationLoading, setLocationLoading] = useState(false);
 
   const {
     searchQuery,
@@ -64,7 +67,40 @@ function OffroadParksAppInner({ parks }: OffroadParksAppProps) {
     availableStates,
     filteredParks,
     clearAllFilters,
-  } = useFilteredParks({ parks });
+  } = useFilteredParks({ parks, userCoords });
+
+  const handleUseMyLocation = () => {
+    if (!navigator.geolocation) return;
+    setLocationLoading(true);
+    navigator.geolocation.getCurrentPosition(
+      (position) => {
+        setUserCoords({ lat: position.coords.latitude, lng: position.coords.longitude });
+        setSortOption("distance-nearest");
+        setLocationLoading(false);
+      },
+      () => {
+        // Silently fall back — permission denied or unavailable
+        setLocationLoading(false);
+      },
+    );
+  };
+
+  const handleClearLocation = () => {
+    setUserCoords(null);
+    setSortOption("name");
+  };
+
+  const distances = useMemo(() => {
+    if (!userCoords) return {} as Record<string, number | undefined>;
+    return Object.fromEntries(
+      filteredParks.map((park) => [
+        park.id,
+        park.coords
+          ? haversineDistance(userCoords.lat, userCoords.lng, park.coords.lat, park.coords.lng)
+          : undefined,
+      ]),
+    );
+  }, [filteredParks, userCoords]);
 
   const { toggleFavorite, isFavorite } = useFavorites();
 
@@ -101,6 +137,10 @@ function OffroadParksAppInner({ parks }: OffroadParksAppProps) {
         onSearchQueryChange={setSearchQuery}
         sortOption={sortOption}
         onSortChange={setSortOption}
+        locationActive={userCoords !== null}
+        locationLoading={locationLoading}
+        onUseMyLocation={handleUseMyLocation}
+        onClearLocation={handleClearLocation}
       />
 
       <main className="max-w-7xl mx-auto px-6 pb-8">
@@ -162,6 +202,7 @@ function OffroadParksAppInner({ parks }: OffroadParksAppProps) {
                       park={park}
                       isFavorite={isFavorite(park.id)}
                       onToggleFavorite={toggleFavorite}
+                      distanceMi={distances[park.id]}
                     />
                   ))}
                 </div>
