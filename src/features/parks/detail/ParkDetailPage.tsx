@@ -5,16 +5,17 @@ import { PhotoGallery } from "@/components/parks/PhotoGallery";
 import { PhotoUploadForm } from "@/components/parks/PhotoUploadForm";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import type { Park } from "@/lib/types";
-import { Camera, MapPin, MessageSquare, Clock, CheckCircle } from "lucide-react";
+import { Camera, CheckCircle, Clock, MapPin, MessageSquare } from "lucide-react";
 import { SessionProvider, useSession } from "next-auth/react";
 import dynamic from "next/dynamic";
 import { useRouter } from "next/navigation";
 import { ParkAttributesCards } from "./components/ParkAttributesCards";
 import { ParkContactSidebar } from "./components/ParkContactSidebar";
+import { ParkOperationalCard } from "./components/ParkOperationalCard";
 import { ParkOverviewCard } from "./components/ParkOverviewCard";
 import { CampingInfoCard } from "./components/CampingInfoCard";
-import { ParkOperationalCard } from "./components/ParkOperationalCard";
 import { ReviewList, ReviewForm, StarRating, DifficultyRating } from "@/components/reviews";
 import { useReviews } from "@/hooks/useReviews";
 import { useParkReview } from "@/hooks/useParkReview";
@@ -167,163 +168,186 @@ function ParkDetailPageInner({
 
       <main className="max-w-7xl mx-auto px-6 py-8">
         <div className="grid lg:grid-cols-3 gap-6">
-          {/* Main Content */}
-          <div className="lg:col-span-2 space-y-6">
-            <ParkOverviewCard park={park} />
-            <ParkAttributesCards park={park} />
-            <ParkOperationalCard park={park} />
-
-            {/* Photo Gallery Card */}
-            <Card>
-              <CardHeader>
-                <div className="flex items-center justify-between">
-                  <CardTitle className="flex items-center gap-2">
-                    <Camera className="w-5 h-5" />
-                    Photo Gallery ({photos.length})
-                  </CardTitle>
-                </div>
-              </CardHeader>
-              <CardContent>
-                <PhotoGallery
-                  photos={photos}
-                  currentUserId={currentUserId}
-                  isAdmin={isAdmin}
-                />
-              </CardContent>
-            </Card>
-
-            {/* Photo Upload Form - Only for authenticated users */}
-            {session?.user && (
-              <PhotoUploadForm
-                parkSlug={park.id}
-                onSuccess={handlePhotoUploadSuccess}
-              />
-            )}
-
-            {/* Reviews Section */}
-            <Card>
-              <CardHeader>
-                <div className="flex items-center justify-between">
-                  <CardTitle className="flex items-center gap-2">
-                    <MessageSquare className="w-5 h-5" />
-                    Reviews ({park.reviewCount || 0})
-                  </CardTitle>
-                  {session?.user && !userReview && !showReviewForm && (
-                    <Button onClick={() => setShowReviewForm(true)} size="sm">
-                      Write a Review
-                    </Button>
-                  )}
-                </div>
-              </CardHeader>
-              <CardContent className="space-y-6">
-                {/* User's own review or form */}
-                {session?.user && (showReviewForm || userReview) && (
-                  <div className="border-b pb-6">
-                    {showReviewForm ? (
-                      <ReviewForm
-                        initialData={userReview}
-                        onSubmit={handleReviewSubmit}
-                        onCancel={() => setShowReviewForm(false)}
-                        isSubmitting={userReviewLoading}
-                      />
-                    ) : userReview ? (
-                      <div>
-                        <div className="flex items-center justify-between mb-3">
-                          <h4 className="text-sm font-medium">Your Review</h4>
-                          {userReview.status === "PENDING" ? (
-                            <span className="inline-flex items-center gap-1 text-xs px-2 py-1 rounded-full bg-yellow-100 text-yellow-800 dark:bg-yellow-900/30 dark:text-yellow-400">
-                              <Clock className="w-3 h-3" />
-                              Pending Approval
-                            </span>
-                          ) : userReview.status === "APPROVED" ? (
-                            <span className="inline-flex items-center gap-1 text-xs px-2 py-1 rounded-full bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-400">
-                              <CheckCircle className="w-3 h-3" />
-                              Approved
-                            </span>
-                          ) : null}
-                        </div>
-                        <div className="bg-muted/50 p-4 rounded-lg space-y-3">
-                          {/* Ratings */}
-                          <div className="grid grid-cols-4 gap-2 text-xs">
-                            <div>
-                              <span className="text-muted-foreground">Overall</span>
-                              <StarRating rating={userReview.overallRating} size="sm" />
-                            </div>
-                            <div>
-                              <span className="text-muted-foreground">Terrain</span>
-                              <StarRating rating={userReview.terrainRating} size="sm" />
-                            </div>
-                            <div>
-                              <span className="text-muted-foreground">Facilities</span>
-                              <StarRating rating={userReview.facilitiesRating} size="sm" />
-                            </div>
-                            <div>
-                              <span className="text-muted-foreground">Difficulty</span>
-                              <DifficultyRating rating={userReview.difficultyRating} size="sm" />
-                            </div>
-                          </div>
-
-                          {/* Title */}
-                          {userReview.title && (
-                            <p className="font-medium text-sm">{userReview.title}</p>
-                          )}
-
-                          {/* Body */}
-                          <p className="text-sm whitespace-pre-wrap">{userReview.body}</p>
-
-                          {/* Actions */}
-                          <div className="flex gap-2 pt-2">
-                            <Button
-                              variant="outline"
-                              size="sm"
-                              onClick={() => setShowReviewForm(true)}
-                            >
-                              Edit Review
-                            </Button>
-                            <Button
-                              variant="destructive"
-                              size="sm"
-                              onClick={handleDeleteReview}
-                            >
-                              Delete
-                            </Button>
-                          </div>
-                        </div>
-                      </div>
-                    ) : null}
-                  </div>
+          {/* Main Content with Tabs */}
+          <div className="lg:col-span-2">
+            <Tabs defaultValue="overview">
+              <TabsList className="w-full justify-start mb-6">
+                <TabsTrigger value="overview">Overview</TabsTrigger>
+                <TabsTrigger value="photos">
+                  Photos ({photos.length})
+                </TabsTrigger>
+                <TabsTrigger value="reviews">
+                  Reviews ({park.reviewCount ?? 0})
+                </TabsTrigger>
+                {park.coords && (
+                  <TabsTrigger value="location">Location</TabsTrigger>
                 )}
+              </TabsList>
 
-                {/* Reviews list */}
-                {reviewsLoading ? (
-                  <div className="space-y-4">
-                    {[1, 2, 3].map((i) => (
-                      <div key={i} className="h-32 bg-muted animate-pulse rounded" />
-                    ))}
-                  </div>
-                ) : (
-                  <ReviewList
-                    reviews={reviews}
-                    pagination={pagination}
-                    onPageChange={setPage}
+              {/* Overview Tab */}
+              <TabsContent value="overview" className="space-y-6">
+                <ParkOverviewCard park={park} />
+                <ParkAttributesCards park={park} />
+                <ParkOperationalCard park={park} />
+              </TabsContent>
+
+              {/* Photos Tab */}
+              <TabsContent value="photos" className="space-y-6">
+                <Card>
+                  <CardHeader>
+                    <div className="flex items-center justify-between">
+                      <CardTitle className="flex items-center gap-2">
+                        <Camera className="w-5 h-5" />
+                        Photo Gallery ({photos.length})
+                      </CardTitle>
+                    </div>
+                  </CardHeader>
+                  <CardContent>
+                    <PhotoGallery
+                      photos={photos}
+                      currentUserId={currentUserId}
+                      isAdmin={isAdmin}
+                    />
+                  </CardContent>
+                </Card>
+
+                {session?.user && (
+                  <PhotoUploadForm
+                    parkSlug={park.id}
+                    onSuccess={handlePhotoUploadSuccess}
                   />
                 )}
-              </CardContent>
-            </Card>
+              </TabsContent>
 
-            {/* Map Card */}
-            {park.coords && (
-              <Card>
-                <CardHeader>
-                  <CardTitle>Location</CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <div className="h-96 rounded-lg overflow-hidden">
-                    <MapView parks={[park]} />
-                  </div>
-                </CardContent>
-              </Card>
-            )}
+              {/* Reviews Tab */}
+              <TabsContent value="reviews">
+                <Card>
+                  <CardHeader>
+                    <div className="flex items-center justify-between">
+                      <CardTitle className="flex items-center gap-2">
+                        <MessageSquare className="w-5 h-5" />
+                        Reviews ({park.reviewCount || 0})
+                      </CardTitle>
+                      {session?.user && !userReview && !showReviewForm && (
+                        <Button onClick={() => setShowReviewForm(true)} size="sm">
+                          Write a Review
+                        </Button>
+                      )}
+                    </div>
+                  </CardHeader>
+                  <CardContent className="space-y-6">
+                    {/* User's own review or form */}
+                    {session?.user && (showReviewForm || userReview) && (
+                      <div className="border-b pb-6">
+                        {showReviewForm ? (
+                          <ReviewForm
+                            initialData={userReview}
+                            onSubmit={handleReviewSubmit}
+                            onCancel={() => setShowReviewForm(false)}
+                            isSubmitting={userReviewLoading}
+                          />
+                        ) : userReview ? (
+                          <div>
+                            <div className="flex items-center justify-between mb-3">
+                              <h4 className="text-sm font-medium">Your Review</h4>
+                              {userReview.status === "PENDING" ? (
+                                <span className="inline-flex items-center gap-1 text-xs px-2 py-1 rounded-full bg-yellow-100 text-yellow-800 dark:bg-yellow-900/30 dark:text-yellow-400">
+                                  <Clock className="w-3 h-3" />
+                                  Pending Approval
+                                </span>
+                              ) : userReview.status === "APPROVED" ? (
+                                <span className="inline-flex items-center gap-1 text-xs px-2 py-1 rounded-full bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-400">
+                                  <CheckCircle className="w-3 h-3" />
+                                  Approved
+                                </span>
+                              ) : null}
+                            </div>
+                            <div className="bg-muted/50 p-4 rounded-lg space-y-3">
+                              {/* Ratings */}
+                              <div className="grid grid-cols-4 gap-2 text-xs">
+                                <div>
+                                  <span className="text-muted-foreground">Overall</span>
+                                  <StarRating rating={userReview.overallRating} size="sm" />
+                                </div>
+                                <div>
+                                  <span className="text-muted-foreground">Terrain</span>
+                                  <StarRating rating={userReview.terrainRating} size="sm" />
+                                </div>
+                                <div>
+                                  <span className="text-muted-foreground">Facilities</span>
+                                  <StarRating rating={userReview.facilitiesRating} size="sm" />
+                                </div>
+                                <div>
+                                  <span className="text-muted-foreground">Difficulty</span>
+                                  <DifficultyRating rating={userReview.difficultyRating} size="sm" />
+                                </div>
+                              </div>
+
+                              {/* Title */}
+                              {userReview.title && (
+                                <p className="font-medium text-sm">{userReview.title}</p>
+                              )}
+
+                              {/* Body */}
+                              <p className="text-sm whitespace-pre-wrap">{userReview.body}</p>
+
+                              {/* Actions */}
+                              <div className="flex gap-2 pt-2">
+                                <Button
+                                  variant="outline"
+                                  size="sm"
+                                  onClick={() => setShowReviewForm(true)}
+                                >
+                                  Edit Review
+                                </Button>
+                                <Button
+                                  variant="destructive"
+                                  size="sm"
+                                  onClick={handleDeleteReview}
+                                >
+                                  Delete
+                                </Button>
+                              </div>
+                            </div>
+                          </div>
+                        ) : null}
+                      </div>
+                    )}
+
+                    {/* Reviews list */}
+                    {reviewsLoading ? (
+                      <div className="space-y-4">
+                        {[1, 2, 3].map((i) => (
+                          <div key={i} className="h-32 bg-muted animate-pulse rounded" />
+                        ))}
+                      </div>
+                    ) : (
+                      <ReviewList
+                        reviews={reviews}
+                        pagination={pagination}
+                        onPageChange={setPage}
+                      />
+                    )}
+                  </CardContent>
+                </Card>
+              </TabsContent>
+
+              {/* Location Tab — only rendered when coords exist */}
+              {park.coords && (
+                <TabsContent value="location">
+                  <Card>
+                    <CardHeader>
+                      <CardTitle>Location</CardTitle>
+                    </CardHeader>
+                    <CardContent>
+                      <div className="h-96 rounded-lg overflow-hidden">
+                        <MapView parks={[park]} />
+                      </div>
+                    </CardContent>
+                  </Card>
+                </TabsContent>
+              )}
+            </Tabs>
           </div>
 
           {/* Sidebar */}
