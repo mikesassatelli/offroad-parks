@@ -17,7 +17,6 @@ export default async function EditParkPage({ params }: EditParkPageProps) {
     redirect("/api/auth/signin");
   }
 
-  // @ts-expect-error - role added in auth callback
   if (session.user.role !== "ADMIN") {
     redirect("/");
   }
