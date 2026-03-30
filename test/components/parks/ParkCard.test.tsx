@@ -117,6 +117,8 @@ describe("ParkCard", () => {
     expect(mockOnToggleFavorite).toHaveBeenCalledTimes(1);
   });
 
+  // ── Trail condition badge (OP-37-41) ──────────────────────────────────────
+
   it("should show condition badge when park has a fresh latestCondition", () => {
     const parkWithCondition: Park = {
       ...mockPark,
@@ -171,6 +173,49 @@ describe("ParkCard", () => {
 
     expect(screen.queryByTestId("condition-badge")).not.toBeInTheDocument();
   });
+
+  // ── Distance display (OP-56) ──────────────────────────────────────────────
+
+  it("should display formatted distance when distanceMi is provided", () => {
+    render(
+      <ParkCard
+        park={mockPark}
+        isFavorite={false}
+        onToggleFavorite={mockOnToggleFavorite}
+        distanceMi={4.2}
+      />,
+    );
+
+    expect(screen.getByText(/4\.2 mi/)).toBeInTheDocument();
+  });
+
+  it("should display integer distance for 10+ miles", () => {
+    render(
+      <ParkCard
+        park={mockPark}
+        isFavorite={false}
+        onToggleFavorite={mockOnToggleFavorite}
+        distanceMi={142.7}
+      />,
+    );
+
+    expect(screen.getByText(/143 mi/)).toBeInTheDocument();
+  });
+
+  it("should not display distance separator when distanceMi is not provided", () => {
+    render(
+      <ParkCard
+        park={mockPark}
+        isFavorite={false}
+        onToggleFavorite={mockOnToggleFavorite}
+      />,
+    );
+
+    // The · separator only appears when a distance is shown
+    expect(screen.queryByText(/·/)).not.toBeInTheDocument();
+  });
+
+  // ── Hero image ────────────────────────────────────────────────────────────
 
   it("should render hero image when provided", () => {
     const parkWithImage = {
