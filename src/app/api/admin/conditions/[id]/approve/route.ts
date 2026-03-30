@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import { auth } from "@/lib/auth";
+import { requireAdmin } from "@/lib/api-helpers";
 import { prisma } from "@/lib/prisma";
 
 export const runtime = "nodejs";
@@ -10,10 +10,8 @@ type RouteParams = {
 
 // POST /api/admin/conditions/[id]/approve
 export async function POST(_request: Request, { params }: RouteParams) {
-  const session = await auth();
-  if (!session?.user?.id || session.user.role !== "ADMIN") {
-    return NextResponse.json({ error: "Forbidden" }, { status: 403 });
-  }
+  const adminResult = await requireAdmin();
+  if (adminResult instanceof NextResponse) return adminResult;
 
   const { id } = await params;
 
