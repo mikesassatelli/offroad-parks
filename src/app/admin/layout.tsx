@@ -2,6 +2,7 @@ import { auth } from "@/lib/auth";
 import Link from "next/link";
 import { redirect } from "next/navigation";
 import {
+  Activity,
   Camera,
   Home,
   LayoutDashboard,
@@ -112,6 +113,13 @@ export default async function AdminLayout({
               <span className="font-medium text-sm">Bulk Photo Upload</span>
             </Link>
 
+            <Link
+              href="/admin/conditions"
+              className="flex items-center gap-3 px-4 py-3 text-gray-700 rounded-lg hover:bg-gray-100 transition-colors"
+            >
+              <Activity className="w-5 h-5" />
+              <span className="font-medium">Trail Conditions</span>
+            </Link>
             <Link
               href="/admin/reviews"
               className="flex items-center gap-3 px-4 py-3 text-gray-700 rounded-lg hover:bg-gray-100 transition-colors"
