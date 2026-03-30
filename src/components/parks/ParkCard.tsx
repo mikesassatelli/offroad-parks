@@ -8,6 +8,9 @@ import type { Amenity, Park, Terrain } from "@/lib/types";
 import { Camera, MapPin, Star, StarOff } from "lucide-react";
 import Link from "next/link";
 import Image from "next/image";
+import { ConditionBadge } from "@/features/trail-conditions/ConditionBadge";
+import type { TrailConditionStatus } from "@/lib/trail-conditions";
+import { isConditionFresh } from "@/lib/trail-conditions";
 
 interface ParkCardProps {
   park: Park;
@@ -34,6 +37,11 @@ export function ParkCard({
   const formattedDayPass = formatCurrency(park.dayPassUSD);
   const trailMilesDisplay = park.milesOfTrails ?? "—";
   const acresDisplay = park.acres ?? "—";
+
+  const freshCondition =
+    park.latestCondition && isConditionFresh(park.latestCondition.createdAt)
+      ? park.latestCondition
+      : null;
 
   return (
     <Link href={`/parks/${park.id}`} className="block h-full">
@@ -62,6 +70,14 @@ export function ParkCard({
                 )}
               </Button>
             </div>
+            {freshCondition && (
+              <div className="absolute bottom-2 left-2 z-10">
+                <ConditionBadge
+                  status={freshCondition.status as TrailConditionStatus}
+                  size="xs"
+                />
+              </div>
+            )}
           </div>
         ) : (
           <div className="relative h-48 w-full bg-gradient-to-br from-muted to-muted/50 flex items-center justify-center">
@@ -80,6 +96,14 @@ export function ParkCard({
                 )}
               </Button>
             </div>
+            {freshCondition && (
+              <div className="absolute bottom-2 left-2 z-10">
+                <ConditionBadge
+                  status={freshCondition.status as TrailConditionStatus}
+                  size="xs"
+                />
+              </div>
+            )}
           </div>
         )}
 

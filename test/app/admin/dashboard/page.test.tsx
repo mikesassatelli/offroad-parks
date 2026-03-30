@@ -20,6 +20,9 @@ vi.mock("@/lib/prisma", () => ({
     parkReview: {
       count: vi.fn(),
     },
+    trailCondition: {
+      count: vi.fn(),
+    },
   },
 }));
 
@@ -40,6 +43,8 @@ vi.mock("next/link", () => ({
 describe("AdminDashboard", () => {
   beforeEach(() => {
     vi.clearAllMocks();
+    // Default zero for trailCondition.count — overridden in specific tests
+    vi.mocked(prisma.trailCondition.count).mockResolvedValue(0);
   });
 
   it("should render dashboard title", async () => {
@@ -346,7 +351,7 @@ describe("AdminDashboard", () => {
     expect(images[0]).toHaveAttribute("src", "https://example.com/photo1.jpg");
   });
 
-  it("should render all five stat cards", async () => {
+  it("should render all six stat cards", async () => {
     vi.mocked(prisma.park.count).mockResolvedValue(10);
     vi.mocked(prisma.user.count).mockResolvedValue(50);
     vi.mocked(prisma.parkPhoto.count).mockResolvedValue(5);
@@ -361,7 +366,24 @@ describe("AdminDashboard", () => {
     expect(screen.getByText("Pending Parks")).toBeInTheDocument();
     expect(screen.getByText("Pending Photos")).toBeInTheDocument();
     expect(screen.getByText("Pending Reviews")).toBeInTheDocument();
+    expect(screen.getByText("Pending Conditions")).toBeInTheDocument();
     expect(screen.getByText("Total Users")).toBeInTheDocument();
+  });
+
+  it("should display pending conditions stat", async () => {
+    vi.mocked(prisma.park.count).mockResolvedValue(0);
+    vi.mocked(prisma.user.count).mockResolvedValue(0);
+    vi.mocked(prisma.parkPhoto.count).mockResolvedValue(0);
+    vi.mocked(prisma.parkReview.count).mockResolvedValue(0);
+    vi.mocked(prisma.trailCondition.count).mockResolvedValue(7);
+    vi.mocked(prisma.park.findMany).mockResolvedValue([]);
+    vi.mocked(prisma.parkPhoto.findMany).mockResolvedValue([]);
+
+    const component = await AdminDashboard();
+    render(component);
+
+    expect(screen.getByText("Pending Conditions")).toBeInTheDocument();
+    expect(screen.getByText("7")).toBeInTheDocument();
   });
 
   it("should fetch limited number of pending parks", async () => {
