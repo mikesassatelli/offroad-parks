@@ -64,7 +64,6 @@ function ParkDetailPageInner({
         name: session.user.name,
         email: session.user.email,
         image: session.user.image,
-        // @ts-expect-error - role added in auth callback
         role: session.user.role,
       }
     : null;
