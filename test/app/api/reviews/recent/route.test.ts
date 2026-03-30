@@ -28,6 +28,10 @@ const mockDbReview = {
   vehicleType: null,
   body: "Great park!",
   status: "APPROVED" as const,
+  title: null,
+  visitDate: null,
+  visitCondition: null,
+  recommendedFor: null,
   createdAt: new Date("2025-01-01"),
   updatedAt: new Date("2025-01-01"),
   user: { id: "user-1", name: "Alice", image: null },
@@ -79,6 +83,50 @@ describe("GET /api/reviews/recent", () => {
     // Verify skip/take were called correctly
     expect(prisma.parkReview.findMany).toHaveBeenCalledWith(
       expect.objectContaining({ skip: 5, take: 5 }),
+    );
+  });
+
+  it("should filter by minRating", async () => {
+    (prisma.parkReview.count as ReturnType<typeof vi.fn>).mockResolvedValue(0);
+    (prisma.parkReview.findMany as ReturnType<typeof vi.fn>).mockResolvedValue([]);
+
+    const request = new Request("http://localhost/api/reviews/recent?minRating=4");
+    await GET(request);
+
+    expect(prisma.parkReview.count).toHaveBeenCalledWith(
+      expect.objectContaining({
+        where: expect.objectContaining({ overallRating: { gte: 4 } }),
+      }),
+    );
+  });
+
+  it("should filter by vehicleType", async () => {
+    (prisma.parkReview.count as ReturnType<typeof vi.fn>).mockResolvedValue(0);
+    (prisma.parkReview.findMany as ReturnType<typeof vi.fn>).mockResolvedValue([]);
+
+    const request = new Request("http://localhost/api/reviews/recent?vehicleType=atv");
+    await GET(request);
+
+    expect(prisma.parkReview.count).toHaveBeenCalledWith(
+      expect.objectContaining({
+        where: expect.objectContaining({ vehicleType: "atv" }),
+      }),
+    );
+  });
+
+  it("should filter by state", async () => {
+    (prisma.parkReview.count as ReturnType<typeof vi.fn>).mockResolvedValue(0);
+    (prisma.parkReview.findMany as ReturnType<typeof vi.fn>).mockResolvedValue([]);
+
+    const request = new Request("http://localhost/api/reviews/recent?state=California");
+    await GET(request);
+
+    expect(prisma.parkReview.count).toHaveBeenCalledWith(
+      expect.objectContaining({
+        where: expect.objectContaining({
+          park: { address: { state: "California" } },
+        }),
+      }),
     );
   });
 
