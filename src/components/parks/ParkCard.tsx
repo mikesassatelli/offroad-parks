@@ -3,6 +3,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { StarRating, DifficultyRating } from "@/components/reviews";
 import { formatCurrency, formatAmenity, formatTerrain } from "@/lib/formatting";
+import { formatDistance } from "@/lib/geo";
 import type { Amenity, Park, Terrain } from "@/lib/types";
 import { Camera, MapPin, Star, StarOff } from "lucide-react";
 import Link from "next/link";
@@ -12,12 +13,14 @@ interface ParkCardProps {
   park: Park;
   isFavorite: boolean;
   onToggleFavorite: (parkId: string) => void;
+  distanceMi?: number;
 }
 
 export function ParkCard({
   park,
   isFavorite,
   onToggleFavorite,
+  distanceMi,
 }: ParkCardProps) {
   const handleFavoriteClick = (event: React.MouseEvent) => {
     event.preventDefault();
@@ -88,6 +91,11 @@ export function ParkCard({
             <div className="flex items-center gap-2 text-sm text-muted-foreground">
               <MapPin className="w-4 h-4" />
               <span>{locationDisplay}</span>
+              {distanceMi !== undefined && (
+                <span className="text-xs font-medium text-primary/80">
+                  · {formatDistance(distanceMi)}
+                </span>
+              )}
             </div>
             {park.averageRating && (
               <StarRating rating={park.averageRating} size="sm" />
