@@ -55,6 +55,10 @@ function OffroadParksAppInner({ parks }: OffroadParksAppProps) {
     setPermitRequired,
     membershipRequired,
     setMembershipRequired,
+    flagsRequired,
+    setFlagsRequired,
+    sparkArrestorRequired,
+    setSparkArrestorRequired,
     sortOption,
     setSortOption,
     availableStates,
@@ -127,6 +131,10 @@ function OffroadParksAppInner({ parks }: OffroadParksAppProps) {
             onPermitRequiredChange={setPermitRequired}
             membershipRequired={membershipRequired}
             onMembershipRequiredChange={setMembershipRequired}
+            flagsRequired={flagsRequired}
+            onFlagsRequiredChange={setFlagsRequired}
+            sparkArrestorRequired={sparkArrestorRequired}
+            onSparkArrestorRequiredChange={setSparkArrestorRequired}
             onClearFilters={clearAllFilters}
           />
 

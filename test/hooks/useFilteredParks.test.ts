@@ -431,6 +431,104 @@ describe("useFilteredParks", () => {
     expect(result.current.filteredParks[1].milesOfTrails).toBeUndefined();
   });
 
+  it("should filter parks by flags required (yes)", () => {
+    const parksWithFlags: Park[] = [
+      { ...mockParks[0], flagsRequired: true },
+      { ...mockParks[1], flagsRequired: false },
+      { ...mockParks[2] },
+    ];
+    const { result } = renderHook(() => useFilteredParks({ parks: parksWithFlags }));
+
+    act(() => { result.current.setFlagsRequired("yes"); });
+
+    expect(result.current.filteredParks).toHaveLength(1);
+    expect(result.current.filteredParks[0].flagsRequired).toBe(true);
+  });
+
+  it("should filter parks by flags required (no)", () => {
+    const parksWithFlags: Park[] = [
+      { ...mockParks[0], flagsRequired: true },
+      { ...mockParks[1], flagsRequired: false },
+      { ...mockParks[2] },
+    ];
+    const { result } = renderHook(() => useFilteredParks({ parks: parksWithFlags }));
+
+    act(() => { result.current.setFlagsRequired("no"); });
+
+    expect(result.current.filteredParks).toHaveLength(2);
+    expect(result.current.filteredParks.every((p) => p.flagsRequired !== true)).toBe(true);
+  });
+
+  it("should filter parks by spark arrestor required (yes)", () => {
+    const parksWithSpark: Park[] = [
+      { ...mockParks[0], sparkArrestorRequired: true },
+      { ...mockParks[1], sparkArrestorRequired: false },
+      { ...mockParks[2] },
+    ];
+    const { result } = renderHook(() => useFilteredParks({ parks: parksWithSpark }));
+
+    act(() => { result.current.setSparkArrestorRequired("yes"); });
+
+    expect(result.current.filteredParks).toHaveLength(1);
+    expect(result.current.filteredParks[0].sparkArrestorRequired).toBe(true);
+  });
+
+  it("should filter parks by spark arrestor required (no)", () => {
+    const parksWithSpark: Park[] = [
+      { ...mockParks[0], sparkArrestorRequired: true },
+      { ...mockParks[1], sparkArrestorRequired: false },
+      { ...mockParks[2] },
+    ];
+    const { result } = renderHook(() => useFilteredParks({ parks: parksWithSpark }));
+
+    act(() => { result.current.setSparkArrestorRequired("no"); });
+
+    expect(result.current.filteredParks).toHaveLength(2);
+    expect(result.current.filteredParks.every((p) => p.sparkArrestorRequired !== true)).toBe(true);
+  });
+
+  it("should sort parks by most reviewed (review count desc)", () => {
+    const parksWithReviews: Park[] = [
+      { ...mockParks[0], reviewCount: 5 },
+      { ...mockParks[1], reviewCount: 20 },
+      { ...mockParks[2], reviewCount: 1 },
+    ];
+    const { result } = renderHook(() => useFilteredParks({ parks: parksWithReviews }));
+
+    act(() => { result.current.setSortOption("most-reviewed"); });
+
+    expect(result.current.filteredParks[0].reviewCount).toBe(20);
+    expect(result.current.filteredParks[1].reviewCount).toBe(5);
+    expect(result.current.filteredParks[2].reviewCount).toBe(1);
+  });
+
+  it("should sort parks with undefined reviewCount last when sorting by most reviewed", () => {
+    const parksWithMixedReviews: Park[] = [
+      { ...mockParks[0], reviewCount: undefined },
+      { ...mockParks[1], reviewCount: 10 },
+      { ...mockParks[2], reviewCount: undefined },
+    ];
+    const { result } = renderHook(() => useFilteredParks({ parks: parksWithMixedReviews }));
+
+    act(() => { result.current.setSortOption("most-reviewed"); });
+
+    expect(result.current.filteredParks[0].reviewCount).toBe(10);
+  });
+
+  it("should clear flagsRequired and sparkArrestorRequired when clearing filters", () => {
+    const { result } = renderHook(() => useFilteredParks({ parks: mockParks }));
+
+    act(() => {
+      result.current.setFlagsRequired("yes");
+      result.current.setSparkArrestorRequired("yes");
+    });
+
+    act(() => { result.current.clearAllFilters(); });
+
+    expect(result.current.flagsRequired).toBe("");
+    expect(result.current.sparkArrestorRequired).toBe("");
+  });
+
   it("should handle mix of defined and undefined prices", () => {
     const parksWithMixedPrices: Park[] = [
       { ...mockParks[0], dayPassUSD: 30 },
