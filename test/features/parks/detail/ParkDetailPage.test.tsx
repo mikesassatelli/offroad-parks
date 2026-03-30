@@ -308,7 +308,8 @@ describe("ParkDetailPage", () => {
 
     render(<ParkDetailPage park={mockPark} photos={[]} />);
 
-    expect(screen.getByText(/sign in/i)).toBeInTheDocument();
+    // Multiple "Sign in" links may exist (photos CTA + trail conditions) — check photos-specific text
+    expect(screen.getAllByText(/sign in/i).length).toBeGreaterThanOrEqual(1);
     expect(screen.getByText(/to be the first to add photos/i)).toBeInTheDocument();
   });
 
