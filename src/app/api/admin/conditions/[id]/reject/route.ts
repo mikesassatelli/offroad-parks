@@ -12,7 +12,6 @@ type RouteParams = {
 // Deletes the pending condition report (no public trace).
 export async function POST(_request: Request, { params }: RouteParams) {
   const session = await auth();
-  // @ts-expect-error - role added in auth callback
   if (!session?.user?.id || session.user.role !== "ADMIN") {
     return NextResponse.json({ error: "Forbidden" }, { status: 403 });
   }
