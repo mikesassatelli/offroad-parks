@@ -14,6 +14,7 @@ import { ParkAttributesCards } from "./components/ParkAttributesCards";
 import { ParkContactSidebar } from "./components/ParkContactSidebar";
 import { ParkOverviewCard } from "./components/ParkOverviewCard";
 import { CampingInfoCard } from "./components/CampingInfoCard";
+import { ParkOperationalCard } from "./components/ParkOperationalCard";
 import { ReviewList, ReviewForm, StarRating, DifficultyRating } from "@/components/reviews";
 import { useReviews } from "@/hooks/useReviews";
 import { useParkReview } from "@/hooks/useParkReview";
@@ -170,6 +171,7 @@ function ParkDetailPageInner({
           <div className="lg:col-span-2 space-y-6">
             <ParkOverviewCard park={park} />
             <ParkAttributesCards park={park} />
+            <ParkOperationalCard park={park} />
 
             {/* Photo Gallery Card */}
             <Card>
