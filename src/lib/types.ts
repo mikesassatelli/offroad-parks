@@ -114,6 +114,8 @@ export type DbPark = {
   flagsRequired: boolean | null;
   sparkArrestorRequired: boolean | null;
   noiseLimitDBA: number | null;
+  // Operator info
+  operatorId: string | null;
   // Submitter info
   submitterId: string | null;
   submitterName: string | null;
@@ -184,6 +186,8 @@ export type Park = {
     status: string;
     createdAt: string;
   };
+  // Operator
+  hasOperator?: boolean;
 };
 
 // Database review type - matches Prisma ParkReview model with includes
@@ -317,6 +321,8 @@ export function transformDbPark(dbPark: DbPark): Park {
           createdAt: dbPark.trailConditions[0].createdAt.toISOString(),
         }
       : undefined,
+    // Operator
+    hasOperator: dbPark.operatorId != null,
   };
 }
 
