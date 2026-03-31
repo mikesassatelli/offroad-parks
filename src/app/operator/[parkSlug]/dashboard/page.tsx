@@ -81,12 +81,12 @@ export default async function OperatorDashboardPage({ params }: DashboardPagePro
             <CardContent className="pt-5 pb-4">
               <div className="flex items-center justify-between mb-3">
                 <p className="text-sm font-medium text-muted-foreground">{label}</p>
-                <Icon className={`w-4 h-4 ${iconColor}`} />
+                <Icon className={`w-5 h-5 ${iconColor}`} />
               </div>
-              <p className="text-4xl font-bold text-gray-900 leading-none">
+              <p className="text-2xl font-bold text-gray-900 leading-none">
                 {value}
               </p>
-              <p className="text-xs text-muted-foreground mt-2">{sub}</p>
+              <p className="text-sm text-muted-foreground mt-2">{sub}</p>
             </CardContent>
           </Card>
         ))}
