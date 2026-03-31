@@ -386,7 +386,9 @@ model TrailCondition {
   userId    String
   status    TrailConditionStatus
   note      String?               @db.Text
-  reportStatus ConditionReportStatus @default(PUBLISHED)
+  reportStatus   ConditionReportStatus @default(PUBLISHED)
+  isOperatorPost Boolean               @default(false)
+  pinnedUntil    DateTime?
 
   park      Park                  @relation(fields: [parkId], references: [id], onDelete: Cascade)
   user      User                  @relation(fields: [userId], references: [id], onDelete: Cascade)

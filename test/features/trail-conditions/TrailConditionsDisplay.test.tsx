@@ -31,6 +31,9 @@ vi.mock("lucide-react", () => ({
   CloudSun: ({ className }: any) => (
     <svg data-icon="cloud-sun" className={className}><title>Cloud Sun</title></svg>
   ),
+  ShieldCheck: () => <span data-testid="shield-check" />,
+  Pin: () => <span data-testid="pin" />,
+  Trash2: () => <span data-testid="trash" />,
 }));
 
 import { useSession } from "next-auth/react";
@@ -42,11 +45,14 @@ const staleDate = new Date(Date.now() - CONDITION_STALE_AFTER_MS - 1000).toISOSt
 const mockConditions = [
   {
     id: "c1",
+    userId: "other-user",
     status: "OPEN",
     note: null,
     createdAt: freshDate,
     reportStatus: "PUBLISHED",
-    user: { name: "Alice" },
+    isOperatorPost: false,
+    pinnedUntil: null,
+    user: { id: "other-user", name: "Alice" },
   },
 ];
 
@@ -195,6 +201,81 @@ describe("TrailConditionsDisplay", () => {
     await waitFor(() => {
       expect(screen.getByText("Open")).toBeInTheDocument();
       expect(screen.getByText(/recent reports/i)).toBeInTheDocument();
+    });
+  });
+
+  it("hides 'report condition' button when user has an active report", async () => {
+    (useSession as ReturnType<typeof vi.fn>).mockReturnValue({
+      data: { user: { id: "user-1", name: "Bob" } },
+    });
+    const myCondition = { ...mockConditions[0], id: "c1", userId: "user-1", user: { id: "user-1", name: "Bob" } };
+    (global.fetch as ReturnType<typeof vi.fn>).mockResolvedValue({
+      ok: true,
+      json: async () => ({ conditions: [myCondition] }),
+    });
+
+    render(<TrailConditionsDisplay parkSlug="test-park" />);
+
+    await waitFor(() => {
+      expect(screen.getByText("Open")).toBeInTheDocument();
+    });
+    expect(screen.queryByText(/report condition/i)).not.toBeInTheDocument();
+  });
+
+  it("shows delete button on own report and not on others'", async () => {
+    (useSession as ReturnType<typeof vi.fn>).mockReturnValue({
+      data: { user: { id: "user-1", name: "Bob" } },
+    });
+    const myCondition = { ...mockConditions[0], id: "c1", userId: "user-1", user: { id: "user-1", name: "Bob" } };
+    (global.fetch as ReturnType<typeof vi.fn>).mockResolvedValue({
+      ok: true,
+      json: async () => ({ conditions: [myCondition] }),
+    });
+
+    render(<TrailConditionsDisplay parkSlug="test-park" />);
+
+    await waitFor(() => {
+      expect(screen.getByLabelText("Delete my report")).toBeInTheDocument();
+    });
+  });
+
+  it("does not show delete button on another user's report", async () => {
+    (useSession as ReturnType<typeof vi.fn>).mockReturnValue({
+      data: { user: { id: "user-1", name: "Bob" } },
+    });
+    (global.fetch as ReturnType<typeof vi.fn>).mockResolvedValue({
+      ok: true,
+      json: async () => ({ conditions: mockConditions }), // userId: "other-user"
+    });
+
+    render(<TrailConditionsDisplay parkSlug="test-park" />);
+
+    await waitFor(() => {
+      expect(screen.getByText("Open")).toBeInTheDocument();
+    });
+    expect(screen.queryByLabelText("Delete my report")).not.toBeInTheDocument();
+  });
+
+  it("prioritises operator post over community report in featured slot", async () => {
+    const operatorPost = {
+      ...mockConditions[0],
+      id: "op-1",
+      userId: "operator-user",
+      status: "CLOSED",
+      isOperatorPost: true,
+      user: { id: "operator-user", name: "Park Operator" },
+    };
+    const communityPost = { ...mockConditions[0], id: "c2", status: "OPEN", createdAt: new Date(Date.now() - 500).toISOString() };
+    // communityPost is newer but operatorPost should be featured
+    (global.fetch as ReturnType<typeof vi.fn>).mockResolvedValue({
+      ok: true,
+      json: async () => ({ conditions: [communityPost, operatorPost] }),
+    });
+
+    render(<TrailConditionsDisplay parkSlug="test-park" />);
+
+    await waitFor(() => {
+      expect(screen.getByTestId("shield-check")).toBeInTheDocument();
     });
   });
 });

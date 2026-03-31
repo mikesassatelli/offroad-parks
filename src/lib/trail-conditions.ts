@@ -15,6 +15,8 @@ export interface TrailConditionReport {
   status: TrailConditionStatus;
   note: string | null;
   reportStatus: ConditionReportStatus;
+  isOperatorPost: boolean;
+  pinnedUntil: string | null; // ISO date string
   createdAt: string; // ISO date string
   user: {
     id: string;
@@ -32,6 +34,14 @@ export const CONDITION_STALE_AFTER_MS = 72 * 60 * 60 * 1000;
 export function isConditionFresh(createdAt: string | Date): boolean {
   const created = new Date(createdAt).getTime();
   return Date.now() - created < CONDITION_STALE_AFTER_MS;
+}
+
+/**
+ * Returns true if an operator pin is currently active.
+ */
+export function isConditionPinned(pinnedUntil: string | Date | null): boolean {
+  if (!pinnedUntil) return false;
+  return new Date(pinnedUntil).getTime() > Date.now();
 }
 
 /**

@@ -6,10 +6,13 @@ import { Activity, Camera, MessageSquare, Settings, Star } from "lucide-react";
 
 interface DashboardPageProps {
   params: Promise<{ parkSlug: string }>;
+  searchParams: Promise<{ from?: string }>;
 }
 
-export default async function OperatorDashboardPage({ params }: DashboardPageProps) {
+export default async function OperatorDashboardPage({ params, searchParams }: DashboardPageProps) {
   const { parkSlug } = await params;
+  const { from } = await searchParams;
+  const fromParam = from ? `?from=${from}` : "";
   const ctx = await getOperatorContext(parkSlug);
 
   if (!ctx) {
@@ -98,14 +101,14 @@ export default async function OperatorDashboardPage({ params }: DashboardPagePro
         </CardHeader>
         <CardContent className="flex flex-wrap gap-3">
           <a
-            href={`/operator/${parkSlug}/conditions`}
+            href={`/operator/${parkSlug}/conditions${fromParam}`}
             className="inline-flex items-center gap-2 text-sm px-4 py-2 rounded-md border border-border bg-background hover:bg-muted transition-colors"
           >
             <Activity className="w-4 h-4" />
             Post Trail Status Update
           </a>
           <a
-            href={`/operator/${parkSlug}/settings`}
+            href={`/operator/${parkSlug}/settings${fromParam}`}
             className="inline-flex items-center gap-2 text-sm px-4 py-2 rounded-md border border-border bg-background hover:bg-muted transition-colors"
           >
             <Settings className="w-4 h-4" />
