@@ -99,6 +99,21 @@ describe("ParkManagementTable", () => {
     ).toBeInTheDocument();
   });
 
+  it("should still show search bar when no results match", async () => {
+    const user = userEvent.setup();
+
+    render(<ParkManagementTable parks={mockParks} />);
+
+    const searchInput = screen.getByPlaceholderText(
+      "Search by name, city, or state...",
+    );
+    await user.type(searchInput, "zzznomatch");
+
+    expect(screen.getByText("No parks found")).toBeInTheDocument();
+    expect(searchInput).toBeInTheDocument();
+    expect(searchInput).toHaveValue("zzznomatch");
+  });
+
   it("should render table headers", () => {
     render(<ParkManagementTable parks={mockParks} />);
 
