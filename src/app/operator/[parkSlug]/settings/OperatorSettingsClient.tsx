@@ -3,7 +3,13 @@
 import { useState, useEffect } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Settings, CheckCircle } from "lucide-react";
+import { AmenitiesCheckboxGroup } from "@/components/forms/park-fields/AmenitiesCheckboxGroup";
+import { CampingSection } from "@/components/forms/park-fields/CampingSection";
+import { RequirementsSection } from "@/components/forms/park-fields/RequirementsSection";
+import { TerrainCheckboxGroup } from "@/components/forms/park-fields/TerrainCheckboxGroup";
+import { VehicleTypesCheckboxGroup } from "@/components/forms/park-fields/VehicleTypesCheckboxGroup";
+import type { RequirementsValues } from "@/components/forms/park-fields/RequirementsSection";
+import { CheckCircle, MapPin } from "lucide-react";
 
 interface ParkData {
   name: string;
@@ -28,6 +34,10 @@ interface ParkData {
   flagsRequired: boolean | null;
   sparkArrestorRequired: boolean | null;
   noiseLimitDBA: number | null;
+  terrain: string[];
+  amenities: string[];
+  camping: string[];
+  vehicleTypes: string[];
 }
 
 interface OperatorSettingsClientProps {
@@ -54,6 +64,14 @@ export function OperatorSettingsClient({ parkSlug, parkName }: OperatorSettingsC
 
   const handleChange = (field: keyof ParkData, value: unknown) => {
     setPark((prev) => prev ? { ...prev, [field]: value } : prev);
+  };
+
+  const handleRequirementsChange = (field: keyof RequirementsValues, value: RequirementsValues[keyof RequirementsValues]) => {
+    if (field === "maxVehicleWidthInches" || field === "noiseLimitDBA") {
+      handleChange(field, value ? parseInt(value as string) : null);
+    } else {
+      handleChange(field as keyof ParkData, value);
+    }
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -105,8 +123,8 @@ export function OperatorSettingsClient({ parkSlug, parkName }: OperatorSettingsC
     <div>
       <div className="mb-6">
         <h1 className="text-2xl font-bold text-gray-900 flex items-center gap-2">
-          <Settings className="w-6 h-6" />
-          Park Settings
+          <MapPin className="w-6 h-6" />
+          Park Details
         </h1>
         <p className="text-gray-500 text-sm mt-1">
           Edit listing details for {parkName}. Changes are applied immediately.
@@ -183,6 +201,62 @@ export function OperatorSettingsClient({ parkSlug, parkName }: OperatorSettingsC
           </CardContent>
         </Card>
 
+        {/* Terrain */}
+        <Card>
+          <CardHeader>
+            <CardTitle className="text-base">Terrain Types</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <TerrainCheckboxGroup
+              value={park.terrain}
+              onChange={(v) => handleChange("terrain", v)}
+            />
+          </CardContent>
+        </Card>
+
+        {/* Amenities */}
+        <Card>
+          <CardHeader>
+            <CardTitle className="text-base">Amenities</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <AmenitiesCheckboxGroup
+              value={park.amenities}
+              onChange={(v) => handleChange("amenities", v)}
+            />
+          </CardContent>
+        </Card>
+
+        {/* Camping */}
+        <Card>
+          <CardHeader>
+            <CardTitle className="text-base">Camping Options</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <CampingSection
+              value={park.camping}
+              onChange={(v) => handleChange("camping", v)}
+              campingWebsite={park.campingWebsite || ""}
+              onCampingWebsiteChange={(v) => handleChange("campingWebsite", v || null)}
+              campingPhone={park.campingPhone || ""}
+              onCampingPhoneChange={(v) => handleChange("campingPhone", v || null)}
+            />
+          </CardContent>
+        </Card>
+
+        {/* Vehicle Types */}
+        <Card>
+          <CardHeader>
+            <CardTitle className="text-base">Allowed Vehicle Types</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <VehicleTypesCheckboxGroup
+              value={park.vehicleTypes}
+              onChange={(v) => handleChange("vehicleTypes", v)}
+            />
+          </CardContent>
+        </Card>
+
         {/* Pricing */}
         <Card>
           <CardHeader>
@@ -222,7 +296,7 @@ export function OperatorSettingsClient({ parkSlug, parkName }: OperatorSettingsC
           </CardContent>
         </Card>
 
-        {/* Physical details */}
+        {/* Physical Details */}
         <Card>
           <CardHeader>
             <CardTitle className="text-base">Physical Details</CardTitle>
@@ -249,27 +323,28 @@ export function OperatorSettingsClient({ parkSlug, parkName }: OperatorSettingsC
                   className="w-full text-sm border border-border rounded-md px-3 py-2 bg-background"
                 />
               </div>
-              <div>
-                <label className="text-sm font-medium block mb-1">Max Vehicle Width (inches)</label>
-                <input
-                  type="number"
-                  min="0"
-                  value={park.maxVehicleWidthInches ?? ""}
-                  onChange={(e) => handleChange("maxVehicleWidthInches", e.target.value ? parseInt(e.target.value) : null)}
-                  className="w-full text-sm border border-border rounded-md px-3 py-2 bg-background"
-                />
-              </div>
-              <div>
-                <label className="text-sm font-medium block mb-1">Noise Limit (dBA)</label>
-                <input
-                  type="number"
-                  min="0"
-                  value={park.noiseLimitDBA ?? ""}
-                  onChange={(e) => handleChange("noiseLimitDBA", e.target.value ? parseInt(e.target.value) : null)}
-                  className="w-full text-sm border border-border rounded-md px-3 py-2 bg-background"
-                />
-              </div>
             </div>
+          </CardContent>
+        </Card>
+
+        {/* Requirements & Regulations */}
+        <Card>
+          <CardHeader>
+            <CardTitle className="text-base">Requirements & Regulations</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <RequirementsSection
+              values={{
+                permitRequired: park.permitRequired ?? false,
+                permitType: park.permitType ?? "",
+                membershipRequired: park.membershipRequired ?? false,
+                flagsRequired: park.flagsRequired ?? false,
+                sparkArrestorRequired: park.sparkArrestorRequired ?? false,
+                maxVehicleWidthInches: park.maxVehicleWidthInches?.toString() ?? "",
+                noiseLimitDBA: park.noiseLimitDBA?.toString() ?? "",
+              }}
+              onChange={handleRequirementsChange}
+            />
           </CardContent>
         </Card>
 
