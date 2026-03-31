@@ -41,21 +41,21 @@ export default async function OperatorDashboardPage({ params }: DashboardPagePro
       value: park?.averageRating ? park.averageRating.toFixed(1) : "—",
       sub: `from ${park?.reviewCount ?? 0} reviews`,
       icon: Star,
-      iconColor: "text-yellow-500",
+      iconBg: "bg-yellow-500",
     },
     {
       label: "Reviews",
       value: reviewCount,
       sub: "approved",
       icon: MessageSquare,
-      iconColor: "text-blue-500",
+      iconBg: "bg-blue-500",
     },
     {
       label: "Photos",
       value: photoCount,
       sub: "approved",
       icon: Camera,
-      iconColor: "text-purple-500",
+      iconBg: "bg-purple-500",
     },
     {
       label: "Trail Status",
@@ -64,31 +64,31 @@ export default async function OperatorDashboardPage({ params }: DashboardPagePro
         ? `as of ${new Date(latestCondition.createdAt).toLocaleDateString()}`
         : "No reports yet",
       icon: Activity,
-      iconColor: "text-green-500",
+      iconBg: "bg-green-500",
     },
   ];
 
   return (
     <div>
-      <div className="mb-6">
-        <h1 className="text-2xl font-bold text-gray-900">Dashboard</h1>
-        <p className="text-gray-500 text-sm mt-1">Overview for {ctx.parkName}</p>
-      </div>
+      <h1 className="text-3xl font-bold text-gray-900 mb-8">Dashboard</h1>
 
-      <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
-        {stats.map(({ label, value, sub, icon: Icon, iconColor }) => (
-          <Card key={label}>
-            <CardContent className="pt-5 pb-4">
-              <div className="flex items-center justify-between mb-3">
-                <p className="text-sm font-medium text-muted-foreground">{label}</p>
-                <Icon className={`w-5 h-5 ${iconColor}`} />
+      <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+        {stats.map(({ label, value, sub, icon: Icon, iconBg }) => (
+          <div
+            key={label}
+            className="bg-white rounded-lg shadow p-6 border border-gray-200"
+          >
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-sm font-medium text-gray-600">{label}</p>
+                <p className="text-3xl font-bold text-gray-900 mt-2">{value}</p>
+                <p className="text-sm text-gray-500 mt-1">{sub}</p>
               </div>
-              <p className="text-2xl font-bold text-gray-900 leading-none">
-                {value}
-              </p>
-              <p className="text-sm text-muted-foreground mt-2">{sub}</p>
-            </CardContent>
-          </Card>
+              <div className={`${iconBg} rounded-full p-3 flex-shrink-0`}>
+                <Icon className="w-6 h-6 text-white" />
+              </div>
+            </div>
+          </div>
         ))}
       </div>
 
