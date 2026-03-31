@@ -91,7 +91,7 @@ describe("OperatorIndexPage", () => {
     expect(screen.getByText(/owner/i)).toBeInTheDocument();
   });
 
-  it("links each park card to its operator dashboard", async () => {
+  it("renders dashboard, trail status, and settings quick-action links", async () => {
     vi.mocked(auth).mockResolvedValue({
       user: { id: "user-1" },
     } as any);
@@ -102,10 +102,43 @@ describe("OperatorIndexPage", () => {
     const component = await OperatorIndexPage();
     const { container } = render(component);
 
-    const link = container.querySelector(
-      'a[href="/operator/desert-riders-park/dashboard"]'
-    );
-    expect(link).toBeInTheDocument();
+    expect(
+      container.querySelector('a[href="/operator/desert-riders-park/dashboard"]')
+    ).toBeInTheDocument();
+    expect(
+      container.querySelector('a[href="/operator/desert-riders-park/conditions"]')
+    ).toBeInTheDocument();
+    expect(
+      container.querySelector('a[href="/operator/desert-riders-park/settings"]')
+    ).toBeInTheDocument();
+  });
+
+  it("shows owner badge for OWNER role", async () => {
+    vi.mocked(auth).mockResolvedValue({
+      user: { id: "user-1" },
+    } as any);
+    vi.mocked(prisma.operatorUser.findMany).mockResolvedValue([
+      mockMembership,
+    ] as any);
+
+    const component = await OperatorIndexPage();
+    render(component);
+
+    expect(screen.getByText("owner")).toBeInTheDocument();
+  });
+
+  it("shows member badge for MEMBER role", async () => {
+    vi.mocked(auth).mockResolvedValue({
+      user: { id: "user-1" },
+    } as any);
+    vi.mocked(prisma.operatorUser.findMany).mockResolvedValue([
+      { ...mockMembership, role: "MEMBER" },
+    ] as any);
+
+    const component = await OperatorIndexPage();
+    render(component);
+
+    expect(screen.getByText("member")).toBeInTheDocument();
   });
 
   it("renders multiple parks across multiple memberships", async () => {
