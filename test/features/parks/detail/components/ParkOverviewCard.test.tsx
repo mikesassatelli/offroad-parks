@@ -67,15 +67,16 @@ describe("ParkOverviewCard", () => {
   it("should display formatted day pass price", () => {
     render(<ParkOverviewCard park={mockPark} />);
 
-    expect(screen.getByText("Day Pass")).toBeInTheDocument();
-    expect(screen.getByText("$25")).toBeInTheDocument();
+    expect(screen.getByText("Pricing")).toBeInTheDocument();
+    // formatParkPricingSummary returns "$25 / day" for dayPassUSD: 25
+    expect(screen.getByText("$25 / day")).toBeInTheDocument();
   });
 
   it("should display em dash when day pass is undefined", () => {
     const parkWithoutPrice = { ...mockPark, dayPassUSD: undefined };
     render(<ParkOverviewCard park={parkWithoutPrice} />);
 
-    expect(screen.getByText("Day Pass")).toBeInTheDocument();
+    expect(screen.getByText("Pricing")).toBeInTheDocument();
   });
 
   it("should display acres", () => {

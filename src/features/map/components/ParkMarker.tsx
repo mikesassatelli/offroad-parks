@@ -1,6 +1,6 @@
 import { Marker, Popup } from "react-leaflet";
 import type { Park } from "@/lib/types";
-import { formatCurrency } from "@/lib/formatting";
+import { formatParkPricingSummary } from "@/lib/formatting";
 import Link from "next/link";
 
 interface ParkMarkerProps {
@@ -40,8 +40,8 @@ export function ParkMarker({
               {park.milesOfTrails ?? "—"}
             </div>
             <div>
-              <span className="text-muted-foreground">Day pass:</span>{" "}
-              {formatCurrency(park.dayPassUSD)}
+              <span className="text-muted-foreground">Pricing:</span>{" "}
+              {formatParkPricingSummary(park)}
             </div>
             <div>
               <span className="text-muted-foreground">Acres:</span> {park.acres ?? "—"}

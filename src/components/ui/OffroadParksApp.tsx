@@ -58,6 +58,10 @@ function OffroadParksAppInner({ parks }: OffroadParksAppProps) {
     setPermitRequired,
     membershipRequired,
     setMembershipRequired,
+    flagsRequired,
+    setFlagsRequired,
+    sparkArrestorRequired,
+    setSparkArrestorRequired,
     sortOption,
     setSortOption,
     availableStates,
@@ -115,7 +119,6 @@ function OffroadParksAppInner({ parks }: OffroadParksAppProps) {
         name: session.user.name,
         email: session.user.email,
         image: session.user.image,
-        // @ts-expect-error - role added in auth callback
         role: session.user.role,
       }
     : null;
@@ -167,6 +170,10 @@ function OffroadParksAppInner({ parks }: OffroadParksAppProps) {
             onPermitRequiredChange={setPermitRequired}
             membershipRequired={membershipRequired}
             onMembershipRequiredChange={setMembershipRequired}
+            flagsRequired={flagsRequired}
+            onFlagsRequiredChange={setFlagsRequired}
+            sparkArrestorRequired={sparkArrestorRequired}
+            onSparkArrestorRequiredChange={setSparkArrestorRequired}
             onClearFilters={clearAllFilters}
           />
 

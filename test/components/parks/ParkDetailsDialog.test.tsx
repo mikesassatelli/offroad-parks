@@ -144,7 +144,8 @@ describe("ParkDetailsDialog", () => {
       <ParkDetailsDialog park={mockPark} isOpen={true} onClose={mockOnClose} />,
     );
 
-    expect(screen.getByText(/\$25 day pass/)).toBeInTheDocument();
+    // Description now shows pricing summary "$25 / day"
+    expect(screen.getByText(/\$25 \/ day/)).toBeInTheDocument();
   });
 
   it("should display em dash for day pass when price is undefined", () => {
@@ -157,7 +158,8 @@ describe("ParkDetailsDialog", () => {
       />,
     );
 
-    expect(screen.getByText(/— day pass/)).toBeInTheDocument();
+    // No fees set → summary shows "—"
+    expect(screen.getByText(/—/)).toBeInTheDocument();
   });
 
   it("should display park notes", () => {

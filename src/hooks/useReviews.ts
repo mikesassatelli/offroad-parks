@@ -83,11 +83,23 @@ export function useReviews({
   };
 }
 
-// Hook for fetching recent reviews across all parks
+export interface RecentReviewFilters {
+  minRating?: string;
+  vehicleType?: string;
+  state?: string;
+}
+
+interface UseRecentReviewsReturn extends UseReviewsReturn {
+  filters: RecentReviewFilters;
+  setFilters: (filters: RecentReviewFilters) => void;
+  clearFilters: () => void;
+}
+
+// Hook for fetching recent reviews across all parks with optional filters
 export function useRecentReviews({
   initialPage = 1,
   limit = 10,
-}: Omit<UseReviewsOptions, "parkSlug">): UseReviewsReturn {
+}: Omit<UseReviewsOptions, "parkSlug">): UseRecentReviewsReturn {
   const [reviews, setReviews] = useState<Review[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -98,15 +110,22 @@ export function useRecentReviews({
     total: 0,
     totalPages: 0,
   });
+  const [filters, setFilters] = useState<RecentReviewFilters>({});
 
   const fetchReviews = useCallback(async () => {
     setIsLoading(true);
     setError(null);
 
+    const params = new URLSearchParams({
+      page: String(page),
+      limit: String(limit),
+    });
+    if (filters.minRating) params.set("minRating", filters.minRating);
+    if (filters.vehicleType) params.set("vehicleType", filters.vehicleType);
+    if (filters.state) params.set("state", filters.state);
+
     try {
-      const response = await fetch(
-        `/api/reviews/recent?page=${page}&limit=${limit}`
-      );
+      const response = await fetch(`/api/reviews/recent?${params.toString()}`);
 
       if (!response.ok) {
         throw new Error("Failed to fetch reviews");
@@ -121,11 +140,21 @@ export function useRecentReviews({
     } finally {
       setIsLoading(false);
     }
-  }, [page, limit]);
+  }, [page, limit, filters]);
 
   useEffect(() => {
     fetchReviews();
   }, [fetchReviews]);
+
+  const handleSetFilters = (newFilters: RecentReviewFilters) => {
+    setPage(initialPage); // Reset to page 1 on filter change
+    setFilters(newFilters);
+  };
+
+  const clearFilters = () => {
+    setPage(initialPage);
+    setFilters({});
+  };
 
   return {
     reviews,
@@ -134,5 +163,8 @@ export function useRecentReviews({
     pagination,
     setPage,
     refresh: fetchReviews,
+    filters,
+    setFilters: handleSetFilters,
+    clearFilters,
   };
 }

@@ -30,12 +30,16 @@ export async function GET(_request: Request, { params }: RouteParams) {
   }
 
   const staleThreshold = new Date(Date.now() - CONDITION_STALE_AFTER_MS);
+  const now = new Date();
 
   const conditions = await prisma.trailCondition.findMany({
     where: {
       parkId: park.id,
       reportStatus: "PUBLISHED",
-      createdAt: { gte: staleThreshold },
+      OR: [
+        { createdAt: { gte: staleThreshold } },
+        { pinnedUntil: { gt: now } },
+      ],
     },
     include: {
       user: {
@@ -77,6 +81,24 @@ export async function POST(request: Request, { params }: RouteParams) {
     return NextResponse.json(
       { error: `status must be one of: ${VALID_STATUSES.join(", ")}` },
       { status: 400 },
+    );
+  }
+
+  // Block if user already has a live (non-expired) condition for this park
+  const staleThresholdForUser = new Date(Date.now() - CONDITION_STALE_AFTER_MS);
+  const existingCondition = await prisma.trailCondition.findFirst({
+    where: {
+      parkId: park.id,
+      userId: session.user.id,
+      createdAt: { gte: staleThresholdForUser },
+      reportStatus: { in: ["PUBLISHED", "PENDING_REVIEW"] },
+    },
+  });
+
+  if (existingCondition) {
+    return NextResponse.json(
+      { error: "You already have an active trail condition report for this park. Delete it first to submit a new one." },
+      { status: 409 }
     );
   }
 

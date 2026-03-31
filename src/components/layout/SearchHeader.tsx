@@ -90,6 +90,7 @@ export function SearchHeader({
               <SelectItem value="rating">Highest Rated</SelectItem>
               <SelectItem value="difficulty-high">Most Difficult</SelectItem>
               <SelectItem value="difficulty-low">Least Difficult</SelectItem>
+              <SelectItem value="most-reviewed">Most Reviewed</SelectItem>
             </SelectContent>
           </Select>
         </div>

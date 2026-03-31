@@ -66,6 +66,13 @@ describe("UserMenu", () => {
     role: "ADMIN",
   };
 
+  const operatorUser = {
+    name: "Park Operator",
+    email: "operator@example.com",
+    image: null,
+    role: "OPERATOR",
+  };
+
   it("should render dropdown menu", () => {
     render(<UserMenu user={regularUser} onSignOut={mockOnSignOut} />);
 
@@ -115,10 +122,43 @@ describe("UserMenu", () => {
     expect(screen.queryByText("Admin Panel")).not.toBeInTheDocument();
   });
 
+  it("should not show Manage Parks for regular users", () => {
+    render(<UserMenu user={regularUser} onSignOut={mockOnSignOut} />);
+
+    expect(screen.queryByText("Manage Parks")).not.toBeInTheDocument();
+  });
+
   it("should show Admin Panel for admin users", () => {
     render(<UserMenu user={adminUser} onSignOut={mockOnSignOut} />);
 
     expect(screen.getByText("Admin Panel")).toBeInTheDocument();
+  });
+
+  it("should show Manage Parks for admin users", () => {
+    render(<UserMenu user={adminUser} onSignOut={mockOnSignOut} />);
+
+    expect(screen.getByText("Manage Parks")).toBeInTheDocument();
+  });
+
+  it("should show Manage Parks for operator users", () => {
+    render(<UserMenu user={operatorUser} onSignOut={mockOnSignOut} />);
+
+    expect(screen.getByText("Manage Parks")).toBeInTheDocument();
+  });
+
+  it("should not show Admin Panel for operator users", () => {
+    render(<UserMenu user={operatorUser} onSignOut={mockOnSignOut} />);
+
+    expect(screen.queryByText("Admin Panel")).not.toBeInTheDocument();
+  });
+
+  it("should render Manage Parks link pointing to /operator", () => {
+    const { container } = render(
+      <UserMenu user={operatorUser} onSignOut={mockOnSignOut} />,
+    );
+
+    const link = container.querySelector('a[href="/operator"]');
+    expect(link).toBeInTheDocument();
   });
 
   it("should render Admin Panel link for admin users", () => {
@@ -130,11 +170,19 @@ describe("UserMenu", () => {
     expect(adminLink).toBeInTheDocument();
   });
 
-  it("should have separator before Admin Panel and before Sign Out", () => {
+  it("should have separator before privileged items and before Sign Out for admin", () => {
     render(<UserMenu user={adminUser} onSignOut={mockOnSignOut} />);
 
     const separators = screen.getAllByTestId("dropdown-separator");
-    // Should have 2 separators for admin: before admin panel, before sign out
+    // 2 separators: one before the admin/operator group, one before Sign Out
+    expect(separators.length).toBe(2);
+  });
+
+  it("should have separator before Operator Portal and before Sign Out for operator", () => {
+    render(<UserMenu user={operatorUser} onSignOut={mockOnSignOut} />);
+
+    const separators = screen.getAllByTestId("dropdown-separator");
+    // 2 separators: one before the operator group, one before Sign Out
     expect(separators.length).toBe(2);
   });
 

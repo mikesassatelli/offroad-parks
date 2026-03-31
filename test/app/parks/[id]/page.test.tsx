@@ -18,6 +18,9 @@ vi.mock("@/lib/prisma", () => ({
     parkPhoto: {
       findMany: vi.fn(),
     },
+    parkClaim: {
+      findUnique: vi.fn().mockResolvedValue(null),
+    },
   },
 }));
 
@@ -268,6 +271,7 @@ describe("Park Detail Page", () => {
           camping: true,
           vehicleTypes: true,
           address: true,
+          operator: { select: { name: true } },
         },
       });
     });

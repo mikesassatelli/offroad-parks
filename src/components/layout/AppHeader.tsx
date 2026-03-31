@@ -12,7 +12,7 @@ interface AppHeaderProps {
     name?: string | null;
     email?: string | null;
     image?: string | null;
-    role?: string;
+    role?: string | null;
   } | null;
   /** Show back to parks button */
   showBackButton?: boolean;

@@ -72,6 +72,7 @@ export default async function ParkPage({ params }: ParkPageProps) {
       camping: true,
       vehicleTypes: true,
       address: true,
+      operator: { select: { name: true } },
     },
   });
 
@@ -103,12 +104,34 @@ export default async function ParkPage({ params }: ParkPageProps) {
   const userRole = (session?.user as { role?: string })?.role;
   const isAdmin = userRole === "ADMIN";
 
+  // Fetch any existing claim from this user for this park (any status)
+  const existingClaim = session?.user?.id
+    ? await prisma.parkClaim.findUnique({
+        where: { parkId_userId: { parkId: dbPark.id, userId: session.user.id } },
+        select: { status: true, reviewNotes: true },
+      })
+    : null;
+
+  // Check if the current user is an operator of this park
+  const isOperatorOfPark =
+    session?.user?.id && dbPark.operatorId
+      ? !!(await prisma.operatorUser.findUnique({
+          where: {
+            operatorId_userId: { operatorId: dbPark.operatorId, userId: session.user.id },
+          },
+          select: { id: true },
+        }))
+      : false;
+
   return (
     <ParkDetailPage
       park={park}
       photos={photos}
       currentUserId={session?.user?.id}
       isAdmin={isAdmin}
+      existingClaim={existingClaim}
+      isOperatorOfPark={isOperatorOfPark}
+      operatorName={dbPark.operator?.name ?? null}
     />
   );
 }

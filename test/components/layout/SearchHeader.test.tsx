@@ -151,6 +151,7 @@ describe("SearchHeader", () => {
     expect(screen.getByText("Lowest Day Pass")).toBeInTheDocument();
     expect(screen.getByText("Most Trail Miles")).toBeInTheDocument();
     expect(screen.getByText("Highest Rated")).toBeInTheDocument();
+    expect(screen.getByText("Most Reviewed")).toBeInTheDocument();
   });
 
   it("should render Nearest First sort option", () => {
