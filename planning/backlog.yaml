@@ -20,7 +20,7 @@ epics:
 
       - key: OP-19
         title: "Expand Recent Reviews Page Functionality"
-        status: backlog
+        status: done
         type: feature
         githubIssue: 21
         needsRefinement: true
@@ -44,7 +44,7 @@ epics:
 
       - key: OP-22
         title: "Refactor dayPassUSD into Rich Pricing Fields"
-        status: backlog
+        status: done
         type: refactor
         githubIssue: 23
         needsRefinement: true
@@ -95,7 +95,7 @@ epics:
 
       - key: OP-18
         title: "Refactor Park Detail Layout to Reduce Scrolling"
-        status: backlog
+        status: done
         type: refactor
         githubIssue: 20
         needsRefinement: false
@@ -113,7 +113,7 @@ epics:
 
       - key: OP-23
         title: "Surface New Camping Data in Camping Info Card"
-        status: backlog
+        status: done
         type: feature
         githubIssue: 24
         needsRefinement: false
@@ -122,7 +122,7 @@ epics:
 
       - key: OP-24
         title: "Surface New Operational Attributes on Detail & Search Cards"
-        status: backlog
+        status: done
         type: feature
         githubIssue: 25
         needsRefinement: false
@@ -131,7 +131,7 @@ epics:
 
       - key: OP-25
         title: "Add Average Recommended Stay to Park Detail Page"
-        status: backlog
+        status: done
         type: feature
         githubIssue: 26
         needsRefinement: false
@@ -140,7 +140,7 @@ epics:
 
       - key: OP-26
         title: "Update Contact/Location Card with Full Address"
-        status: backlog
+        status: done
         type: feature
         githubIssue: 27
         needsRefinement: false
@@ -155,7 +155,7 @@ epics:
     stories:
       - key: OP-21
         title: "Spike: Validate Filters/Sorts After Schema Expansion"
-        status: backlog
+        status: done
         type: spike
         githubIssue: 22
         needsRefinement: true
@@ -173,7 +173,7 @@ epics:
 
       - key: OP-56
         title: "Parks Near Me (Geolocation)"
-        status: backlog
+        status: done
         type: feature
         githubIssue: 51
         needsRefinement: true
@@ -197,7 +197,7 @@ epics:
 
       - key: OP-27
         title: "Add Dev DB & Migrate to Neon-Managed Postgres"
-        status: backlog
+        status: done
         type: infra
         githubIssue: 28
         needsRefinement: false
@@ -272,7 +272,7 @@ epics:
     stories:
       - key: OP-37
         title: "Data Model & API"
-        status: backlog
+        status: done
         type: feature
         githubIssue: 32
         needsRefinement: true
@@ -281,7 +281,7 @@ epics:
 
       - key: OP-38
         title: "Submission UI"
-        status: backlog
+        status: done
         type: feature
         githubIssue: 33
         needsRefinement: false
@@ -290,7 +290,7 @@ epics:
 
       - key: OP-39
         title: "Display & Voting"
-        status: backlog
+        status: done
         type: feature
         githubIssue: 34
         needsRefinement: false
@@ -299,7 +299,7 @@ epics:
 
       - key: OP-40
         title: "Expiry & Freshness Logic"
-        status: backlog
+        status: done
         type: feature
         githubIssue: 35
         needsRefinement: false
@@ -308,7 +308,7 @@ epics:
 
       - key: OP-41
         title: "Park Card Integration"
-        status: backlog
+        status: done
         type: feature
         githubIssue: 36
         needsRefinement: false
@@ -383,7 +383,7 @@ epics:
     stories:
       - key: OP-48
         title: "Improve Type Safety Across Codebase"
-        status: backlog
+        status: done
         type: refactor
         githubIssue: 43
         needsRefinement: true
@@ -392,7 +392,7 @@ epics:
 
       - key: OP-49
         title: "Test Suite Quality Audit"
-        status: backlog
+        status: done
         type: refactor
         githubIssue: 44
         needsRefinement: true
@@ -401,7 +401,7 @@ epics:
 
       - key: OP-50
         title: "Promote Code Reuse & Reduce Duplication"
-        status: backlog
+        status: done
         type: refactor
         githubIssue: 45
         needsRefinement: true
@@ -522,7 +522,7 @@ epics:
     stories:
       - key: OP-61
         title: "Operator Model & Schema Migration"
-        status: backlog
+        status: done
         type: feature
         githubIssue: null
         needsRefinement: false
@@ -536,7 +536,7 @@ epics:
 
       - key: OP-62
         title: "Park Claim Flow (Consumer Side)"
-        status: backlog
+        status: done
         type: feature
         githubIssue: null
         needsRefinement: false
@@ -549,7 +549,7 @@ epics:
 
       - key: OP-63
         title: "Claim Review Admin Queue"
-        status: backlog
+        status: done
         type: feature
         githubIssue: null
         needsRefinement: false
@@ -582,7 +582,7 @@ epics:
 
       - key: OP-65
         title: "Operator Trail Status Management"
-        status: backlog
+        status: done
         type: feature
         githubIssue: null
         needsRefinement: false
@@ -597,7 +597,7 @@ epics:
 
       - key: OP-66
         title: "Operator Park Listing Editor"
-        status: backlog
+        status: done
         type: feature
         githubIssue: null
         needsRefinement: false
@@ -779,7 +779,7 @@ epics:
     stories:
       - key: OP-00
         title: "Photo Deduplication Audit & Cleanup"
-        status: in-progress
+        status: done
         type: bug
         githubIssue: null
         needsRefinement: false
