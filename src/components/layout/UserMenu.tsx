@@ -1,6 +1,6 @@
 "use client";
 
-import { LogOut, Settings, User } from "lucide-react";
+import { Building2, LogOut, Settings, User } from "lucide-react";
 import Link from "next/link";
 import {
   DropdownMenu,
@@ -35,13 +35,21 @@ export function UserMenu({ user, onSignOut }: UserMenuProps) {
           <div className="font-medium">{user.name}</div>
           <div className="text-xs text-muted-foreground">{user.email}</div>
         </div>
-        {user.role === "ADMIN" && (
+        {(user.role === "ADMIN" || user.role === "OPERATOR") && (
           <>
             <DropdownMenuSeparator />
+            {user.role === "ADMIN" && (
+              <DropdownMenuItem asChild>
+                <Link href="/admin" className="cursor-pointer">
+                  <Settings className="w-4 h-4 mr-2" />
+                  Admin Panel
+                </Link>
+              </DropdownMenuItem>
+            )}
             <DropdownMenuItem asChild>
-              <Link href="/admin" className="cursor-pointer">
-                <Settings className="w-4 h-4 mr-2" />
-                Admin Panel
+              <Link href="/operator" className="cursor-pointer">
+                <Building2 className="w-4 h-4 mr-2" />
+                Manage Parks
               </Link>
             </DropdownMenuItem>
           </>

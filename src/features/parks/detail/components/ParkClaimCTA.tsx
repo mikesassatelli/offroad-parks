@@ -1,7 +1,8 @@
 "use client";
 
 import { useState } from "react";
-import { Building2, ChevronDown, ChevronUp, CheckCircle, XCircle } from "lucide-react";
+import { ArrowRight, Building2, ChevronDown, ChevronUp, CheckCircle, XCircle } from "lucide-react";
+import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 
@@ -44,7 +45,7 @@ export function ParkClaimCTA({ parkSlug, isLoggedIn, hasOperator, existingClaim,
   if (isOperatorOfPark) {
     return (
       <Card className="border-blue-200 bg-blue-50 dark:bg-blue-950/20 dark:border-blue-800">
-        <CardContent className="pt-4 pb-4">
+        <CardContent className="pt-4 pb-4 space-y-3">
           <div className="flex items-center gap-2 text-blue-700 dark:text-blue-400">
             <Building2 className="w-4 h-4 flex-shrink-0" />
             <div>
@@ -54,6 +55,13 @@ export function ParkClaimCTA({ parkSlug, isLoggedIn, hasOperator, existingClaim,
               </p>
             </div>
           </div>
+          <Link
+            href={`/operator/${parkSlug}/dashboard?from=park`}
+            className="flex items-center justify-center gap-2 w-full text-sm font-medium px-3 py-2 rounded-md border border-blue-300 dark:border-blue-700 text-blue-700 dark:text-blue-400 hover:bg-blue-100 dark:hover:bg-blue-900/30 transition-colors"
+          >
+            Go to Operator Portal
+            <ArrowRight className="w-4 h-4" />
+          </Link>
         </CardContent>
       </Card>
     );
