@@ -1,46 +1,27 @@
 import { NextResponse } from "next/server";
 import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
-import type { TrailConditionStatus } from "@prisma/client";
 
 export const runtime = "nodejs";
 
 type RouteParams = {
-  params: Promise<{ parkSlug: string }>;
+  params: Promise<{ parkSlug: string; conditionId: string }>;
 };
 
-const VALID_STATUSES: TrailConditionStatus[] = [
-  "OPEN",
-  "CLOSED",
-  "CAUTION",
-  "MUDDY",
-  "WET",
-  "SNOW",
-];
-
-interface ConditionBody {
-  status: TrailConditionStatus;
-  note?: string;
-  pinnedUntil?: string; // ISO date string — if set, pin is active until this date
-}
-
-// POST /api/operator/parks/[parkSlug]/conditions
-// Operator posts a pinned trail status. Auto-published (no admin review needed).
-export async function POST(request: Request, { params }: RouteParams) {
+// PATCH /api/operator/parks/[parkSlug]/conditions/[conditionId]
+// Update pinnedUntil — pass a future ISO date to set/extend the pin, or null to unpin.
+export async function PATCH(request: Request, { params }: RouteParams) {
   const session = await auth();
   if (!session?.user?.id) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 
-  const { parkSlug } = await params;
+  const { parkSlug, conditionId } = await params;
 
-  // Verify the user is an operator member for this park
   const park = await prisma.park.findUnique({
     where: { slug: parkSlug, status: "APPROVED" },
     select: {
       id: true,
-      name: true,
-      operatorId: true,
       operator: {
         select: {
           users: {
@@ -60,18 +41,20 @@ export async function POST(request: Request, { params }: RouteParams) {
     return NextResponse.json({ error: "Forbidden" }, { status: 403 });
   }
 
-  let body: ConditionBody;
+  const condition = await prisma.trailCondition.findUnique({
+    where: { id: conditionId },
+    select: { id: true, parkId: true },
+  });
+
+  if (!condition || condition.parkId !== park.id) {
+    return NextResponse.json({ error: "Condition not found" }, { status: 404 });
+  }
+
+  let body: { pinnedUntil?: string | null };
   try {
     body = await request.json();
   } catch {
     return NextResponse.json({ error: "Invalid request body" }, { status: 400 });
-  }
-
-  if (!body.status || !VALID_STATUSES.includes(body.status)) {
-    return NextResponse.json(
-      { error: `status must be one of: ${VALID_STATUSES.join(", ")}` },
-      { status: 400 }
-    );
   }
 
   let pinnedUntil: Date | null = null;
@@ -94,31 +77,25 @@ export async function POST(request: Request, { params }: RouteParams) {
     pinnedUntil = parsed;
   }
 
-  const condition = await prisma.trailCondition.create({
-    data: {
-      parkId: park.id,
-      userId: session.user.id,
-      status: body.status,
-      note: body.note?.trim() || null,
-      reportStatus: "PUBLISHED",
-      isOperatorPost: true,
-      pinnedUntil,
-    },
+  const updated = await prisma.trailCondition.update({
+    where: { id: conditionId },
+    data: { pinnedUntil },
   });
 
-  return NextResponse.json({ success: true, condition }, { status: 201 });
+  return NextResponse.json({ success: true, condition: updated });
 }
 
-// GET /api/operator/parks/[parkSlug]/conditions
-// Returns published conditions for this park (operator view — all, not just fresh).
-export async function GET(_request: Request, { params }: RouteParams) {
+// DELETE /api/operator/parks/[parkSlug]/conditions/[conditionId]
+// Operator deletes a trail condition report they own (or any report for their park).
+export async function DELETE(_request: Request, { params }: RouteParams) {
   const session = await auth();
   if (!session?.user?.id) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 
-  const { parkSlug } = await params;
+  const { parkSlug, conditionId } = await params;
 
+  // Verify operator membership for this park
   const park = await prisma.park.findUnique({
     where: { slug: parkSlug, status: "APPROVED" },
     select: {
@@ -142,20 +119,17 @@ export async function GET(_request: Request, { params }: RouteParams) {
     return NextResponse.json({ error: "Forbidden" }, { status: 403 });
   }
 
-  const conditions = await prisma.trailCondition.findMany({
-    where: { parkId: park.id, reportStatus: "PUBLISHED" },
-    orderBy: { createdAt: "desc" },
-    take: 20,
-    select: {
-      id: true,
-      status: true,
-      note: true,
-      isOperatorPost: true,
-      pinnedUntil: true,
-      createdAt: true,
-      user: { select: { id: true, name: true } },
-    },
+  // Verify the condition belongs to this park
+  const condition = await prisma.trailCondition.findUnique({
+    where: { id: conditionId },
+    select: { id: true, parkId: true },
   });
 
-  return NextResponse.json({ conditions });
+  if (!condition || condition.parkId !== park.id) {
+    return NextResponse.json({ error: "Condition not found" }, { status: 404 });
+  }
+
+  await prisma.trailCondition.delete({ where: { id: conditionId } });
+
+  return NextResponse.json({ success: true });
 }

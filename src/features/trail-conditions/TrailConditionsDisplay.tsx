@@ -8,10 +8,11 @@ import { TrailConditionForm } from "./TrailConditionForm";
 import {
   formatConditionAge,
   isConditionFresh,
+  isConditionPinned,
   CONDITION_LABELS,
 } from "@/lib/trail-conditions";
 import type { TrailConditionReport } from "@/lib/trail-conditions";
-import { CloudSun, ShieldCheck } from "lucide-react";
+import { CloudSun, Pin, ShieldCheck, Trash2 } from "lucide-react";
 
 interface TrailConditionsDisplayProps {
   parkSlug: string;
@@ -31,6 +32,7 @@ export function TrailConditionsDisplay({ parkSlug }: TrailConditionsDisplayProps
   const [conditions, setConditions] = useState<TrailConditionReport[]>([]);
   const [loading, setLoading] = useState(true);
   const [showForm, setShowForm] = useState(false);
+  const [deletingId, setDeletingId] = useState<string | null>(null);
 
   const loadConditions = useCallback(async () => {
     try {
@@ -49,12 +51,39 @@ export function TrailConditionsDisplay({ parkSlug }: TrailConditionsDisplayProps
     loadConditions();
   }, [loadConditions]);
 
-  const freshConditions = conditions.filter((c) => isConditionFresh(c.createdAt));
-  const mostRecent = freshConditions[0] ?? null;
+  const myActiveCondition = session?.user?.id
+    ? conditions.find(
+        (c) => c.userId === session.user!.id && isConditionFresh(c.createdAt)
+      ) ?? null
+    : null;
+
+  const freshConditions = conditions.filter(
+    (c) => isConditionFresh(c.createdAt) || isConditionPinned(c.pinnedUntil)
+  );
+  const activePin = freshConditions.find((c) => isConditionPinned(c.pinnedUntil)) ?? null;
+  const recentOperatorPost = freshConditions.find((c) => c.isOperatorPost) ?? null;
+  const featured = activePin ?? recentOperatorPost ?? freshConditions[0] ?? null;
+  const communityList = freshConditions.filter((c) => c.id !== featured?.id).slice(0, 4);
 
   const handleReportSuccess = () => {
     setShowForm(false);
     loadConditions();
+  };
+
+  const handleDeleteOwn = async (conditionId: string) => {
+    setDeletingId(conditionId);
+    try {
+      const res = await fetch(`/api/parks/${parkSlug}/conditions/${conditionId}`, {
+        method: "DELETE",
+      });
+      if (res.ok) {
+        setConditions((prev) => prev.filter((c) => c.id !== conditionId));
+      }
+    } catch {
+      // Non-critical
+    } finally {
+      setDeletingId(null);
+    }
   };
 
   return (
@@ -65,7 +94,7 @@ export function TrailConditionsDisplay({ parkSlug }: TrailConditionsDisplayProps
             <CloudSun className="w-4 h-4" />
             Trail Conditions
           </CardTitle>
-          {session?.user && !showForm && (
+          {session?.user && !showForm && !myActiveCondition && (
             <button
               onClick={() => setShowForm(true)}
               className="text-xs text-primary underline underline-offset-2 hover:opacity-80"
@@ -101,40 +130,62 @@ export function TrailConditionsDisplay({ parkSlug }: TrailConditionsDisplayProps
           </p>
         ) : (
           <div className="space-y-2">
-            {mostRecent && (
+            {featured && (
               <div className="flex items-center gap-2 flex-wrap">
                 <Badge
                   variant="outline"
-                  className={COLOR_CLASS[CONDITION_LABELS[mostRecent.status].color]}
+                  className={COLOR_CLASS[CONDITION_LABELS[featured.status].color]}
                 >
-                  {CONDITION_LABELS[mostRecent.status].label}
+                  {CONDITION_LABELS[featured.status].label}
                 </Badge>
-                {mostRecent.isOperatorPost && (
+                {featured.isOperatorPost && (
                   <Badge
                     variant="outline"
                     className="flex items-center gap-1 text-[10px] py-0 bg-blue-50 text-blue-700 border-blue-200"
                   >
                     <ShieldCheck className="w-3 h-3" />
-                    Park Management
+                    Park Operator
+                  </Badge>
+                )}
+                {isConditionPinned(featured.pinnedUntil) && (
+                  <Badge
+                    variant="outline"
+                    className="flex items-center gap-1 text-[10px] py-0 bg-blue-50 text-blue-700 border-blue-200"
+                  >
+                    <Pin className="w-3 h-3" />
+                    Until {new Date(featured.pinnedUntil!).toLocaleDateString()}
                   </Badge>
                 )}
                 <span className="text-xs text-muted-foreground">
-                  reported {formatConditionAge(mostRecent.createdAt)}
-                  {!mostRecent.isOperatorPost && mostRecent.user.name
-                    ? ` by ${mostRecent.user.name}`
-                    : ""}
+                  {isConditionPinned(featured.pinnedUntil)
+                    ? `posted ${formatConditionAge(featured.createdAt)}`
+                    : `reported ${formatConditionAge(featured.createdAt)}${
+                        !featured.isOperatorPost && featured.user.name
+                          ? ` by ${featured.user.name}`
+                          : ""
+                      }`}
                 </span>
+                {session?.user && !featured.isOperatorPost && featured.userId === session.user.id && (
+                  <button
+                    onClick={() => handleDeleteOwn(featured.id)}
+                    disabled={deletingId === featured.id}
+                    className="ml-auto text-gray-400 hover:text-red-500 disabled:opacity-40 transition-colors flex-shrink-0"
+                    aria-label="Delete my report"
+                  >
+                    <Trash2 className="w-3.5 h-3.5" />
+                  </button>
+                )}
               </div>
             )}
-            {mostRecent?.note && (
+            {featured?.note && (
               <p className="text-sm text-card-foreground/90 italic">
-                &ldquo;{mostRecent.note}&rdquo;
+                &ldquo;{featured.note}&rdquo;
               </p>
             )}
-            {freshConditions.length > 1 && (
+            {communityList.length > 0 && (
               <div className="border-t pt-2 mt-2 space-y-1">
                 <p className="text-xs font-medium text-muted-foreground">Recent reports</p>
-                {freshConditions.slice(1, 5).map((c) => (
+                {communityList.map((c) => (
                   <div key={c.id} className="flex items-center gap-1.5 text-xs text-muted-foreground">
                     <Badge
                       variant="outline"
@@ -142,7 +193,23 @@ export function TrailConditionsDisplay({ parkSlug }: TrailConditionsDisplayProps
                     >
                       {CONDITION_LABELS[c.status].label}
                     </Badge>
+                    {c.isOperatorPost && (
+                      <ShieldCheck className="w-3 h-3 text-blue-500 flex-shrink-0" />
+                    )}
                     <span>{formatConditionAge(c.createdAt)}</span>
+                    {c.user.name && !c.isOperatorPost && (
+                      <span className="text-xs">· {c.user.name}</span>
+                    )}
+                    {session?.user && !c.isOperatorPost && c.userId === session.user.id && (
+                      <button
+                        onClick={() => handleDeleteOwn(c.id)}
+                        disabled={deletingId === c.id}
+                        className="ml-auto text-gray-400 hover:text-red-500 disabled:opacity-40 transition-colors flex-shrink-0"
+                        aria-label="Delete my report"
+                      >
+                        <Trash2 className="w-3.5 h-3.5" />
+                      </button>
+                    )}
                   </div>
                 ))}
               </div>

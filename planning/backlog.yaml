@@ -550,7 +550,7 @@ epics:
     stories:
       - key: OP-64
         title: "Operator Portal Shell & Middleware"
-        status: backlog
+        status: done
         type: feature
         githubIssue: null
         needsRefinement: false

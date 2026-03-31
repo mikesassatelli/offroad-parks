@@ -4,7 +4,7 @@ import { useState, useEffect, useCallback } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Activity, ShieldCheck } from "lucide-react";
+import { Activity, Pin, PinOff, ShieldCheck, Trash2 } from "lucide-react";
 import { CONDITION_LABELS, formatConditionAge } from "@/lib/trail-conditions";
 import type { TrailConditionStatus } from "@/lib/trail-conditions";
 
@@ -22,6 +22,7 @@ interface Condition {
   status: TrailConditionStatus;
   note: string | null;
   isOperatorPost: boolean;
+  pinnedUntil: string | null;
   createdAt: string;
   user: { id: string; name: string | null };
 }
@@ -35,11 +36,14 @@ export function OperatorConditionsClient({ parkSlug, parkName }: OperatorConditi
   const [conditions, setConditions] = useState<Condition[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [deletingId, setDeletingId] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState(false);
 
   const [selectedStatus, setSelectedStatus] = useState<TrailConditionStatus>("OPEN");
   const [note, setNote] = useState("");
+  const [isPinned, setIsPinned] = useState(false);
+  const [pinnedUntil, setPinnedUntil] = useState("");
 
   const fetchConditions = useCallback(async () => {
     setIsLoading(true);
@@ -60,6 +64,45 @@ export function OperatorConditionsClient({ parkSlug, parkName }: OperatorConditi
     fetchConditions();
   }, [fetchConditions]);
 
+  const handleUpdatePin = async (conditionId: string, newPinnedUntil: string | null) => {
+    try {
+      const res = await fetch(
+        `/api/operator/parks/${parkSlug}/conditions/${conditionId}`,
+        {
+          method: "PATCH",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ pinnedUntil: newPinnedUntil }),
+        }
+      );
+      if (res.ok) {
+        setConditions((prev) =>
+          prev.map((c) =>
+            c.id === conditionId ? { ...c, pinnedUntil: newPinnedUntil } : c
+          )
+        );
+      }
+    } catch {
+      // Non-critical
+    }
+  };
+
+  const handleDelete = async (conditionId: string) => {
+    setDeletingId(conditionId);
+    try {
+      const res = await fetch(
+        `/api/operator/parks/${parkSlug}/conditions/${conditionId}`,
+        { method: "DELETE" }
+      );
+      if (res.ok) {
+        setConditions((prev) => prev.filter((c) => c.id !== conditionId));
+      }
+    } catch {
+      // Non-critical
+    } finally {
+      setDeletingId(null);
+    }
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError(null);
@@ -70,7 +113,11 @@ export function OperatorConditionsClient({ parkSlug, parkName }: OperatorConditi
       const res = await fetch(`/api/operator/parks/${parkSlug}/conditions`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ status: selectedStatus, note: note || undefined }),
+        body: JSON.stringify({
+          status: selectedStatus,
+          note: note || undefined,
+          pinnedUntil: isPinned && pinnedUntil ? pinnedUntil : undefined,
+        }),
       });
 
       const data = await res.json();
@@ -82,6 +129,8 @@ export function OperatorConditionsClient({ parkSlug, parkName }: OperatorConditi
 
       setSuccess(true);
       setNote("");
+      setIsPinned(false);
+      setPinnedUntil("");
       fetchConditions();
     } catch {
       setError("Failed to post condition. Please try again.");
@@ -99,7 +148,7 @@ export function OperatorConditionsClient({ parkSlug, parkName }: OperatorConditi
         </h1>
         <p className="text-gray-500 text-sm mt-1">
           Post authoritative trail condition updates for {parkName}. These appear with a
-          &ldquo;Park Management&rdquo; badge on your public listing.
+          &ldquo;Park Operator&rdquo; badge on your public listing.
         </p>
       </div>
 
@@ -147,6 +196,38 @@ export function OperatorConditionsClient({ parkSlug, parkName }: OperatorConditi
                 />
               </div>
 
+              <div className="border border-border rounded-md p-3 space-y-2">
+                <label className="flex items-center gap-2 cursor-pointer select-none">
+                  <input
+                    type="checkbox"
+                    checked={isPinned}
+                    onChange={(e) => setIsPinned(e.target.checked)}
+                    className="rounded"
+                  />
+                  <Pin className="w-3.5 h-3.5 text-blue-600" />
+                  <span className="text-sm font-medium">Pin this update</span>
+                </label>
+                {isPinned && (
+                  <div>
+                    <label className="text-xs text-muted-foreground block mb-1">
+                      Keep pinned until <span className="text-destructive">*</span>
+                    </label>
+                    <input
+                      type="date"
+                      required={isPinned}
+                      value={pinnedUntil}
+                      min={new Date(Date.now() + 86400000).toISOString().split("T")[0]}
+                      max={new Date(Date.now() + 365 * 86400000).toISOString().split("T")[0]}
+                      onChange={(e) => setPinnedUntil(e.target.value)}
+                      className="w-full text-sm border border-border rounded-md px-3 py-2 bg-background"
+                    />
+                    <p className="text-xs text-muted-foreground mt-1">
+                      This update will stay prominently displayed until the selected date, regardless of newer community reports.
+                    </p>
+                  </div>
+                )}
+              </div>
+
               {error && <p className="text-xs text-destructive">{error}</p>}
               {success && (
                 <p className="text-xs text-green-600 font-medium">
@@ -176,28 +257,62 @@ export function OperatorConditionsClient({ parkSlug, parkName }: OperatorConditi
             ) : conditions.length === 0 ? (
               <p className="text-sm text-muted-foreground">No condition reports yet.</p>
             ) : (
-              <div className="space-y-2">
-                {conditions.map((c) => (
-                  <div key={c.id} className="flex items-center gap-2 text-sm">
-                    <Badge
-                      variant="outline"
-                      className={`text-xs ${
-                        STATUS_OPTIONS.find((o) => o.value === c.status)?.color ?? ""
-                      }`}
-                    >
-                      {CONDITION_LABELS[c.status].label}
-                    </Badge>
-                    {c.isOperatorPost && (
-                      <ShieldCheck className="w-3 h-3 text-blue-500 flex-shrink-0" />
-                    )}
-                    <span className="text-muted-foreground text-xs">
-                      {formatConditionAge(c.createdAt)}
-                    </span>
-                    {c.note && (
-                      <span className="text-xs text-gray-500 truncate">— {c.note}</span>
-                    )}
-                  </div>
-                ))}
+              <div className="space-y-3">
+                {conditions.map((c) => {
+                  const isActivePin = c.pinnedUntil && new Date(c.pinnedUntil) > new Date();
+                  return (
+                    <div key={c.id} className="space-y-1">
+                      <div className="flex items-center gap-2 text-sm">
+                        <Badge
+                          variant="outline"
+                          className={`text-xs ${
+                            STATUS_OPTIONS.find((o) => o.value === c.status)?.color ?? ""
+                          }`}
+                        >
+                          {CONDITION_LABELS[c.status].label}
+                        </Badge>
+                        {c.isOperatorPost && (
+                          <ShieldCheck className="w-3 h-3 text-blue-500 flex-shrink-0" />
+                        )}
+                        {isActivePin && (
+                          <Pin className="w-3 h-3 text-blue-500 flex-shrink-0" />
+                        )}
+                        <span className="text-muted-foreground text-xs">
+                          {formatConditionAge(c.createdAt)}
+                        </span>
+                        {c.note && (
+                          <span className="text-xs text-gray-500 truncate">— {c.note}</span>
+                        )}
+                        <button
+                          onClick={() => handleDelete(c.id)}
+                          disabled={deletingId === c.id}
+                          className="ml-auto flex-shrink-0 text-gray-400 hover:text-red-500 disabled:opacity-40 transition-colors"
+                          aria-label="Delete condition"
+                        >
+                          <Trash2 className="w-3.5 h-3.5" />
+                        </button>
+                      </div>
+                      {c.pinnedUntil && (
+                        <div className="flex items-center gap-2 pl-0.5">
+                          <span className="text-xs text-blue-600">
+                            {isActivePin
+                              ? `Pinned until ${new Date(c.pinnedUntil).toLocaleDateString()}`
+                              : `Pin expired ${new Date(c.pinnedUntil).toLocaleDateString()}`}
+                          </span>
+                          {isActivePin && (
+                            <button
+                              onClick={() => handleUpdatePin(c.id, null)}
+                              className="text-xs text-gray-400 hover:text-red-500 flex items-center gap-0.5 transition-colors"
+                            >
+                              <PinOff className="w-3 h-3" />
+                              Unpin
+                            </button>
+                          )}
+                        </div>
+                      )}
+                    </div>
+                  );
+                })}
               </div>
             )}
           </CardContent>
