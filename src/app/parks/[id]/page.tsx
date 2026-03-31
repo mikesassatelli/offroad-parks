@@ -111,6 +111,17 @@ export default async function ParkPage({ params }: ParkPageProps) {
       })
     : null;
 
+  // Check if the current user is an operator of this park
+  const isOperatorOfPark =
+    session?.user?.id && dbPark.operatorId
+      ? !!(await prisma.operatorUser.findUnique({
+          where: {
+            operatorId_userId: { operatorId: dbPark.operatorId, userId: session.user.id },
+          },
+          select: { id: true },
+        }))
+      : false;
+
   return (
     <ParkDetailPage
       park={park}
@@ -118,6 +129,7 @@ export default async function ParkPage({ params }: ParkPageProps) {
       currentUserId={session?.user?.id}
       isAdmin={isAdmin}
       existingClaim={existingClaim}
+      isOperatorOfPark={isOperatorOfPark}
     />
   );
 }

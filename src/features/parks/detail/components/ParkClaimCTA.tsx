@@ -12,6 +12,8 @@ interface ParkClaimCTAProps {
   hasOperator?: boolean;
   /** Existing claim for this user+park, if any */
   existingClaim?: { status: string; reviewNotes: string | null } | null;
+  /** Whether the current user is an operator of this park */
+  isOperatorOfPark?: boolean;
 }
 
 interface ClaimFormData {
@@ -22,7 +24,7 @@ interface ClaimFormData {
   message: string;
 }
 
-export function ParkClaimCTA({ parkSlug, isLoggedIn, hasOperator, existingClaim }: ParkClaimCTAProps) {
+export function ParkClaimCTA({ parkSlug, isLoggedIn, hasOperator, existingClaim, isOperatorOfPark }: ParkClaimCTAProps) {
   const [isExpanded, setIsExpanded] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isSuccess, setIsSuccess] = useState(
@@ -36,6 +38,24 @@ export function ParkClaimCTA({ parkSlug, isLoggedIn, hasOperator, existingClaim 
     businessName: "",
     message: "",
   });
+
+  if (isOperatorOfPark) {
+    return (
+      <Card className="border-blue-200 bg-blue-50 dark:bg-blue-950/20 dark:border-blue-800">
+        <CardContent className="pt-4 pb-4">
+          <div className="flex items-center gap-2 text-blue-700 dark:text-blue-400">
+            <Building2 className="w-4 h-4 flex-shrink-0" />
+            <div>
+              <p className="text-sm font-medium">You manage this park</p>
+              <p className="text-xs text-blue-600 dark:text-blue-500 mt-0.5">
+                You&apos;re listed as an operator of this listing.
+              </p>
+            </div>
+          </div>
+        </CardContent>
+      </Card>
+    );
+  }
 
   if (hasOperator) return null;
 
