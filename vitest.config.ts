@@ -34,12 +34,13 @@ export default defineConfig({
         "src/app/admin/users/page.tsx", // Server component with Prisma
         "src/app/admin/parks/new/page.tsx", // Server component wrapper
         "src/app/admin/parks/[id]/edit/page.tsx", // Server component for editing parks
+        "src/lib/types.ts", // Pure type definitions, no logic to test
       ],
       thresholds: {
-        lines: 57,
-        functions: 57,
-        branches: 57,
-        statements: 57,
+        lines: 60,
+        functions: 60,
+        branches: 60,
+        statements: 60,
       },
     },
   },
