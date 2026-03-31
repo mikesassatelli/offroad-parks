@@ -38,56 +38,35 @@ describe("ParkAttributesCards", () => {
     expect(screen.getByText("Amenities")).toBeInTheDocument();
   });
 
-  it("should render terrain badges with formatted labels", () => {
+  it("should render terrain badges", () => {
     render(<ParkAttributesCards park={mockPark} />);
 
-    expect(screen.getByText("Sand")).toBeInTheDocument();
-    expect(screen.getByText("Rocks")).toBeInTheDocument();
-    expect(screen.getByText("Mud")).toBeInTheDocument();
+    expect(screen.getByText("sand")).toBeInTheDocument();
+    expect(screen.getByText("rocks")).toBeInTheDocument();
+    expect(screen.getByText("mud")).toBeInTheDocument();
   });
 
-  it("should render terrain badges with outline variant and no capitalize class", () => {
+  it("should render terrain badges with outline variant", () => {
     render(<ParkAttributesCards park={mockPark} />);
 
-    const sandBadge = screen.getByText("Sand");
+    const sandBadge = screen.getByText("sand");
     expect(sandBadge).toHaveAttribute("data-variant", "outline");
-    expect(sandBadge).not.toHaveClass("capitalize");
+    expect(sandBadge).toHaveClass("capitalize");
   });
 
-  it("should render amenity badges with formatted labels", () => {
+
+  it("should render amenity badges", () => {
     render(<ParkAttributesCards park={mockPark} />);
 
-    expect(screen.getByText("Restrooms")).toBeInTheDocument();
-    expect(screen.getByText("Showers")).toBeInTheDocument();
+    expect(screen.getByText("restrooms")).toBeInTheDocument();
+    expect(screen.getByText("showers")).toBeInTheDocument();
   });
 
-  it("should render amenity badges without capitalize class", () => {
+  it("should render amenity badges with default variant", () => {
     render(<ParkAttributesCards park={mockPark} />);
 
-    const restroomsBadge = screen.getByText("Restrooms");
-    expect(restroomsBadge).not.toHaveClass("capitalize");
-  });
-
-  it("should format motocrossTrack terrain as 'Motocross Track'", () => {
-    const parkWithMotocross: Park = {
-      ...mockPark,
-      terrain: ["motocrossTrack"],
-      amenities: [],
-    };
-    render(<ParkAttributesCards park={parkWithMotocross} />);
-
-    expect(screen.getByText("Motocross Track")).toBeInTheDocument();
-  });
-
-  it("should format picnicTable amenity as 'Picnic Table'", () => {
-    const parkWithPicnic: Park = {
-      ...mockPark,
-      terrain: [],
-      amenities: ["picnicTable"],
-    };
-    render(<ParkAttributesCards park={parkWithPicnic} />);
-
-    expect(screen.getByText("Picnic Table")).toBeInTheDocument();
+    const restroomsBadge = screen.getByText("restrooms");
+    expect(restroomsBadge).toHaveClass("capitalize");
   });
 
   it("should handle empty terrain array", () => {
@@ -95,15 +74,16 @@ describe("ParkAttributesCards", () => {
     render(<ParkAttributesCards park={parkNoTerrain} />);
 
     expect(screen.getByText("Terrain Types")).toBeInTheDocument();
-    expect(screen.queryByText("Sand")).not.toBeInTheDocument();
+    expect(screen.queryByText("sand")).not.toBeInTheDocument();
   });
+
 
   it("should handle empty amenities array", () => {
     const parkNoAmenities = { ...mockPark, amenities: [] };
     render(<ParkAttributesCards park={parkNoAmenities} />);
 
     expect(screen.getByText("Amenities")).toBeInTheDocument();
-    expect(screen.queryByText("Restrooms")).not.toBeInTheDocument();
+    expect(screen.queryByText("restrooms")).not.toBeInTheDocument();
   });
 
   it("should handle park with all empty arrays", () => {
@@ -124,7 +104,7 @@ describe("ParkAttributesCards", () => {
     expect(screen.getByText("Amenities")).toBeInTheDocument();
   });
 
-  it("should render single item in each category with formatted labels", () => {
+  it("should render single item in each category", () => {
     const singleItemPark: Park = {
       ...mockPark,
       terrain: ["sand"],
@@ -135,7 +115,7 @@ describe("ParkAttributesCards", () => {
 
     render(<ParkAttributesCards park={singleItemPark} />);
 
-    expect(screen.getByText("Sand")).toBeInTheDocument();
-    expect(screen.getByText("Restrooms")).toBeInTheDocument();
+    expect(screen.getByText("sand")).toBeInTheDocument();
+    expect(screen.getByText("restrooms")).toBeInTheDocument();
   });
 });
