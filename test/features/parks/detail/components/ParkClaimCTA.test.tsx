@@ -31,16 +31,40 @@ vi.mock("@/components/ui/button", () => ({
 }));
 
 vi.mock("lucide-react", () => ({
+  ArrowRight: () => <span data-testid="arrow-right" />,
   Building2: () => <span data-testid="building-icon" />,
   ChevronDown: () => <span data-testid="chevron-down" />,
   ChevronUp: () => <span data-testid="chevron-up" />,
   CheckCircle: () => <span data-testid="check-circle" />,
+  XCircle: () => <span data-testid="x-circle" />,
+}));
+
+vi.mock("next/link", () => ({
+  default: ({ children, href, className }: any) => (
+    <a href={href} className={className}>{children}</a>
+  ),
 }));
 
 describe("ParkClaimCTA", () => {
   beforeEach(() => {
     vi.clearAllMocks();
     global.fetch = vi.fn();
+  });
+
+  it("renders manage link when isOperatorOfPark is true", () => {
+    render(
+      <ParkClaimCTA
+        parkSlug="test-park"
+        isLoggedIn={true}
+        isOperatorOfPark={true}
+      />
+    );
+    const manageLink = screen.getByText("Manage this park");
+    expect(manageLink).toBeInTheDocument();
+    expect(manageLink.closest("a")).toHaveAttribute(
+      "href",
+      "/operator/test-park/dashboard"
+    );
   });
 
   it("renders a managed-by notice when hasOperator is true", () => {

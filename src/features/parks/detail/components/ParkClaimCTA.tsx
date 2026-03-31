@@ -1,7 +1,8 @@
 "use client";
 
 import { useState } from "react";
-import { Building2, ChevronDown, ChevronUp, CheckCircle, XCircle } from "lucide-react";
+import { ArrowRight, Building2, ChevronDown, ChevronUp, CheckCircle, XCircle } from "lucide-react";
+import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 
@@ -52,6 +53,13 @@ export function ParkClaimCTA({ parkSlug, isLoggedIn, hasOperator, existingClaim,
               <p className="text-xs text-blue-600 dark:text-blue-500 mt-0.5">
                 You&apos;re registered as an operator of this park.
               </p>
+              <Link
+                href={`/operator/${parkSlug}/dashboard`}
+                className="inline-flex items-center gap-1 text-xs font-medium text-blue-700 dark:text-blue-400 underline underline-offset-2 hover:opacity-80 mt-1.5"
+              >
+                Manage this park
+                <ArrowRight className="w-3 h-3" />
+              </Link>
             </div>
           </div>
         </CardContent>
