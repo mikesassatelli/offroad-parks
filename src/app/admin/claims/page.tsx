@@ -6,7 +6,7 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { CheckCircle, XCircle, Building2, User, MapPin, Phone, Mail, MessageSquare } from "lucide-react";
+import { CheckCircle, XCircle, Trash2, Building2, User, MapPin, Phone, Mail, MessageSquare } from "lucide-react";
 
 type ClaimStatus = "PENDING" | "APPROVED" | "REJECTED";
 
@@ -101,6 +101,24 @@ export default function AdminClaimsPage() {
       }
     } catch {
       alert("Failed to approve claim");
+    } finally {
+      setActionLoading(null);
+    }
+  };
+
+  const handleDelete = async (claimId: string, claimantName: string) => {
+    if (!confirm(`Delete the claim from "${claimantName}"? This cannot be undone and will also remove any linked operator data.`)) return;
+    setActionLoading(claimId);
+    try {
+      const response = await fetch(`/api/admin/claims/${claimId}`, { method: "DELETE" });
+      if (response.ok) {
+        fetchClaims();
+      } else {
+        const data = await response.json();
+        alert(data.error || "Failed to delete claim");
+      }
+    } catch {
+      alert("Failed to delete claim");
     } finally {
       setActionLoading(null);
     }
@@ -203,9 +221,22 @@ export default function AdminClaimsPage() {
                       )}
                     </div>
                   </div>
-                  <Badge variant={statusBadgeVariant(claim.status)}>
-                    {claim.status}
-                  </Badge>
+                  <div className="flex items-center gap-2">
+                    <Badge variant={statusBadgeVariant(claim.status)}>
+                      {claim.status}
+                    </Badge>
+                    <Button
+                      size="sm"
+                      variant="ghost"
+                      className="h-7 w-7 p-0 text-gray-400 hover:text-destructive"
+                      onClick={() => handleDelete(claim.id, claim.claimantName)}
+                      disabled={actionLoading === claim.id}
+                      data-testid={`delete-${claim.id}`}
+                      title="Delete claim"
+                    >
+                      <Trash2 className="w-4 h-4" />
+                    </Button>
+                  </div>
                 </div>
               </CardHeader>
 
