@@ -18,6 +18,9 @@ vi.mock("@/lib/prisma", () => ({
     parkPhoto: {
       findMany: vi.fn(),
     },
+    parkClaim: {
+      findUnique: vi.fn().mockResolvedValue(null),
+    },
   },
 }));
 

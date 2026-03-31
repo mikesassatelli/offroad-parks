@@ -1,0 +1,214 @@
+"use client";
+
+import { useState } from "react";
+import { Building2, ChevronDown, ChevronUp, CheckCircle } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+
+interface ParkClaimCTAProps {
+  parkSlug: string;
+  isLoggedIn: boolean;
+  /** If the park already has an operator, hide the CTA */
+  hasOperator?: boolean;
+  /** If the current user already has a pending claim for this park, show the submitted state */
+  hasPendingClaim?: boolean;
+}
+
+interface ClaimFormData {
+  claimantName: string;
+  claimantEmail: string;
+  claimantPhone: string;
+  businessName: string;
+  message: string;
+}
+
+export function ParkClaimCTA({ parkSlug, isLoggedIn, hasOperator, hasPendingClaim }: ParkClaimCTAProps) {
+  const [isExpanded, setIsExpanded] = useState(false);
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [isSuccess, setIsSuccess] = useState(hasPendingClaim ?? false);
+  const [error, setError] = useState<string | null>(null);
+  const [form, setForm] = useState<ClaimFormData>({
+    claimantName: "",
+    claimantEmail: "",
+    claimantPhone: "",
+    businessName: "",
+    message: "",
+  });
+
+  if (hasOperator) return null;
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setError(null);
+    setIsSubmitting(true);
+
+    try {
+      const res = await fetch(`/api/parks/${parkSlug}/claim`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          claimantName: form.claimantName,
+          claimantEmail: form.claimantEmail,
+          claimantPhone: form.claimantPhone || undefined,
+          businessName: form.businessName || undefined,
+          message: form.message || undefined,
+        }),
+      });
+
+      const data = await res.json();
+
+      if (!res.ok) {
+        setError(data.error || "Failed to submit claim");
+        return;
+      }
+
+      setIsSuccess(true);
+      setIsExpanded(false);
+    } catch {
+      setError("Failed to submit claim. Please try again.");
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
+  if (isSuccess) {
+    return (
+      <Card className="border-green-200 bg-green-50 dark:bg-green-950/20 dark:border-green-800">
+        <CardContent className="pt-4 pb-4">
+          <div className="flex items-center gap-2 text-green-700 dark:text-green-400">
+            <CheckCircle className="w-4 h-4 flex-shrink-0" />
+            <div>
+              <p className="text-sm font-medium">Claim submitted!</p>
+              <p className="text-xs text-green-600 dark:text-green-500 mt-0.5">
+                We&apos;ll review your request and get back to you by email.
+              </p>
+            </div>
+          </div>
+        </CardContent>
+      </Card>
+    );
+  }
+
+  return (
+    <Card>
+      <CardHeader className="pb-3">
+        <CardTitle className="text-base flex items-center gap-2">
+          <Building2 className="w-4 h-4" />
+          Own or manage this park?
+        </CardTitle>
+      </CardHeader>
+      <CardContent className="space-y-3">
+        <p className="text-sm text-muted-foreground">
+          Claim your listing to manage your park&apos;s profile, post trail conditions, and respond to visitors.
+        </p>
+
+        {!isLoggedIn ? (
+          <p className="text-xs text-muted-foreground">
+            {/* eslint-disable-next-line @next/next/no-html-link-for-pages */}
+            <a
+              href="/api/auth/signin"
+              className="text-primary underline underline-offset-2 font-medium hover:opacity-80"
+            >
+              Sign in
+            </a>{" "}
+            to claim this park.
+          </p>
+        ) : (
+          <>
+            <Button
+              variant="outline"
+              size="sm"
+              className="w-full"
+              onClick={() => setIsExpanded((v) => !v)}
+            >
+              Claim this park
+              {isExpanded ? (
+                <ChevronUp className="w-4 h-4 ml-2" />
+              ) : (
+                <ChevronDown className="w-4 h-4 ml-2" />
+              )}
+            </Button>
+
+            {isExpanded && (
+              <form onSubmit={handleSubmit} className="space-y-3 pt-1" data-testid="claim-form">
+                <div>
+                  <label className="text-xs text-muted-foreground block mb-1">
+                    Your name <span className="text-destructive">*</span>
+                  </label>
+                  <input
+                    type="text"
+                    required
+                    value={form.claimantName}
+                    onChange={(e) => setForm((f) => ({ ...f, claimantName: e.target.value }))}
+                    className="w-full text-sm border border-border rounded-md px-3 py-2 bg-background"
+                    placeholder="Jane Smith"
+                  />
+                </div>
+                <div>
+                  <label className="text-xs text-muted-foreground block mb-1">
+                    Contact email <span className="text-destructive">*</span>
+                  </label>
+                  <input
+                    type="email"
+                    required
+                    value={form.claimantEmail}
+                    onChange={(e) => setForm((f) => ({ ...f, claimantEmail: e.target.value }))}
+                    className="w-full text-sm border border-border rounded-md px-3 py-2 bg-background"
+                    placeholder="jane@example.com"
+                  />
+                </div>
+                <div>
+                  <label className="text-xs text-muted-foreground block mb-1">
+                    Phone (optional)
+                  </label>
+                  <input
+                    type="tel"
+                    value={form.claimantPhone}
+                    onChange={(e) => setForm((f) => ({ ...f, claimantPhone: e.target.value }))}
+                    className="w-full text-sm border border-border rounded-md px-3 py-2 bg-background"
+                    placeholder="(555) 555-5555"
+                  />
+                </div>
+                <div>
+                  <label className="text-xs text-muted-foreground block mb-1">
+                    Business / organization name (optional)
+                  </label>
+                  <input
+                    type="text"
+                    value={form.businessName}
+                    onChange={(e) => setForm((f) => ({ ...f, businessName: e.target.value }))}
+                    className="w-full text-sm border border-border rounded-md px-3 py-2 bg-background"
+                    placeholder="Desert Riders Association"
+                  />
+                </div>
+                <div>
+                  <label className="text-xs text-muted-foreground block mb-1">
+                    Why are you claiming this park? (optional)
+                  </label>
+                  <textarea
+                    value={form.message}
+                    onChange={(e) => setForm((f) => ({ ...f, message: e.target.value }))}
+                    className="w-full text-sm border border-border rounded-md px-3 py-2 bg-background"
+                    rows={3}
+                    placeholder="I am the owner/manager of this park..."
+                  />
+                </div>
+                {error && (
+                  <p className="text-xs text-destructive">{error}</p>
+                )}
+                <Button
+                  type="submit"
+                  size="sm"
+                  className="w-full"
+                  disabled={isSubmitting}
+                >
+                  {isSubmitting ? "Submitting…" : "Submit claim"}
+                </Button>
+              </form>
+            )}
+          </>
+        )}
+      </CardContent>
+    </Card>
+  );
+}

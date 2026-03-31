@@ -78,6 +78,7 @@ describe("GET /api/parks/[slug]", () => {
         city: "Test City",
         state: "CA",
       },
+      hasOperator: false,
     });
 
     expect(prisma.park.findUnique).toHaveBeenCalledWith({
@@ -210,6 +211,7 @@ describe("GET /api/parks/[slug]", () => {
       address: {
         state: "TX",
       },
+      hasOperator: false,
     });
   });
 

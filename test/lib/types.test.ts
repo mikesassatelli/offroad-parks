@@ -21,6 +21,7 @@ describe("transformDbPark", () => {
       acres: 1000,
       notes: "Great park for off-roading",
       status: "APPROVED",
+      operatorId: null,
       submitterId: null,
       submitterName: null,
       averageRating: 4.5,
@@ -96,6 +97,7 @@ describe("transformDbPark", () => {
       averageTerrain: 4.2,
       averageFacilities: 3.8,
       reviewCount: 10,
+      hasOperator: false,
     });
   });
 
@@ -119,6 +121,7 @@ describe("transformDbPark", () => {
       acres: null,
       notes: null,
       status: "APPROVED",
+      operatorId: null,
       submitterId: null,
       submitterName: null,
       averageRating: null,
@@ -190,6 +193,7 @@ describe("transformDbPark", () => {
       averageTerrain: undefined,
       averageFacilities: undefined,
       reviewCount: 0,
+      hasOperator: false,
     });
   });
 
@@ -213,6 +217,7 @@ describe("transformDbPark", () => {
       acres: null,
       notes: null,
       status: "APPROVED",
+      operatorId: null,
       submitterId: null,
       submitterName: null,
       averageRating: null,
@@ -275,6 +280,7 @@ describe("transformDbPark", () => {
       acres: null,
       notes: null,
       status: "APPROVED",
+      operatorId: null,
       submitterId: null,
       submitterName: null,
       averageRating: null,
@@ -337,6 +343,7 @@ describe("transformDbPark", () => {
       acres: null,
       notes: null,
       status: "APPROVED",
+      operatorId: null,
       submitterId: null,
       submitterName: null,
       averageRating: null,
@@ -405,6 +412,7 @@ describe("transformDbPark", () => {
       acres: null,
       notes: null,
       status: "APPROVED",
+      operatorId: null,
       submitterId: null,
       submitterName: null,
       averageRating: null,
@@ -479,6 +487,7 @@ describe("transformDbPark", () => {
       acres: null,
       notes: null,
       status: "APPROVED",
+      operatorId: null,
       submitterId: null,
       submitterName: null,
       averageRating: null,
