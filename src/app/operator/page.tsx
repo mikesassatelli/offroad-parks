@@ -2,10 +2,9 @@ import { redirect } from "next/navigation";
 import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import Link from "next/link";
-import { Badge } from "@/components/ui/badge";
 import { Card, CardContent } from "@/components/ui/card";
 import { AppHeader } from "@/components/layout/AppHeader";
-import { Activity, BarChart3, MapPin, Settings } from "lucide-react";
+import { BarChart3, MapPin } from "lucide-react";
 
 export default async function OperatorIndexPage() {
   const session = await auth();
@@ -74,53 +73,25 @@ export default async function OperatorIndexPage() {
         <div className="space-y-4" data-testid="park-list">
           {managedParks.map(({ park, operatorName, role }) => (
             <Card key={park.id}>
-              <CardContent className="pt-4 pb-4 space-y-3">
-                {/* Header row */}
-                <div className="flex items-start justify-between gap-3">
-                  <div className="flex items-start gap-3">
-                    <MapPin className="w-5 h-5 text-gray-400 mt-0.5 flex-shrink-0" />
-                    <div>
-                      <p className="font-semibold text-gray-900">{park.name}</p>
-                      <p className="text-xs text-gray-500 mt-0.5">
-                        {park.address?.city ? `${park.address.city}, ` : ""}
-                        {park.address?.state}
-                        {operatorName ? ` · ${operatorName}` : ""}
-                      </p>
-                    </div>
-                  </div>
-                  <Badge
-                    variant={role === "OWNER" ? "default" : "secondary"}
-                    className="flex-shrink-0 capitalize"
-                  >
-                    {role.toLowerCase()}
-                  </Badge>
+              <CardContent className="pt-4 pb-4 flex items-center justify-between gap-4">
+                <div>
+                  <p className="font-semibold text-gray-900">{park.name}</p>
+                  {(park.address?.city || park.address?.state) && (
+                    <p className="text-xs text-gray-500 mt-0.5 flex items-center gap-1">
+                      <MapPin className="w-3 h-3 flex-shrink-0" />
+                      {park.address.city ? `${park.address.city}, ` : ""}
+                      {park.address.state}
+                    </p>
+                  )}
                 </div>
-
-                {/* Quick actions */}
-                <div className="flex flex-wrap gap-2 pt-1 border-t border-border">
-                  <Link
-                    href={`/operator/${park.slug}/dashboard`}
-                    className="inline-flex items-center gap-1.5 text-xs font-medium px-3 py-1.5 rounded-md border border-border bg-background hover:bg-muted transition-colors"
-                    data-testid={`dashboard-link-${park.slug}`}
-                  >
-                    <BarChart3 className="w-3.5 h-3.5" />
-                    Dashboard
-                  </Link>
-                  <Link
-                    href={`/operator/${park.slug}/conditions`}
-                    className="inline-flex items-center gap-1.5 text-xs font-medium px-3 py-1.5 rounded-md border border-border bg-background hover:bg-muted transition-colors"
-                  >
-                    <Activity className="w-3.5 h-3.5" />
-                    Trail Status
-                  </Link>
-                  <Link
-                    href={`/operator/${park.slug}/settings`}
-                    className="inline-flex items-center gap-1.5 text-xs font-medium px-3 py-1.5 rounded-md border border-border bg-background hover:bg-muted transition-colors"
-                  >
-                    <Settings className="w-3.5 h-3.5" />
-                    Park Settings
-                  </Link>
-                </div>
+                <Link
+                  href={`/operator/${park.slug}/dashboard`}
+                  className="inline-flex items-center gap-1.5 text-xs font-medium px-3 py-1.5 rounded-md border border-border bg-background hover:bg-muted transition-colors flex-shrink-0"
+                  data-testid={`dashboard-link-${park.slug}`}
+                >
+                  <BarChart3 className="w-3.5 h-3.5" />
+                  Dashboard
+                </Link>
               </CardContent>
             </Card>
           ))}
