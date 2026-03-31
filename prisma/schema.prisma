@@ -54,10 +54,7 @@ model User {
   trailConditions  TrailCondition[]
   operatorUsers    OperatorUser[]
   parkClaims       ParkClaim[]
-<<<<<<< HEAD
-=======
   parkEditLogs     ParkEditLog[]
->>>>>>> 69de108 (feat(OP-66): operator park listing editor — PATCH endpoint with audit log and settings UI)
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -135,10 +132,7 @@ model Park {
   operator         Operator?        @relation(fields: [operatorId], references: [id], onDelete: SetNull)
   operatorId       String?
   parkClaims       ParkClaim[]
-<<<<<<< HEAD
-=======
   editLogs         ParkEditLog[]
->>>>>>> 69de108 (feat(OP-66): operator park listing editor — PATCH endpoint with audit log and settings UI)
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -517,8 +511,6 @@ model ParkClaim {
   @@index([parkId])
   @@index([userId])
 }
-<<<<<<< HEAD
-=======
 
 // Audit log for operator edits to park listings
 model ParkEditLog {
@@ -537,4 +529,3 @@ model ParkEditLog {
   @@index([userId])
   @@index([createdAt])
 }
->>>>>>> 69de108 (feat(OP-66): operator park listing editor — PATCH endpoint with audit log and settings UI)
