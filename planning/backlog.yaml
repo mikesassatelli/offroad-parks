@@ -794,7 +794,7 @@ epics:
 
       - key: OP-00B
         title: "Admin Photo Reassign Tool"
-        status: backlog
+        status: cancelled
         type: feature
         githubIssue: null
         needsRefinement: false
@@ -807,7 +807,7 @@ epics:
 
       - key: OP-00C
         title: "Bulk Upload Deduplication Guard"
-        status: backlog
+        status: cancelled
         type: feature
         githubIssue: null
         needsRefinement: false
@@ -820,7 +820,7 @@ epics:
 
       - key: OP-00D
         title: "Community Photo Sourcing CTA"
-        status: backlog
+        status: done
         type: feature
         githubIssue: null
         needsRefinement: false
