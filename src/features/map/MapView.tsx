@@ -1,26 +1,43 @@
 "use client";
 
 import { useMemo } from "react";
-import { MapContainer, TileLayer } from "react-leaflet";
-import type { Park } from "@/lib/types";
+import { MapContainer, TileLayer, useMapEvents } from "react-leaflet";
+import type { Park, RouteWaypoint } from "@/lib/types";
 import { MapBoundsHandler } from "./components/MapBoundsHandler";
 import { ParkMarker } from "./components/ParkMarker";
 import { RoutePolylines } from "./components/RoutePolylines";
 import "./utils/markers"; // Initialize marker icons
 import "leaflet/dist/leaflet.css";
 
+interface MapClickHandlerProps {
+  onMapClick?: (lat: number, lng: number) => void;
+}
+
+function MapClickHandler({ onMapClick }: MapClickHandlerProps) {
+  useMapEvents({
+    click(e) {
+      onMapClick?.(e.latlng.lat, e.latlng.lng);
+    },
+  });
+  return null;
+}
+
 interface MapViewProps {
   parks: Park[];
-  routeParks?: Park[];
+  routeWaypoints?: RouteWaypoint[];
+  routeGeometry?: GeoJSON.LineString | null;
   onAddToRoute?: (park: Park) => void;
   isParkInRoute?: (parkId: string) => boolean;
+  onMapClick?: (lat: number, lng: number) => void;
 }
 
 export function MapView({
   parks,
-  routeParks = [],
+  routeWaypoints = [],
+  routeGeometry,
   onAddToRoute,
   isParkInRoute,
+  onMapClick,
 }: MapViewProps) {
   const parksWithCoordinates = useMemo(
     () => parks.filter((park) => park.coords),
@@ -47,15 +64,24 @@ export function MapView({
           attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
           url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
         />
-        <MapBoundsHandler parks={parksWithCoordinates} />
+        <MapBoundsHandler
+          parks={parksWithCoordinates}
+          waypoints={routeWaypoints.length > 0 ? routeWaypoints : undefined}
+        />
+        {onMapClick && <MapClickHandler onMapClick={onMapClick} />}
 
-        {/* Draw route lines between parks with distance labels */}
-        <RoutePolylines routeParks={routeParks} />
+        {/* Draw route lines between waypoints */}
+        <RoutePolylines
+          routeParks={routeWaypoints}
+          routeGeometry={routeGeometry}
+        />
 
         {/* Render park markers */}
         {parksWithCoordinates.map((park) => {
           const isInRoute = isParkInRoute?.(park.id) ?? false;
-          const routeIndex = routeParks.findIndex((p) => p.id === park.id);
+          const routeIndex = routeWaypoints.findIndex(
+            (w) => w.parkId === park.id,
+          );
 
           return (
             <ParkMarker

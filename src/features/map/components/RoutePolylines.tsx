@@ -1,35 +1,52 @@
 import { Polyline, Tooltip } from "react-leaflet";
-import type { Park } from "@/lib/types";
+import type { RouteWaypoint } from "@/lib/types";
 import { calculateDistance } from "@/features/map/utils/distance";
 
 interface RoutePolylinesProps {
-  routeParks: Park[];
+  routeParks: RouteWaypoint[];
+  routeGeometry?: GeoJSON.LineString | null;
 }
 
-export function RoutePolylines({ routeParks }: RoutePolylinesProps) {
+export function RoutePolylines({ routeParks, routeGeometry }: RoutePolylinesProps) {
   if (routeParks.length < 2) return null;
 
+  // Real road-following route from Mapbox Directions API
+  if (routeGeometry) {
+    // GeoJSON coords are [lng, lat] — Leaflet needs [lat, lng]
+    const positions: [number, number][] = routeGeometry.coordinates.map(
+      ([lng, lat]) => [lat, lng],
+    );
+    return (
+      <Polyline
+        positions={positions}
+        color="#3b82f6"
+        weight={4}
+        opacity={0.8}
+      />
+    );
+  }
+
+  // Fallback: straight dashed lines between waypoints
   return (
     <>
-      {routeParks.slice(0, -1).map((park, index) => {
-        const nextPark = routeParks[index + 1];
-        if (!park.coords || !nextPark.coords) return null;
+      {routeParks.slice(0, -1).map((waypoint, index) => {
+        const nextWaypoint = routeParks[index + 1];
 
         const segmentPositions: [number, number][] = [
-          [park.coords.lat, park.coords.lng],
-          [nextPark.coords.lat, nextPark.coords.lng],
+          [waypoint.lat, waypoint.lng],
+          [nextWaypoint.lat, nextWaypoint.lng],
         ];
 
         const distance = calculateDistance(
-          park.coords.lat,
-          park.coords.lng,
-          nextPark.coords.lat,
-          nextPark.coords.lng,
+          waypoint.lat,
+          waypoint.lng,
+          nextWaypoint.lat,
+          nextWaypoint.lng,
         );
 
         return (
           <Polyline
-            key={`${park.id}-${nextPark.id}`}
+            key={`${waypoint.id}-${nextWaypoint.id}`}
             positions={segmentPositions}
             color="#3b82f6"
             weight={3}

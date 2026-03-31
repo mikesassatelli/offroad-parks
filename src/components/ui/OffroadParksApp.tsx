@@ -79,7 +79,6 @@ function OffroadParksAppInner({ parks }: OffroadParksAppProps) {
         setLocationLoading(false);
       },
       () => {
-        // Silently fall back — permission denied or unavailable
         setLocationLoading(false);
       },
     );
@@ -105,13 +104,17 @@ function OffroadParksAppInner({ parks }: OffroadParksAppProps) {
   const { toggleFavorite, isFavorite } = useFavorites();
 
   const {
-    routeParks,
+    waypoints,
+    routeResult,
+    isRouting,
+    isSaving,
     addParkToRoute,
-    removeParkFromRoute,
+    addCustomWaypoint,
+    removeWaypoint,
     clearRoute,
     reorderRoute,
     isParkInRoute,
-    totalRouteDistance,
+    saveRoute,
   } = useRouteBuilder();
 
   const user = session?.user
@@ -212,18 +215,23 @@ function OffroadParksAppInner({ parks }: OffroadParksAppProps) {
                   <div className="lg:col-span-2">
                     <MapView
                       parks={filteredParks}
-                      routeParks={routeParks}
+                      routeWaypoints={waypoints}
+                      routeGeometry={routeResult?.geometry}
                       onAddToRoute={addParkToRoute}
                       isParkInRoute={isParkInRoute}
                     />
                   </div>
                   <div className="lg:col-span-1">
                     <RouteList
-                      routeParks={routeParks}
-                      onRemovePark={removeParkFromRoute}
+                      waypoints={waypoints}
+                      onRemoveWaypoint={removeWaypoint}
                       onClearRoute={clearRoute}
                       onReorderRoute={reorderRoute}
-                      totalDistance={totalRouteDistance()}
+                      onAddCustomWaypoint={addCustomWaypoint}
+                      routeResult={routeResult}
+                      isRouting={isRouting}
+                      onSaveRoute={saveRoute}
+                      isSaving={isSaving}
                     />
                   </div>
                 </div>
