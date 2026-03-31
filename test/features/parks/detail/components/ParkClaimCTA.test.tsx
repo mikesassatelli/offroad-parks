@@ -52,7 +52,7 @@ describe("ParkClaimCTA", () => {
         operatorName="Desert Riders LLC"
       />
     );
-    expect(screen.getByText(/managed by/i)).toBeInTheDocument();
+    expect(screen.getByText(/this listing is managed by/i)).toBeInTheDocument();
     expect(screen.getByText("Desert Riders LLC")).toBeInTheDocument();
   });
 

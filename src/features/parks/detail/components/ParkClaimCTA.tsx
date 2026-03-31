@@ -66,11 +66,11 @@ export function ParkClaimCTA({ parkSlug, isLoggedIn, hasOperator, existingClaim,
           <div className="flex items-center gap-2 text-gray-600 dark:text-gray-400">
             <Building2 className="w-4 h-4 flex-shrink-0" />
             <p className="text-xs">
-              This park is managed by{" "}
+              This listing is managed by{" "}
               <span className="font-medium text-gray-800 dark:text-gray-200">
                 {operatorName ?? "a verified operator"}
               </span>
-              . Information on this page may be more accurate and up to date.
+              {" "}— details are kept up to date directly by the operator.
             </p>
           </div>
         </CardContent>
