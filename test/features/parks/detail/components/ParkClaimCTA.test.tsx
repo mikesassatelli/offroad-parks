@@ -59,7 +59,7 @@ describe("ParkClaimCTA", () => {
         isOperatorOfPark={true}
       />
     );
-    const manageLink = screen.getByText("Manage this park");
+    const manageLink = screen.getByText("Go to Operator Portal");
     expect(manageLink).toBeInTheDocument();
     expect(manageLink.closest("a")).toHaveAttribute(
       "href",

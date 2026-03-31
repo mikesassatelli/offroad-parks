@@ -45,7 +45,7 @@ export function ParkClaimCTA({ parkSlug, isLoggedIn, hasOperator, existingClaim,
   if (isOperatorOfPark) {
     return (
       <Card className="border-blue-200 bg-blue-50 dark:bg-blue-950/20 dark:border-blue-800">
-        <CardContent className="pt-4 pb-4">
+        <CardContent className="pt-4 pb-4 space-y-3">
           <div className="flex items-center gap-2 text-blue-700 dark:text-blue-400">
             <Building2 className="w-4 h-4 flex-shrink-0" />
             <div>
@@ -53,15 +53,15 @@ export function ParkClaimCTA({ parkSlug, isLoggedIn, hasOperator, existingClaim,
               <p className="text-xs text-blue-600 dark:text-blue-500 mt-0.5">
                 You&apos;re registered as an operator of this park.
               </p>
-              <Link
-                href={`/operator/${parkSlug}/dashboard`}
-                className="inline-flex items-center gap-1 text-xs font-medium text-blue-700 dark:text-blue-400 underline underline-offset-2 hover:opacity-80 mt-1.5"
-              >
-                Manage this park
-                <ArrowRight className="w-3 h-3" />
-              </Link>
             </div>
           </div>
+          <Link
+            href={`/operator/${parkSlug}/dashboard`}
+            className="flex items-center justify-center gap-2 w-full text-sm font-medium px-3 py-2 rounded-md border border-blue-300 dark:border-blue-700 text-blue-700 dark:text-blue-400 hover:bg-blue-100 dark:hover:bg-blue-900/30 transition-colors"
+          >
+            Go to Operator Portal
+            <ArrowRight className="w-4 h-4" />
+          </Link>
         </CardContent>
       </Card>
     );
