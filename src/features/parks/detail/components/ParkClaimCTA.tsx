@@ -199,6 +199,19 @@ export function ParkClaimCTA({ parkSlug, isLoggedIn, hasOperator, existingClaim,
               <form onSubmit={handleSubmit} className="space-y-3 pt-1" data-testid="claim-form">
                 <div>
                   <label className="text-xs text-muted-foreground block mb-1">
+                    Organization or business name <span className="text-destructive">*</span>
+                  </label>
+                  <input
+                    type="text"
+                    required
+                    value={form.businessName}
+                    onChange={(e) => setForm((f) => ({ ...f, businessName: e.target.value }))}
+                    className="w-full text-sm border border-border rounded-md px-3 py-2 bg-background"
+                    placeholder="Iowa DNR, Desert Riders Association…"
+                  />
+                </div>
+                <div>
+                  <label className="text-xs text-muted-foreground block mb-1">
                     Your name <span className="text-destructive">*</span>
                   </label>
                   <input
@@ -233,18 +246,6 @@ export function ParkClaimCTA({ parkSlug, isLoggedIn, hasOperator, existingClaim,
                     onChange={(e) => setForm((f) => ({ ...f, claimantPhone: e.target.value }))}
                     className="w-full text-sm border border-border rounded-md px-3 py-2 bg-background"
                     placeholder="(555) 555-5555"
-                  />
-                </div>
-                <div>
-                  <label className="text-xs text-muted-foreground block mb-1">
-                    Business / organization name (optional)
-                  </label>
-                  <input
-                    type="text"
-                    value={form.businessName}
-                    onChange={(e) => setForm((f) => ({ ...f, businessName: e.target.value }))}
-                    className="w-full text-sm border border-border rounded-md px-3 py-2 bg-background"
-                    placeholder="Desert Riders Association"
                   />
                 </div>
                 <div>

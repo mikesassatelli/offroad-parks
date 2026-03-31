@@ -112,6 +112,9 @@ describe("ParkClaimCTA", () => {
     );
 
     fireEvent.click(screen.getByText("Claim this park"));
+    fireEvent.change(screen.getByPlaceholderText(/Iowa DNR/), {
+      target: { value: "Desert Riders LLC" },
+    });
     fireEvent.change(screen.getByPlaceholderText("Jane Smith"), {
       target: { value: "Jane Smith" },
     });
@@ -137,6 +140,9 @@ describe("ParkClaimCTA", () => {
     );
 
     fireEvent.click(screen.getByText("Claim this park"));
+    fireEvent.change(screen.getByPlaceholderText(/Iowa DNR/), {
+      target: { value: "Desert Riders LLC" },
+    });
     fireEvent.change(screen.getByPlaceholderText("Jane Smith"), {
       target: { value: "Jane Smith" },
     });
@@ -160,6 +166,9 @@ describe("ParkClaimCTA", () => {
     );
 
     fireEvent.click(screen.getByText("Claim this park"));
+    fireEvent.change(screen.getByPlaceholderText(/Iowa DNR/), {
+      target: { value: "Desert Riders LLC" },
+    });
     fireEvent.change(screen.getByPlaceholderText("Jane Smith"), {
       target: { value: "Jane Smith" },
     });
@@ -186,6 +195,9 @@ describe("ParkClaimCTA", () => {
     );
 
     fireEvent.click(screen.getByText("Claim this park"));
+    fireEvent.change(screen.getByPlaceholderText(/Iowa DNR/), {
+      target: { value: "Desert Riders LLC" },
+    });
     fireEvent.change(screen.getByPlaceholderText("Jane Smith"), {
       target: { value: "Jane Smith" },
     });
@@ -203,7 +215,7 @@ describe("ParkClaimCTA", () => {
         expect.objectContaining({
           method: "POST",
           headers: { "Content-Type": "application/json" },
-          body: expect.stringContaining("Jane Smith"),
+          body: expect.stringContaining("Desert Riders LLC"),
         })
       );
     });

@@ -49,7 +49,7 @@ export async function POST(_request: Request, { params }: RouteParams) {
   const result = await prisma.$transaction(async (tx) => {
     const operator = await tx.operator.create({
       data: {
-        name: claim.businessName || claim.claimantName,
+        name: claim.businessName ?? claim.claimantName,
         email: claim.claimantEmail,
         phone: claim.claimantPhone ?? undefined,
       },

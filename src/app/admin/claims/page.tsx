@@ -241,34 +241,39 @@ export default function AdminClaimsPage() {
               </CardHeader>
 
               <CardContent className="space-y-3">
-                {/* Claimant info */}
+                {/* Org + submitter */}
                 <div className="grid sm:grid-cols-2 gap-3 text-sm">
-                  <div className="flex items-center gap-2 text-gray-700">
-                    <User className="w-4 h-4 text-gray-400 flex-shrink-0" />
+                  <div className="flex items-start gap-2 text-gray-700">
+                    <Building2 className="w-4 h-4 text-gray-400 flex-shrink-0 mt-0.5" />
                     <div>
-                      <p className="font-medium">{claim.claimantName}</p>
-                      {claim.businessName && (
-                        <p className="text-xs text-gray-500">{claim.businessName}</p>
-                      )}
+                      <p className="text-xs text-gray-400 leading-none mb-0.5">Organization</p>
+                      <p className="font-medium">{claim.businessName ?? "—"}</p>
                     </div>
                   </div>
-                  <div className="space-y-1">
-                    <div className="flex items-center gap-2 text-gray-600">
-                      <Mail className="w-3.5 h-3.5 text-gray-400" />
-                      <a
-                        href={`mailto:${claim.claimantEmail}`}
-                        className="hover:underline truncate"
-                      >
-                        {claim.claimantEmail}
-                      </a>
+                  <div className="flex items-start gap-2 text-gray-700">
+                    <User className="w-4 h-4 text-gray-400 flex-shrink-0 mt-0.5" />
+                    <div>
+                      <p className="text-xs text-gray-400 leading-none mb-0.5">Submitted by</p>
+                      <p className="font-medium">{claim.user.name || claim.user.email}</p>
+                      <p className="text-xs text-gray-500">{claim.claimantName}</p>
                     </div>
-                    {claim.claimantPhone && (
-                      <div className="flex items-center gap-2 text-gray-600">
-                        <Phone className="w-3.5 h-3.5 text-gray-400" />
-                        <span>{claim.claimantPhone}</span>
-                      </div>
-                    )}
                   </div>
+                </div>
+
+                {/* Contact details */}
+                <div className="space-y-1">
+                  <div className="flex items-center gap-2 text-gray-600 text-sm">
+                    <Mail className="w-3.5 h-3.5 text-gray-400" />
+                    <a href={`mailto:${claim.claimantEmail}`} className="hover:underline truncate">
+                      {claim.claimantEmail}
+                    </a>
+                  </div>
+                  {claim.claimantPhone && (
+                    <div className="flex items-center gap-2 text-gray-600 text-sm">
+                      <Phone className="w-3.5 h-3.5 text-gray-400" />
+                      <span>{claim.claimantPhone}</span>
+                    </div>
+                  )}
                 </div>
 
                 {/* Message */}
@@ -279,13 +284,9 @@ export default function AdminClaimsPage() {
                   </div>
                 )}
 
-                {/* Account info */}
+                {/* Submitted date */}
                 <p className="text-xs text-gray-400">
-                  Account:{" "}
-                  <span className="text-gray-600">
-                    {claim.user.name || claim.user.email}
-                  </span>{" "}
-                  · Submitted {new Date(claim.createdAt).toLocaleDateString()}
+                  Submitted {new Date(claim.createdAt).toLocaleDateString()}
                 </p>
 
                 {/* Review notes */}
