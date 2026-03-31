@@ -9,7 +9,6 @@ type ClaimStatus = "PENDING" | "APPROVED" | "REJECTED";
 // GET /api/admin/claims?status=PENDING&page=1&limit=20
 export async function GET(request: Request) {
   const session = await auth();
-  // @ts-expect-error - role added in auth callback
   if (!session?.user?.id || session.user.role !== "ADMIN") {
     return NextResponse.json({ error: "Forbidden" }, { status: 403 });
   }

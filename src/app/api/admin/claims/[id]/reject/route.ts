@@ -15,7 +15,6 @@ interface RejectBody {
 // POST /api/admin/claims/[id]/reject
 export async function POST(request: Request, { params }: RouteParams) {
   const session = await auth();
-  // @ts-expect-error - role added in auth callback
   if (!session?.user?.id || session.user.role !== "ADMIN") {
     return NextResponse.json({ error: "Forbidden" }, { status: 403 });
   }
