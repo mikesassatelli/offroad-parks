@@ -3,6 +3,7 @@ import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import Link from "next/link";
 import { Card, CardContent } from "@/components/ui/card";
+import { AppHeader } from "@/components/layout/AppHeader";
 import { ArrowRight, MapPin } from "lucide-react";
 
 export default async function OperatorIndexPage() {
@@ -43,7 +44,9 @@ export default async function OperatorIndexPage() {
   );
 
   return (
-    <div className="max-w-3xl mx-auto px-6 py-12">
+    <div className="min-h-screen bg-background">
+      <AppHeader user={session.user} showBackButton={false} />
+      <div className="max-w-3xl mx-auto px-6 py-12">
       <div className="mb-8">
         <h1 className="text-2xl font-bold text-gray-900">Manage Parks</h1>
         <p className="text-gray-500 text-sm mt-1">Select a park to manage.</p>
@@ -100,6 +103,7 @@ export default async function OperatorIndexPage() {
           ))}
         </div>
       )}
+      </div>
     </div>
   );
 }
