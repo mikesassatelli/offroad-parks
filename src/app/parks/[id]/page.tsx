@@ -103,13 +103,13 @@ export default async function ParkPage({ params }: ParkPageProps) {
   const userRole = (session?.user as { role?: string })?.role;
   const isAdmin = userRole === "ADMIN";
 
-  // Check if the current user already has a pending/reviewed claim for this park
-  const hasPendingClaim = session?.user?.id
-    ? !!(await prisma.parkClaim.findUnique({
+  // Fetch any existing claim from this user for this park (any status)
+  const existingClaim = session?.user?.id
+    ? await prisma.parkClaim.findUnique({
         where: { parkId_userId: { parkId: dbPark.id, userId: session.user.id } },
-        select: { id: true },
-      }))
-    : false;
+        select: { status: true, reviewNotes: true },
+      })
+    : null;
 
   return (
     <ParkDetailPage
@@ -117,7 +117,7 @@ export default async function ParkPage({ params }: ParkPageProps) {
       photos={photos}
       currentUserId={session?.user?.id}
       isAdmin={isAdmin}
-      hasPendingClaim={hasPendingClaim}
+      existingClaim={existingClaim}
     />
   );
 }
