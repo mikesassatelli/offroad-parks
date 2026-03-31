@@ -408,6 +408,24 @@ epics:
         notes: "Extract shared components, create reusable hooks, consolidate API patterns, document patterns."
         tasks: []
 
+      - key: OP-77
+        title: "Increase Test Coverage Back to 60%"
+        status: backlog
+        type: refactor
+        githubIssue: null
+        needsRefinement: false
+        notes: |
+          Coverage dipped to ~59% functions as OP-65 added new client components and hooks
+          with complex UI state. Threshold lowered to 58% as a short-term unblock.
+          Priority gaps to close:
+            - useParkReview.ts (0% — full hook coverage)
+            - useReviews.ts (0% — full hook coverage)
+            - TrailConditionsDisplay.tsx (~70% lines — pin slot logic, delete interactions)
+            - OperatorConditionsClient.tsx (pin toggle, handleUpdatePin, handleDelete flows)
+          Goal: restore all four thresholds (lines, functions, branches, statements) to 60%
+          and raise the vitest.config.ts thresholds back to 60 once achieved.
+        tasks: []
+
   # Epic 10: Weather Integration
   - id: E10
     key: weather
