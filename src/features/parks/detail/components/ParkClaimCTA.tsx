@@ -48,7 +48,7 @@ export function ParkClaimCTA({ parkSlug, isLoggedIn, hasOperator, existingClaim,
             <div>
               <p className="text-sm font-medium">You manage this park</p>
               <p className="text-xs text-blue-600 dark:text-blue-500 mt-0.5">
-                You&apos;re listed as an operator of this listing.
+                You&apos;re registered as an operator of this park.
               </p>
             </div>
           </div>
