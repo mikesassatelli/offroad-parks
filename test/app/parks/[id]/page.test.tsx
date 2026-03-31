@@ -271,6 +271,7 @@ describe("Park Detail Page", () => {
           camping: true,
           vehicleTypes: true,
           address: true,
+          operator: { select: { name: true } },
         },
       });
     });

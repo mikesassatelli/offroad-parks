@@ -49,6 +49,7 @@ interface ParkDetailPageProps {
   isAdmin?: boolean;
   existingClaim?: { status: string; reviewNotes: string | null } | null;
   isOperatorOfPark?: boolean;
+  operatorName?: string | null;
 }
 
 function ParkDetailPageInner({
@@ -58,6 +59,7 @@ function ParkDetailPageInner({
   isAdmin,
   existingClaim,
   isOperatorOfPark,
+  operatorName,
 }: ParkDetailPageProps) {
   const router = useRouter();
   const { data: session } = useSession();
@@ -367,6 +369,7 @@ function ParkDetailPageInner({
                 hasOperator={park.hasOperator}
                 existingClaim={existingClaim}
                 isOperatorOfPark={isOperatorOfPark}
+                operatorName={operatorName}
               />
             </div>
           </div>

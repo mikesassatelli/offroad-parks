@@ -72,6 +72,7 @@ export default async function ParkPage({ params }: ParkPageProps) {
       camping: true,
       vehicleTypes: true,
       address: true,
+      operator: { select: { name: true } },
     },
   });
 
@@ -130,6 +131,7 @@ export default async function ParkPage({ params }: ParkPageProps) {
       isAdmin={isAdmin}
       existingClaim={existingClaim}
       isOperatorOfPark={isOperatorOfPark}
+      operatorName={dbPark.operator?.name ?? null}
     />
   );
 }

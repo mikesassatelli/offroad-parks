@@ -14,6 +14,8 @@ interface ParkClaimCTAProps {
   existingClaim?: { status: string; reviewNotes: string | null } | null;
   /** Whether the current user is an operator of this park */
   isOperatorOfPark?: boolean;
+  /** Display name of the operator org, if the park is claimed */
+  operatorName?: string | null;
 }
 
 interface ClaimFormData {
@@ -24,7 +26,7 @@ interface ClaimFormData {
   message: string;
 }
 
-export function ParkClaimCTA({ parkSlug, isLoggedIn, hasOperator, existingClaim, isOperatorOfPark }: ParkClaimCTAProps) {
+export function ParkClaimCTA({ parkSlug, isLoggedIn, hasOperator, existingClaim, isOperatorOfPark, operatorName }: ParkClaimCTAProps) {
   const [isExpanded, setIsExpanded] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isSuccess, setIsSuccess] = useState(
@@ -57,7 +59,24 @@ export function ParkClaimCTA({ parkSlug, isLoggedIn, hasOperator, existingClaim,
     );
   }
 
-  if (hasOperator) return null;
+  if (hasOperator) {
+    return (
+      <Card className="border-gray-200 bg-gray-50 dark:bg-gray-900/40 dark:border-gray-700">
+        <CardContent className="pt-4 pb-4">
+          <div className="flex items-center gap-2 text-gray-600 dark:text-gray-400">
+            <Building2 className="w-4 h-4 flex-shrink-0" />
+            <p className="text-xs">
+              This park is managed by{" "}
+              <span className="font-medium text-gray-800 dark:text-gray-200">
+                {operatorName ?? "a verified operator"}
+              </span>
+              . Information on this page may be more accurate and up to date.
+            </p>
+          </div>
+        </CardContent>
+      </Card>
+    );
+  }
 
   // Rejected state — shown server-side and cannot re-submit
   if (existingClaim?.status === "REJECTED") {

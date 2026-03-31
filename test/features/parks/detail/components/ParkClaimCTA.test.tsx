@@ -43,11 +43,17 @@ describe("ParkClaimCTA", () => {
     global.fetch = vi.fn();
   });
 
-  it("renders nothing when hasOperator is true", () => {
-    const { container } = render(
-      <ParkClaimCTA parkSlug="test-park" isLoggedIn={true} hasOperator={true} />
+  it("renders a managed-by notice when hasOperator is true", () => {
+    render(
+      <ParkClaimCTA
+        parkSlug="test-park"
+        isLoggedIn={true}
+        hasOperator={true}
+        operatorName="Desert Riders LLC"
+      />
     );
-    expect(container.firstChild).toBeNull();
+    expect(screen.getByText(/managed by/i)).toBeInTheDocument();
+    expect(screen.getByText("Desert Riders LLC")).toBeInTheDocument();
   });
 
   it("renders the CTA card when park has no operator", () => {
