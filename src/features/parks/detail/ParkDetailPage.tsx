@@ -12,6 +12,7 @@ import { SessionProvider, useSession } from "next-auth/react";
 import dynamic from "next/dynamic";
 import { useRouter } from "next/navigation";
 import { ParkAttributesCards } from "./components/ParkAttributesCards";
+import { ParkClaimCTA } from "./components/ParkClaimCTA";
 import { ParkContactSidebar } from "./components/ParkContactSidebar";
 import { ParkOperationalCard } from "./components/ParkOperationalCard";
 import { ParkOverviewCard } from "./components/ParkOverviewCard";
@@ -46,6 +47,9 @@ interface ParkDetailPageProps {
   photos: Photo[];
   currentUserId?: string;
   isAdmin?: boolean;
+  existingClaim?: { status: string; reviewNotes: string | null } | null;
+  isOperatorOfPark?: boolean;
+  operatorName?: string | null;
 }
 
 function ParkDetailPageInner({
@@ -53,6 +57,9 @@ function ParkDetailPageInner({
   photos,
   currentUserId,
   isAdmin,
+  existingClaim,
+  isOperatorOfPark,
+  operatorName,
 }: ParkDetailPageProps) {
   const router = useRouter();
   const { data: session } = useSession();
@@ -63,7 +70,6 @@ function ParkDetailPageInner({
         name: session.user.name,
         email: session.user.email,
         image: session.user.image,
-        // @ts-expect-error - role added in auth callback
         role: session.user.role,
       }
     : null;
@@ -357,6 +363,14 @@ function ParkDetailPageInner({
               <TrailConditionsDisplay parkSlug={park.id} />
               <ParkContactSidebar park={park} />
               <CampingInfoCard park={park} />
+              <ParkClaimCTA
+                parkSlug={park.id}
+                isLoggedIn={!!session?.user}
+                hasOperator={park.hasOperator}
+                existingClaim={existingClaim}
+                isOperatorOfPark={isOperatorOfPark}
+                operatorName={operatorName}
+              />
             </div>
           </div>
         </div>

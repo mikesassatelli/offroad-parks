@@ -89,7 +89,7 @@ describe("ParkMarker", () => {
   it("should display day pass price", () => {
     render(<ParkMarker park={mockPark} isInRoute={false} routeIndex={0} />);
 
-    expect(screen.getByText("$25")).toBeInTheDocument();
+    expect(screen.getByText("$25 / day")).toBeInTheDocument();
   });
 
   it("should display acres", () => {

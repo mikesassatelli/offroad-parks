@@ -14,6 +14,7 @@ vi.mock("@/lib/prisma", () => ({
     },
     trailCondition: {
       findMany: vi.fn(),
+      findFirst: vi.fn(),
       create: vi.fn(),
     },
   },
@@ -74,8 +75,12 @@ describe("GET /api/parks/[slug]/conditions", () => {
 
     const callArgs = vi.mocked(prisma.trailCondition.findMany).mock.calls[0]?.[0];
     expect(callArgs?.where?.reportStatus).toBe("PUBLISHED");
-    expect(callArgs?.where?.createdAt).toBeDefined();
     expect(callArgs?.where?.parkId).toBe("park-db-id");
+    // Staleness is now expressed as an OR: fresh by age OR active pin
+    expect(callArgs?.where?.OR).toBeDefined();
+    expect(callArgs?.where?.OR).toHaveLength(2);
+    expect((callArgs?.where?.OR as any[])[0]?.createdAt).toBeDefined();
+    expect((callArgs?.where?.OR as any[])[1]?.pinnedUntil).toBeDefined();
   });
 });
 
@@ -122,9 +127,26 @@ describe("POST /api/parks/[slug]/conditions", () => {
     expect(res.status).toBe(400);
   });
 
+  it("should return 409 when user already has an active condition", async () => {
+    vi.mocked(auth).mockResolvedValue({ user: { id: "user-1" } } as any);
+    vi.mocked(prisma.park.findUnique).mockResolvedValue(mockPark as any);
+    vi.mocked(prisma.trailCondition.findFirst).mockResolvedValue({ id: "existing" } as any);
+
+    const req = new Request("http://localhost/api/parks/test-park/conditions", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ status: "OPEN" }),
+    });
+    const res = await POST(req, { params: Promise.resolve({ slug: "test-park" }) });
+    expect(res.status).toBe(409);
+    const data = await res.json();
+    expect(data.error).toMatch(/already have an active/i);
+  });
+
   it("should create PUBLISHED condition when no note provided", async () => {
     vi.mocked(auth).mockResolvedValue({ user: { id: "user-1" } } as any);
     vi.mocked(prisma.park.findUnique).mockResolvedValue(mockPark as any);
+    vi.mocked(prisma.trailCondition.findFirst).mockResolvedValue(null);
     const created = {
       id: "cond-1",
       parkId: "park-db-id",
@@ -157,6 +179,7 @@ describe("POST /api/parks/[slug]/conditions", () => {
   it("should create PENDING_REVIEW condition when note is provided", async () => {
     vi.mocked(auth).mockResolvedValue({ user: { id: "user-1" } } as any);
     vi.mocked(prisma.park.findUnique).mockResolvedValue(mockPark as any);
+    vi.mocked(prisma.trailCondition.findFirst).mockResolvedValue(null);
     const created = {
       id: "cond-2",
       parkId: "park-db-id",
@@ -189,6 +212,7 @@ describe("POST /api/parks/[slug]/conditions", () => {
   it("should treat whitespace-only note as no note (publish immediately)", async () => {
     vi.mocked(auth).mockResolvedValue({ user: { id: "user-1" } } as any);
     vi.mocked(prisma.park.findUnique).mockResolvedValue(mockPark as any);
+    vi.mocked(prisma.trailCondition.findFirst).mockResolvedValue(null);
     vi.mocked(prisma.trailCondition.create).mockResolvedValue({
       id: "cond-3",
       reportStatus: "PUBLISHED",

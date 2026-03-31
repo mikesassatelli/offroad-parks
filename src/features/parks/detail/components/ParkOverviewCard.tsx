@@ -1,6 +1,6 @@
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import type { Park } from "@/lib/types";
-import { formatCurrency, formatRecommendedDuration } from "@/lib/formatting";
+import { formatCurrency, formatParkPricingSummary, formatRecommendedDuration } from "@/lib/formatting";
 import { Clock, DollarSign, Gauge, Mountain } from "lucide-react";
 
 interface ParkOverviewCardProps {
@@ -28,10 +28,26 @@ export function ParkOverviewCard({ park }: ParkOverviewCardProps) {
           <div className="flex items-start gap-3">
             <DollarSign className="w-5 h-5 text-muted-foreground mt-0.5" />
             <div>
-              <div className="text-sm text-muted-foreground">Day Pass</div>
+              <div className="text-sm text-muted-foreground">Pricing</div>
               <div className="font-semibold">
-                {formatCurrency(park.dayPassUSD)}
+                {formatParkPricingSummary(park)}
               </div>
+              {!park.isFree && (
+                <div className="text-xs text-muted-foreground mt-0.5 space-y-0.5">
+                  {typeof park.dayPassUSD === "number" && (
+                    <div>Day pass: {formatCurrency(park.dayPassUSD)}</div>
+                  )}
+                  {typeof park.vehicleEntryFeeUSD === "number" && (
+                    <div>Vehicle entry: {formatCurrency(park.vehicleEntryFeeUSD)}</div>
+                  )}
+                  {typeof park.riderFeeUSD === "number" && (
+                    <div>Per rider: {formatCurrency(park.riderFeeUSD)}</div>
+                  )}
+                  {typeof park.membershipFeeUSD === "number" && (
+                    <div>Membership: {formatCurrency(park.membershipFeeUSD)}</div>
+                  )}
+                </div>
+              )}
             </div>
           </div>
 

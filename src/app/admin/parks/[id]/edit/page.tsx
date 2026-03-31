@@ -17,7 +17,6 @@ export default async function EditParkPage({ params }: EditParkPageProps) {
     redirect("/api/auth/signin");
   }
 
-  // @ts-expect-error - role added in auth callback
   if (session.user.role !== "ADMIN") {
     redirect("/");
   }
@@ -55,7 +54,11 @@ export default async function EditParkPage({ params }: EditParkPageProps) {
     phone: park.phone || "",
     campingWebsite: park.campingWebsite || "",
     campingPhone: park.campingPhone || "",
+    isFree: park.isFree || false,
     dayPassUSD: park.dayPassUSD?.toString() || "",
+    vehicleEntryFeeUSD: park.vehicleEntryFeeUSD?.toString() || "",
+    riderFeeUSD: park.riderFeeUSD?.toString() || "",
+    membershipFeeUSD: park.membershipFeeUSD?.toString() || "",
     milesOfTrails: park.milesOfTrails?.toString() || "",
     acres: park.acres?.toString() || "",
     notes: park.notes || "",

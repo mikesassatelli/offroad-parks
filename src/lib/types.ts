@@ -94,7 +94,11 @@ export type DbPark = {
   phone: string | null;
   campingWebsite: string | null;
   campingPhone: string | null;
+  isFree: boolean | null;
   dayPassUSD: number | null;
+  vehicleEntryFeeUSD: number | null;
+  riderFeeUSD: number | null;
+  membershipFeeUSD: number | null;
   milesOfTrails: number | null;
   acres: number | null;
   notes: string | null;
@@ -110,6 +114,8 @@ export type DbPark = {
   flagsRequired: boolean | null;
   sparkArrestorRequired: boolean | null;
   noiseLimitDBA: number | null;
+  // Operator info
+  operatorId: string | null;
   // Submitter info
   submitterId: string | null;
   submitterName: string | null;
@@ -144,7 +150,11 @@ export type Park = {
   coords?: { lat: number; lng: number };
   acres?: number;
   milesOfTrails?: number;
+  isFree?: boolean;
   dayPassUSD?: number;
+  vehicleEntryFeeUSD?: number;
+  riderFeeUSD?: number;
+  membershipFeeUSD?: number;
   terrain: Terrain[];
   amenities: Amenity[];
   camping: Camping[];
@@ -176,6 +186,8 @@ export type Park = {
     status: string;
     createdAt: string;
   };
+  // Operator
+  hasOperator?: boolean;
 };
 
 // Database review type - matches Prisma ParkReview model with includes
@@ -263,7 +275,11 @@ export function transformDbPark(dbPark: DbPark): Park {
         : undefined,
     acres: dbPark.acres ?? undefined,
     milesOfTrails: dbPark.milesOfTrails ?? undefined,
+    isFree: dbPark.isFree ?? undefined,
     dayPassUSD: dbPark.dayPassUSD ?? undefined,
+    vehicleEntryFeeUSD: dbPark.vehicleEntryFeeUSD ?? undefined,
+    riderFeeUSD: dbPark.riderFeeUSD ?? undefined,
+    membershipFeeUSD: dbPark.membershipFeeUSD ?? undefined,
     terrain: dbPark.terrain.map((t) => t.terrain),
     amenities: dbPark.amenities.map((a) => a.amenity),
     camping: dbPark.camping.map((c) => c.camping),
@@ -305,6 +321,8 @@ export function transformDbPark(dbPark: DbPark): Park {
           createdAt: dbPark.trailConditions[0].createdAt.toISOString(),
         }
       : undefined,
+    // Operator
+    hasOperator: dbPark.operatorId != null,
   };
 }
 

@@ -12,6 +12,28 @@ export function formatCurrency(value?: number): string {
   return typeof value === "number" ? `$${value.toFixed(0)}` : "—";
 }
 
+/**
+ * Returns a short pricing summary for a park card / badge.
+ * Priority: Free → day pass → vehicle fee → rider fee → membership → "—"
+ */
+export function formatParkPricingSummary(park: {
+  isFree?: boolean;
+  dayPassUSD?: number;
+  vehicleEntryFeeUSD?: number;
+  riderFeeUSD?: number;
+  membershipFeeUSD?: number;
+}): string {
+  if (park.isFree) return "Free";
+  if (typeof park.dayPassUSD === "number") return `${formatCurrency(park.dayPassUSD)} / day`;
+  if (typeof park.vehicleEntryFeeUSD === "number")
+    return `${formatCurrency(park.vehicleEntryFeeUSD)} vehicle`;
+  if (typeof park.riderFeeUSD === "number")
+    return `${formatCurrency(park.riderFeeUSD)} / rider`;
+  if (typeof park.membershipFeeUSD === "number")
+    return `Members only`;
+  return "—";
+}
+
 export function formatPhone(phone?: string): string {
   if (!phone) return "";
 

@@ -954,7 +954,11 @@ describe("ParkSubmissionForm", () => {
       phone: "5551234567",
       campingWebsite: "",
       campingPhone: "",
+      isFree: false,
       dayPassUSD: "25.50",
+      vehicleEntryFeeUSD: "",
+      riderFeeUSD: "",
+      membershipFeeUSD: "",
       milesOfTrails: "100",
       acres: "5000",
       notes: "Test notes",
@@ -999,7 +1003,7 @@ describe("ParkSubmissionForm", () => {
         "https://example.com",
       );
       expect(screen.getByLabelText(/phone/i)).toHaveValue("5551234567");
-      expect(screen.getByLabelText(/day pass price/i)).toHaveValue("25.50");
+      expect(screen.getByLabelText(/day pass \(usd\)/i)).toHaveValue("25.50");
       expect(screen.getByLabelText(/miles of trails/i)).toHaveValue("100");
       expect(screen.getByLabelText(/acres/i)).toHaveValue("5000");
       expect(screen.getByLabelText(/additional notes/i)).toHaveValue(

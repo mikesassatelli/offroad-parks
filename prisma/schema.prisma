@@ -52,6 +52,9 @@ model User {
   reviews          ParkReview[]
   helpfulVotes     ReviewHelpfulVote[]
   trailConditions  TrailCondition[]
+  operatorUsers    OperatorUser[]
+  parkClaims       ParkClaim[]
+  parkEditLogs     ParkEditLog[]
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -68,6 +71,7 @@ model VerificationToken {
 enum UserRole {
   USER
   ADMIN
+  OPERATOR
 }
 
 // Park Models
@@ -81,7 +85,12 @@ model Park {
   phone         String?
   campingWebsite String?
   campingPhone   String?
-  dayPassUSD    Float?
+  // Pricing fields
+  isFree              Boolean?
+  dayPassUSD          Float?
+  vehicleEntryFeeUSD  Float?
+  riderFeeUSD         Float?
+  membershipFeeUSD    Float?
   milesOfTrails Int?
   acres         Int?
   notes         String?    @db.Text
@@ -120,6 +129,10 @@ model Park {
   reviews          ParkReview[]
   trailConditions  TrailCondition[]
   address          Address?
+  operator         Operator?        @relation(fields: [operatorId], references: [id], onDelete: SetNull)
+  operatorId       String?
+  parkClaims       ParkClaim[]
+  editLogs         ParkEditLog[]
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -375,7 +388,9 @@ model TrailCondition {
   userId    String
   status    TrailConditionStatus
   note      String?               @db.Text
-  reportStatus ConditionReportStatus @default(PUBLISHED)
+  reportStatus   ConditionReportStatus @default(PUBLISHED)
+  isOperatorPost Boolean               @default(false)
+  pinnedUntil    DateTime?
 
   park      Park                  @relation(fields: [parkId], references: [id], onDelete: Cascade)
   user      User                  @relation(fields: [userId], references: [id], onDelete: Cascade)
@@ -401,4 +416,116 @@ model ReviewHelpfulVote {
 
   @@unique([userId, reviewId])
   @@index([reviewId])
+}
+
+// ── Phase 2: Operator Identity & Multi-tenancy ──────────────────────────────
+
+enum SubscriptionStatus {
+  TRIALING
+  ACTIVE
+  PAST_DUE
+  CANCELED
+  UNPAID
+}
+
+enum SubscriptionTier {
+  STANDARD
+  PREMIUM
+}
+
+enum ClaimStatus {
+  PENDING
+  APPROVED
+  REJECTED
+}
+
+// Represents a park management business / operator account
+model Operator {
+  id                String             @id @default(cuid())
+  name              String
+  email             String             @unique
+  phone             String?
+  website           String?
+
+  // Stripe billing fields
+  stripeCustomerId       String?        @unique
+  stripeSubscriptionId   String?        @unique
+  subscriptionStatus     SubscriptionStatus @default(TRIALING)
+  subscriptionTier       SubscriptionTier   @default(STANDARD)
+  trialEndsAt            DateTime?
+  subscriptionCurrentPeriodEnd DateTime?
+
+  users  OperatorUser[]
+  parks  Park[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([stripeCustomerId])
+  @@index([subscriptionStatus])
+}
+
+// Junction: which users belong to which operator account (supports multi-user operator accounts)
+model OperatorUser {
+  id         String   @id @default(cuid())
+  operatorId String
+  userId     String
+  role       String   @default("OWNER") // OWNER | MEMBER
+
+  operator   Operator @relation(fields: [operatorId], references: [id], onDelete: Cascade)
+  user       User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  createdAt  DateTime @default(now())
+
+  @@unique([operatorId, userId])
+  @@index([userId])
+}
+
+// Park claim request — consumer requests to become operator of a park
+model ParkClaim {
+  id         String      @id @default(cuid())
+  parkId     String
+  userId     String
+  status     ClaimStatus @default(PENDING)
+
+  // Contact info provided by claimant
+  claimantName    String
+  claimantEmail   String
+  claimantPhone   String?
+  businessName    String?
+  message         String?  @db.Text
+
+  // Admin review
+  reviewedAt      DateTime?
+  reviewedBy      String?   // admin user id
+  reviewNotes     String?   @db.Text
+
+  park       Park        @relation(fields: [parkId], references: [id], onDelete: Cascade)
+  user       User        @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  createdAt  DateTime    @default(now())
+  updatedAt  DateTime    @updatedAt
+
+  @@unique([parkId, userId])
+  @@index([status])
+  @@index([parkId])
+  @@index([userId])
+}
+
+// Audit log for operator edits to park listings
+model ParkEditLog {
+  id        String   @id @default(cuid())
+  parkId    String
+  userId    String
+  // JSON snapshot of changed fields: { fieldName: { from: oldVal, to: newVal } }
+  changes   String   @db.Text
+
+  park      Park     @relation(fields: [parkId], references: [id], onDelete: Cascade)
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  createdAt DateTime @default(now())
+
+  @@index([parkId])
+  @@index([userId])
+  @@index([createdAt])
 }
