@@ -56,7 +56,7 @@ export function ParkClaimCTA({ parkSlug, isLoggedIn, hasOperator, existingClaim,
             </div>
           </div>
           <Link
-            href={`/operator/${parkSlug}/dashboard`}
+            href={`/operator/${parkSlug}/dashboard?from=park`}
             className="flex items-center justify-center gap-2 w-full text-sm font-medium px-3 py-2 rounded-md border border-blue-300 dark:border-blue-700 text-blue-700 dark:text-blue-400 hover:bg-blue-100 dark:hover:bg-blue-900/30 transition-colors"
           >
             Go to Operator Portal

@@ -63,7 +63,7 @@ describe("ParkClaimCTA", () => {
     expect(manageLink).toBeInTheDocument();
     expect(manageLink.closest("a")).toHaveAttribute(
       "href",
-      "/operator/test-park/dashboard"
+      "/operator/test-park/dashboard?from=park"
     );
   });
 

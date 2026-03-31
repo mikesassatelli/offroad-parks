@@ -2,7 +2,7 @@ import { redirect } from "next/navigation";
 import { getOperatorContext } from "@/lib/operator-auth";
 import { prisma } from "@/lib/prisma";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Activity, MessageSquare, Camera, Star } from "lucide-react";
+import { Activity, Camera, MessageSquare, Settings, Star } from "lucide-react";
 
 interface DashboardPageProps {
   params: Promise<{ parkSlug: string }>;
@@ -16,7 +16,6 @@ export default async function OperatorDashboardPage({ params }: DashboardPagePro
     redirect("/");
   }
 
-  // Fetch summary stats
   const [reviewCount, photoCount, latestCondition] = await Promise.all([
     prisma.parkReview.count({
       where: { parkId: ctx.parkId, status: "APPROVED" },
@@ -36,77 +35,61 @@ export default async function OperatorDashboardPage({ params }: DashboardPagePro
     select: { averageRating: true, reviewCount: true },
   });
 
+  const stats = [
+    {
+      label: "Avg Rating",
+      value: park?.averageRating ? park.averageRating.toFixed(1) : "—",
+      sub: `from ${park?.reviewCount ?? 0} reviews`,
+      icon: Star,
+      iconColor: "text-yellow-500",
+    },
+    {
+      label: "Reviews",
+      value: reviewCount,
+      sub: "approved",
+      icon: MessageSquare,
+      iconColor: "text-blue-500",
+    },
+    {
+      label: "Photos",
+      value: photoCount,
+      sub: "approved",
+      icon: Camera,
+      iconColor: "text-purple-500",
+    },
+    {
+      label: "Trail Status",
+      value: latestCondition?.status ?? "—",
+      sub: latestCondition
+        ? `as of ${new Date(latestCondition.createdAt).toLocaleDateString()}`
+        : "No reports yet",
+      icon: Activity,
+      iconColor: "text-green-500",
+    },
+  ];
+
   return (
     <div>
       <div className="mb-6">
         <h1 className="text-2xl font-bold text-gray-900">Dashboard</h1>
-        <p className="text-gray-500 text-sm mt-1">
-          Overview for {ctx.parkName}
-        </p>
+        <p className="text-gray-500 text-sm mt-1">Overview for {ctx.parkName}</p>
       </div>
 
       <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
-        <Card>
-          <CardHeader className="pb-2">
-            <CardTitle className="text-sm font-medium text-gray-500 flex items-center gap-2">
-              <Star className="w-4 h-4" />
-              Avg Rating
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            <p className="text-2xl font-bold text-gray-900">
-              {park?.averageRating ? park.averageRating.toFixed(1) : "—"}
-            </p>
-            <p className="text-xs text-gray-500 mt-0.5">
-              from {park?.reviewCount ?? 0} reviews
-            </p>
-          </CardContent>
-        </Card>
-
-        <Card>
-          <CardHeader className="pb-2">
-            <CardTitle className="text-sm font-medium text-gray-500 flex items-center gap-2">
-              <MessageSquare className="w-4 h-4" />
-              Reviews
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            <p className="text-2xl font-bold text-gray-900">{reviewCount}</p>
-            <p className="text-xs text-gray-500 mt-0.5">approved</p>
-          </CardContent>
-        </Card>
-
-        <Card>
-          <CardHeader className="pb-2">
-            <CardTitle className="text-sm font-medium text-gray-500 flex items-center gap-2">
-              <Camera className="w-4 h-4" />
-              Photos
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            <p className="text-2xl font-bold text-gray-900">{photoCount}</p>
-            <p className="text-xs text-gray-500 mt-0.5">approved</p>
-          </CardContent>
-        </Card>
-
-        <Card>
-          <CardHeader className="pb-2">
-            <CardTitle className="text-sm font-medium text-gray-500 flex items-center gap-2">
-              <Activity className="w-4 h-4" />
-              Trail Status
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            <p className="text-2xl font-bold text-gray-900">
-              {latestCondition ? latestCondition.status : "—"}
-            </p>
-            <p className="text-xs text-gray-500 mt-0.5">
-              {latestCondition
-                ? `as of ${new Date(latestCondition.createdAt).toLocaleDateString()}`
-                : "No reports yet"}
-            </p>
-          </CardContent>
-        </Card>
+        {stats.map(({ label, value, sub, icon: Icon, iconColor }) => (
+          <Card key={label}>
+            <CardContent className="pt-5 pb-4">
+              <div className="flex items-center justify-between mb-3">
+                <p className="text-sm font-medium text-muted-foreground">{label}</p>
+                <Icon className={`w-4 h-4 ${iconColor}`} />
+              </div>
+              <p className="text-4xl font-bold text-gray-900 leading-none">
+                {value}
+              </p>
+              <p className="text-xs text-muted-foreground mt-2">{sub}</p>
+            </CardContent>
+          </Card>
+        ))}
       </div>
 
       <Card>
@@ -125,7 +108,7 @@ export default async function OperatorDashboardPage({ params }: DashboardPagePro
             href={`/operator/${parkSlug}/settings`}
             className="inline-flex items-center gap-2 text-sm px-4 py-2 rounded-md border border-border bg-background hover:bg-muted transition-colors"
           >
-            <Camera className="w-4 h-4" />
+            <Settings className="w-4 h-4" />
             Edit Park Details
           </a>
         </CardContent>
