@@ -10,6 +10,8 @@ interface ParkClaimCTAProps {
   isLoggedIn: boolean;
   /** If the park already has an operator, hide the CTA */
   hasOperator?: boolean;
+  /** If the current user already has a pending claim for this park, show the submitted state */
+  hasPendingClaim?: boolean;
 }
 
 interface ClaimFormData {
@@ -20,10 +22,10 @@ interface ClaimFormData {
   message: string;
 }
 
-export function ParkClaimCTA({ parkSlug, isLoggedIn, hasOperator }: ParkClaimCTAProps) {
+export function ParkClaimCTA({ parkSlug, isLoggedIn, hasOperator, hasPendingClaim }: ParkClaimCTAProps) {
   const [isExpanded, setIsExpanded] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const [isSuccess, setIsSuccess] = useState(false);
+  const [isSuccess, setIsSuccess] = useState(hasPendingClaim ?? false);
   const [error, setError] = useState<string | null>(null);
   const [form, setForm] = useState<ClaimFormData>({
     claimantName: "",
