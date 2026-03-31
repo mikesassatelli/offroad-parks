@@ -91,6 +91,10 @@ describe("SearchFiltersPanel", () => {
     onPermitRequiredChange: vi.fn(),
     membershipRequired: "",
     onMembershipRequiredChange: vi.fn(),
+    flagsRequired: "",
+    onFlagsRequiredChange: vi.fn(),
+    sparkArrestorRequired: "",
+    onSparkArrestorRequiredChange: vi.fn(),
     onClearFilters: vi.fn(),
   };
 
@@ -267,6 +271,16 @@ describe("SearchFiltersPanel", () => {
     // Check for some amenities (from ALL_AMENITIES constant)
     expect(screen.getByText("Restrooms")).toBeInTheDocument();
     expect(screen.getByText("Showers")).toBeInTheDocument();
+  });
+
+  it("should render Flags Required filter label", () => {
+    render(<SearchFiltersPanel {...mockProps} />);
+    expect(screen.getByText("Flags Required")).toBeInTheDocument();
+  });
+
+  it("should render Spark Arrestor Required filter label", () => {
+    render(<SearchFiltersPanel {...mockProps} />);
+    expect(screen.getByText("Spark Arrestor Required")).toBeInTheDocument();
   });
 
   it("should render camping types from constants", () => {
