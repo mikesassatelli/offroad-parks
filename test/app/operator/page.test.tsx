@@ -90,7 +90,7 @@ describe("OperatorIndexPage", () => {
     expect(screen.getByText(/Moab, UT/)).toBeInTheDocument();
   });
 
-  it("renders a dashboard link for each park", async () => {
+  it("renders an operator portal link for each park", async () => {
     vi.mocked(auth).mockResolvedValue({
       user: { id: "user-1" },
     } as any);

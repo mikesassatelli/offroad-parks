@@ -90,7 +90,7 @@ export default async function OperatorIndexPage() {
                   data-testid={`dashboard-link-${park.slug}`}
                 >
                   <BarChart3 className="w-3.5 h-3.5" />
-                  Dashboard
+                  Operator Portal
                 </Link>
               </CardContent>
             </Card>
