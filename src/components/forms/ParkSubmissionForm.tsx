@@ -14,16 +14,14 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Checkbox } from "@/components/ui/checkbox";
-import {
-  ALL_AMENITIES,
-  ALL_CAMPING_TYPES,
-  ALL_OWNERSHIP_TYPES,
-  ALL_TERRAIN_TYPES,
-  ALL_VEHICLE_TYPES,
-  US_STATES,
-} from "@/lib/constants";
-import { formatAmenity, formatCamping, formatOwnership, formatTerrain } from "@/lib/formatting";
-import type { Amenity, Camping, Ownership, Terrain } from "@/lib/types";
+import { ALL_OWNERSHIP_TYPES, US_STATES } from "@/lib/constants";
+import { formatOwnership } from "@/lib/formatting";
+import type { Ownership } from "@/lib/types";
+import { AmenitiesCheckboxGroup } from "@/components/forms/park-fields/AmenitiesCheckboxGroup";
+import { CampingSection } from "@/components/forms/park-fields/CampingSection";
+import { RequirementsSection } from "@/components/forms/park-fields/RequirementsSection";
+import { TerrainCheckboxGroup } from "@/components/forms/park-fields/TerrainCheckboxGroup";
+import { VehicleTypesCheckboxGroup } from "@/components/forms/park-fields/VehicleTypesCheckboxGroup";
 import { Image as ImageIcon, Loader2, X } from "lucide-react";
 import Image from "next/image";
 
@@ -155,18 +153,6 @@ export function ParkSubmissionForm({
         .replace(/(^-|-$)/g, "");
       setFormData((prev) => ({ ...prev, slug }));
     }
-  };
-
-  const handleCheckboxChange = (
-    field: "terrain" | "amenities" | "camping" | "vehicleTypes",
-    value: string,
-  ) => {
-    setFormData((prev) => ({
-      ...prev,
-      [field]: prev[field].includes(value)
-        ? prev[field].filter((v) => v !== value)
-        : [...prev[field], value],
-    }));
   };
 
   const handlePhotoChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -642,251 +628,58 @@ export function ParkSubmissionForm({
       {/* Terrain Types */}
       <div>
         <Label className="mb-3 block">Terrain Types *</Label>
-        <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
-          {ALL_TERRAIN_TYPES.map((terrain) => (
-            <div key={terrain} className="flex items-center space-x-2">
-              <Checkbox
-                id={`terrain-${terrain}`}
-                checked={formData.terrain.includes(terrain)}
-                onCheckedChange={() => handleCheckboxChange("terrain", terrain)}
-              />
-              <label
-                htmlFor={`terrain-${terrain}`}
-                className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
-              >
-                {formatTerrain(terrain as Terrain)}
-              </label>
-            </div>
-          ))}
-        </div>
+        <TerrainCheckboxGroup
+          value={formData.terrain}
+          onChange={(v) => setFormData((prev) => ({ ...prev, terrain: v }))}
+        />
       </div>
 
       {/* Amenities */}
       <div>
         <Label className="mb-3 block">Amenities</Label>
-        <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
-          {ALL_AMENITIES.map((amenity) => (
-            <div key={amenity} className="flex items-center space-x-2">
-              <Checkbox
-                id={`amenity-${amenity}`}
-                checked={formData.amenities.includes(amenity)}
-                onCheckedChange={() =>
-                  handleCheckboxChange("amenities", amenity)
-                }
-              />
-              <label
-                htmlFor={`amenity-${amenity}`}
-                className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
-              >
-                {formatAmenity(amenity as Amenity)}
-              </label>
-            </div>
-          ))}
-        </div>
+        <AmenitiesCheckboxGroup
+          value={formData.amenities}
+          onChange={(v) => setFormData((prev) => ({ ...prev, amenities: v }))}
+        />
       </div>
 
       {/* Camping */}
       <div>
         <Label className="mb-3 block">Camping Options</Label>
-        <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
-          {ALL_CAMPING_TYPES.map((camping) => (
-            <div key={camping} className="flex items-center space-x-2">
-              <Checkbox
-                id={`camping-${camping}`}
-                checked={formData.camping.includes(camping)}
-                onCheckedChange={() =>
-                  handleCheckboxChange("camping", camping)
-                }
-              />
-              <label
-                htmlFor={`camping-${camping}`}
-                className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
-              >
-                {formatCamping(camping as Camping)}
-              </label>
-            </div>
-          ))}
-        </div>
-
-        {/* Camping Contact Info */}
-        {formData.camping.length > 0 && (
-          <div className="mt-4 pt-4 border-t border-border">
-            <Label className="mb-3 block text-sm text-muted-foreground">
-              Camping Reservations (Optional)
-            </Label>
-            <div className="grid md:grid-cols-2 gap-4">
-              <div>
-                <Label htmlFor="campingWebsite" className="text-sm">
-                  Camping Website
-                </Label>
-                <Input
-                  id="campingWebsite"
-                  name="campingWebsite"
-                  type="url"
-                  value={formData.campingWebsite}
-                  onChange={handleInputChange}
-                  placeholder="https://reservations..."
-                />
-              </div>
-              <div>
-                <Label htmlFor="campingPhone" className="text-sm">
-                  Camping Phone
-                </Label>
-                <Input
-                  id="campingPhone"
-                  name="campingPhone"
-                  type="tel"
-                  value={formData.campingPhone}
-                  onChange={handleInputChange}
-                  placeholder="5551234567"
-                  maxLength={15}
-                />
-              </div>
-            </div>
-          </div>
-        )}
+        <CampingSection
+          value={formData.camping}
+          onChange={(v) => setFormData((prev) => ({ ...prev, camping: v }))}
+          campingWebsite={formData.campingWebsite}
+          onCampingWebsiteChange={(v) => setFormData((prev) => ({ ...prev, campingWebsite: v }))}
+          campingPhone={formData.campingPhone}
+          onCampingPhoneChange={(v) => setFormData((prev) => ({ ...prev, campingPhone: v }))}
+        />
       </div>
 
       {/* Vehicle Types */}
       <div>
         <Label className="mb-3 block">Allowed Vehicle Types</Label>
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
-          {ALL_VEHICLE_TYPES.map((vehicleType) => (
-            <div key={vehicleType} className="flex items-center space-x-2">
-              <Checkbox
-                id={`vehicle-${vehicleType}`}
-                checked={formData.vehicleTypes.includes(vehicleType)}
-                onCheckedChange={() =>
-                  handleCheckboxChange("vehicleTypes", vehicleType)
-                }
-              />
-              <label
-                htmlFor={`vehicle-${vehicleType}`}
-                className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70 capitalize"
-              >
-                {vehicleType === "fullSize"
-                  ? "Full-Size"
-                  : vehicleType === "sxs"
-                    ? "SxS"
-                    : vehicleType === "atv"
-                      ? "ATV"
-                      : "Motorcycle"}
-              </label>
-            </div>
-          ))}
-        </div>
+        <VehicleTypesCheckboxGroup
+          value={formData.vehicleTypes}
+          onChange={(v) => setFormData((prev) => ({ ...prev, vehicleTypes: v }))}
+        />
       </div>
 
       {/* Requirements & Regulations */}
       <div>
         <Label className="mb-3 block text-base font-semibold">Requirements & Regulations</Label>
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-          <div className="flex items-center space-x-2">
-            <Checkbox
-              id="permitRequired"
-              checked={formData.permitRequired}
-              onCheckedChange={(checked) =>
-                setFormData((prev) => ({ ...prev, permitRequired: !!checked }))
-              }
-            />
-            <label
-              htmlFor="permitRequired"
-              className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
-            >
-              Permit Required
-            </label>
-          </div>
-
-          {formData.permitRequired && (
-            <div>
-              <Label htmlFor="permitType">Permit Type</Label>
-              <Input
-                id="permitType"
-                name="permitType"
-                value={formData.permitType}
-                onChange={handleInputChange}
-                placeholder="e.g., OHV sticker, Day use permit"
-                maxLength={100}
-              />
-            </div>
-          )}
-
-          <div className="flex items-center space-x-2">
-            <Checkbox
-              id="membershipRequired"
-              checked={formData.membershipRequired}
-              onCheckedChange={(checked) =>
-                setFormData((prev) => ({ ...prev, membershipRequired: !!checked }))
-              }
-            />
-            <label
-              htmlFor="membershipRequired"
-              className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
-            >
-              Membership Required
-            </label>
-          </div>
-
-          <div className="flex items-center space-x-2">
-            <Checkbox
-              id="flagsRequired"
-              checked={formData.flagsRequired}
-              onCheckedChange={(checked) =>
-                setFormData((prev) => ({ ...prev, flagsRequired: !!checked }))
-              }
-            />
-            <label
-              htmlFor="flagsRequired"
-              className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
-            >
-              Whip Flags Required
-            </label>
-          </div>
-
-          <div className="flex items-center space-x-2">
-            <Checkbox
-              id="sparkArrestorRequired"
-              checked={formData.sparkArrestorRequired}
-              onCheckedChange={(checked) =>
-                setFormData((prev) => ({ ...prev, sparkArrestorRequired: !!checked }))
-              }
-            />
-            <label
-              htmlFor="sparkArrestorRequired"
-              className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
-            >
-              Spark Arrestor Required
-            </label>
-          </div>
-
-          <div>
-            <Label htmlFor="maxVehicleWidthInches">Max Vehicle Width (inches)</Label>
-            <Input
-              id="maxVehicleWidthInches"
-              name="maxVehicleWidthInches"
-              type="number"
-              min="0"
-              max="200"
-              value={formData.maxVehicleWidthInches}
-              onChange={handleInputChange}
-              placeholder="e.g., 65"
-            />
-          </div>
-
-          <div>
-            <Label htmlFor="noiseLimitDBA">Noise Limit (dBA)</Label>
-            <Input
-              id="noiseLimitDBA"
-              name="noiseLimitDBA"
-              type="number"
-              min="0"
-              max="150"
-              value={formData.noiseLimitDBA}
-              onChange={handleInputChange}
-              placeholder="e.g., 96"
-            />
-          </div>
-        </div>
+        <RequirementsSection
+          values={{
+            permitRequired: formData.permitRequired,
+            permitType: formData.permitType,
+            membershipRequired: formData.membershipRequired,
+            flagsRequired: formData.flagsRequired,
+            sparkArrestorRequired: formData.sparkArrestorRequired,
+            maxVehicleWidthInches: formData.maxVehicleWidthInches,
+            noiseLimitDBA: formData.noiseLimitDBA,
+          }}
+          onChange={(field, value) => setFormData((prev) => ({ ...prev, [field]: value }))}
+        />
       </div>
 
       {/* Notes */}
