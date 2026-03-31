@@ -23,7 +23,7 @@ export async function POST(_request: Request, { params }: RouteParams) {
     where: { id },
     include: {
       park: { select: { id: true, name: true, operatorId: true } },
-      user: { select: { id: true, email: true } },
+      user: { select: { id: true, email: true, role: true } },
     },
   });
 
@@ -77,11 +77,14 @@ export async function POST(_request: Request, { params }: RouteParams) {
       },
     });
 
-    // Update the user's role to OPERATOR
-    await tx.user.update({
-      where: { id: claim.userId },
-      data: { role: "OPERATOR" },
-    });
+    // Only promote to OPERATOR if the user isn't already an ADMIN —
+    // admins can own parks without losing their admin privileges.
+    if (claim.user.role !== "ADMIN") {
+      await tx.user.update({
+        where: { id: claim.userId },
+        data: { role: "OPERATOR" },
+      });
+    }
 
     return { claim: updatedClaim, operator };
   });

@@ -42,7 +42,7 @@ const mockClaim = {
   businessName: "Desert Riders LLC",
   message: null,
   park: { id: "park-1", name: "Test Park", operatorId: null },
-  user: { id: "user-1", email: "jane@example.com" },
+  user: { id: "user-1", email: "jane@example.com", role: "USER" },
 };
 
 describe("POST /api/admin/claims/[id]/approve", () => {
@@ -104,6 +104,7 @@ describe("POST /api/admin/claims/[id]/approve", () => {
   it("should approve claim via transaction and return 200", async () => {
     (auth as any).mockResolvedValue(adminSession);
     (prisma.parkClaim.findUnique as any).mockResolvedValue(mockClaim);
+    const userUpdate = vi.fn().mockResolvedValue({});
     (prisma.$transaction as any).mockImplementation(async (fn: any) => {
       return fn({
         operator: { create: vi.fn().mockResolvedValue({ id: "op-1", name: "Desert Riders LLC" }) },
@@ -112,7 +113,7 @@ describe("POST /api/admin/claims/[id]/approve", () => {
         parkClaim: {
           update: vi.fn().mockResolvedValue({ id: "claim-1", status: "APPROVED" }),
         },
-        user: { update: vi.fn().mockResolvedValue({}) },
+        user: { update: userUpdate },
       });
     });
 
@@ -123,5 +124,38 @@ describe("POST /api/admin/claims/[id]/approve", () => {
     expect(response.status).toBe(200);
     const data = await response.json();
     expect(data.success).toBe(true);
+    // Regular user should be promoted to OPERATOR
+    expect(userUpdate).toHaveBeenCalledWith({
+      where: { id: "user-1" },
+      data: { role: "OPERATOR" },
+    });
+  });
+
+  it("should not downgrade an ADMIN claimant to OPERATOR", async () => {
+    (auth as any).mockResolvedValue(adminSession);
+    (prisma.parkClaim.findUnique as any).mockResolvedValue({
+      ...mockClaim,
+      user: { id: "admin-1", email: "admin@example.com", role: "ADMIN" },
+    });
+    const userUpdate = vi.fn().mockResolvedValue({});
+    (prisma.$transaction as any).mockImplementation(async (fn: any) => {
+      return fn({
+        operator: { create: vi.fn().mockResolvedValue({ id: "op-1", name: "Desert Riders LLC" }) },
+        operatorUser: { create: vi.fn().mockResolvedValue({}) },
+        park: { update: vi.fn().mockResolvedValue({}) },
+        parkClaim: {
+          update: vi.fn().mockResolvedValue({ id: "claim-1", status: "APPROVED" }),
+        },
+        user: { update: userUpdate },
+      });
+    });
+
+    const response = await POST(new Request("http://localhost"), {
+      params: Promise.resolve({ id: "claim-1" }),
+    });
+
+    expect(response.status).toBe(200);
+    // Admin's role must NOT be changed
+    expect(userUpdate).not.toHaveBeenCalled();
   });
 });
