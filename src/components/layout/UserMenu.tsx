@@ -49,7 +49,7 @@ export function UserMenu({ user, onSignOut }: UserMenuProps) {
             <DropdownMenuItem asChild>
               <Link href="/operator" className="cursor-pointer">
                 <Building2 className="w-4 h-4 mr-2" />
-                Operator Portal
+                Manage Parks
               </Link>
             </DropdownMenuItem>
           </>

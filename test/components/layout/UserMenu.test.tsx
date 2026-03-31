@@ -122,10 +122,10 @@ describe("UserMenu", () => {
     expect(screen.queryByText("Admin Panel")).not.toBeInTheDocument();
   });
 
-  it("should not show Operator Portal for regular users", () => {
+  it("should not show Manage Parks for regular users", () => {
     render(<UserMenu user={regularUser} onSignOut={mockOnSignOut} />);
 
-    expect(screen.queryByText("Operator Portal")).not.toBeInTheDocument();
+    expect(screen.queryByText("Manage Parks")).not.toBeInTheDocument();
   });
 
   it("should show Admin Panel for admin users", () => {
@@ -134,16 +134,16 @@ describe("UserMenu", () => {
     expect(screen.getByText("Admin Panel")).toBeInTheDocument();
   });
 
-  it("should show Operator Portal for admin users", () => {
+  it("should show Manage Parks for admin users", () => {
     render(<UserMenu user={adminUser} onSignOut={mockOnSignOut} />);
 
-    expect(screen.getByText("Operator Portal")).toBeInTheDocument();
+    expect(screen.getByText("Manage Parks")).toBeInTheDocument();
   });
 
-  it("should show Operator Portal for operator users", () => {
+  it("should show Manage Parks for operator users", () => {
     render(<UserMenu user={operatorUser} onSignOut={mockOnSignOut} />);
 
-    expect(screen.getByText("Operator Portal")).toBeInTheDocument();
+    expect(screen.getByText("Manage Parks")).toBeInTheDocument();
   });
 
   it("should not show Admin Panel for operator users", () => {
@@ -152,7 +152,7 @@ describe("UserMenu", () => {
     expect(screen.queryByText("Admin Panel")).not.toBeInTheDocument();
   });
 
-  it("should render Operator Portal link pointing to /operator", () => {
+  it("should render Manage Parks link pointing to /operator", () => {
     const { container } = render(
       <UserMenu user={operatorUser} onSignOut={mockOnSignOut} />,
     );

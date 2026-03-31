@@ -45,7 +45,7 @@ export default async function OperatorIndexPage() {
   return (
     <div className="max-w-3xl mx-auto px-6 py-12">
       <div className="mb-8">
-        <h1 className="text-2xl font-bold text-gray-900">Operator Portal</h1>
+        <h1 className="text-2xl font-bold text-gray-900">Manage Parks</h1>
         <p className="text-gray-500 text-sm mt-1">Select a park to manage.</p>
       </div>
 
