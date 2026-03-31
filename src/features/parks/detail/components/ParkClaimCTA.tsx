@@ -1,17 +1,21 @@
 "use client";
 
 import { useState } from "react";
-import { Building2, ChevronDown, ChevronUp, CheckCircle } from "lucide-react";
+import { Building2, ChevronDown, ChevronUp, CheckCircle, XCircle } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 
 interface ParkClaimCTAProps {
   parkSlug: string;
   isLoggedIn: boolean;
-  /** If the park already has an operator, hide the CTA */
+  /** If the park already has an operator, hide the CTA entirely */
   hasOperator?: boolean;
-  /** If the current user already has a pending claim for this park, show the submitted state */
-  hasPendingClaim?: boolean;
+  /** Existing claim for this user+park, if any */
+  existingClaim?: { status: string; reviewNotes: string | null } | null;
+  /** Whether the current user is an operator of this park */
+  isOperatorOfPark?: boolean;
+  /** Display name of the operator org, if the park is claimed */
+  operatorName?: string | null;
 }
 
 interface ClaimFormData {
@@ -22,10 +26,12 @@ interface ClaimFormData {
   message: string;
 }
 
-export function ParkClaimCTA({ parkSlug, isLoggedIn, hasOperator, hasPendingClaim }: ParkClaimCTAProps) {
+export function ParkClaimCTA({ parkSlug, isLoggedIn, hasOperator, existingClaim, isOperatorOfPark, operatorName }: ParkClaimCTAProps) {
   const [isExpanded, setIsExpanded] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const [isSuccess, setIsSuccess] = useState(hasPendingClaim ?? false);
+  const [isSuccess, setIsSuccess] = useState(
+    !!existingClaim && existingClaim.status !== "REJECTED"
+  );
   const [error, setError] = useState<string | null>(null);
   const [form, setForm] = useState<ClaimFormData>({
     claimantName: "",
@@ -35,7 +41,67 @@ export function ParkClaimCTA({ parkSlug, isLoggedIn, hasOperator, hasPendingClai
     message: "",
   });
 
-  if (hasOperator) return null;
+  if (isOperatorOfPark) {
+    return (
+      <Card className="border-blue-200 bg-blue-50 dark:bg-blue-950/20 dark:border-blue-800">
+        <CardContent className="pt-4 pb-4">
+          <div className="flex items-center gap-2 text-blue-700 dark:text-blue-400">
+            <Building2 className="w-4 h-4 flex-shrink-0" />
+            <div>
+              <p className="text-sm font-medium">You manage this park</p>
+              <p className="text-xs text-blue-600 dark:text-blue-500 mt-0.5">
+                You&apos;re registered as an operator of this park.
+              </p>
+            </div>
+          </div>
+        </CardContent>
+      </Card>
+    );
+  }
+
+  if (hasOperator) {
+    return (
+      <Card className="border-gray-200 bg-gray-50 dark:bg-gray-900/40 dark:border-gray-700">
+        <CardContent className="pt-4 pb-4">
+          <div className="flex items-center gap-2 text-gray-600 dark:text-gray-400">
+            <Building2 className="w-4 h-4 flex-shrink-0" />
+            <p className="text-xs">
+              This listing is managed by{" "}
+              <span className="font-medium text-gray-800 dark:text-gray-200">
+                {operatorName ?? "a verified operator"}
+              </span>
+              {" "}— details are kept up to date directly by the operator.
+            </p>
+          </div>
+        </CardContent>
+      </Card>
+    );
+  }
+
+  // Rejected state — shown server-side and cannot re-submit
+  if (existingClaim?.status === "REJECTED") {
+    return (
+      <Card className="border-red-200 bg-red-50 dark:bg-red-950/20 dark:border-red-800">
+        <CardContent className="pt-4 pb-4">
+          <div className="flex items-start gap-2 text-red-700 dark:text-red-400">
+            <XCircle className="w-4 h-4 flex-shrink-0 mt-0.5" />
+            <div>
+              <p className="text-sm font-medium">Claim not approved</p>
+              <p className="text-xs text-red-600 dark:text-red-500 mt-0.5">
+                Your claim request for this park was not approved.
+              </p>
+              {existingClaim.reviewNotes && (
+                <p className="text-xs text-red-700 dark:text-red-400 mt-1.5 border-t border-red-200 dark:border-red-800 pt-1.5">
+                  <span className="font-medium">Note: </span>
+                  {existingClaim.reviewNotes}
+                </p>
+              )}
+            </div>
+          </div>
+        </CardContent>
+      </Card>
+    );
+  }
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -133,6 +199,19 @@ export function ParkClaimCTA({ parkSlug, isLoggedIn, hasOperator, hasPendingClai
               <form onSubmit={handleSubmit} className="space-y-3 pt-1" data-testid="claim-form">
                 <div>
                   <label className="text-xs text-muted-foreground block mb-1">
+                    Organization or business name <span className="text-destructive">*</span>
+                  </label>
+                  <input
+                    type="text"
+                    required
+                    value={form.businessName}
+                    onChange={(e) => setForm((f) => ({ ...f, businessName: e.target.value }))}
+                    className="w-full text-sm border border-border rounded-md px-3 py-2 bg-background"
+                    placeholder="Iowa DNR, Desert Riders Association…"
+                  />
+                </div>
+                <div>
+                  <label className="text-xs text-muted-foreground block mb-1">
                     Your name <span className="text-destructive">*</span>
                   </label>
                   <input
@@ -167,18 +246,6 @@ export function ParkClaimCTA({ parkSlug, isLoggedIn, hasOperator, hasPendingClai
                     onChange={(e) => setForm((f) => ({ ...f, claimantPhone: e.target.value }))}
                     className="w-full text-sm border border-border rounded-md px-3 py-2 bg-background"
                     placeholder="(555) 555-5555"
-                  />
-                </div>
-                <div>
-                  <label className="text-xs text-muted-foreground block mb-1">
-                    Business / organization name (optional)
-                  </label>
-                  <input
-                    type="text"
-                    value={form.businessName}
-                    onChange={(e) => setForm((f) => ({ ...f, businessName: e.target.value }))}
-                    className="w-full text-sm border border-border rounded-md px-3 py-2 bg-background"
-                    placeholder="Desert Riders Association"
                   />
                 </div>
                 <div>

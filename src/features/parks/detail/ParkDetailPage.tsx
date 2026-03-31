@@ -47,7 +47,9 @@ interface ParkDetailPageProps {
   photos: Photo[];
   currentUserId?: string;
   isAdmin?: boolean;
-  hasPendingClaim?: boolean;
+  existingClaim?: { status: string; reviewNotes: string | null } | null;
+  isOperatorOfPark?: boolean;
+  operatorName?: string | null;
 }
 
 function ParkDetailPageInner({
@@ -55,7 +57,9 @@ function ParkDetailPageInner({
   photos,
   currentUserId,
   isAdmin,
-  hasPendingClaim,
+  existingClaim,
+  isOperatorOfPark,
+  operatorName,
 }: ParkDetailPageProps) {
   const router = useRouter();
   const { data: session } = useSession();
@@ -363,7 +367,9 @@ function ParkDetailPageInner({
                 parkSlug={park.id}
                 isLoggedIn={!!session?.user}
                 hasOperator={park.hasOperator}
-                hasPendingClaim={hasPendingClaim}
+                existingClaim={existingClaim}
+                isOperatorOfPark={isOperatorOfPark}
+                operatorName={operatorName}
               />
             </div>
           </div>
