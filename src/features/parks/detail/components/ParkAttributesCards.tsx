@@ -1,6 +1,7 @@
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import type { Park } from "@/lib/types";
+import { formatAmenity, formatTerrain } from "@/lib/formatting";
+import type { Amenity, Park, Terrain } from "@/lib/types";
 
 interface ParkAttributesCardsProps {
   park: Park;
@@ -20,9 +21,9 @@ export function ParkAttributesCards({ park }: ParkAttributesCardsProps) {
               <Badge
                 key={terrain}
                 variant="outline"
-                className="capitalize text-sm"
+                className="text-sm"
               >
-                {terrain}
+                {formatTerrain(terrain as Terrain)}
               </Badge>
             ))}
           </div>
@@ -37,8 +38,8 @@ export function ParkAttributesCards({ park }: ParkAttributesCardsProps) {
         <CardContent>
           <div className="flex flex-wrap gap-2">
             {park.amenities.map((amenity) => (
-              <Badge key={amenity} className="capitalize text-sm">
-                {amenity}
+              <Badge key={amenity} className="text-sm">
+                {formatAmenity(amenity as Amenity)}
               </Badge>
             ))}
           </div>
