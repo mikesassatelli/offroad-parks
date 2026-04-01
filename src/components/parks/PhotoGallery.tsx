@@ -3,6 +3,7 @@
 import { useState } from "react";
 import Image from "next/image";
 import {
+  Camera,
   ChevronLeft,
   ChevronRight,
   Trash2,
@@ -41,8 +42,10 @@ export function PhotoGallery({
 
   if (photos.length === 0) {
     return (
-      <div className="text-center py-12 text-muted-foreground">
-        <p>No photos yet. Be the first to upload one!</p>
+      <div className="text-center py-16 text-muted-foreground">
+        <Camera className="w-12 h-12 mx-auto mb-4 opacity-30" />
+        <p className="text-base font-medium">No photos yet</p>
+        <p className="text-sm mt-1 opacity-70">Help other riders by uploading a photo of this park.</p>
       </div>
     );
   }

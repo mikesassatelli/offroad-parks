@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { CheckCircle, Edit, MapPin, Trash2, XCircle } from "lucide-react";
+import { Camera, CheckCircle, Edit, MapPin, Trash2, XCircle } from "lucide-react";
 
 type ParkStatus = "PENDING" | "APPROVED" | "REJECTED" | "DRAFT";
 
@@ -23,6 +23,7 @@ interface Park {
     city: string | null;
     state: string;
   } | null;
+  photos: Array<{ id: string }>;
 }
 
 interface Props {
@@ -183,8 +184,19 @@ export function ParkManagementTable({ parks, highlightId }: Props) {
                 }`}
               >
                 <td className="px-6 py-4 whitespace-nowrap">
-                  <div className="text-sm font-medium text-gray-900">
-                    {park.name}
+                  <div className="flex items-center gap-2">
+                    <div className="text-sm font-medium text-gray-900">
+                      {park.name}
+                    </div>
+                    {park.status === "APPROVED" && park.photos.length === 0 && (
+                      <span
+                        className="inline-flex items-center gap-1 px-1.5 py-0.5 text-[10px] font-semibold rounded-full bg-amber-100 text-amber-700 border border-amber-200"
+                        title="No approved photos"
+                      >
+                        <Camera className="w-2.5 h-2.5" />
+                        No photos
+                      </span>
+                    )}
                   </div>
                   <div className="text-xs text-gray-500">{park.slug}</div>
                 </td>

@@ -51,6 +51,10 @@ interface SearchFiltersPanelProps {
   onPermitRequiredChange: (value: string) => void;
   membershipRequired: string;
   onMembershipRequiredChange: (value: string) => void;
+  flagsRequired: string;
+  onFlagsRequiredChange: (value: string) => void;
+  sparkArrestorRequired: string;
+  onSparkArrestorRequiredChange: (value: string) => void;
   onClearFilters: () => void;
 }
 
@@ -113,6 +117,10 @@ export function SearchFiltersPanel({
   onPermitRequiredChange,
   membershipRequired,
   onMembershipRequiredChange,
+  flagsRequired,
+  onFlagsRequiredChange,
+  sparkArrestorRequired,
+  onSparkArrestorRequiredChange,
   onClearFilters,
 }: SearchFiltersPanelProps) {
   const handleStateChange = (value: string) => {
@@ -133,6 +141,14 @@ export function SearchFiltersPanel({
 
   const handleMembershipRequiredChange = (value: string) => {
     onMembershipRequiredChange(value === "__any" ? "" : value);
+  };
+
+  const handleFlagsRequiredChange = (value: string) => {
+    onFlagsRequiredChange(value === "__any" ? "" : value);
+  };
+
+  const handleSparkArrestorRequiredChange = (value: string) => {
+    onSparkArrestorRequiredChange(value === "__any" ? "" : value);
   };
 
   const handleTerrainToggle = (terrain: string) => {
@@ -178,7 +194,9 @@ export function SearchFiltersPanel({
     (minRating ? 1 : 0) +
     (selectedOwnership ? 1 : 0) +
     (permitRequired ? 1 : 0) +
-    (membershipRequired ? 1 : 0);
+    (membershipRequired ? 1 : 0) +
+    (flagsRequired ? 1 : 0) +
+    (sparkArrestorRequired ? 1 : 0);
 
   return (
     <div className="md:col-span-1 bg-card p-4 rounded-lg shadow-sm border divide-y divide-border/60">
@@ -414,6 +432,40 @@ export function SearchFiltersPanel({
             <Select
               onValueChange={handleMembershipRequiredChange}
               value={membershipRequired || "__any"}
+            >
+              <SelectTrigger>
+                <SelectValue placeholder="Any" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="__any">Any</SelectItem>
+                <SelectItem value="yes">Required</SelectItem>
+                <SelectItem value="no">Not Required</SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
+
+          <div>
+            <div className="text-xs font-medium text-muted-foreground mb-1.5">Flags Required</div>
+            <Select
+              onValueChange={handleFlagsRequiredChange}
+              value={flagsRequired || "__any"}
+            >
+              <SelectTrigger>
+                <SelectValue placeholder="Any" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="__any">Any</SelectItem>
+                <SelectItem value="yes">Required</SelectItem>
+                <SelectItem value="no">Not Required</SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
+
+          <div>
+            <div className="text-xs font-medium text-muted-foreground mb-1.5">Spark Arrestor Required</div>
+            <Select
+              onValueChange={handleSparkArrestorRequiredChange}
+              value={sparkArrestorRequired || "__any"}
             >
               <SelectTrigger>
                 <SelectValue placeholder="Any" />

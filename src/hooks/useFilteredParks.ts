@@ -2,7 +2,7 @@ import { useMemo, useState } from "react";
 import type { Park } from "@/lib/types";
 import { haversineDistance } from "@/lib/geo";
 
-export type SortOption = "name" | "price" | "miles" | "acres" | "rating" | "difficulty-high" | "difficulty-low" | "distance-nearest";
+export type SortOption = "name" | "price" | "miles" | "acres" | "rating" | "difficulty-high" | "difficulty-low" | "most-reviewed" | "distance-nearest";
 
 export interface UserCoords {
   lat: number;
@@ -27,6 +27,8 @@ export function useFilteredParks({ parks, userCoords }: UseFilteredParksProps) {
   const [selectedOwnership, setSelectedOwnership] = useState<string>("");
   const [permitRequired, setPermitRequired] = useState<string>("");
   const [membershipRequired, setMembershipRequired] = useState<string>("");
+  const [flagsRequired, setFlagsRequired] = useState<string>("");
+  const [sparkArrestorRequired, setSparkArrestorRequired] = useState<string>("");
   const [sortOption, setSortOption] = useState<SortOption>("name");
 
   const availableStates = useMemo(
@@ -139,6 +141,20 @@ export function useFilteredParks({ parks, userCoords }: UseFilteredParksProps) {
       filteredList = filteredList.filter((park) => park.membershipRequired !== true);
     }
 
+    // Filter by flags required
+    if (flagsRequired === "yes") {
+      filteredList = filteredList.filter((park) => park.flagsRequired === true);
+    } else if (flagsRequired === "no") {
+      filteredList = filteredList.filter((park) => park.flagsRequired !== true);
+    }
+
+    // Filter by spark arrestor required
+    if (sparkArrestorRequired === "yes") {
+      filteredList = filteredList.filter((park) => park.sparkArrestorRequired === true);
+    } else if (sparkArrestorRequired === "no") {
+      filteredList = filteredList.filter((park) => park.sparkArrestorRequired !== true);
+    }
+
     // Apply sorting
     filteredList.sort((parkA, parkB) => {
       if (sortOption === "name") {
@@ -155,6 +171,8 @@ export function useFilteredParks({ parks, userCoords }: UseFilteredParksProps) {
         return (parkB.averageDifficulty ?? 0) - (parkA.averageDifficulty ?? 0);
       } else if (sortOption === "difficulty-low") {
         return (parkA.averageDifficulty ?? Infinity) - (parkB.averageDifficulty ?? Infinity);
+      } else if (sortOption === "most-reviewed") {
+        return (parkB.reviewCount ?? 0) - (parkA.reviewCount ?? 0);
       } else {
         // sortOption === "distance-nearest"
         if (!userCoords) return 0;
@@ -183,6 +201,8 @@ export function useFilteredParks({ parks, userCoords }: UseFilteredParksProps) {
     selectedOwnership,
     permitRequired,
     membershipRequired,
+    flagsRequired,
+    sparkArrestorRequired,
     sortOption,
     userCoords,
   ]);
@@ -200,6 +220,8 @@ export function useFilteredParks({ parks, userCoords }: UseFilteredParksProps) {
     setSelectedOwnership("");
     setPermitRequired("");
     setMembershipRequired("");
+    setFlagsRequired("");
+    setSparkArrestorRequired("");
   };
 
   return {
@@ -229,6 +251,10 @@ export function useFilteredParks({ parks, userCoords }: UseFilteredParksProps) {
     setPermitRequired,
     membershipRequired,
     setMembershipRequired,
+    flagsRequired,
+    setFlagsRequired,
+    sparkArrestorRequired,
+    setSparkArrestorRequired,
     sortOption,
     setSortOption,
     availableStates,
