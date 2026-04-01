@@ -142,11 +142,11 @@ export function OperatorConditionsClient({ parkSlug, parkName }: OperatorConditi
   return (
     <div>
       <div className="mb-6">
-        <h1 className="text-2xl font-bold text-gray-900 flex items-center gap-2">
+        <h1 className="text-2xl font-bold text-gray-900 dark:text-white flex items-center gap-2">
           <Activity className="w-6 h-6" />
           Trail Status
         </h1>
-        <p className="text-gray-500 text-sm mt-1">
+        <p className="text-gray-500 dark:text-gray-400 text-sm mt-1">
           Post authoritative trail condition updates for {parkName}. These appear with a
           &ldquo;Park Operator&rdquo; badge on your public listing.
         </p>
@@ -251,7 +251,7 @@ export function OperatorConditionsClient({ parkSlug, parkName }: OperatorConditi
             {isLoading ? (
               <div className="space-y-2">
                 {[1, 2, 3].map((i) => (
-                  <div key={i} className="h-8 bg-gray-100 rounded animate-pulse" />
+                  <div key={i} className="h-8 bg-gray-100 dark:bg-gray-700 rounded animate-pulse" />
                 ))}
               </div>
             ) : conditions.length === 0 ? (
@@ -281,7 +281,7 @@ export function OperatorConditionsClient({ parkSlug, parkName }: OperatorConditi
                           {formatConditionAge(c.createdAt)}
                         </span>
                         {c.note && (
-                          <span className="text-xs text-gray-500 truncate">— {c.note}</span>
+                          <span className="text-xs text-gray-500 dark:text-gray-400 truncate">— {c.note}</span>
                         )}
                         <button
                           onClick={() => handleDelete(c.id)}
