@@ -399,4 +399,139 @@ describe("useRouteBuilder", () => {
 
     expect(result.current.routeParks).toBe(result.current.waypoints);
   });
+
+  it("should save route and return saved route data", async () => {
+    const mockFetch = vi.fn().mockResolvedValue({
+      ok: true,
+      json: () =>
+        Promise.resolve({
+          id: "route-1",
+          title: "My Route",
+          shareToken: "abc123",
+          isPublic: false,
+          waypoints: [],
+          createdAt: new Date().toISOString(),
+          updatedAt: new Date().toISOString(),
+        }),
+    });
+    global.fetch = mockFetch;
+
+    const { result } = renderHook(() => useRouteBuilder());
+
+    act(() => {
+      result.current.addParkToRoute(mockPark1);
+      result.current.addParkToRoute(mockPark2);
+    });
+
+    let saved: ReturnType<typeof result.current.saveRoute> extends Promise<infer T> ? T : never;
+    await act(async () => {
+      saved = await result.current.saveRoute("My Route", false);
+    });
+
+    expect(mockFetch).toHaveBeenCalledWith(
+      "/api/routes",
+      expect.objectContaining({ method: "POST" }),
+    );
+    expect(saved!).not.toBeNull();
+    expect(saved!?.id).toBe("route-1");
+  });
+
+  it("should return null from saveRoute when fewer than 2 waypoints", async () => {
+    const { result } = renderHook(() => useRouteBuilder());
+
+    act(() => {
+      result.current.addParkToRoute(mockPark1);
+    });
+
+    let saved: Awaited<ReturnType<typeof result.current.saveRoute>>;
+    await act(async () => {
+      saved = await result.current.saveRoute("My Route", false);
+    });
+
+    expect(saved!).toBeNull();
+  });
+
+  it("should return null from saveRoute when title is empty", async () => {
+    const { result } = renderHook(() => useRouteBuilder());
+
+    act(() => {
+      result.current.addParkToRoute(mockPark1);
+      result.current.addParkToRoute(mockPark2);
+    });
+
+    let saved: Awaited<ReturnType<typeof result.current.saveRoute>>;
+    await act(async () => {
+      saved = await result.current.saveRoute("", false);
+    });
+
+    expect(saved!).toBeNull();
+  });
+
+  it("should return null from saveRoute when fetch fails", async () => {
+    global.fetch = vi.fn().mockResolvedValue({ ok: false, json: () => Promise.resolve({}) });
+
+    const { result } = renderHook(() => useRouteBuilder());
+
+    act(() => {
+      result.current.addParkToRoute(mockPark1);
+      result.current.addParkToRoute(mockPark2);
+    });
+
+    let saved: Awaited<ReturnType<typeof result.current.saveRoute>>;
+    await act(async () => {
+      saved = await result.current.saveRoute("My Route", false);
+    });
+
+    expect(saved!).toBeNull();
+  });
+
+  it("should load a saved route into waypoints", () => {
+    const { result } = renderHook(() => useRouteBuilder());
+
+    const savedRoute = {
+      id: "route-1",
+      title: "Loaded Route",
+      shareToken: "tok123",
+      isPublic: false,
+      waypoints: [
+        { id: "wp-1", type: "park" as const, label: "Park A", parkId: "park-a", parkSlug: "park-a", lat: 34.0, lng: -118.0 },
+        { id: "wp-2", type: "custom" as const, label: "Custom Stop", lat: 35.0, lng: -119.0 },
+      ],
+      createdAt: new Date().toISOString(),
+      updatedAt: new Date().toISOString(),
+    };
+
+    act(() => {
+      result.current.loadRoute(savedRoute);
+    });
+
+    expect(result.current.waypoints).toHaveLength(2);
+    expect(result.current.waypoints[0].parkId).toBe("park-a");
+    expect(result.current.waypoints[1].label).toBe("Custom Stop");
+    expect(result.current.savedRouteId).toBe("route-1");
+  });
+
+  it("should use routeResult distance when available in totalRouteDistance", async () => {
+    const { fetchMapboxRoute } = await import("@/features/map/utils/routing");
+    vi.mocked(fetchMapboxRoute).mockResolvedValueOnce({
+      distanceMi: 250,
+      durationMin: 240,
+      geometry: { type: "LineString", coordinates: [] },
+    });
+
+    const { result } = renderHook(() => useRouteBuilder());
+
+    act(() => {
+      result.current.addParkToRoute(mockPark1);
+      result.current.addParkToRoute(mockPark2);
+    });
+
+    // Wait for the debounced routing effect
+    await act(async () => {
+      await new Promise((resolve) => setTimeout(resolve, 600));
+    });
+
+    expect(result.current.routeResult?.distanceMi).toBe(250);
+    expect(result.current.totalRouteDistance()).toBe(250);
+  });
 });

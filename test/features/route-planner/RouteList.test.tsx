@@ -3,6 +3,7 @@ import userEvent from "@testing-library/user-event";
 import { RouteList } from "@/features/route-planner/RouteList";
 import type { RouteWaypoint } from "@/lib/types";
 import { vi } from "vitest";
+import { useSession } from "next-auth/react";
 
 // Mock next-auth session
 vi.mock("next-auth/react", () => ({
@@ -290,5 +291,110 @@ describe("RouteList", () => {
     expect(
       screen.getByPlaceholderText(/search a location/i),
     ).toBeInTheDocument();
+  });
+
+  it("should cancel custom stop search and return to Add Custom Stop button", async () => {
+    const user = userEvent.setup();
+    render(<RouteList {...defaultProps} />);
+
+    await user.click(screen.getByRole("button", { name: /add custom stop/i }));
+    expect(screen.getByPlaceholderText(/search a location/i)).toBeInTheDocument();
+
+    await user.click(screen.getByRole("button", { name: /cancel/i }));
+    expect(screen.getByRole("button", { name: /add custom stop/i })).toBeInTheDocument();
+    expect(screen.queryByPlaceholderText(/search a location/i)).not.toBeInTheDocument();
+  });
+
+  it("should call onAddCustomWaypoint when geocode succeeds", async () => {
+    const { geocodeLocation } = await import("@/features/map/utils/routing");
+    vi.mocked(geocodeLocation).mockResolvedValueOnce({
+      label: "Moab, UT",
+      lat: 38.5733,
+      lng: -109.5498,
+    });
+
+    const onAddCustomWaypoint = vi.fn();
+    const user = userEvent.setup();
+
+    render(<RouteList {...defaultProps} onAddCustomWaypoint={onAddCustomWaypoint} />);
+
+    await user.click(screen.getByRole("button", { name: /add custom stop/i }));
+    await user.type(screen.getByPlaceholderText(/search a location/i), "Moab");
+    await user.click(screen.getByRole("button", { name: "" })); // submit search
+
+    await screen.findByRole("button", { name: /add custom stop/i });
+
+    expect(onAddCustomWaypoint).toHaveBeenCalledWith("Moab, UT", 38.5733, -109.5498);
+  });
+
+  it("should show no results error when geocode returns null", async () => {
+    const { geocodeLocation } = await import("@/features/map/utils/routing");
+    vi.mocked(geocodeLocation).mockResolvedValueOnce(null);
+
+    const user = userEvent.setup();
+    render(<RouteList {...defaultProps} />);
+
+    await user.click(screen.getByRole("button", { name: /add custom stop/i }));
+    await user.type(screen.getByPlaceholderText(/search a location/i), "Nowhere");
+    fireEvent.submit(screen.getByPlaceholderText(/search a location/i).closest("form")!);
+
+    expect(await screen.findByText(/no results found/i)).toBeInTheDocument();
+  });
+
+  it("should show Save Route button when authenticated with 2+ waypoints and onSaveRoute", () => {
+    vi.mocked(useSession).mockReturnValueOnce({ data: { user: { id: "user-1" } } as any, status: "authenticated", update: vi.fn() });
+
+    const onSaveRoute = vi.fn().mockResolvedValue(null);
+
+    render(
+      <RouteList
+        {...defaultProps}
+        onSaveRoute={onSaveRoute}
+      />,
+    );
+
+    expect(screen.getByRole("button", { name: /save route/i })).toBeInTheDocument();
+  });
+
+  it("should call onSaveRoute when Save Route is clicked with a title", async () => {
+    vi.mocked(useSession).mockReturnValue({ data: { user: { id: "user-1" } } as any, status: "authenticated", update: vi.fn() });
+
+    const onSaveRoute = vi.fn().mockResolvedValue(null);
+    const user = userEvent.setup();
+
+    render(
+      <RouteList
+        {...defaultProps}
+        onSaveRoute={onSaveRoute}
+      />,
+    );
+
+    await user.type(screen.getByPlaceholderText(/name your route/i), "Epic Desert Trip");
+    await user.click(screen.getByRole("button", { name: /save route/i }));
+
+    expect(onSaveRoute).toHaveBeenCalledWith("Epic Desert Trip", false);
+  });
+
+  it("should show Copy Share Link after route is saved", async () => {
+    vi.mocked(useSession).mockReturnValue({ data: { user: { id: "user-1" } } as any, status: "authenticated", update: vi.fn() });
+
+    const savedRoute = {
+      id: "route-1", title: "Epic Trip", shareToken: "tok-abc",
+      isPublic: false, waypoints: [], createdAt: "", updatedAt: "",
+    };
+    const onSaveRoute = vi.fn().mockResolvedValue(savedRoute);
+    const user = userEvent.setup();
+
+    render(
+      <RouteList
+        {...defaultProps}
+        onSaveRoute={onSaveRoute}
+      />,
+    );
+
+    await user.type(screen.getByPlaceholderText(/name your route/i), "Epic Desert Trip");
+    await user.click(screen.getByRole("button", { name: /save route/i }));
+
+    expect(await screen.findByRole("button", { name: /copy share link/i })).toBeInTheDocument();
   });
 });
