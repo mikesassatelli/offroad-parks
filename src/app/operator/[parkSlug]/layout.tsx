@@ -36,7 +36,7 @@ export default async function OperatorLayout({
       <div className="border-b border-border bg-card">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-11 flex items-center justify-between">
           <Suspense fallback={
-            <span className="text-sm text-gray-600">← Manage Parks</span>
+            <span className="text-sm text-gray-600 dark:text-gray-400">← Manage Parks</span>
           }>
             <OperatorBreadcrumb parkName={ctx.parkName} parkSlug={ctx.parkSlug} />
           </Suspense>

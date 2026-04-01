@@ -109,7 +109,7 @@ export function OperatorSettingsClient({ parkSlug, parkName }: OperatorSettingsC
     return (
       <div className="space-y-4">
         {[1, 2, 3].map((i) => (
-          <div key={i} className="h-20 bg-gray-100 rounded-lg animate-pulse" />
+          <div key={i} className="h-20 bg-gray-100 dark:bg-gray-700 rounded-lg animate-pulse" />
         ))}
       </div>
     );
@@ -122,11 +122,11 @@ export function OperatorSettingsClient({ parkSlug, parkName }: OperatorSettingsC
   return (
     <div>
       <div className="mb-6">
-        <h1 className="text-2xl font-bold text-gray-900 flex items-center gap-2">
+        <h1 className="text-2xl font-bold text-gray-900 dark:text-white flex items-center gap-2">
           <MapPin className="w-6 h-6" />
           Park Details
         </h1>
-        <p className="text-gray-500 text-sm mt-1">
+        <p className="text-gray-500 dark:text-gray-400 text-sm mt-1">
           Edit listing details for {parkName}. Changes are applied immediately.
         </p>
       </div>
