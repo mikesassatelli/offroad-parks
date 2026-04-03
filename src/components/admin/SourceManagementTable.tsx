@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
-import { Plus, ExternalLink } from "lucide-react";
+import { Plus, ExternalLink, Play, Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import type { DataSourceSummary } from "@/lib/types";
 
@@ -16,6 +16,30 @@ export function SourceManagementTable({ sources, parkId }: Props) {
   const [url, setUrl] = useState("");
   const [isOfficial, setIsOfficial] = useState(false);
   const [adding, setAdding] = useState(false);
+  const [researching, setResearching] = useState(false);
+  const [researchResult, setResearchResult] = useState<string | null>(null);
+
+  const handleResearch = async () => {
+    setResearching(true);
+    setResearchResult(null);
+    try {
+      const response = await fetch(
+        `/api/admin/ai-research/parks/${parkId}/research`,
+        { method: "POST" }
+      );
+      const data = await response.json();
+      if (response.ok) {
+        setResearchResult(`Research complete. Session: ${data.sessionId}`);
+        router.refresh();
+      } else {
+        setResearchResult(`Error: ${data.error || "Research failed"}`);
+      }
+    } catch (err) {
+      setResearchResult(`Error: ${err instanceof Error ? err.message : "Network error"}`);
+    } finally {
+      setResearching(false);
+    }
+  };
 
   const handleAdd = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -43,6 +67,44 @@ export function SourceManagementTable({ sources, parkId }: Props) {
 
   return (
     <div className="space-y-4">
+      {/* Trigger Research */}
+      <div className="rounded-lg border border-gray-200 bg-white p-4 flex items-center justify-between">
+        <div>
+          <p className="text-sm font-medium text-gray-900">AI Research</p>
+          <p className="text-xs text-gray-500">
+            Crawl all sources, discover new ones via web search, and extract park data using AI.
+          </p>
+        </div>
+        <Button
+          onClick={handleResearch}
+          disabled={researching}
+          size="sm"
+        >
+          {researching ? (
+            <>
+              <Loader2 className="w-4 h-4 mr-1 animate-spin" />
+              Researching...
+            </>
+          ) : (
+            <>
+              <Play className="w-4 h-4 mr-1" />
+              Run Research
+            </>
+          )}
+        </Button>
+      </div>
+      {researchResult && (
+        <div
+          className={`rounded-lg border px-4 py-3 text-sm ${
+            researchResult.startsWith("Error")
+              ? "bg-red-50 border-red-200 text-red-800"
+              : "bg-green-50 border-green-200 text-green-800"
+          }`}
+        >
+          {researchResult}
+        </div>
+      )}
+
       {/* Add Source Form */}
       <form onSubmit={handleAdd} className="rounded-lg border border-gray-200 bg-white p-4">
         <div className="flex items-end gap-3">
