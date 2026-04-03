@@ -34,13 +34,26 @@ export default defineConfig({
         "src/app/admin/users/page.tsx", // Server component with Prisma
         "src/app/admin/parks/new/page.tsx", // Server component wrapper
         "src/app/admin/parks/[id]/edit/page.tsx", // Server component for editing parks
+        "src/app/admin/claims/page.tsx", // Server component with Prisma
+        "src/app/admin/parks/bulk-upload/page.tsx", // Server component wrapper
+        "src/app/admin/photos/bulk-upload/page.tsx", // Server component with Prisma
+        "src/app/admin/reviews/page.tsx", // Server component with Prisma
         "src/lib/types.ts", // Pure type definitions, no logic to test
+
+        // AI Research Engine - integration-only files
+        "src/lib/ai/research-pipeline.ts", // Orchestrator: Prisma + LLM + network
+        "src/lib/ai/park-data-extractor.ts", // LLM wrapper: requires Anthropic API
+        "src/lib/ai/field-display-names.ts", // Pure constant map, no logic
+
+        // AI Research - server components and API routes with Prisma/auth deps
+        "src/app/admin/ai-research/**",
+        "src/app/api/admin/ai-research/**",
       ],
       thresholds: {
-        lines: 60,
+        lines: 65,
         functions: 60,
         branches: 60,
-        statements: 60,
+        statements: 65,
       },
     },
   },
