@@ -34,6 +34,9 @@ function ZoomTracker({ onZoomChange }: ZoomTrackerProps) {
     zoomend(e) {
       onZoomChange(e.target.getZoom());
     },
+    moveend(e) {
+      onZoomChange(e.target.getZoom());
+    },
   });
   return null;
 }

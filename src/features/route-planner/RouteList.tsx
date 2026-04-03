@@ -58,6 +58,13 @@ export function RouteList({
   const [draggedIndex, setDraggedIndex] = useState<number | null>(null);
   const [dragOverIndex, setDragOverIndex] = useState<number | null>(null);
 
+  const handleClearRoute = () => {
+    setSavedRoute(null);
+    setRouteTitle("");
+    setCopied(false);
+    onClearRoute();
+  };
+
   // Route title
   const [routeTitle, setRouteTitle] = useState("");
 
@@ -162,7 +169,7 @@ export function RouteList({
     <Card className="h-full">
       {hasWaypoints ? (
         <RouteListHeader
-          onClearRoute={onClearRoute}
+          onClearRoute={handleClearRoute}
           totalDistanceMi={distanceMi}
           estimatedDurationMin={durationMin}
           isRouting={isRouting}
