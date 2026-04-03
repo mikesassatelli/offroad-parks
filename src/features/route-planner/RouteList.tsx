@@ -256,21 +256,21 @@ export function RouteList({
           )}
         </div>
 
-        {/* Save Route (authenticated, 2+ waypoints) */}
+        {/* Save & Share (authenticated, 2+ waypoints) */}
         {isAuthenticated && waypoints.length >= 2 && onSaveRoute && (
-          <div className="pt-3 border-t space-y-2">
+          <div className="mt-4 pt-4 border-t">
+            <p className="text-xs font-semibold uppercase tracking-widest text-muted-foreground mb-3">
+              Save &amp; Share
+            </p>
             {!savedRoute ? (
-              <>
-                <label className="block">
-                  <span className="text-xs font-medium text-muted-foreground uppercase tracking-wide">Route name</span>
-                  <input
-                    type="text"
-                    value={routeTitle}
-                    onChange={(e) => setRouteTitle(e.target.value)}
-                    placeholder="e.g. Weekend Sand Dunes Loop"
-                    className="mt-1 w-full text-sm border border-input rounded-md px-3 py-1.5 bg-background focus:outline-none focus:ring-2 focus:ring-ring"
-                  />
-                </label>
+              <div className="space-y-2">
+                <input
+                  type="text"
+                  value={routeTitle}
+                  onChange={(e) => setRouteTitle(e.target.value)}
+                  placeholder="Name your route…"
+                  className="w-full text-sm border border-input rounded-md px-3 py-1.5 bg-background focus:outline-none focus:ring-2 focus:ring-ring"
+                />
                 <Button
                   variant="default"
                   size="sm"
@@ -287,26 +287,31 @@ export function RouteList({
                     "Save Route"
                   )}
                 </Button>
-              </>
+              </div>
             ) : (
-              <Button
-                variant="outline"
-                size="sm"
-                className="w-full"
-                onClick={handleCopyShareLink}
-              >
-                {copied ? (
-                  <>
-                    <Check className="w-3 h-3 mr-1 text-green-600" />
-                    Link copied!
-                  </>
-                ) : (
-                  <>
-                    <Copy className="w-3 h-3 mr-1" />
-                    Copy Share Link
-                  </>
-                )}
-              </Button>
+              <div className="space-y-2">
+                <p className="text-xs text-muted-foreground">
+                  <span className="font-medium text-foreground">{savedRoute.title}</span> saved — share the link below.
+                </p>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  className="w-full"
+                  onClick={handleCopyShareLink}
+                >
+                  {copied ? (
+                    <>
+                      <Check className="w-3 h-3 mr-1 text-green-600" />
+                      Link copied!
+                    </>
+                  ) : (
+                    <>
+                      <Copy className="w-3 h-3 mr-1" />
+                      Copy Share Link
+                    </>
+                  )}
+                </Button>
+              </div>
             )}
           </div>
         )}
