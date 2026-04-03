@@ -42,15 +42,24 @@ export function RouteListItem({
 
   const badge =
     waypoint.type === "custom" ? (
-      <button
-        type="button"
-        onClick={() => setShowPicker((v) => (v === "icon" ? null : "icon"))}
-        title="Change icon"
-        style={{ background: pinBg }}
-        className="inline-flex items-center justify-center w-6 h-6 text-sm rounded-full flex-shrink-0 hover:opacity-80 transition cursor-pointer"
-      >
-        {waypoint.icon ?? "📍"}
-      </button>
+      <div className="flex items-center gap-1 flex-shrink-0">
+        <button
+          type="button"
+          onClick={() => setShowPicker((v) => (v === "icon" ? null : "icon"))}
+          title="Change icon"
+          style={{ background: pinBg }}
+          className="inline-flex items-center justify-center w-6 h-6 text-sm rounded-full hover:opacity-80 transition cursor-pointer"
+        >
+          {waypoint.icon ?? "📍"}
+        </button>
+        <button
+          type="button"
+          onClick={() => setShowPicker((v) => (v === "color" ? null : "color"))}
+          title="Change color"
+          style={{ background: pinBg }}
+          className="w-3 h-3 rounded-full border border-white/60 hover:scale-125 transition cursor-pointer flex-shrink-0"
+        />
+      </div>
     ) : (
       <button
         type="button"

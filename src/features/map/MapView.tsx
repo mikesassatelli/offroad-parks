@@ -10,7 +10,7 @@ import { RoutePolylines } from "./components/RoutePolylines";
 import "./utils/markers"; // Initialize marker icons
 import "leaflet/dist/leaflet.css";
 
-const LABEL_ZOOM_THRESHOLD = 11;
+const LABEL_ZOOM_THRESHOLD = 9;
 
 interface MapClickHandlerProps {
   onMapClick?: (lat: number, lng: number) => void;
