@@ -84,6 +84,7 @@ export async function researchPark(
       park.researchStatus === "NEEDS_RESEARCH" ||
       park.researchStatus === "IN_PROGRESS"
     ) {
+      // Exclude all existing URLs + URLs previously rejected as wrong park
       const existingUrls = park.dataSources.map((s) => s.url);
       const newSources = await discoverSources(
         park.name,
@@ -106,10 +107,14 @@ export async function researchPark(
     }
 
     // Fetch all sources for this park
+    // Include robots-blocked sources IF they have a one-time override
     const sources = await prisma.dataSource.findMany({
       where: {
         parkId,
-        crawlStatus: { notIn: ["ROBOTS_BLOCKED", "SKIPPED"] },
+        OR: [
+          { crawlStatus: { notIn: ["ROBOTS_BLOCKED", "SKIPPED", "WRONG_PARK"] } },
+          { crawlStatus: "ROBOTS_BLOCKED", robotsOverride: true },
+        ],
       },
       orderBy: [{ reliability: "desc" }, { createdAt: "asc" }],
       take: MAX_SOURCES_PER_SESSION,
@@ -121,14 +126,22 @@ export async function researchPark(
     // Stage 2 & 3: Content Extraction + Data Extraction per source
     for (const source of sources) {
       try {
-        // Check robots.txt
-        const allowed = await isAllowedByRobots(source.url);
-        if (!allowed) {
+        // Check robots.txt (skip check if admin granted a one-time override)
+        if (source.robotsOverride) {
+          // One-time override — clear the flag so it won't bypass robots again
           await prisma.dataSource.update({
             where: { id: source.id },
-            data: { crawlStatus: "ROBOTS_BLOCKED" },
+            data: { robotsOverride: false },
           });
-          continue;
+        } else {
+          const allowed = await isAllowedByRobots(source.url);
+          if (!allowed) {
+            await prisma.dataSource.update({
+              where: { id: source.id },
+              data: { crawlStatus: "ROBOTS_BLOCKED" },
+            });
+            continue;
+          }
         }
 
         // Extract content

@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
-import { Plus, ExternalLink, Play, Loader2, ShieldCheck, ShieldOff, SkipForward, RotateCcw } from "lucide-react";
+import { Plus, ExternalLink, Play, Loader2, ShieldCheck, ShieldOff, SkipForward, RotateCcw, Ban, Unlock } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import type { DataSourceSummary } from "@/lib/types";
 
@@ -176,7 +176,7 @@ export function SourceManagementTable({ sources, parkId }: Props) {
             </thead>
             <tbody className="divide-y divide-gray-200">
               {sources.map((source) => (
-                <tr key={source.id} className={`hover:bg-gray-50 ${source.crawlStatus === "SKIPPED" ? "opacity-50" : ""}`}>
+                <tr key={source.id} className={`hover:bg-gray-50 ${source.crawlStatus === "SKIPPED" || source.crawlStatus === "WRONG_PARK" ? "opacity-50" : ""}`}>
                   <td className="px-4 py-3">
                     <a
                       href={source.url}
@@ -216,18 +216,29 @@ export function SourceManagementTable({ sources, parkId }: Props) {
                   </td>
                   <td className="px-4 py-3">
                     <div className="flex items-center gap-1">
-                      {source.crawlStatus !== "SKIPPED" ? (
+                      {source.crawlStatus === "WRONG_PARK" ? (
                         <Button
                           variant="ghost"
                           size="icon-sm"
-                          onClick={() => handleSourceAction(source.id, "skip")}
+                          onClick={() => handleSourceAction(source.id, "unskip")}
                           disabled={processingSourceId !== null}
-                          title="Skip — don't crawl this source"
-                          className="text-gray-400 hover:text-orange-600 hover:bg-orange-50"
+                          title="Restore — undo wrong park"
+                          className="text-red-500 hover:text-gray-600 hover:bg-gray-50"
                         >
-                          <SkipForward className="w-4 h-4" />
+                          <RotateCcw className="w-4 h-4" />
                         </Button>
-                      ) : (
+                      ) : source.crawlStatus === "ROBOTS_BLOCKED" ? (
+                        <Button
+                          variant="ghost"
+                          size="icon-sm"
+                          onClick={() => handleSourceAction(source.id, "robots_override")}
+                          disabled={processingSourceId !== null}
+                          title="Override — crawl once (you have permission)"
+                          className="text-orange-500 hover:text-blue-600 hover:bg-blue-50"
+                        >
+                          <Unlock className="w-4 h-4" />
+                        </Button>
+                      ) : source.crawlStatus === "SKIPPED" ? (
                         <Button
                           variant="ghost"
                           size="icon-sm"
@@ -238,29 +249,56 @@ export function SourceManagementTable({ sources, parkId }: Props) {
                         >
                           <RotateCcw className="w-4 h-4" />
                         </Button>
-                      )}
-                      {!source.isOfficial ? (
-                        <Button
-                          variant="ghost"
-                          size="icon-sm"
-                          onClick={() => handleSourceAction(source.id, "trust")}
-                          disabled={processingSourceId !== null}
-                          title="Trust — mark as reliable, boost priority"
-                          className="text-gray-400 hover:text-green-600 hover:bg-green-50"
-                        >
-                          <ShieldCheck className="w-4 h-4" />
-                        </Button>
                       ) : (
-                        <Button
-                          variant="ghost"
-                          size="icon-sm"
-                          onClick={() => handleSourceAction(source.id, "untrust")}
-                          disabled={processingSourceId !== null}
-                          title="Untrust — remove trusted status"
-                          className="text-green-600 hover:text-gray-600 hover:bg-gray-50"
-                        >
-                          <ShieldOff className="w-4 h-4" />
-                        </Button>
+                        <>
+                          <Button
+                            variant="ghost"
+                            size="icon-sm"
+                            onClick={() => handleSourceAction(source.id, "skip")}
+                            disabled={processingSourceId !== null}
+                            title="Skip — don't crawl this source"
+                            className="text-gray-400 hover:text-orange-600 hover:bg-orange-50"
+                          >
+                            <SkipForward className="w-4 h-4" />
+                          </Button>
+                          <Button
+                            variant="ghost"
+                            size="icon-sm"
+                            onClick={() => handleSourceAction(source.id, "wrong_park")}
+                            disabled={processingSourceId !== null}
+                            title="Wrong Park — this source is about a different park"
+                            className="text-gray-400 hover:text-red-600 hover:bg-red-50"
+                          >
+                            <Ban className="w-4 h-4" />
+                          </Button>
+                        </>
+                      )}
+                      {source.crawlStatus !== "WRONG_PARK" && (
+                        <>
+                          {!source.isOfficial ? (
+                            <Button
+                              variant="ghost"
+                              size="icon-sm"
+                              onClick={() => handleSourceAction(source.id, "trust")}
+                              disabled={processingSourceId !== null}
+                              title="Trust — mark as reliable, boost priority"
+                              className="text-gray-400 hover:text-green-600 hover:bg-green-50"
+                            >
+                              <ShieldCheck className="w-4 h-4" />
+                            </Button>
+                          ) : (
+                            <Button
+                              variant="ghost"
+                              size="icon-sm"
+                              onClick={() => handleSourceAction(source.id, "untrust")}
+                              disabled={processingSourceId !== null}
+                              title="Untrust — remove trusted status"
+                              className="text-green-600 hover:text-gray-600 hover:bg-gray-50"
+                            >
+                              <ShieldOff className="w-4 h-4" />
+                            </Button>
+                          )}
+                        </>
                       )}
                     </div>
                   </td>
@@ -281,11 +319,17 @@ function CrawlStatusBadge({ status }: { status: string }) {
     FAILED: "bg-red-100 text-red-800 border-red-200",
     ROBOTS_BLOCKED: "bg-orange-100 text-orange-800 border-orange-200",
     SKIPPED: "bg-gray-100 text-gray-800 border-gray-200",
+    WRONG_PARK: "bg-red-100 text-red-800 border-red-200",
+  };
+
+  const labels: Record<string, string> = {
+    ROBOTS_BLOCKED: "ROBOTS BLOCKED",
+    WRONG_PARK: "WRONG PARK",
   };
 
   return (
     <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium border ${styles[status] || "bg-gray-100 text-gray-800 border-gray-200"}`}>
-      {status.replace("_", " ")}
+      {labels[status] || status.replace("_", " ")}
     </span>
   );
 }

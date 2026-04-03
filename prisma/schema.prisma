@@ -288,6 +288,7 @@ enum CrawlStatus {
   FAILED
   ROBOTS_BLOCKED
   SKIPPED
+  WRONG_PARK
 }
 
 enum FieldConfidence {
@@ -625,6 +626,7 @@ model DataSource {
   contentChanged   Boolean       @default(false)
   crawlStatus      CrawlStatus   @default(PENDING)
   crawlError       String?       @db.Text
+  robotsOverride   Boolean       @default(false)
 
   park              Park                    @relation(fields: [parkId], references: [id], onDelete: Cascade)
   fieldExtractions  FieldExtraction[]

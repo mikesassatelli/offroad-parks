@@ -112,6 +112,10 @@ export async function PATCH(request: Request) {
   else if (action === "unskip") {
     updateData.crawlStatus = "PENDING";
   }
+  // Wrong park — source is about a different park, permanently exclude
+  else if (action === "wrong_park") {
+    updateData.crawlStatus = "WRONG_PARK";
+  }
   // Trust — mark as official and boost reliability to 90
   else if (action === "trust") {
     updateData.isOfficial = true;
@@ -121,6 +125,11 @@ export async function PATCH(request: Request) {
   else if (action === "untrust") {
     updateData.isOfficial = false;
     updateData.reliability = 50;
+  }
+  // Robots override — one-time permission to crawl despite robots.txt block
+  else if (action === "robots_override") {
+    updateData.robotsOverride = true;
+    updateData.crawlStatus = "PENDING";
   }
   // Set reliability directly
   else if (reliability !== undefined) {
