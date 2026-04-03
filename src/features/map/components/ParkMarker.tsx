@@ -1,3 +1,4 @@
+import { useState } from "react";
 import { Marker, Popup, Tooltip } from "react-leaflet";
 import type { Park, RouteWaypoint } from "@/lib/types";
 import { formatParkPricingSummary } from "@/lib/formatting";
@@ -21,6 +22,8 @@ export function ParkMarker({
   onAddToRoute,
   showLabel,
 }: ParkMarkerProps) {
+  const [popupOpen, setPopupOpen] = useState(false);
+
   if (!park.coords) return null;
 
   const icon = isInRoute
@@ -32,6 +35,10 @@ export function ParkMarker({
       key={park.id}
       position={[park.coords.lat, park.coords.lng]}
       icon={icon}
+      eventHandlers={{
+        popupopen: () => setPopupOpen(true),
+        popupclose: () => setPopupOpen(false),
+      }}
     >
       <Popup autoPan={false}>
         <div className="min-w-[200px]">
@@ -80,7 +87,7 @@ export function ParkMarker({
           </div>
         </div>
       </Popup>
-      {showLabel && (
+      {showLabel && !popupOpen && (
         <Tooltip permanent direction="top" offset={[0, -8]} className="leaflet-park-label">
           {park.name}
         </Tooltip>

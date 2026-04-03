@@ -11,8 +11,13 @@ vi.mock("@/features/map/utils/markers", () => ({
 
 // Mock react-leaflet
 vi.mock("react-leaflet", () => ({
-  Marker: ({ children, position }: any) => (
-    <div data-testid="marker" data-position={JSON.stringify(position)}>
+  Marker: ({ children, position, eventHandlers }: any) => (
+    <div
+      data-testid="marker"
+      data-position={JSON.stringify(position)}
+      onClick={() => eventHandlers?.popupopen?.()}
+      onBlur={() => eventHandlers?.popupclose?.()}
+    >
       {children}
     </div>
   ),
@@ -222,5 +227,26 @@ describe("ParkMarker", () => {
     render(<ParkMarker park={mockPark} isInRoute={false} routeIndex={0} />);
 
     expect(screen.queryByTestId("tooltip")).not.toBeInTheDocument();
+  });
+
+  it("should hide tooltip when popup is open", () => {
+    render(
+      <ParkMarker park={mockPark} isInRoute={false} routeIndex={0} showLabel={true} />,
+    );
+
+    expect(screen.getByTestId("tooltip")).toBeInTheDocument();
+    fireEvent.click(screen.getByTestId("marker")); // triggers popupopen
+    expect(screen.queryByTestId("tooltip")).not.toBeInTheDocument();
+  });
+
+  it("should restore tooltip after popup is closed", () => {
+    render(
+      <ParkMarker park={mockPark} isInRoute={false} routeIndex={0} showLabel={true} />,
+    );
+
+    fireEvent.click(screen.getByTestId("marker")); // popupopen
+    expect(screen.queryByTestId("tooltip")).not.toBeInTheDocument();
+    fireEvent.blur(screen.getByTestId("marker")); // popupclose
+    expect(screen.getByTestId("tooltip")).toBeInTheDocument();
   });
 });
