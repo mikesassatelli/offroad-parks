@@ -3,14 +3,26 @@ import { ParkMarker } from "@/features/map/components/ParkMarker";
 import { vi } from "vitest";
 import type { Park } from "@/lib/types";
 
+// Mock markers utility
+vi.mock("@/features/map/utils/markers", () => ({
+  createParkPinIcon: vi.fn(() => ({})),
+  defaultParkIcon: {},
+}));
+
 // Mock react-leaflet
 vi.mock("react-leaflet", () => ({
-  Marker: ({ children, position }: any) => (
-    <div data-testid="marker" data-position={JSON.stringify(position)}>
+  Marker: ({ children, position, eventHandlers }: any) => (
+    <div
+      data-testid="marker"
+      data-position={JSON.stringify(position)}
+      onClick={() => eventHandlers?.popupopen?.()}
+      onBlur={() => eventHandlers?.popupclose?.()}
+    >
       {children}
     </div>
   ),
   Popup: ({ children }: any) => <div data-testid="popup">{children}</div>,
+  Tooltip: ({ children }: any) => <div data-testid="tooltip">{children}</div>,
 }));
 
 // Mock Next.js Link
@@ -115,7 +127,7 @@ describe("ParkMarker", () => {
   it("should show route index when in route", () => {
     render(<ParkMarker park={mockPark} isInRoute={true} routeIndex={2} />);
 
-    expect(screen.getByText("3")).toBeInTheDocument(); // routeIndex + 1
+    expect(screen.getByText("Stop 3")).toBeInTheDocument(); // routeIndex + 1
   });
 
   it("should not show route index when not in route", () => {
@@ -192,5 +204,49 @@ describe("ParkMarker", () => {
     );
 
     expect(getByTestId("popup")).toBeInTheDocument();
+  });
+
+  it("should show park name tooltip when showLabel is true", () => {
+    render(
+      <ParkMarker park={mockPark} isInRoute={false} routeIndex={0} showLabel={true} />,
+    );
+
+    expect(screen.getByTestId("tooltip")).toBeInTheDocument();
+    expect(screen.getByTestId("tooltip")).toHaveTextContent("Test Park");
+  });
+
+  it("should not show tooltip when showLabel is false", () => {
+    render(
+      <ParkMarker park={mockPark} isInRoute={false} routeIndex={0} showLabel={false} />,
+    );
+
+    expect(screen.queryByTestId("tooltip")).not.toBeInTheDocument();
+  });
+
+  it("should not show tooltip when showLabel is omitted", () => {
+    render(<ParkMarker park={mockPark} isInRoute={false} routeIndex={0} />);
+
+    expect(screen.queryByTestId("tooltip")).not.toBeInTheDocument();
+  });
+
+  it("should hide tooltip when popup is open", () => {
+    render(
+      <ParkMarker park={mockPark} isInRoute={false} routeIndex={0} showLabel={true} />,
+    );
+
+    expect(screen.getByTestId("tooltip")).toBeInTheDocument();
+    fireEvent.click(screen.getByTestId("marker")); // triggers popupopen
+    expect(screen.queryByTestId("tooltip")).not.toBeInTheDocument();
+  });
+
+  it("should restore tooltip after popup is closed", () => {
+    render(
+      <ParkMarker park={mockPark} isInRoute={false} routeIndex={0} showLabel={true} />,
+    );
+
+    fireEvent.click(screen.getByTestId("marker")); // popupopen
+    expect(screen.queryByTestId("tooltip")).not.toBeInTheDocument();
+    fireEvent.blur(screen.getByTestId("marker")); // popupclose
+    expect(screen.getByTestId("tooltip")).toBeInTheDocument();
   });
 });

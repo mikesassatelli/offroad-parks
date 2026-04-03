@@ -23,14 +23,12 @@ vi.mock("@/components/ui/card", () => ({
 
 describe("RouteListHeader", () => {
   it("should render route planner title", () => {
-    render(<RouteListHeader totalDistance={0} onClearRoute={vi.fn()} />);
-
+    render(<RouteListHeader onClearRoute={vi.fn()} />);
     expect(screen.getByText("Route Planner")).toBeInTheDocument();
   });
 
   it("should render clear button", () => {
-    render(<RouteListHeader totalDistance={0} onClearRoute={vi.fn()} />);
-
+    render(<RouteListHeader onClearRoute={vi.fn()} />);
     expect(screen.getByRole("button", { name: /clear/i })).toBeInTheDocument();
   });
 
@@ -38,39 +36,59 @@ describe("RouteListHeader", () => {
     const onClearRoute = vi.fn();
     const user = userEvent.setup();
 
-    render(<RouteListHeader totalDistance={0} onClearRoute={onClearRoute} />);
+    render(<RouteListHeader onClearRoute={onClearRoute} />);
 
     await user.click(screen.getByRole("button", { name: /clear/i }));
-
     expect(onClearRoute).toHaveBeenCalledOnce();
   });
 
-  it("should not display total distance when zero", () => {
-    render(<RouteListHeader totalDistance={0} onClearRoute={vi.fn()} />);
-
+  it("should not display total distance when not provided", () => {
+    render(<RouteListHeader onClearRoute={vi.fn()} />);
     expect(screen.queryByText(/total distance/i)).not.toBeInTheDocument();
   });
 
-  it("should display total distance when greater than zero", () => {
-    render(<RouteListHeader totalDistance={123} onClearRoute={vi.fn()} />);
+  it("should not display total distance when zero via legacy prop", () => {
+    render(<RouteListHeader totalDistance={0} onClearRoute={vi.fn()} />);
+    expect(screen.queryByText(/total distance/i)).not.toBeInTheDocument();
+  });
 
+  it("should display total distance when totalDistanceMi is provided", () => {
+    render(<RouteListHeader totalDistanceMi={123} onClearRoute={vi.fn()} />);
     expect(screen.getByText(/total distance/i)).toBeInTheDocument();
     expect(screen.getByText(/123 mi/i)).toBeInTheDocument();
   });
 
-  it("should display crow flies disclaimer with distance", () => {
+  it("should display crow flies disclaimer when using legacy totalDistance prop", () => {
     render(<RouteListHeader totalDistance={50} onClearRoute={vi.fn()} />);
-
     expect(screen.getByText(/as the crow flies/i)).toBeInTheDocument();
   });
 
-  it("should render trash icon in clear button", () => {
-    const { container } = render(
-      <RouteListHeader totalDistance={0} onClearRoute={vi.fn()} />,
+  it("should not show crow flies disclaimer when totalDistanceMi is set", () => {
+    render(
+      <RouteListHeader
+        totalDistanceMi={50}
+        estimatedDurationMin={60}
+        onClearRoute={vi.fn()}
+      />,
     );
+    expect(screen.queryByText(/as the crow flies/i)).not.toBeInTheDocument();
+  });
 
-    const icons = container.querySelectorAll("svg");
-    expect(icons.length).toBeGreaterThan(0);
+  it("should display drive duration when estimatedDurationMin is provided", () => {
+    render(
+      <RouteListHeader
+        totalDistanceMi={200}
+        estimatedDurationMin={180}
+        onClearRoute={vi.fn()}
+      />,
+    );
+    expect(screen.getByText(/3h/)).toBeInTheDocument();
+    expect(screen.getByText(/drive/i)).toBeInTheDocument();
+  });
+
+  it("should show Calculating spinner when isRouting is true", () => {
+    render(<RouteListHeader isRouting={true} onClearRoute={vi.fn()} />);
+    expect(screen.getByText(/calculating/i)).toBeInTheDocument();
   });
 
   it("should handle multiple clicks on clear button", async () => {
@@ -87,15 +105,12 @@ describe("RouteListHeader", () => {
     expect(onClearRoute).toHaveBeenCalledTimes(3);
   });
 
-  it("should display distance as integer", () => {
-    render(<RouteListHeader totalDistance={42} onClearRoute={vi.fn()} />);
+  it("should render trash icon in clear button", () => {
+    const { container } = render(
+      <RouteListHeader onClearRoute={vi.fn()} />,
+    );
 
-    expect(screen.getByText(/42 mi/i)).toBeInTheDocument();
-  });
-
-  it("should handle large distances", () => {
-    render(<RouteListHeader totalDistance={9999} onClearRoute={vi.fn()} />);
-
-    expect(screen.getByText(/9999 mi/i)).toBeInTheDocument();
+    const icons = container.querySelectorAll("svg");
+    expect(icons.length).toBeGreaterThan(0);
   });
 });

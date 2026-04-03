@@ -1,7 +1,7 @@
 import { render, screen } from "@testing-library/react";
 import { MapView } from "@/features/map/MapView";
 import { vi } from "vitest";
-import type { Park } from "@/lib/types";
+import type { Park, RouteWaypoint } from "@/lib/types";
 
 // Mock react-leaflet
 vi.mock("react-leaflet", () => ({
@@ -11,6 +11,7 @@ vi.mock("react-leaflet", () => ({
     </div>
   ),
   TileLayer: () => <div data-testid="tile-layer" />,
+  useMapEvents: vi.fn(() => null),
 }));
 
 // Mock child components
@@ -41,6 +42,16 @@ vi.mock("@/features/map/components/RoutePolylines", () => ({
 // Mock CSS imports
 vi.mock("./utils/markers", () => ({}));
 vi.mock("leaflet/dist/leaflet.css", () => ({}));
+
+const makeWaypoint = (parkId: string, lat: number, lng: number): RouteWaypoint => ({
+  id: `wp-${parkId}`,
+  type: "park",
+  label: `Park ${parkId}`,
+  parkId,
+  parkSlug: parkId,
+  lat,
+  lng,
+});
 
 describe("MapView", () => {
   const mockPark1: Park = {
@@ -75,6 +86,9 @@ describe("MapView", () => {
     camping: [],
     vehicleTypes: [],
   };
+
+  const wp1 = makeWaypoint("park-1", 34.0522, -118.2437);
+  const wp2 = makeWaypoint("park-2", 36.1699, -115.1398);
 
   it("should render map container", () => {
     render(<MapView parks={[mockPark1]} />);
@@ -128,16 +142,16 @@ describe("MapView", () => {
     expect(screen.getByText("Park Two")).toBeInTheDocument();
   });
 
-  it("should show route polylines when route parks provided", () => {
+  it("should show route polylines when routeWaypoints provided", () => {
     const { getByTestId } = render(
-      <MapView parks={[mockPark1]} routeParks={[mockPark1, mockPark2]} />,
+      <MapView parks={[mockPark1]} routeWaypoints={[wp1, wp2]} />,
     );
 
     const polylines = getByTestId("route-polylines");
     expect(polylines).toHaveAttribute("data-route-count", "2");
   });
 
-  it("should default to empty route when routeParks not provided", () => {
+  it("should default to empty route when routeWaypoints not provided", () => {
     const { getByTestId } = render(<MapView parks={[mockPark1]} />);
 
     const polylines = getByTestId("route-polylines");
@@ -150,7 +164,7 @@ describe("MapView", () => {
     const { getByTestId } = render(
       <MapView
         parks={[mockPark1, mockPark2]}
-        routeParks={[mockPark1]}
+        routeWaypoints={[wp1]}
         isParkInRoute={isParkInRoute}
       />,
     );
@@ -169,7 +183,7 @@ describe("MapView", () => {
     const { getByTestId } = render(
       <MapView
         parks={[mockPark1, mockPark2]}
-        routeParks={[mockPark2, mockPark1]}
+        routeWaypoints={[wp2, wp1]}
       />,
     );
 
@@ -188,7 +202,6 @@ describe("MapView", () => {
 
     render(<MapView parks={[mockPark1]} onAddToRoute={onAddToRoute} />);
 
-    // Marker should be rendered (handler is passed to it)
     expect(screen.getByTestId("park-marker-park-1")).toBeInTheDocument();
   });
 
@@ -214,7 +227,7 @@ describe("MapView", () => {
     const mapContainer = getByTestId("map-container");
     const center = JSON.parse(mapContainer.getAttribute("data-center") || "[]");
 
-    expect(center).toEqual([39.8283, -98.5795]); // Default US center
+    expect(center).toEqual([39.8283, -98.5795]);
   });
 
   it("should memoize center position", () => {
@@ -224,7 +237,6 @@ describe("MapView", () => {
       getByTestId("map-container").getAttribute("data-center") || "[]",
     );
 
-    // Rerender with same parks
     rerender(<MapView parks={[mockPark1]} />);
 
     const newCenter = JSON.parse(
@@ -234,22 +246,9 @@ describe("MapView", () => {
     expect(initialCenter).toEqual(newCenter);
   });
 
-  it("should memoize filtered parks with coordinates", () => {
-    const { rerender } = render(
-      <MapView parks={[mockPark1, mockParkNoCoords]} />,
-    );
-
-    expect(screen.getByTestId("park-marker-park-1")).toBeInTheDocument();
-
-    // Rerender with same parks
-    rerender(<MapView parks={[mockPark1, mockParkNoCoords]} />);
-
-    expect(screen.getByTestId("park-marker-park-1")).toBeInTheDocument();
-  });
-
   it("should handle park not in route when isParkInRoute is undefined", () => {
     const { getByTestId } = render(
-      <MapView parks={[mockPark1]} routeParks={[]} />,
+      <MapView parks={[mockPark1]} routeWaypoints={[]} />,
     );
 
     expect(getByTestId("park-marker-park-1")).toHaveAttribute(
@@ -262,7 +261,7 @@ describe("MapView", () => {
     const { getByTestId } = render(
       <MapView
         parks={[mockPark1, mockPark2]}
-        routeParks={[mockPark1, mockPark2]}
+        routeWaypoints={[wp1, wp2]}
       />,
     );
 
@@ -278,7 +277,7 @@ describe("MapView", () => {
 
   it("should return -1 for route index when park not in route", () => {
     const { getByTestId } = render(
-      <MapView parks={[mockPark1, mockPark2]} routeParks={[mockPark1]} />,
+      <MapView parks={[mockPark1, mockPark2]} routeWaypoints={[wp1]} />,
     );
 
     expect(getByTestId("park-marker-park-2")).toHaveAttribute(

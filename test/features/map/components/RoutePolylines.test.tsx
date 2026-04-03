@@ -1,7 +1,7 @@
 import { render } from "@testing-library/react";
 import { RoutePolylines } from "@/features/map/components/RoutePolylines";
 import { vi } from "vitest";
-import type { Park } from "@/lib/types";
+import type { RouteWaypoint } from "@/lib/types";
 
 // Mock react-leaflet
 vi.mock("react-leaflet", () => ({
@@ -23,41 +23,26 @@ vi.mock("@/features/map/utils/distance", () => ({
 }));
 
 describe("RoutePolylines", () => {
-  const mockPark1: Park = {
-    id: "park-1",
-    name: "Park One",
-    address: { state: "CA" },
-    coords: { lat: 34.0522, lng: -118.2437 },
-    terrain: [],
-    amenities: [],
-    camping: [],
-    vehicleTypes: [],
-  };
+  const makeWaypoint = (
+    id: string,
+    lat: number,
+    lng: number,
+  ): RouteWaypoint => ({
+    id,
+    type: "park",
+    label: `Park ${id}`,
+    parkId: id,
+    parkSlug: id,
+    lat,
+    lng,
+  });
 
-  const mockPark2: Park = {
-    id: "park-2",
-    name: "Park Two",
-    address: { state: "CA" },
-    coords: { lat: 36.7783, lng: -119.4179 },
-    terrain: [],
-    amenities: [],
-    camping: [],
-    vehicleTypes: [],
-  };
+  const wp1 = makeWaypoint("wp-1", 34.0522, -118.2437);
+  const wp2 = makeWaypoint("wp-2", 36.7783, -119.4179);
+  const wp3 = makeWaypoint("wp-3", 36.1699, -115.1398);
 
-  const mockPark3: Park = {
-    id: "park-3",
-    name: "Park Three",
-    address: { state: "NV" },
-    coords: { lat: 36.1699, lng: -115.1398 },
-    terrain: [],
-    amenities: [],
-    camping: [],
-    vehicleTypes: [],
-  };
-
-  it("should return null when less than 2 parks", () => {
-    const { container } = render(<RoutePolylines routeParks={[mockPark1]} />);
+  it("should return null when less than 2 waypoints", () => {
+    const { container } = render(<RoutePolylines routeParks={[wp1]} />);
     expect(container.firstChild).toBeNull();
   });
 
@@ -66,52 +51,36 @@ describe("RoutePolylines", () => {
     expect(container.firstChild).toBeNull();
   });
 
-  it("should render polyline between two parks", () => {
+  it("should render polyline between two waypoints (fallback mode)", () => {
     const { getAllByTestId } = render(
-      <RoutePolylines routeParks={[mockPark1, mockPark2]} />,
+      <RoutePolylines routeParks={[wp1, wp2]} />,
     );
 
     const polylines = getAllByTestId("polyline");
     expect(polylines).toHaveLength(1);
   });
 
-  it("should render multiple polylines for multiple parks", () => {
+  it("should render multiple polylines for multiple waypoints", () => {
     const { getAllByTestId } = render(
-      <RoutePolylines routeParks={[mockPark1, mockPark2, mockPark3]} />,
+      <RoutePolylines routeParks={[wp1, wp2, wp3]} />,
     );
 
     const polylines = getAllByTestId("polyline");
-    expect(polylines).toHaveLength(2); // n-1 segments for n parks
+    expect(polylines).toHaveLength(2);
   });
 
   it("should display distance in tooltip", () => {
     const { getAllByTestId } = render(
-      <RoutePolylines routeParks={[mockPark1, mockPark2]} />,
+      <RoutePolylines routeParks={[wp1, wp2]} />,
     );
 
     const tooltips = getAllByTestId("tooltip");
     expect(tooltips[0]).toHaveTextContent("150 mi");
   });
 
-  it("should skip segments where park has no coordinates", () => {
-    const parkNoCoords: Park = {
-      ...mockPark1,
-      id: "park-no-coords",
-      coords: undefined,
-    };
-
-    const { container } = render(
-      <RoutePolylines routeParks={[mockPark1, parkNoCoords]} />,
-    );
-
-    // Should render empty since second park has no coords
-    const polylines = container.querySelectorAll('[data-testid="polyline"]');
-    expect(polylines).toHaveLength(0);
-  });
-
   it("should use correct positions for polyline", () => {
     const { getAllByTestId } = render(
-      <RoutePolylines routeParks={[mockPark1, mockPark2]} />,
+      <RoutePolylines routeParks={[wp1, wp2]} />,
     );
 
     const polyline = getAllByTestId("polyline")[0];
@@ -127,10 +96,53 @@ describe("RoutePolylines", () => {
 
   it("should render with blue color", () => {
     const { getAllByTestId } = render(
-      <RoutePolylines routeParks={[mockPark1, mockPark2]} />,
+      <RoutePolylines routeParks={[wp1, wp2]} />,
     );
 
     const polyline = getAllByTestId("polyline")[0];
     expect(polyline).toHaveAttribute("data-color", "#3b82f6");
+  });
+
+  it("should render solid polyline when routeGeometry is provided", () => {
+    const geometry: GeoJSON.LineString = {
+      type: "LineString",
+      coordinates: [
+        [-118.2437, 34.0522],
+        [-119.4179, 36.7783],
+      ],
+    };
+
+    const { getAllByTestId, queryAllByTestId } = render(
+      <RoutePolylines routeParks={[wp1, wp2]} routeGeometry={geometry} />,
+    );
+
+    const polylines = getAllByTestId("polyline");
+    // Should render exactly 1 polyline (the solid route, not per-segment)
+    expect(polylines).toHaveLength(1);
+    // Should have no tooltips (no distance labels for real route)
+    expect(queryAllByTestId("tooltip")).toHaveLength(0);
+  });
+
+  it("should convert GeoJSON [lng,lat] to Leaflet [lat,lng]", () => {
+    const geometry: GeoJSON.LineString = {
+      type: "LineString",
+      coordinates: [
+        [-118.2437, 34.0522],
+        [-119.4179, 36.7783],
+      ],
+    };
+
+    const { getAllByTestId } = render(
+      <RoutePolylines routeParks={[wp1, wp2]} routeGeometry={geometry} />,
+    );
+
+    const polyline = getAllByTestId("polyline")[0];
+    const positions = JSON.parse(
+      polyline.getAttribute("data-positions") || "[]",
+    );
+
+    // GeoJSON coords [lng, lat] should be flipped to [lat, lng] for Leaflet
+    expect(positions[0]).toEqual([34.0522, -118.2437]);
+    expect(positions[1]).toEqual([36.7783, -119.4179]);
   });
 });

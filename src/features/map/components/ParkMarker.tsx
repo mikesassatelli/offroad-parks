@@ -1,33 +1,51 @@
-import { Marker, Popup } from "react-leaflet";
-import type { Park } from "@/lib/types";
+import { useState } from "react";
+import { Marker, Popup, Tooltip } from "react-leaflet";
+import type { Park, RouteWaypoint } from "@/lib/types";
 import { formatParkPricingSummary } from "@/lib/formatting";
+import { createParkPinIcon, defaultParkIcon } from "../utils/markers";
 import Link from "next/link";
 
 interface ParkMarkerProps {
   park: Park;
   isInRoute: boolean;
   routeIndex: number;
+  routeWaypoint?: RouteWaypoint;
   onAddToRoute?: (park: Park) => void;
+  showLabel?: boolean;
 }
 
 export function ParkMarker({
   park,
   isInRoute,
   routeIndex,
+  routeWaypoint,
   onAddToRoute,
+  showLabel,
 }: ParkMarkerProps) {
+  const [popupOpen, setPopupOpen] = useState(false);
+
   if (!park.coords) return null;
 
+  const icon = isInRoute
+    ? createParkPinIcon(routeIndex, routeWaypoint?.color)
+    : defaultParkIcon;
+
   return (
-    <Marker key={park.id} position={[park.coords.lat, park.coords.lng]}>
+    <Marker
+      key={park.id}
+      position={[park.coords.lat, park.coords.lng]}
+      icon={icon}
+      eventHandlers={{
+        popupopen: () => setPopupOpen(true),
+        popupclose: () => setPopupOpen(false),
+      }}
+    >
       <Popup autoPan={false}>
         <div className="min-w-[200px]">
           <div className="flex items-start justify-between gap-2 mb-1">
             <div className="font-semibold text-base">{park.name}</div>
             {isInRoute && (
-              <span className="inline-flex items-center justify-center w-6 h-6 text-xs font-semibold bg-blue-100 text-blue-700 rounded-full flex-shrink-0">
-                {routeIndex + 1}
-              </span>
+              <span className="text-xs text-muted-foreground">Stop {routeIndex + 1}</span>
             )}
           </div>
           <div className="text-sm text-muted-foreground mb-2">
@@ -69,6 +87,11 @@ export function ParkMarker({
           </div>
         </div>
       </Popup>
+      {showLabel && !popupOpen && (
+        <Tooltip permanent direction="top" offset={[0, -8]} className="leaflet-park-label">
+          {park.name}
+        </Tooltip>
+      )}
     </Marker>
   );
 }
