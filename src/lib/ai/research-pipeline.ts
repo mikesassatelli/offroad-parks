@@ -12,6 +12,7 @@ import {
   getExcludedFields,
   calculateCompleteness,
   shouldGraduate,
+  getCurrentFieldValue,
 } from "./research-lifecycle";
 import { isAllowedByRobots, clearRobotsCache } from "./robots";
 import { discoverSources } from "./source-discovery";
@@ -196,14 +197,27 @@ export async function researchPark(
             ? `address.${key}`
             : key;
 
+          const extractedValueJson = JSON.stringify(fieldData.value);
+          const currentValueJson = getCurrentFieldValue(
+            park as unknown as import("@/lib/types").DbPark,
+            fieldName
+          );
+
+          // Auto-approve if extracted value matches current value (confirmation)
+          const valuesMatch =
+            currentValueJson !== null &&
+            normalizeForComparison(extractedValueJson) ===
+              normalizeForComparison(currentValueJson);
+
           await prisma.fieldExtraction.create({
             data: {
               parkId,
               fieldName,
-              extractedValue: JSON.stringify(fieldData.value),
+              extractedValue: extractedValueJson,
               confidence: "AI_EXTRACTED",
               confidenceScore: fieldData.confidence,
-              status: "PENDING_REVIEW",
+              status: valuesMatch ? "APPROVED" : "PENDING_REVIEW",
+              verifiedAt: valuesMatch ? new Date() : null,
               dataSourceId: source.id,
               sessionId: session.id,
               sourcesChecked: 1,
@@ -317,6 +331,26 @@ export async function researchPark(
   }
 
   return { sessionId: session.id };
+}
+
+/**
+ * Normalize a JSON-encoded value for comparison.
+ * Sorts arrays so ["rocks","sand"] matches ["sand","rocks"].
+ * Trims and lowercases strings so "5551234567" matches "5551234567".
+ */
+function normalizeForComparison(jsonStr: string): string {
+  try {
+    const val = JSON.parse(jsonStr);
+    if (Array.isArray(val)) {
+      return JSON.stringify([...val].sort());
+    }
+    if (typeof val === "string") {
+      return JSON.stringify(val.trim().toLowerCase());
+    }
+    return JSON.stringify(val);
+  } catch {
+    return jsonStr;
+  }
 }
 
 async function completeSession(
