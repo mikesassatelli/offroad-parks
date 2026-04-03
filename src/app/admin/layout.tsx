@@ -3,8 +3,11 @@ import Link from "next/link";
 import { redirect } from "next/navigation";
 import {
   Activity,
+  BrainCircuit,
   Camera,
+  ClipboardCheck,
   ClipboardList,
+  Globe,
   Home,
   LayoutDashboard,
   LogOut,
@@ -134,6 +137,28 @@ export default async function AdminLayout({
             >
               <ClipboardList className="w-5 h-5" />
               <span className="font-medium">Park Claims</span>
+            </Link>
+            <div className="border-t border-gray-200 my-2"></div>
+            <Link
+              href="/admin/ai-research"
+              className="flex items-center gap-3 px-4 py-3 text-gray-700 rounded-lg hover:bg-gray-100 transition-colors"
+            >
+              <BrainCircuit className="w-5 h-5" />
+              <span className="font-medium">AI Research</span>
+            </Link>
+            <Link
+              href="/admin/ai-research/pending"
+              className="flex items-center gap-3 px-4 py-3 text-gray-700 rounded-lg hover:bg-gray-100 transition-colors pl-8"
+            >
+              <ClipboardCheck className="w-4 h-4" />
+              <span className="font-medium text-sm">Review Queue</span>
+            </Link>
+            <Link
+              href="/admin/ai-research/sources"
+              className="flex items-center gap-3 px-4 py-3 text-gray-700 rounded-lg hover:bg-gray-100 transition-colors pl-8"
+            >
+              <Globe className="w-4 h-4" />
+              <span className="font-medium text-sm">Sources</span>
             </Link>
             <Link
               href="/admin/users"

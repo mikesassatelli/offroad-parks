@@ -42,6 +42,16 @@ export type VehicleType = "motorcycle" | "atv" | "sxs" | "fullSize";
 // Status enum from Prisma
 export type ParkStatus = "PENDING" | "APPROVED" | "REJECTED" | "DRAFT";
 
+// AI Data Context Engine types
+export type ResearchStatus = "NEEDS_RESEARCH" | "IN_PROGRESS" | "RESEARCHED" | "MAINTENANCE";
+export type DataSourceType = "website" | "pdf" | "facebook" | "governmentPage" | "reviewSite" | "campingDirectory" | "other";
+export type DataSourceOrigin = "OPERATOR_PROVIDED" | "AI_DISCOVERED" | "ADMIN_ADDED" | "USER_SUBMITTED";
+export type CrawlStatus = "PENDING" | "SUCCESS" | "FAILED" | "ROBOTS_BLOCKED" | "SKIPPED";
+export type FieldConfidence = "OPERATOR_CONFIRMED" | "HUMAN_VERIFIED" | "AI_EXTRACTED" | "USER_SUBMITTED" | "AI_INFERRED" | "NOT_FOUND";
+export type FieldExtractionStatus = "PENDING_REVIEW" | "APPROVED" | "REJECTED" | "SUPERSEDED" | "CONFLICT";
+export type ResearchTrigger = "SCHEDULED_CRON" | "ADMIN_MANUAL" | "OPERATOR_SOURCES" | "NEW_PARK_SEEDED" | "SOURCE_CHANGED";
+export type ResearchSessionStatus = "IN_PROGRESS" | "COMPLETED" | "FAILED" | "PARTIAL";
+
 // Ownership type
 export type Ownership = "private" | "public" | "mixed" | "unknown";
 
@@ -114,6 +124,11 @@ export type DbPark = {
   flagsRequired: boolean | null;
   sparkArrestorRequired: boolean | null;
   noiseLimitDBA: number | null;
+  // AI Research fields
+  dataCompletenessScore: number | null;
+  lastResearchedAt: Date | null;
+  researchPriority: number;
+  researchStatus: ResearchStatus;
   // Operator info
   operatorId: string | null;
   // Submitter info
@@ -360,3 +375,64 @@ export function transformDbReview(
     updatedAt: dbReview.updatedAt.toISOString(),
   };
 }
+
+// ── AI Data Context Engine Client Types ─────────────────────────────────────
+
+export type DataSourceSummary = {
+  id: string;
+  parkId: string;
+  url: string;
+  type: DataSourceType;
+  origin: DataSourceOrigin;
+  title: string | null;
+  reliability: number;
+  isOfficial: boolean;
+  lastCrawledAt: string | null;
+  contentChanged: boolean;
+  crawlStatus: CrawlStatus;
+  crawlError: string | null;
+  createdAt: string;
+};
+
+export type FieldExtractionSummary = {
+  id: string;
+  parkId: string;
+  parkName: string;
+  parkSlug: string;
+  fieldName: string;
+  extractedValue: string | null;
+  currentValue: string | null;
+  confidence: FieldConfidence;
+  confidenceScore: number | null;
+  status: FieldExtractionStatus;
+  sourcesChecked: number;
+  sourceUrl: string | null;
+  sourceTitle: string | null;
+  sessionId: string | null;
+  createdAt: string;
+};
+
+export type ResearchSessionSummary = {
+  id: string;
+  parkId: string;
+  parkName: string;
+  parkSlug: string;
+  trigger: ResearchTrigger;
+  status: ResearchSessionStatus;
+  fieldsExtracted: number;
+  fieldsApplied: number;
+  sourcesFound: number;
+  summary: string | null;
+  estimatedCostUSD: number;
+  startedAt: string;
+  completedAt: string | null;
+};
+
+export type AIResearchDashboard = {
+  totalParks: number;
+  parksByResearchStatus: Record<ResearchStatus, number>;
+  pendingReviewCount: number;
+  totalSessions: number;
+  totalCostUSD: number;
+  recentSessions: ResearchSessionSummary[];
+};

@@ -134,11 +134,22 @@ model Park {
   parkClaims       ParkClaim[]
   editLogs         ParkEditLog[]
 
+  // AI Research fields
+  dataSources          DataSource[]
+  fieldExtractions     FieldExtraction[]
+  researchSessions     ResearchSession[]
+  dataCompletenessScore  Float?
+  lastResearchedAt       DateTime?
+  researchPriority       Int              @default(50)
+  researchStatus         ResearchStatus   @default(NEEDS_RESEARCH)
+
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
   @@index([status])
   @@index([averageRating])
+  @@index([researchStatus])
+  @@index([researchPriority])
 }
 
 enum ParkStatus {
@@ -243,6 +254,72 @@ enum Ownership {
   public
   mixed
   unknown
+}
+
+// ── AI Data Context Engine Enums ────────────────────────────────────────────
+
+enum ResearchStatus {
+  NEEDS_RESEARCH
+  IN_PROGRESS
+  RESEARCHED
+  MAINTENANCE
+}
+
+enum DataSourceType {
+  website
+  pdf
+  facebook
+  governmentPage
+  reviewSite
+  campingDirectory
+  other
+}
+
+enum DataSourceOrigin {
+  OPERATOR_PROVIDED
+  AI_DISCOVERED
+  ADMIN_ADDED
+  USER_SUBMITTED
+}
+
+enum CrawlStatus {
+  PENDING
+  SUCCESS
+  FAILED
+  ROBOTS_BLOCKED
+  SKIPPED
+}
+
+enum FieldConfidence {
+  OPERATOR_CONFIRMED
+  HUMAN_VERIFIED
+  AI_EXTRACTED
+  USER_SUBMITTED
+  AI_INFERRED
+  NOT_FOUND
+}
+
+enum FieldExtractionStatus {
+  PENDING_REVIEW
+  APPROVED
+  REJECTED
+  SUPERSEDED
+  CONFLICT
+}
+
+enum ResearchTrigger {
+  SCHEDULED_CRON
+  ADMIN_MANUAL
+  OPERATOR_SOURCES
+  NEW_PARK_SEEDED
+  SOURCE_CHANGED
+}
+
+enum ResearchSessionStatus {
+  IN_PROGRESS
+  COMPLETED
+  FAILED
+  PARTIAL
 }
 
 // Address Model (one-to-one with Park)
@@ -528,4 +605,102 @@ model ParkEditLog {
   @@index([parkId])
   @@index([userId])
   @@index([createdAt])
+}
+
+// ── AI Data Context Engine ──────────────────────────────────────────────────
+
+model DataSource {
+  id            String           @id @default(cuid())
+  parkId        String
+  url           String
+  type          DataSourceType   @default(website)
+  origin        DataSourceOrigin @default(AI_DISCOVERED)
+  title         String?
+  description   String?
+  reliability   Int              @default(50)
+  isOfficial    Boolean          @default(false)
+
+  lastCrawledAt    DateTime?
+  lastContentHash  String?
+  contentChanged   Boolean       @default(false)
+  crawlStatus      CrawlStatus   @default(PENDING)
+  crawlError       String?       @db.Text
+
+  park              Park                    @relation(fields: [parkId], references: [id], onDelete: Cascade)
+  fieldExtractions  FieldExtraction[]
+  sessionSources    ResearchSessionSource[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@unique([parkId, url])
+  @@index([parkId])
+  @@index([crawlStatus])
+  @@index([lastCrawledAt])
+}
+
+model FieldExtraction {
+  id              String                @id @default(cuid())
+  parkId          String
+  fieldName       String
+  extractedValue  String?               @db.Text
+  confidence      FieldConfidence       @default(AI_EXTRACTED)
+  confidenceScore Float?
+  status          FieldExtractionStatus @default(PENDING_REVIEW)
+  sourcesChecked  Int                   @default(0)
+
+  dataSourceId String?
+  sessionId    String?
+  verifiedAt   DateTime?
+  verifiedBy   String?
+
+  park       Park             @relation(fields: [parkId], references: [id], onDelete: Cascade)
+  dataSource DataSource?      @relation(fields: [dataSourceId], references: [id], onDelete: SetNull)
+  session    ResearchSession? @relation(fields: [sessionId], references: [id], onDelete: SetNull)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([parkId, fieldName])
+  @@index([status])
+  @@index([parkId, fieldName, status])
+}
+
+model ResearchSession {
+  id               String                 @id @default(cuid())
+  parkId           String
+  trigger          ResearchTrigger
+  status           ResearchSessionStatus  @default(IN_PROGRESS)
+  fieldsExtracted  Int                    @default(0)
+  fieldsApplied    Int                    @default(0)
+  sourcesFound     Int                    @default(0)
+  errorMessage     String?                @db.Text
+  summary          String?                @db.Text
+  inputTokens      Int                    @default(0)
+  outputTokens     Int                    @default(0)
+  estimatedCostUSD Float                  @default(0)
+  startedAt        DateTime               @default(now())
+  completedAt      DateTime?
+
+  park             Park                    @relation(fields: [parkId], references: [id], onDelete: Cascade)
+  fieldExtractions FieldExtraction[]
+  sessionSources   ResearchSessionSource[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([parkId])
+  @@index([status])
+  @@index([createdAt])
+}
+
+model ResearchSessionSource {
+  id           String @id @default(cuid())
+  sessionId    String
+  dataSourceId String
+
+  session    ResearchSession @relation(fields: [sessionId], references: [id], onDelete: Cascade)
+  dataSource DataSource      @relation(fields: [dataSourceId], references: [id], onDelete: Cascade)
+
+  @@unique([sessionId, dataSourceId])
 }
