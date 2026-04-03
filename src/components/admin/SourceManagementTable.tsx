@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
-import { Plus, ExternalLink, Play, Loader2 } from "lucide-react";
+import { Plus, ExternalLink, Play, Loader2, ShieldCheck, ShieldOff, SkipForward, RotateCcw } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import type { DataSourceSummary } from "@/lib/types";
 
@@ -18,6 +18,7 @@ export function SourceManagementTable({ sources, parkId }: Props) {
   const [adding, setAdding] = useState(false);
   const [researching, setResearching] = useState(false);
   const [researchResult, setResearchResult] = useState<string | null>(null);
+  const [processingSourceId, setProcessingSourceId] = useState<string | null>(null);
 
   const handleResearch = async () => {
     setResearching(true);
@@ -38,6 +39,25 @@ export function SourceManagementTable({ sources, parkId }: Props) {
       setResearchResult(`Error: ${err instanceof Error ? err.message : "Network error"}`);
     } finally {
       setResearching(false);
+    }
+  };
+
+  const handleSourceAction = async (sourceId: string, action: string) => {
+    setProcessingSourceId(sourceId);
+    try {
+      const response = await fetch("/api/admin/ai-research/sources", {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ sourceId, action }),
+      });
+      if (response.ok) {
+        router.refresh();
+      } else {
+        const data = await response.json();
+        alert(data.error || "Action failed");
+      }
+    } finally {
+      setProcessingSourceId(null);
     }
   };
 
@@ -150,11 +170,13 @@ export function SourceManagementTable({ sources, parkId }: Props) {
                 <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Origin</th>
                 <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Status</th>
                 <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Last Crawled</th>
+                <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Reliability</th>
+                <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Actions</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-gray-200">
               {sources.map((source) => (
-                <tr key={source.id} className="hover:bg-gray-50">
+                <tr key={source.id} className={`hover:bg-gray-50 ${source.crawlStatus === "SKIPPED" ? "opacity-50" : ""}`}>
                   <td className="px-4 py-3">
                     <a
                       href={source.url}
@@ -182,6 +204,65 @@ export function SourceManagementTable({ sources, parkId }: Props) {
                     {source.lastCrawledAt
                       ? new Date(source.lastCrawledAt).toLocaleDateString()
                       : "Never"}
+                  </td>
+                  <td className="px-4 py-3">
+                    <span className={`text-sm font-medium ${
+                      source.reliability >= 70 ? "text-green-700" :
+                      source.reliability >= 40 ? "text-yellow-700" :
+                      "text-red-700"
+                    }`}>
+                      {source.reliability}
+                    </span>
+                  </td>
+                  <td className="px-4 py-3">
+                    <div className="flex items-center gap-1">
+                      {source.crawlStatus !== "SKIPPED" ? (
+                        <Button
+                          variant="ghost"
+                          size="icon-sm"
+                          onClick={() => handleSourceAction(source.id, "skip")}
+                          disabled={processingSourceId !== null}
+                          title="Skip — don't crawl this source"
+                          className="text-gray-400 hover:text-orange-600 hover:bg-orange-50"
+                        >
+                          <SkipForward className="w-4 h-4" />
+                        </Button>
+                      ) : (
+                        <Button
+                          variant="ghost"
+                          size="icon-sm"
+                          onClick={() => handleSourceAction(source.id, "unskip")}
+                          disabled={processingSourceId !== null}
+                          title="Restore — allow crawling again"
+                          className="text-orange-500 hover:text-gray-600 hover:bg-gray-50"
+                        >
+                          <RotateCcw className="w-4 h-4" />
+                        </Button>
+                      )}
+                      {!source.isOfficial ? (
+                        <Button
+                          variant="ghost"
+                          size="icon-sm"
+                          onClick={() => handleSourceAction(source.id, "trust")}
+                          disabled={processingSourceId !== null}
+                          title="Trust — mark as reliable, boost priority"
+                          className="text-gray-400 hover:text-green-600 hover:bg-green-50"
+                        >
+                          <ShieldCheck className="w-4 h-4" />
+                        </Button>
+                      ) : (
+                        <Button
+                          variant="ghost"
+                          size="icon-sm"
+                          onClick={() => handleSourceAction(source.id, "untrust")}
+                          disabled={processingSourceId !== null}
+                          title="Untrust — remove trusted status"
+                          className="text-green-600 hover:text-gray-600 hover:bg-gray-50"
+                        >
+                          <ShieldOff className="w-4 h-4" />
+                        </Button>
+                      )}
+                    </div>
                   </td>
                 </tr>
               ))}

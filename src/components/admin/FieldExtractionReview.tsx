@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
-import { CheckCircle, XCircle, ExternalLink } from "lucide-react";
+import { CheckCircle, XCircle, ExternalLink, CheckCheck, XOctagon } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import type { FieldExtractionSummary } from "@/lib/types";
 import { FIELD_DISPLAY_NAMES } from "@/lib/ai/field-display-names";
@@ -14,6 +14,7 @@ type Props = {
 export function FieldExtractionReview({ extractions }: Props) {
   const router = useRouter();
   const [processingId, setProcessingId] = useState<string | null>(null);
+  const [processingBulk, setProcessingBulk] = useState<string | null>(null);
 
   // Group extractions by park
   const grouped = new Map<string, FieldExtractionSummary[]>();
@@ -22,6 +23,39 @@ export function FieldExtractionReview({ extractions }: Props) {
     if (!grouped.has(key)) grouped.set(key, []);
     grouped.get(key)!.push(e);
   }
+
+  const handleBulkApprove = async (parkId: string, ids: string[]) => {
+    setProcessingBulk(parkId);
+    try {
+      for (const id of ids) {
+        const response = await fetch(`/api/admin/ai-research/extractions/${id}/approve`, {
+          method: "POST",
+        });
+        if (!response.ok) {
+          const data = await response.json();
+          alert(`Failed to approve extraction: ${data.error}`);
+          break;
+        }
+      }
+      router.refresh();
+    } finally {
+      setProcessingBulk(null);
+    }
+  };
+
+  const handleBulkReject = async (parkId: string, ids: string[]) => {
+    setProcessingBulk(parkId);
+    try {
+      for (const id of ids) {
+        await fetch(`/api/admin/ai-research/extractions/${id}/reject`, {
+          method: "POST",
+        });
+      }
+      router.refresh();
+    } finally {
+      setProcessingBulk(null);
+    }
+  };
 
   const handleApprove = async (id: string) => {
     setProcessingId(id);
@@ -61,10 +95,33 @@ export function FieldExtractionReview({ extractions }: Props) {
     <div className="space-y-8">
       {Array.from(grouped.entries()).map(([parkId, parkExtractions]) => (
         <div key={parkId} className="rounded-lg border border-gray-200 bg-white overflow-hidden">
-          <div className="bg-gray-50 px-6 py-3 border-b border-gray-200">
+          <div className="bg-gray-50 px-6 py-3 border-b border-gray-200 flex items-center justify-between">
             <h2 className="text-lg font-semibold text-gray-900">
               {parkExtractions[0].parkName}
             </h2>
+            <div className="flex items-center gap-2">
+              <span className="text-xs text-gray-500 mr-2">{parkExtractions.length} field{parkExtractions.length !== 1 ? "s" : ""}</span>
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => handleBulkApprove(parkId, parkExtractions.map(e => e.id))}
+                disabled={processingId !== null || processingBulk !== null}
+                className="text-green-700 border-green-300 hover:bg-green-50"
+              >
+                <CheckCheck className="w-4 h-4 mr-1" />
+                Approve All
+              </Button>
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => handleBulkReject(parkId, parkExtractions.map(e => e.id))}
+                disabled={processingId !== null || processingBulk !== null}
+                className="text-red-700 border-red-300 hover:bg-red-50"
+              >
+                <XOctagon className="w-4 h-4 mr-1" />
+                Reject All
+              </Button>
+            </div>
           </div>
           <div className="divide-y divide-gray-100">
             {parkExtractions.map((extraction) => (
