@@ -1,27 +1,67 @@
 "use client";
 
-import { useMemo } from "react";
-import { MapContainer, TileLayer } from "react-leaflet";
-import type { Park } from "@/lib/types";
+import { useMemo, useState } from "react";
+import { MapContainer, TileLayer, useMapEvents } from "react-leaflet";
+import type { Park, RouteWaypoint } from "@/lib/types";
 import { MapBoundsHandler } from "./components/MapBoundsHandler";
+import { CustomWaypointMarker } from "./components/CustomWaypointMarker";
 import { ParkMarker } from "./components/ParkMarker";
 import { RoutePolylines } from "./components/RoutePolylines";
 import "./utils/markers"; // Initialize marker icons
 import "leaflet/dist/leaflet.css";
 
+const LABEL_ZOOM_THRESHOLD = 9;
+
+interface MapClickHandlerProps {
+  onMapClick?: (lat: number, lng: number) => void;
+}
+
+function MapClickHandler({ onMapClick }: MapClickHandlerProps) {
+  useMapEvents({
+    click(e) {
+      onMapClick?.(e.latlng.lat, e.latlng.lng);
+    },
+  });
+  return null;
+}
+
+interface ZoomTrackerProps {
+  onZoomChange: (zoom: number) => void;
+}
+
+function ZoomTracker({ onZoomChange }: ZoomTrackerProps) {
+  useMapEvents({
+    zoomend(e) {
+      onZoomChange(e.target.getZoom());
+    },
+    moveend(e) {
+      onZoomChange(e.target.getZoom());
+    },
+  });
+  return null;
+}
+
 interface MapViewProps {
   parks: Park[];
-  routeParks?: Park[];
+  routeWaypoints?: RouteWaypoint[];
+  routeGeometry?: GeoJSON.LineString | null;
   onAddToRoute?: (park: Park) => void;
   isParkInRoute?: (parkId: string) => boolean;
+  onMapClick?: (lat: number, lng: number) => void;
+  onRemoveWaypoint?: (waypointId: string) => void;
 }
 
 export function MapView({
   parks,
-  routeParks = [],
+  routeWaypoints = [],
+  routeGeometry,
   onAddToRoute,
   isParkInRoute,
+  onMapClick,
+  onRemoveWaypoint,
 }: MapViewProps) {
+  const [zoomLevel, setZoomLevel] = useState(4);
+
   const parksWithCoordinates = useMemo(
     () => parks.filter((park) => park.coords),
     [parks],
@@ -47,15 +87,36 @@ export function MapView({
           attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
           url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
         />
-        <MapBoundsHandler parks={parksWithCoordinates} />
+        <MapBoundsHandler
+          parks={parksWithCoordinates}
+          waypoints={routeWaypoints.length > 0 ? routeWaypoints : undefined}
+        />
+        {onMapClick && <MapClickHandler onMapClick={onMapClick} />}
+        <ZoomTracker onZoomChange={setZoomLevel} />
 
-        {/* Draw route lines between parks with distance labels */}
-        <RoutePolylines routeParks={routeParks} />
+        {/* Draw route lines between waypoints */}
+        <RoutePolylines
+          routeParks={routeWaypoints}
+          routeGeometry={routeGeometry}
+        />
+
+        {/* Render custom waypoint markers (orange) */}
+        {routeWaypoints
+          .filter((w) => w.type === "custom")
+          .map((waypoint) => (
+            <CustomWaypointMarker
+              key={waypoint.id}
+              waypoint={waypoint}
+              index={routeWaypoints.indexOf(waypoint)}
+              onRemove={onRemoveWaypoint}
+            />
+          ))}
 
         {/* Render park markers */}
         {parksWithCoordinates.map((park) => {
           const isInRoute = isParkInRoute?.(park.id) ?? false;
-          const routeIndex = routeParks.findIndex((p) => p.id === park.id);
+          const routeWaypoint = routeWaypoints.find((w) => w.parkId === park.id);
+          const routeIndex = routeWaypoint ? routeWaypoints.indexOf(routeWaypoint) : -1;
 
           return (
             <ParkMarker
@@ -63,7 +124,9 @@ export function MapView({
               park={park}
               isInRoute={isInRoute}
               routeIndex={routeIndex}
+              routeWaypoint={routeWaypoint}
               onAddToRoute={onAddToRoute}
+              showLabel={zoomLevel >= LABEL_ZOOM_THRESHOLD}
             />
           );
         })}

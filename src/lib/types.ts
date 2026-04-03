@@ -1,3 +1,30 @@
+// Route builder types
+export type RouteWaypoint = {
+  id: string;
+  type: "park" | "custom";
+  label: string;
+  parkId?: string;    // only when type === "park"
+  parkSlug?: string;  // only when type === "park"
+  lat: number;
+  lng: number;
+  icon?: string;      // emoji icon for custom waypoints
+  color?: string;     // pin color key (see PIN_COLORS)
+};
+
+export type SavedRoute = {
+  id: string;
+  title: string;
+  description?: string | null;
+  shareToken: string;
+  isPublic: boolean;
+  waypoints: RouteWaypoint[];
+  routeGeometry?: GeoJSON.LineString | null;
+  totalDistanceMi?: number | null;
+  estimatedDurationMin?: number | null;
+  createdAt: string;
+  updatedAt: string;
+};
+
 // Legacy types for backward compatibility
 export type Amenity =
   | "restrooms"

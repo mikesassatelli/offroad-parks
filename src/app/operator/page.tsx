@@ -48,14 +48,14 @@ export default async function OperatorIndexPage() {
       <AppHeader user={session.user} showBackButton={true} />
       <div className="max-w-3xl mx-auto px-6 py-12">
       <div className="mb-8">
-        <h1 className="text-2xl font-bold text-gray-900">Manage Parks</h1>
-        <p className="text-gray-500 text-sm mt-1">Select a park to manage.</p>
+        <h1 className="text-2xl font-bold text-gray-900 dark:text-white">Manage Parks</h1>
+        <p className="text-gray-500 dark:text-gray-400 text-sm mt-1">Select a park to manage.</p>
       </div>
 
       {managedParks.length === 0 ? (
         <Card>
-          <CardContent className="py-12 text-center text-gray-500">
-            <MapPin className="w-8 h-8 mx-auto mb-3 text-gray-300" />
+          <CardContent className="py-12 text-center text-gray-500 dark:text-gray-400">
+            <MapPin className="w-8 h-8 mx-auto mb-3 text-gray-300 dark:text-gray-600" />
             <p className="font-medium">No parks yet</p>
             <p className="text-sm mt-1">
               You don&apos;t manage any parks yet.{" "}
@@ -75,9 +75,9 @@ export default async function OperatorIndexPage() {
             <Card key={park.id}>
               <CardContent className="pt-4 pb-4 flex items-center justify-between gap-4">
                 <div>
-                  <p className="font-semibold text-gray-900">{park.name}</p>
+                  <p className="font-semibold text-gray-900 dark:text-white">{park.name}</p>
                   {(park.address?.city || park.address?.state) && (
-                    <p className="text-xs text-gray-500 mt-0.5 flex items-center gap-1">
+                    <p className="text-xs text-gray-500 dark:text-gray-400 mt-0.5 flex items-center gap-1">
                       <MapPin className="w-3 h-3 flex-shrink-0" />
                       {park.address.city ? `${park.address.city}, ` : ""}
                       {park.address.state}

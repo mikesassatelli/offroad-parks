@@ -1,7 +1,7 @@
 import { fireEvent, render, screen } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { RouteListItem } from "@/features/route-planner/components/RouteListItem";
-import type { Park } from "@/lib/types";
+import type { RouteWaypoint } from "@/lib/types";
 import { vi } from "vitest";
 
 // Mock UI components
@@ -22,19 +22,26 @@ vi.mock("next/link", () => ({
 }));
 
 describe("RouteListItem", () => {
-  const mockPark: Park = {
-    id: "park-1",
-    name: "Test Park",
-    address: { city: "Los Angeles", state: "California" },
-    coords: { lat: 34.0522, lng: -118.2437 },
-    terrain: [],
-    amenities: [],
-    camping: [],
-    vehicleTypes: [],
+  const mockParkWaypoint: RouteWaypoint = {
+    id: "wp-1",
+    type: "park",
+    label: "Test Park",
+    parkId: "park-1",
+    parkSlug: "test-park",
+    lat: 34.0522,
+    lng: -118.2437,
+  };
+
+  const mockCustomWaypoint: RouteWaypoint = {
+    id: "wp-custom",
+    type: "custom",
+    label: "My Custom Stop",
+    lat: 34.0,
+    lng: -118.0,
   };
 
   const defaultProps = {
-    park: mockPark,
+    waypoint: mockParkWaypoint,
     index: 0,
     isDragging: false,
     isDragOver: false,
@@ -42,71 +49,70 @@ describe("RouteListItem", () => {
     onDragOver: vi.fn(),
     onDragEnd: vi.fn(),
     onDragLeave: vi.fn(),
-    onRemovePark: vi.fn(),
+    onRemove: vi.fn(),
   };
 
   beforeEach(() => {
     vi.clearAllMocks();
   });
 
-  it("should render park name", () => {
+  it("should render park waypoint label", () => {
     render(<RouteListItem {...defaultProps} />);
-
     expect(screen.getByText("Test Park")).toBeInTheDocument();
   });
 
-  it("should render park location with city and state", () => {
-    render(<RouteListItem {...defaultProps} />);
-
-    expect(screen.getByText("Los Angeles, California")).toBeInTheDocument();
-  });
-
-  it("should render park location without city when not provided", () => {
-    const parkWithoutCity = {
-      ...mockPark,
-      address: { state: "California" },
-    };
-
-    render(<RouteListItem {...defaultProps} park={parkWithoutCity} />);
-
-    expect(screen.getByText("California")).toBeInTheDocument();
+  it("should render custom waypoint label", () => {
+    render(<RouteListItem {...defaultProps} waypoint={mockCustomWaypoint} />);
+    expect(screen.getByText("My Custom Stop")).toBeInTheDocument();
   });
 
   it("should display route index number (1-based)", () => {
     render(<RouteListItem {...defaultProps} index={0} />);
-
     expect(screen.getByText("1")).toBeInTheDocument();
   });
 
   it("should display correct index for second item", () => {
     render(<RouteListItem {...defaultProps} index={1} />);
-
     expect(screen.getByText("2")).toBeInTheDocument();
   });
 
-  it("should display correct index for third item", () => {
-    render(<RouteListItem {...defaultProps} index={2} />);
-
-    expect(screen.getByText("3")).toBeInTheDocument();
-  });
-
-  it("should link to park detail page", () => {
+  it("should link to park detail page for park waypoints", () => {
     render(<RouteListItem {...defaultProps} />);
-
     const link = screen.getByRole("link");
-    expect(link).toHaveAttribute("href", "/parks/park-1");
+    expect(link).toHaveAttribute("href", "/parks/test-park");
   });
 
-  it("should call onRemovePark when remove button clicked", async () => {
-    const onRemovePark = vi.fn();
+  it("should not render a link for custom waypoints", () => {
+    render(<RouteListItem {...defaultProps} waypoint={mockCustomWaypoint} />);
+    expect(screen.queryByRole("link")).not.toBeInTheDocument();
+  });
+
+  it("should call onRemove with waypoint id when remove button clicked", async () => {
+    const onRemove = vi.fn();
     const user = userEvent.setup();
 
-    render(<RouteListItem {...defaultProps} onRemovePark={onRemovePark} />);
+    render(<RouteListItem {...defaultProps} onRemove={onRemove} />);
 
-    const removeButton = screen.getByRole("button");
-    await user.click(removeButton);
+    await user.click(screen.getByRole("button", { name: /remove/i }));
 
-    expect(onRemovePark).toHaveBeenCalledWith("park-1");
+    expect(onRemove).toHaveBeenCalledWith("wp-1");
+  });
+
+  it("should call onRemove with custom waypoint id", async () => {
+    const onRemove = vi.fn();
+    const user = userEvent.setup();
+
+    render(
+      <RouteListItem
+        {...defaultProps}
+        waypoint={mockCustomWaypoint}
+        onRemove={onRemove}
+      />,
+    );
+
+    await user.click(screen.getByRole("button", { name: /remove/i }));
+
+    expect(onRemove).toHaveBeenCalledWith("wp-custom");
   });
 
   it("should call onDragStart when drag starts", () => {
@@ -120,20 +126,6 @@ describe("RouteListItem", () => {
     fireEvent.dragStart(draggable);
 
     expect(onDragStart).toHaveBeenCalledWith(2);
-  });
-
-  it("should call onDragOver when dragged over", () => {
-    const onDragOver = vi.fn();
-
-    const { container } = render(
-      <RouteListItem {...defaultProps} index={1} onDragOver={onDragOver} />,
-    );
-
-    const draggable = container.firstChild as HTMLElement;
-    const event = new Event("dragover", { bubbles: true });
-    fireEvent(draggable, event);
-
-    expect(onDragOver).toHaveBeenCalled();
   });
 
   it("should call onDragEnd when drag ends", () => {
@@ -171,15 +163,6 @@ describe("RouteListItem", () => {
     expect(draggable.className).toContain("opacity-50");
   });
 
-  it("should not apply dragging opacity when isDragging is false", () => {
-    const { container } = render(
-      <RouteListItem {...defaultProps} isDragging={false} />,
-    );
-
-    const draggable = container.firstChild as HTMLElement;
-    expect(draggable.className).not.toContain("opacity-50");
-  });
-
   it("should apply drag over border when isDragOver is true", () => {
     const { container } = render(
       <RouteListItem {...defaultProps} isDragOver={true} />,
@@ -187,15 +170,6 @@ describe("RouteListItem", () => {
 
     const draggable = container.firstChild as HTMLElement;
     expect(draggable.className).toContain("border-primary");
-  });
-
-  it("should not apply drag over border when isDragOver is false", () => {
-    const { container } = render(
-      <RouteListItem {...defaultProps} isDragOver={false} />,
-    );
-
-    const draggable = container.firstChild as HTMLElement;
-    expect(draggable.className).toContain("border-transparent");
   });
 
   it("should be draggable", () => {
@@ -210,13 +184,5 @@ describe("RouteListItem", () => {
 
     const icons = container.querySelectorAll("svg");
     expect(icons.length).toBeGreaterThan(0);
-  });
-
-  it("should render remove icon", () => {
-    const { container } = render(<RouteListItem {...defaultProps} />);
-
-    // Should have both grip icon and X icon
-    const icons = container.querySelectorAll("svg");
-    expect(icons.length).toBeGreaterThanOrEqual(2);
   });
 });

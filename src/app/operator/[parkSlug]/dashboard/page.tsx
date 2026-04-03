@@ -73,19 +73,19 @@ export default async function OperatorDashboardPage({ params, searchParams }: Da
 
   return (
     <div>
-      <h1 className="text-3xl font-bold text-gray-900 mb-8">Dashboard</h1>
+      <h1 className="text-3xl font-bold text-gray-900 dark:text-white mb-8">Dashboard</h1>
 
       <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
         {stats.map(({ label, value, sub, icon: Icon, iconBg }) => (
           <div
             key={label}
-            className="bg-white rounded-lg shadow p-6 border border-gray-200"
+            className="bg-white dark:bg-gray-800 rounded-lg shadow p-6 border border-gray-200 dark:border-gray-700"
           >
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-sm font-medium text-gray-600">{label}</p>
-                <p className="text-3xl font-bold text-gray-900 mt-2">{value}</p>
-                <p className="text-sm text-gray-500 mt-1">{sub}</p>
+                <p className="text-sm font-medium text-gray-600 dark:text-gray-400">{label}</p>
+                <p className="text-3xl font-bold text-gray-900 dark:text-white mt-2">{value}</p>
+                <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">{sub}</p>
               </div>
               <div className={`${iconBg} rounded-full p-3 flex-shrink-0`}>
                 <Icon className="w-6 h-6 text-white" />

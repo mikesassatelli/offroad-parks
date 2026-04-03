@@ -1,4 +1,4 @@
-import { calculateRecommendedStay } from "@/lib/review-utils";
+import { calculateRecommendedStay, recalculateParkRatings } from "@/lib/review-utils";
 import { prisma } from "@/lib/prisma";
 import { vi, describe, it, expect, beforeEach } from "vitest";
 import type { RecommendedDuration } from "@prisma/client";
@@ -16,6 +16,8 @@ vi.mock("@/lib/prisma", () => ({
 }));
 
 const mockGroupBy = prisma.parkReview.groupBy as ReturnType<typeof vi.fn>;
+const mockAggregate = prisma.parkReview.aggregate as ReturnType<typeof vi.fn>;
+const mockParkUpdate = prisma.park.update as ReturnType<typeof vi.fn>;
 
 function makeRows(counts: Partial<Record<RecommendedDuration, number>>) {
   return Object.entries(counts).map(([duration, count]) => ({
@@ -88,5 +90,73 @@ describe("calculateRecommendedStay", () => {
     // 3×quickRide + 1×fullDay → mean = (3+3)/4 = 1.5 → ceil → 2 → halfDay
     mockGroupBy.mockResolvedValue(makeRows({ quickRide: 3, fullDay: 1 }));
     expect(await calculateRecommendedStay("park-1")).toBe("halfDay");
+  });
+});
+
+describe("recalculateParkRatings", () => {
+  beforeEach(() => {
+    vi.clearAllMocks();
+  });
+
+  it("updates park with aggregated ratings from approved reviews", async () => {
+    mockAggregate.mockResolvedValue({
+      _avg: {
+        overallRating: 4.2,
+        difficultyRating: 3.1,
+        terrainRating: 3.8,
+        facilitiesRating: 3.5,
+      },
+      _count: { id: 10 },
+    });
+    // calculateRecommendedStay uses groupBy; return empty so it returns null
+    mockGroupBy.mockResolvedValue([]);
+    mockParkUpdate.mockResolvedValue({});
+
+    await recalculateParkRatings("park-abc");
+
+    expect(mockAggregate).toHaveBeenCalledWith({
+      where: { parkId: "park-abc", status: "APPROVED" },
+      _avg: {
+        overallRating: true,
+        difficultyRating: true,
+        terrainRating: true,
+        facilitiesRating: true,
+      },
+      _count: { id: true },
+    });
+
+    expect(mockParkUpdate).toHaveBeenCalledWith({
+      where: { id: "park-abc" },
+      data: {
+        averageRating: 4.2,
+        averageDifficulty: 3.1,
+        averageTerrain: 3.8,
+        averageFacilities: 3.5,
+        reviewCount: 10,
+        averageRecommendedStay: null,
+      },
+    });
+  });
+
+  it("passes recommendedStay from calculateRecommendedStay to park update", async () => {
+    mockAggregate.mockResolvedValue({
+      _avg: {
+        overallRating: 5,
+        difficultyRating: 4,
+        terrainRating: 4,
+        facilitiesRating: 4,
+      },
+      _count: { id: 3 },
+    });
+    mockGroupBy.mockResolvedValue(makeRows({ fullDay: 3 }));
+    mockParkUpdate.mockResolvedValue({});
+
+    await recalculateParkRatings("park-xyz");
+
+    expect(mockParkUpdate).toHaveBeenCalledWith(
+      expect.objectContaining({
+        data: expect.objectContaining({ averageRecommendedStay: "fullDay" }),
+      })
+    );
   });
 });
