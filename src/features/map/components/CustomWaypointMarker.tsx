@@ -15,7 +15,7 @@ export function CustomWaypointMarker({
   index,
   onRemove,
 }: CustomWaypointMarkerProps) {
-  const icon = createCustomWaypointIcon(waypoint.icon ?? "📍");
+  const icon = createCustomWaypointIcon(waypoint.icon ?? "📍", waypoint.color);
 
   return (
     <Marker position={[waypoint.lat, waypoint.lng]} icon={icon}>

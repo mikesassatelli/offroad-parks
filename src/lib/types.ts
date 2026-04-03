@@ -8,6 +8,7 @@ export type RouteWaypoint = {
   lat: number;
   lng: number;
   icon?: string;      // emoji icon for custom waypoints
+  color?: string;     // pin color key (see PIN_COLORS)
 };
 
 export type SavedRoute = {

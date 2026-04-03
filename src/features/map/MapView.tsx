@@ -94,9 +94,8 @@ export function MapView({
         {/* Render park markers */}
         {parksWithCoordinates.map((park) => {
           const isInRoute = isParkInRoute?.(park.id) ?? false;
-          const routeIndex = routeWaypoints.findIndex(
-            (w) => w.parkId === park.id,
-          );
+          const routeWaypoint = routeWaypoints.find((w) => w.parkId === park.id);
+          const routeIndex = routeWaypoint ? routeWaypoints.indexOf(routeWaypoint) : -1;
 
           return (
             <ParkMarker
@@ -104,6 +103,7 @@ export function MapView({
               park={park}
               isInRoute={isInRoute}
               routeIndex={routeIndex}
+              routeWaypoint={routeWaypoint}
               onAddToRoute={onAddToRoute}
             />
           );

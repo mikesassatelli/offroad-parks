@@ -511,6 +511,22 @@ describe("useRouteBuilder", () => {
     expect(result.current.savedRouteId).toBe("route-1");
   });
 
+  it("should set color on a waypoint", () => {
+    const { result } = renderHook(() => useRouteBuilder());
+
+    act(() => {
+      result.current.addParkToRoute(mockPark1);
+    });
+
+    const waypointId = result.current.waypoints[0].id;
+
+    act(() => {
+      result.current.setWaypointColor(waypointId, "green");
+    });
+
+    expect(result.current.waypoints[0].color).toBe("green");
+  });
+
   it("should set icon on a custom waypoint", () => {
     const { result } = renderHook(() => useRouteBuilder());
 

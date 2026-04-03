@@ -165,6 +165,12 @@ export function useRouteBuilder() {
     );
   }, []);
 
+  const setWaypointColor = useCallback((waypointId: string, color: string) => {
+    setWaypoints((current) =>
+      current.map((w) => (w.id === waypointId ? { ...w, color } : w)),
+    );
+  }, []);
+
   // Backward compat: expose routeParks as array of objects with id for ParkMarker
   const routeParks = waypoints;
 
@@ -181,6 +187,7 @@ export function useRouteBuilder() {
     loadRoute,
     saveRoute,
     setWaypointIcon,
+    setWaypointColor,
     // Backward compat
     routeParks,
     removeParkFromRoute,

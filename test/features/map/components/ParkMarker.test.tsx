@@ -3,6 +3,12 @@ import { ParkMarker } from "@/features/map/components/ParkMarker";
 import { vi } from "vitest";
 import type { Park } from "@/lib/types";
 
+// Mock markers utility
+vi.mock("@/features/map/utils/markers", () => ({
+  createParkPinIcon: vi.fn(() => ({})),
+  defaultParkIcon: {},
+}));
+
 // Mock react-leaflet
 vi.mock("react-leaflet", () => ({
   Marker: ({ children, position }: any) => (
@@ -115,7 +121,7 @@ describe("ParkMarker", () => {
   it("should show route index when in route", () => {
     render(<ParkMarker park={mockPark} isInRoute={true} routeIndex={2} />);
 
-    expect(screen.getByText("3")).toBeInTheDocument(); // routeIndex + 1
+    expect(screen.getByText("Stop 3")).toBeInTheDocument(); // routeIndex + 1
   });
 
   it("should not show route index when not in route", () => {

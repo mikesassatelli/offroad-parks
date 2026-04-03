@@ -18,6 +18,7 @@ interface RouteListProps {
   onReorderRoute: (fromIndex: number, toIndex: number) => void;
   onAddCustomWaypoint: (label: string, lat: number, lng: number) => void;
   onSetWaypointIcon?: (waypointId: string, icon: string) => void;
+  onSetWaypointColor?: (waypointId: string, color: string) => void;
   routeResult?: RouteResult | null;
   isRouting?: boolean;
   onSaveRoute?: (title: string, isPublic: boolean) => Promise<SavedRoute | null>;
@@ -37,6 +38,7 @@ export function RouteList({
   onReorderRoute,
   onAddCustomWaypoint,
   onSetWaypointIcon,
+  onSetWaypointColor,
   routeResult,
   isRouting,
   onSaveRoute,
@@ -175,6 +177,7 @@ export function RouteList({
             onDragLeave={handleDragLeave}
             onRemove={handleRemove}
             onSetIcon={onSetWaypointIcon}
+            onSetColor={onSetWaypointColor}
           />
         ))}
 
