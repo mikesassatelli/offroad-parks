@@ -1,4 +1,4 @@
-import { fetchMapboxRoute, geocodeLocation } from "@/features/map/utils/routing";
+import { fetchMapboxRoute, geocodeLocation, geocodeSuggestions } from "@/features/map/utils/routing";
 import { vi } from "vitest";
 
 // Mock global fetch
@@ -157,5 +157,55 @@ describe("geocodeLocation", () => {
 
     const result = await geocodeLocation("Los Angeles");
     expect(result).toBeNull();
+  });
+});
+
+describe("geocodeSuggestions", () => {
+  beforeEach(() => {
+    vi.clearAllMocks();
+    process.env.NEXT_PUBLIC_MAPBOX_TOKEN = "test-token";
+  });
+
+  it("should return empty array when query is too short", async () => {
+    const result = await geocodeSuggestions("L");
+    expect(result).toEqual([]);
+    expect(mockFetch).not.toHaveBeenCalled();
+  });
+
+  it("should return empty array when token is not set", async () => {
+    delete process.env.NEXT_PUBLIC_MAPBOX_TOKEN;
+    const result = await geocodeSuggestions("Los Angeles");
+    expect(result).toEqual([]);
+  });
+
+  it("should return multiple suggestions on success", async () => {
+    mockFetch.mockResolvedValue({
+      ok: true,
+      json: async () => ({
+        features: [
+          { place_name: "Moab, Grand County, Utah, United States", center: [-109.5498, 38.5733] },
+          { place_name: "Moab City Hall, Moab, Utah, United States", center: [-109.55, 38.57] },
+        ],
+      }),
+    });
+
+    const result = await geocodeSuggestions("Moab");
+
+    expect(result).toHaveLength(2);
+    expect(result[0].label).toBe("Moab, Grand County, Utah, United States");
+    expect(result[0].lat).toBe(38.5733);
+    expect(result[0].lng).toBe(-109.5498);
+  });
+
+  it("should return empty array when no features returned", async () => {
+    mockFetch.mockResolvedValue({ ok: true, json: async () => ({ features: [] }) });
+    const result = await geocodeSuggestions("Nowhere");
+    expect(result).toEqual([]);
+  });
+
+  it("should return empty array on fetch error", async () => {
+    mockFetch.mockRejectedValue(new Error("Network error"));
+    const result = await geocodeSuggestions("Los Angeles");
+    expect(result).toEqual([]);
   });
 });

@@ -10,9 +10,9 @@ vi.mock("next-auth/react", () => ({
   useSession: vi.fn(() => ({ data: null, status: "unauthenticated" })),
 }));
 
-// Mock geocodeLocation so we don't make real HTTP calls
+// Mock geocodeSuggestions so we don't make real HTTP calls
 vi.mock("@/features/map/utils/routing", () => ({
-  geocodeLocation: vi.fn(() => Promise.resolve(null)),
+  geocodeSuggestions: vi.fn(() => Promise.resolve([])),
 }));
 
 // Mock child components
@@ -301,18 +301,16 @@ describe("RouteList", () => {
     await user.click(screen.getByRole("button", { name: /add custom stop/i }));
     expect(screen.getByPlaceholderText(/search a location/i)).toBeInTheDocument();
 
-    await user.click(screen.getByRole("button", { name: /cancel/i }));
+    await user.click(screen.getByRole("button", { name: /cancel search/i }));
     expect(screen.getByRole("button", { name: /add custom stop/i })).toBeInTheDocument();
     expect(screen.queryByPlaceholderText(/search a location/i)).not.toBeInTheDocument();
   });
 
-  it("should call onAddCustomWaypoint when geocode succeeds", async () => {
-    const { geocodeLocation } = await import("@/features/map/utils/routing");
-    vi.mocked(geocodeLocation).mockResolvedValueOnce({
-      label: "Moab, UT",
-      lat: 38.5733,
-      lng: -109.5498,
-    });
+  it("should call onAddCustomWaypoint when suggestion is selected", async () => {
+    const { geocodeSuggestions } = await import("@/features/map/utils/routing");
+    vi.mocked(geocodeSuggestions).mockResolvedValueOnce([
+      { label: "Moab, Grand County, Utah, United States", lat: 38.5733, lng: -109.5498 },
+    ]);
 
     const onAddCustomWaypoint = vi.fn();
     const user = userEvent.setup();
@@ -321,23 +319,26 @@ describe("RouteList", () => {
 
     await user.click(screen.getByRole("button", { name: /add custom stop/i }));
     await user.type(screen.getByPlaceholderText(/search a location/i), "Moab");
-    await user.click(screen.getByRole("button", { name: "" })); // submit search
 
-    await screen.findByRole("button", { name: /add custom stop/i });
+    const suggestion = await screen.findByText("Moab");
+    await user.click(suggestion);
 
-    expect(onAddCustomWaypoint).toHaveBeenCalledWith("Moab, UT", 38.5733, -109.5498);
+    expect(onAddCustomWaypoint).toHaveBeenCalledWith(
+      "Moab, Grand County, Utah, United States",
+      38.5733,
+      -109.5498,
+    );
   });
 
-  it("should show no results error when geocode returns null", async () => {
-    const { geocodeLocation } = await import("@/features/map/utils/routing");
-    vi.mocked(geocodeLocation).mockResolvedValueOnce(null);
+  it("should show no results message when suggestions are empty", async () => {
+    const { geocodeSuggestions } = await import("@/features/map/utils/routing");
+    vi.mocked(geocodeSuggestions).mockResolvedValueOnce([]);
 
     const user = userEvent.setup();
     render(<RouteList {...defaultProps} />);
 
     await user.click(screen.getByRole("button", { name: /add custom stop/i }));
     await user.type(screen.getByPlaceholderText(/search a location/i), "Nowhere");
-    fireEvent.submit(screen.getByPlaceholderText(/search a location/i).closest("form")!);
 
     expect(await screen.findByText(/no results found/i)).toBeInTheDocument();
   });

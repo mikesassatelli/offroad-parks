@@ -57,3 +57,28 @@ export async function geocodeLocation(
     return null;
   }
 }
+
+export async function geocodeSuggestions(
+  query: string,
+  limit = 5
+): Promise<{ label: string; lat: number; lng: number }[]> {
+  const token = process.env.NEXT_PUBLIC_MAPBOX_TOKEN;
+  if (!token || query.trim().length < 2) return [];
+
+  const encoded = encodeURIComponent(query.trim());
+  const url = `https://api.mapbox.com/geocoding/v5/mapbox.places/${encoded}.json?access_token=${token}&limit=${limit}&country=US&autocomplete=true`;
+
+  try {
+    const res = await fetch(url);
+    if (!res.ok) return [];
+    const data = await res.json();
+    if (!data.features?.length) return [];
+
+    return data.features.map((f: { place_name: string; center: [number, number] }) => {
+      const [lng, lat] = f.center;
+      return { label: f.place_name, lat, lng };
+    });
+  } catch {
+    return [];
+  }
+}

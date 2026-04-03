@@ -2,14 +2,14 @@
 
 import { Card, CardContent } from "@/components/ui/card";
 import type { RouteWaypoint, SavedRoute } from "@/lib/types";
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useSession } from "next-auth/react";
-import { geocodeLocation } from "@/features/map/utils/routing";
+import { geocodeSuggestions } from "@/features/map/utils/routing";
 import type { RouteResult } from "@/features/map/utils/routing";
 import { RouteListHeader } from "./components/RouteListHeader";
 import { RouteListItem } from "./components/RouteListItem";
 import { Button } from "@/components/ui/button";
-import { Check, Copy, Loader2, MapPin, Search } from "lucide-react";
+import { Check, Copy, Loader2, MapPin, X } from "lucide-react";
 
 interface RouteListProps {
   waypoints: RouteWaypoint[];
@@ -61,11 +61,14 @@ export function RouteList({
   // Route title
   const [routeTitle, setRouteTitle] = useState("");
 
-  // Custom waypoint search
+  // Custom waypoint autocomplete search
   const [showCustomSearch, setShowCustomSearch] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
+  const [suggestions, setSuggestions] = useState<{ label: string; lat: number; lng: number }[]>([]);
   const [isGeocoding, setIsGeocoding] = useState(false);
-  const [geocodeError, setGeocodeError] = useState<string | null>(null);
+  const [activeSuggestion, setActiveSuggestion] = useState(-1);
+  const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const searchContainerRef = useRef<HTMLDivElement>(null);
 
   // Save / share state
   const [savedRoute, setSavedRoute] = useState<SavedRoute | null>(null);
@@ -92,26 +95,49 @@ export function RouteList({
 
   const handleDragLeave = () => setDragOverIndex(null);
 
-  const handleCustomSearch = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!searchQuery.trim()) return;
-
-    setIsGeocoding(true);
-    setGeocodeError(null);
-
-    const result = await geocodeLocation(searchQuery.trim());
-    setIsGeocoding(false);
-
-    if (!result) {
-      setGeocodeError("No results found");
-      return;
-    }
-
-    onAddCustomWaypoint(result.label, result.lat, result.lng);
-    setSearchQuery("");
+  const closeSearch = () => {
     setShowCustomSearch(false);
-    setGeocodeError(null);
+    setSearchQuery("");
+    setSuggestions([]);
+    setActiveSuggestion(-1);
   };
+
+  const selectSuggestion = (s: { label: string; lat: number; lng: number }) => {
+    onAddCustomWaypoint(s.label, s.lat, s.lng);
+    closeSearch();
+  };
+
+  const handleSearchChange = (value: string) => {
+    setSearchQuery(value);
+    setActiveSuggestion(-1);
+    if (debounceRef.current) clearTimeout(debounceRef.current);
+    if (value.trim().length < 2) { setSuggestions([]); setIsGeocoding(false); return; }
+    setIsGeocoding(true);
+    debounceRef.current = setTimeout(async () => {
+      const results = await geocodeSuggestions(value.trim());
+      setSuggestions(results);
+      setIsGeocoding(false);
+    }, 350);
+  };
+
+  const handleSearchKeyDown = (e: React.KeyboardEvent) => {
+    if (e.key === "ArrowDown") { e.preventDefault(); setActiveSuggestion((i) => Math.min(i + 1, suggestions.length - 1)); }
+    else if (e.key === "ArrowUp") { e.preventDefault(); setActiveSuggestion((i) => Math.max(i - 1, -1)); }
+    else if (e.key === "Enter") { e.preventDefault(); if (activeSuggestion >= 0 && suggestions[activeSuggestion]) selectSuggestion(suggestions[activeSuggestion]); }
+    else if (e.key === "Escape") closeSearch();
+  };
+
+  // Close dropdown on click outside
+  useEffect(() => {
+    if (!showCustomSearch) return;
+    const handler = (e: MouseEvent) => {
+      if (searchContainerRef.current && !searchContainerRef.current.contains(e.target as Node)) {
+        setSuggestions([]);
+      }
+    };
+    document.addEventListener("mousedown", handler);
+    return () => document.removeEventListener("mousedown", handler);
+  }, [showCustomSearch]);
 
   const handleSave = async () => {
     if (!onSaveRoute || !routeTitle.trim()) return;
@@ -188,61 +214,56 @@ export function RouteList({
               variant="outline"
               size="sm"
               className="w-full text-xs"
-              onClick={() => {
-                setShowCustomSearch(true);
-                setGeocodeError(null);
-              }}
+              onClick={() => setShowCustomSearch(true)}
             >
               <MapPin className="w-3 h-3 mr-1" />
               Add Custom Stop
             </Button>
           ) : (
-            <form onSubmit={handleCustomSearch} className="space-y-1">
+            <div ref={searchContainerRef} className="relative">
               <div className="flex gap-1">
-                <input
-                  type="text"
-                  value={searchQuery}
-                  onChange={(e) => {
-                    setSearchQuery(e.target.value);
-                    setGeocodeError(null);
-                  }}
-                  placeholder="Search a location…"
-                  autoFocus
-                  className="flex-1 text-sm border border-input rounded-md px-3 py-1.5 bg-background focus:outline-none focus:ring-2 focus:ring-ring"
-                />
-                <Button
-                  type="submit"
-                  size="sm"
-                  variant="default"
-                  disabled={isGeocoding || !searchQuery.trim()}
-                  className="shrink-0"
-                >
-                  {isGeocoding ? (
-                    <Loader2 className="w-3 h-3 animate-spin" />
-                  ) : (
-                    <Search className="w-3 h-3" />
+                <div className="relative flex-1">
+                  <input
+                    type="text"
+                    value={searchQuery}
+                    onChange={(e) => handleSearchChange(e.target.value)}
+                    onKeyDown={handleSearchKeyDown}
+                    placeholder="Search a location…"
+                    autoFocus
+                    className="w-full text-sm border border-input rounded-md px-3 py-1.5 pr-7 bg-background focus:outline-none focus:ring-2 focus:ring-ring"
+                  />
+                  {isGeocoding && (
+                    <Loader2 className="w-3 h-3 animate-spin absolute right-2 top-1/2 -translate-y-1/2 text-muted-foreground" />
                   )}
-                </Button>
-                <Button
-                  type="button"
-                  size="sm"
-                  variant="ghost"
-                  onClick={() => {
-                    setShowCustomSearch(false);
-                    setSearchQuery("");
-                    setGeocodeError(null);
-                  }}
-                >
-                  Cancel
+                </div>
+                <Button type="button" size="sm" variant="ghost" onClick={closeSearch} aria-label="Cancel search">
+                  <X className="w-3 h-3" />
                 </Button>
               </div>
-              {isGeocoding && (
-                <p className="text-xs text-muted-foreground">Searching…</p>
+              {suggestions.length > 0 && (
+                <ul className="absolute z-50 left-0 right-0 mt-1 bg-popover border border-border rounded-md shadow-md overflow-hidden text-sm">
+                  {suggestions.map((s, i) => (
+                    <li key={`${s.lat}-${s.lng}`}>
+                      <button
+                        type="button"
+                        onMouseDown={(e) => { e.preventDefault(); selectSuggestion(s); }}
+                        className={`w-full text-left px-3 py-2 hover:bg-accent hover:text-accent-foreground transition ${
+                          activeSuggestion === i ? "bg-accent text-accent-foreground" : ""
+                        }`}
+                      >
+                        <span className="font-medium truncate block">{s.label.split(",")[0]}</span>
+                        <span className="text-xs text-muted-foreground truncate block">
+                          {s.label.split(",").slice(1).join(",").trim()}
+                        </span>
+                      </button>
+                    </li>
+                  ))}
+                </ul>
               )}
-              {geocodeError && (
-                <p className="text-xs text-destructive">{geocodeError}</p>
+              {!isGeocoding && searchQuery.trim().length >= 2 && suggestions.length === 0 && (
+                <p className="text-xs text-muted-foreground mt-1 px-1">No results found</p>
               )}
-            </form>
+            </div>
           )}
         </div>
 
