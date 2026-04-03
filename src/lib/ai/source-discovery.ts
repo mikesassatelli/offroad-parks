@@ -7,18 +7,17 @@ type DiscoveredSource = {
 };
 
 /**
- * Search the web for data sources about a park using Google Custom Search API.
- * Returns an empty array if API keys are not configured (graceful degradation).
+ * Search the web for data sources about a park using SerpApi.
+ * Returns an empty array if the API key is not configured (graceful degradation).
  */
 export async function discoverSources(
   parkName: string,
   state: string,
   existingUrls: string[]
 ): Promise<DiscoveredSource[]> {
-  const apiKey = process.env.GOOGLE_CUSTOM_SEARCH_API_KEY;
-  const cx = process.env.GOOGLE_CUSTOM_SEARCH_CX;
+  const apiKey = process.env.SERPAPI_API_KEY;
 
-  if (!apiKey || !cx) {
+  if (!apiKey) {
     return [];
   }
 
@@ -32,7 +31,7 @@ export async function discoverSources(
   const allResults: DiscoveredSource[] = [];
 
   for (const query of queries) {
-    const results = await searchGoogle(query, apiKey, cx);
+    const results = await searchSerpApi(query, apiKey);
     for (const result of results) {
       const normalized = normalizeUrl(result.url);
       if (!existingSet.has(normalized)) {
@@ -45,34 +44,33 @@ export async function discoverSources(
   return allResults.slice(0, 10);
 }
 
-async function searchGoogle(
+async function searchSerpApi(
   query: string,
-  apiKey: string,
-  cx: string
+  apiKey: string
 ): Promise<DiscoveredSource[]> {
   const params = new URLSearchParams({
-    key: apiKey,
-    cx,
+    api_key: apiKey,
+    engine: "google",
     q: query,
     num: "5",
   });
 
   try {
     const response = await fetch(
-      `https://www.googleapis.com/customsearch/v1?${params}`,
+      `https://serpapi.com/search.json?${params}`,
       { signal: AbortSignal.timeout(10_000) }
     );
 
     if (!response.ok) return [];
 
     const data = await response.json();
-    const items = data.items || [];
+    const results = data.organic_results || [];
 
-    return items.map(
-      (item: { link: string; title: string; displayLink: string }) => ({
+    return results.map(
+      (item: { link: string; title: string; displayed_link?: string }) => ({
         url: item.link,
         title: item.title || "",
-        type: classifyDomain(item.displayLink || item.link),
+        type: classifyDomain(item.displayed_link || item.link),
       })
     );
   } catch {
