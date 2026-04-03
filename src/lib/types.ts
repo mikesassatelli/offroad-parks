@@ -7,6 +7,7 @@ export type RouteWaypoint = {
   parkSlug?: string;  // only when type === "park"
   lat: number;
   lng: number;
+  icon?: string;      // emoji icon for custom waypoints
 };
 
 export type SavedRoute = {

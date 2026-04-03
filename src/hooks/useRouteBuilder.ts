@@ -159,6 +159,12 @@ export function useRouteBuilder() {
     // routeGeometry will be re-fetched by the routing effect
   }, []);
 
+  const setWaypointIcon = useCallback((waypointId: string, icon: string) => {
+    setWaypoints((current) =>
+      current.map((w) => (w.id === waypointId ? { ...w, icon } : w)),
+    );
+  }, []);
+
   // Backward compat: expose routeParks as array of objects with id for ParkMarker
   const routeParks = waypoints;
 
@@ -174,6 +180,7 @@ export function useRouteBuilder() {
     removeWaypoint,
     loadRoute,
     saveRoute,
+    setWaypointIcon,
     // Backward compat
     routeParks,
     removeParkFromRoute,

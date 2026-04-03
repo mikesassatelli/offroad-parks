@@ -6,7 +6,6 @@ import { useState } from "react";
 import { useSession } from "next-auth/react";
 import { geocodeLocation } from "@/features/map/utils/routing";
 import type { RouteResult } from "@/features/map/utils/routing";
-import { RouteListEmpty } from "./components/RouteListEmpty";
 import { RouteListHeader } from "./components/RouteListHeader";
 import { RouteListItem } from "./components/RouteListItem";
 import { Button } from "@/components/ui/button";
@@ -18,6 +17,7 @@ interface RouteListProps {
   onClearRoute: () => void;
   onReorderRoute: (fromIndex: number, toIndex: number) => void;
   onAddCustomWaypoint: (label: string, lat: number, lng: number) => void;
+  onSetWaypointIcon?: (waypointId: string, icon: string) => void;
   routeResult?: RouteResult | null;
   isRouting?: boolean;
   onSaveRoute?: (title: string, isPublic: boolean) => Promise<SavedRoute | null>;
@@ -36,6 +36,7 @@ export function RouteList({
   onClearRoute,
   onReorderRoute,
   onAddCustomWaypoint,
+  onSetWaypointIcon,
   routeResult,
   isRouting,
   onSaveRoute,
@@ -127,28 +128,38 @@ export function RouteList({
 
   const distanceMi = routeResult?.distanceMi ?? totalDistance;
   const durationMin = routeResult?.durationMin;
-
-  if (waypoints.length === 0) {
-    return <RouteListEmpty />;
-  }
+  const hasWaypoints = waypoints.length > 0;
 
   return (
     <Card className="h-full">
-      <RouteListHeader
-        onClearRoute={onClearRoute}
-        totalDistanceMi={distanceMi}
-        estimatedDurationMin={durationMin}
-        isRouting={isRouting}
-      />
-      <CardContent className="space-y-2">
-        {/* Route title input */}
-        <input
-          type="text"
-          value={routeTitle}
-          onChange={(e) => setRouteTitle(e.target.value)}
-          placeholder="Name your route…"
-          className="w-full text-sm border border-input rounded-md px-3 py-1.5 bg-background focus:outline-none focus:ring-2 focus:ring-ring"
+      {hasWaypoints ? (
+        <RouteListHeader
+          onClearRoute={onClearRoute}
+          totalDistanceMi={distanceMi}
+          estimatedDurationMin={durationMin}
+          isRouting={isRouting}
         />
+      ) : null}
+      <CardContent className="space-y-2">
+        {!hasWaypoints && (
+          <div className="py-2">
+            <p className="text-sm font-medium mb-1">Route Planner</p>
+            <p className="text-xs text-muted-foreground">
+              Click &ldquo;Add to Route&rdquo; on parks, or add a custom stop below to start your trip.
+            </p>
+          </div>
+        )}
+
+        {/* Route title input — only shown when there are waypoints */}
+        {hasWaypoints && (
+          <input
+            type="text"
+            value={routeTitle}
+            onChange={(e) => setRouteTitle(e.target.value)}
+            placeholder="Name your route…"
+            className="w-full text-sm border border-input rounded-md px-3 py-1.5 bg-background focus:outline-none focus:ring-2 focus:ring-ring"
+          />
+        )}
 
         {/* Waypoints */}
         {waypoints.map((waypoint, index) => (
@@ -163,6 +174,7 @@ export function RouteList({
             onDragEnd={handleDragEnd}
             onDragLeave={handleDragLeave}
             onRemove={handleRemove}
+            onSetIcon={onSetWaypointIcon}
           />
         ))}
 

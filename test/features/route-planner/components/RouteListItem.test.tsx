@@ -93,8 +93,7 @@ describe("RouteListItem", () => {
 
     render(<RouteListItem {...defaultProps} onRemove={onRemove} />);
 
-    const removeButton = screen.getByRole("button");
-    await user.click(removeButton);
+    await user.click(screen.getByRole("button", { name: /remove/i }));
 
     expect(onRemove).toHaveBeenCalledWith("wp-1");
   });
@@ -111,8 +110,7 @@ describe("RouteListItem", () => {
       />,
     );
 
-    const removeButton = screen.getByRole("button");
-    await user.click(removeButton);
+    await user.click(screen.getByRole("button", { name: /remove/i }));
 
     expect(onRemove).toHaveBeenCalledWith("wp-custom");
   });

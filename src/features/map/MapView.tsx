@@ -4,6 +4,7 @@ import { useMemo } from "react";
 import { MapContainer, TileLayer, useMapEvents } from "react-leaflet";
 import type { Park, RouteWaypoint } from "@/lib/types";
 import { MapBoundsHandler } from "./components/MapBoundsHandler";
+import { CustomWaypointMarker } from "./components/CustomWaypointMarker";
 import { ParkMarker } from "./components/ParkMarker";
 import { RoutePolylines } from "./components/RoutePolylines";
 import "./utils/markers"; // Initialize marker icons
@@ -29,6 +30,7 @@ interface MapViewProps {
   onAddToRoute?: (park: Park) => void;
   isParkInRoute?: (parkId: string) => boolean;
   onMapClick?: (lat: number, lng: number) => void;
+  onRemoveWaypoint?: (waypointId: string) => void;
 }
 
 export function MapView({
@@ -38,6 +40,7 @@ export function MapView({
   onAddToRoute,
   isParkInRoute,
   onMapClick,
+  onRemoveWaypoint,
 }: MapViewProps) {
   const parksWithCoordinates = useMemo(
     () => parks.filter((park) => park.coords),
@@ -75,6 +78,18 @@ export function MapView({
           routeParks={routeWaypoints}
           routeGeometry={routeGeometry}
         />
+
+        {/* Render custom waypoint markers (orange) */}
+        {routeWaypoints
+          .filter((w) => w.type === "custom")
+          .map((waypoint) => (
+            <CustomWaypointMarker
+              key={waypoint.id}
+              waypoint={waypoint}
+              index={routeWaypoints.indexOf(waypoint)}
+              onRemove={onRemoveWaypoint}
+            />
+          ))}
 
         {/* Render park markers */}
         {parksWithCoordinates.map((park) => {

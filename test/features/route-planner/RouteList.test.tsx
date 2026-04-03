@@ -128,7 +128,8 @@ describe("RouteList", () => {
 
   it("should render empty state when no waypoints", () => {
     render(<RouteList {...defaultProps} waypoints={[]} />);
-    expect(screen.getByTestId("route-list-empty")).toBeInTheDocument();
+    expect(screen.getByText(/route planner/i)).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: /add custom stop/i })).toBeInTheDocument();
   });
 
   it("should render route list header when waypoints exist", () => {
@@ -244,7 +245,7 @@ describe("RouteList", () => {
       />,
     );
 
-    expect(screen.getByTestId("route-list-empty")).toBeInTheDocument();
+    expect(screen.getByText(/route planner/i)).toBeInTheDocument();
   });
 
   it("should maintain waypoint order when rendering", () => {

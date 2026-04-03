@@ -115,6 +115,7 @@ function OffroadParksAppInner({ parks }: OffroadParksAppProps) {
     reorderRoute,
     isParkInRoute,
     saveRoute,
+    setWaypointIcon,
   } = useRouteBuilder();
 
   const user = session?.user
@@ -219,6 +220,7 @@ function OffroadParksAppInner({ parks }: OffroadParksAppProps) {
                       routeGeometry={routeResult?.geometry}
                       onAddToRoute={addParkToRoute}
                       isParkInRoute={isParkInRoute}
+                      onRemoveWaypoint={removeWaypoint}
                     />
                   </div>
                   <div className="lg:col-span-1">
@@ -228,6 +230,7 @@ function OffroadParksAppInner({ parks }: OffroadParksAppProps) {
                       onClearRoute={clearRoute}
                       onReorderRoute={reorderRoute}
                       onAddCustomWaypoint={addCustomWaypoint}
+                      onSetWaypointIcon={setWaypointIcon}
                       routeResult={routeResult}
                       isRouting={isRouting}
                       onSaveRoute={saveRoute}

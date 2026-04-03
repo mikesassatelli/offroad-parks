@@ -433,7 +433,7 @@ describe("useRouteBuilder", () => {
       expect.objectContaining({ method: "POST" }),
     );
     expect(saved!).not.toBeNull();
-    expect(saved!?.id).toBe("route-1");
+    expect(saved?.id).toBe("route-1");
   });
 
   it("should return null from saveRoute when fewer than 2 waypoints", async () => {
@@ -509,6 +509,39 @@ describe("useRouteBuilder", () => {
     expect(result.current.waypoints[0].parkId).toBe("park-a");
     expect(result.current.waypoints[1].label).toBe("Custom Stop");
     expect(result.current.savedRouteId).toBe("route-1");
+  });
+
+  it("should set icon on a custom waypoint", () => {
+    const { result } = renderHook(() => useRouteBuilder());
+
+    act(() => {
+      result.current.addCustomWaypoint("Home Base", 34.0, -118.0);
+    });
+
+    const waypointId = result.current.waypoints[0].id;
+
+    act(() => {
+      result.current.setWaypointIcon(waypointId, "🏠");
+    });
+
+    expect(result.current.waypoints[0].icon).toBe("🏠");
+  });
+
+  it("should not affect other waypoints when setting icon", () => {
+    vi.useFakeTimers();
+    const { result } = renderHook(() => useRouteBuilder());
+
+    act(() => { result.current.addCustomWaypoint("Stop 1", 34.0, -118.0); });
+    vi.advanceTimersByTime(1);
+    act(() => { result.current.addCustomWaypoint("Stop 2", 35.0, -119.0); });
+
+    act(() => {
+      result.current.setWaypointIcon(result.current.waypoints[0].id, "⛽");
+    });
+
+    expect(result.current.waypoints[0].icon).toBe("⛽");
+    expect(result.current.waypoints[1].icon).toBeUndefined();
+    vi.useRealTimers();
   });
 
   it("should use routeResult distance when available in totalRouteDistance", async () => {
