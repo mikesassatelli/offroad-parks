@@ -371,7 +371,7 @@ describe("RouteList", () => {
       />,
     );
 
-    await user.type(screen.getByPlaceholderText(/name your route/i), "Epic Desert Trip");
+    await user.type(screen.getByPlaceholderText(/weekend sand dunes/i), "Epic Desert Trip");
     await user.click(screen.getByRole("button", { name: /save route/i }));
 
     expect(onSaveRoute).toHaveBeenCalledWith("Epic Desert Trip", false);
@@ -394,7 +394,7 @@ describe("RouteList", () => {
       />,
     );
 
-    await user.type(screen.getByPlaceholderText(/name your route/i), "Epic Desert Trip");
+    await user.type(screen.getByPlaceholderText(/weekend sand dunes/i), "Epic Desert Trip");
     await user.click(screen.getByRole("button", { name: /save route/i }));
 
     expect(await screen.findByRole("button", { name: /copy share link/i })).toBeInTheDocument();

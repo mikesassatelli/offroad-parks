@@ -17,6 +17,7 @@ vi.mock("react-leaflet", () => ({
     </div>
   ),
   Popup: ({ children }: any) => <div data-testid="popup">{children}</div>,
+  Tooltip: ({ children }: any) => <div data-testid="tooltip">{children}</div>,
 }));
 
 // Mock Next.js Link
@@ -198,5 +199,28 @@ describe("ParkMarker", () => {
     );
 
     expect(getByTestId("popup")).toBeInTheDocument();
+  });
+
+  it("should show park name tooltip when showLabel is true", () => {
+    render(
+      <ParkMarker park={mockPark} isInRoute={false} routeIndex={0} showLabel={true} />,
+    );
+
+    expect(screen.getByTestId("tooltip")).toBeInTheDocument();
+    expect(screen.getByTestId("tooltip")).toHaveTextContent("Test Park");
+  });
+
+  it("should not show tooltip when showLabel is false", () => {
+    render(
+      <ParkMarker park={mockPark} isInRoute={false} routeIndex={0} showLabel={false} />,
+    );
+
+    expect(screen.queryByTestId("tooltip")).not.toBeInTheDocument();
+  });
+
+  it("should not show tooltip when showLabel is omitted", () => {
+    render(<ParkMarker park={mockPark} isInRoute={false} routeIndex={0} />);
+
+    expect(screen.queryByTestId("tooltip")).not.toBeInTheDocument();
   });
 });

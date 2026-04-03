@@ -63,15 +63,6 @@ export function RouteListItem({
       </button>
     );
 
-  const labelContent = (
-    <div className="flex items-center gap-2">
-      {badge}
-      <span className="text-sm font-medium truncate hover:text-primary">
-        {waypoint.label}
-      </span>
-    </div>
-  );
-
   return (
     <div
       draggable
@@ -87,25 +78,17 @@ export function RouteListItem({
     >
       <div className="flex items-center gap-2 p-2">
         <GripVertical className="w-4 h-4 text-muted-foreground/60 flex-shrink-0 cursor-grab active:cursor-grabbing" />
-        <div className="flex items-center gap-2 flex-1 min-w-0">
+        {/* Badge is outside the link so clicking it doesn't navigate */}
+        {badge}
+        <div className="flex-1 min-w-0">
           {waypoint.type === "park" && waypoint.parkSlug ? (
-            <Link href={`/parks/${waypoint.parkSlug}`} className="flex-1 min-w-0">
-              {labelContent}
+            <Link href={`/parks/${waypoint.parkSlug}`} className="block min-w-0">
+              <span className="text-sm font-medium truncate hover:text-primary block">{waypoint.label}</span>
             </Link>
           ) : (
-            <div className="flex-1 min-w-0">{labelContent}</div>
+            <span className="text-sm font-medium truncate block">{waypoint.label}</span>
           )}
         </div>
-        {/* Color swatch button — available for both types */}
-        {onSetColor && waypoint.type === "custom" && (
-          <button
-            type="button"
-            onClick={() => setShowPicker((v) => (v === "color" ? null : "color"))}
-            title="Change pin color"
-            style={{ background: pinBg }}
-            className="w-4 h-4 rounded-full flex-shrink-0 opacity-0 group-hover:opacity-100 transition border border-white/50"
-          />
-        )}
         <Button
           variant="ghost"
           size="icon"

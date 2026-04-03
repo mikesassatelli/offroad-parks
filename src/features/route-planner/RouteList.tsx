@@ -178,17 +178,6 @@ export function RouteList({
           </div>
         )}
 
-        {/* Route title input — only shown when there are waypoints */}
-        {hasWaypoints && (
-          <input
-            type="text"
-            value={routeTitle}
-            onChange={(e) => setRouteTitle(e.target.value)}
-            placeholder="Name your route…"
-            className="w-full text-sm border border-input rounded-md px-3 py-1.5 bg-background focus:outline-none focus:ring-2 focus:ring-ring"
-          />
-        )}
-
         {/* Waypoints */}
         {waypoints.map((waypoint, index) => (
           <RouteListItem
@@ -269,24 +258,36 @@ export function RouteList({
 
         {/* Save Route (authenticated, 2+ waypoints) */}
         {isAuthenticated && waypoints.length >= 2 && onSaveRoute && (
-          <div className="pt-2 border-t space-y-2">
+          <div className="pt-3 border-t space-y-2">
             {!savedRoute ? (
-              <Button
-                variant="default"
-                size="sm"
-                className="w-full"
-                onClick={handleSave}
-                disabled={isSaving || !routeTitle.trim()}
-              >
-                {isSaving ? (
-                  <>
-                    <Loader2 className="w-3 h-3 mr-1 animate-spin" />
-                    Saving…
-                  </>
-                ) : (
-                  "Save Route"
-                )}
-              </Button>
+              <>
+                <label className="block">
+                  <span className="text-xs font-medium text-muted-foreground uppercase tracking-wide">Route name</span>
+                  <input
+                    type="text"
+                    value={routeTitle}
+                    onChange={(e) => setRouteTitle(e.target.value)}
+                    placeholder="e.g. Weekend Sand Dunes Loop"
+                    className="mt-1 w-full text-sm border border-input rounded-md px-3 py-1.5 bg-background focus:outline-none focus:ring-2 focus:ring-ring"
+                  />
+                </label>
+                <Button
+                  variant="default"
+                  size="sm"
+                  className="w-full"
+                  onClick={handleSave}
+                  disabled={isSaving || !routeTitle.trim()}
+                >
+                  {isSaving ? (
+                    <>
+                      <Loader2 className="w-3 h-3 mr-1 animate-spin" />
+                      Saving…
+                    </>
+                  ) : (
+                    "Save Route"
+                  )}
+                </Button>
+              </>
             ) : (
               <Button
                 variant="outline"

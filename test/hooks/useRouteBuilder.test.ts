@@ -423,7 +423,7 @@ describe("useRouteBuilder", () => {
       result.current.addParkToRoute(mockPark2);
     });
 
-    let saved: ReturnType<typeof result.current.saveRoute> extends Promise<infer T> ? T : never;
+    let saved: Awaited<ReturnType<typeof result.current.saveRoute>> | undefined;
     await act(async () => {
       saved = await result.current.saveRoute("My Route", false);
     });
@@ -432,7 +432,7 @@ describe("useRouteBuilder", () => {
       "/api/routes",
       expect.objectContaining({ method: "POST" }),
     );
-    expect(saved!).not.toBeNull();
+    expect(saved).not.toBeNull();
     expect(saved?.id).toBe("route-1");
   });
 

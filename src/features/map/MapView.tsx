@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo } from "react";
+import { useMemo, useState } from "react";
 import { MapContainer, TileLayer, useMapEvents } from "react-leaflet";
 import type { Park, RouteWaypoint } from "@/lib/types";
 import { MapBoundsHandler } from "./components/MapBoundsHandler";
@@ -10,6 +10,8 @@ import { RoutePolylines } from "./components/RoutePolylines";
 import "./utils/markers"; // Initialize marker icons
 import "leaflet/dist/leaflet.css";
 
+const LABEL_ZOOM_THRESHOLD = 11;
+
 interface MapClickHandlerProps {
   onMapClick?: (lat: number, lng: number) => void;
 }
@@ -18,6 +20,19 @@ function MapClickHandler({ onMapClick }: MapClickHandlerProps) {
   useMapEvents({
     click(e) {
       onMapClick?.(e.latlng.lat, e.latlng.lng);
+    },
+  });
+  return null;
+}
+
+interface ZoomTrackerProps {
+  onZoomChange: (zoom: number) => void;
+}
+
+function ZoomTracker({ onZoomChange }: ZoomTrackerProps) {
+  useMapEvents({
+    zoomend(e) {
+      onZoomChange(e.target.getZoom());
     },
   });
   return null;
@@ -42,6 +57,8 @@ export function MapView({
   onMapClick,
   onRemoveWaypoint,
 }: MapViewProps) {
+  const [zoomLevel, setZoomLevel] = useState(4);
+
   const parksWithCoordinates = useMemo(
     () => parks.filter((park) => park.coords),
     [parks],
@@ -72,6 +89,7 @@ export function MapView({
           waypoints={routeWaypoints.length > 0 ? routeWaypoints : undefined}
         />
         {onMapClick && <MapClickHandler onMapClick={onMapClick} />}
+        <ZoomTracker onZoomChange={setZoomLevel} />
 
         {/* Draw route lines between waypoints */}
         <RoutePolylines
@@ -105,6 +123,7 @@ export function MapView({
               routeIndex={routeIndex}
               routeWaypoint={routeWaypoint}
               onAddToRoute={onAddToRoute}
+              showLabel={zoomLevel >= LABEL_ZOOM_THRESHOLD}
             />
           );
         })}

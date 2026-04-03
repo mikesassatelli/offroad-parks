@@ -1,4 +1,4 @@
-import { Marker, Popup } from "react-leaflet";
+import { Marker, Popup, Tooltip } from "react-leaflet";
 import type { Park, RouteWaypoint } from "@/lib/types";
 import { formatParkPricingSummary } from "@/lib/formatting";
 import { createParkPinIcon, defaultParkIcon } from "../utils/markers";
@@ -10,6 +10,7 @@ interface ParkMarkerProps {
   routeIndex: number;
   routeWaypoint?: RouteWaypoint;
   onAddToRoute?: (park: Park) => void;
+  showLabel?: boolean;
 }
 
 export function ParkMarker({
@@ -18,6 +19,7 @@ export function ParkMarker({
   routeIndex,
   routeWaypoint,
   onAddToRoute,
+  showLabel,
 }: ParkMarkerProps) {
   if (!park.coords) return null;
 
@@ -78,6 +80,11 @@ export function ParkMarker({
           </div>
         </div>
       </Popup>
+      {showLabel && (
+        <Tooltip permanent direction="top" offset={[0, -8]} className="leaflet-park-label">
+          {park.name}
+        </Tooltip>
+      )}
     </Marker>
   );
 }
