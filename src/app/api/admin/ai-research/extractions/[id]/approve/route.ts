@@ -49,6 +49,9 @@ export async function POST(request: Request, { params }: RouteParams) {
   const { getCurrentFieldValue } = await import("@/lib/ai/research-lifecycle");
   const currentValue = getCurrentFieldValue(extraction.park as unknown as DbPark, fieldName);
 
+  const arrayFields = ["terrain", "amenities", "camping", "vehicleTypes"];
+  const isArrayField = arrayFields.includes(fieldName);
+
   await prisma.$transaction(async (tx) => {
     // Apply value to park based on field type
     if (fieldName.startsWith("address.")) {
@@ -57,25 +60,41 @@ export async function POST(request: Request, { params }: RouteParams) {
         where: { parkId },
         data: { [addressField]: parsedValue },
       });
-    } else if (fieldName === "terrain") {
-      await tx.parkTerrain.deleteMany({ where: { parkId } });
-      for (const t of parsedValue as string[]) {
-        await tx.parkTerrain.create({ data: { parkId, terrain: t as never } });
-      }
-    } else if (fieldName === "amenities") {
-      await tx.parkAmenity.deleteMany({ where: { parkId } });
-      for (const a of parsedValue as string[]) {
-        await tx.parkAmenity.create({ data: { parkId, amenity: a as never } });
-      }
-    } else if (fieldName === "camping") {
-      await tx.parkCamping.deleteMany({ where: { parkId } });
-      for (const c of parsedValue as string[]) {
-        await tx.parkCamping.create({ data: { parkId, camping: c as never } });
-      }
-    } else if (fieldName === "vehicleTypes") {
-      await tx.parkVehicleType.deleteMany({ where: { parkId } });
-      for (const v of parsedValue as string[]) {
-        await tx.parkVehicleType.create({ data: { parkId, vehicleType: v as never } });
+    } else if (isArrayField) {
+      // ADDITIVE: only add new values, never remove existing ones
+      const newValues = parsedValue as string[];
+      if (fieldName === "terrain") {
+        const existing = await tx.parkTerrain.findMany({ where: { parkId } });
+        const existingSet = new Set(existing.map((e) => e.terrain));
+        for (const t of newValues) {
+          if (!existingSet.has(t as never)) {
+            await tx.parkTerrain.create({ data: { parkId, terrain: t as never } });
+          }
+        }
+      } else if (fieldName === "amenities") {
+        const existing = await tx.parkAmenity.findMany({ where: { parkId } });
+        const existingSet = new Set(existing.map((e) => e.amenity));
+        for (const a of newValues) {
+          if (!existingSet.has(a as never)) {
+            await tx.parkAmenity.create({ data: { parkId, amenity: a as never } });
+          }
+        }
+      } else if (fieldName === "camping") {
+        const existing = await tx.parkCamping.findMany({ where: { parkId } });
+        const existingSet = new Set(existing.map((e) => e.camping));
+        for (const c of newValues) {
+          if (!existingSet.has(c as never)) {
+            await tx.parkCamping.create({ data: { parkId, camping: c as never } });
+          }
+        }
+      } else if (fieldName === "vehicleTypes") {
+        const existing = await tx.parkVehicleType.findMany({ where: { parkId } });
+        const existingSet = new Set(existing.map((e) => e.vehicleType));
+        for (const v of newValues) {
+          if (!existingSet.has(v as never)) {
+            await tx.parkVehicleType.create({ data: { parkId, vehicleType: v as never } });
+          }
+        }
       }
     } else {
       // Scalar field
@@ -95,16 +114,47 @@ export async function POST(request: Request, { params }: RouteParams) {
       },
     });
 
-    // Supersede older pending extractions for same field
-    await tx.fieldExtraction.updateMany({
-      where: {
-        parkId,
-        fieldName,
-        status: "PENDING_REVIEW",
-        id: { not: id },
-      },
-      data: { status: "SUPERSEDED" },
-    });
+    // For scalar fields, supersede all other pending extractions (only one value)
+    // For array fields, clean up overlapping values in other pending extractions
+    if (isArrayField) {
+      const approvedSet = new Set(parsedValue as string[]);
+      const otherPending = await tx.fieldExtraction.findMany({
+        where: {
+          parkId,
+          fieldName,
+          status: "PENDING_REVIEW",
+          id: { not: id },
+        },
+      });
+      for (const other of otherPending) {
+        if (!other.extractedValue) continue;
+        const otherValues = JSON.parse(other.extractedValue) as string[];
+        const remaining = otherValues.filter((v) => !approvedSet.has(v));
+        if (remaining.length === 0) {
+          // All values in this extraction were covered — supersede it
+          await tx.fieldExtraction.update({
+            where: { id: other.id },
+            data: { status: "SUPERSEDED" },
+          });
+        } else {
+          // Update to only show the remaining new values
+          await tx.fieldExtraction.update({
+            where: { id: other.id },
+            data: { extractedValue: JSON.stringify(remaining) },
+          });
+        }
+      }
+    } else {
+      await tx.fieldExtraction.updateMany({
+        where: {
+          parkId,
+          fieldName,
+          status: "PENDING_REVIEW",
+          id: { not: id },
+        },
+        data: { status: "SUPERSEDED" },
+      });
+    }
 
     // Create audit log
     await tx.parkEditLog.create({

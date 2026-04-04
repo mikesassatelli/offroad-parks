@@ -210,17 +210,68 @@ export async function researchPark(
             ? `address.${key}`
             : key;
 
-          const extractedValueJson = JSON.stringify(fieldData.value);
           const currentValueJson = getCurrentFieldValue(
             park as unknown as import("@/lib/types").DbPark,
             fieldName
           );
 
-          // Auto-approve if extracted value matches current value (confirmation)
-          const valuesMatch =
-            currentValueJson !== null &&
-            normalizeForComparison(extractedValueJson) ===
-              normalizeForComparison(currentValueJson);
+          // For array fields (terrain, amenities, camping, vehicleTypes):
+          // Only store NEW values that the park doesn't already have.
+          const arrayFields = ["terrain", "amenities", "camping", "vehicleTypes"];
+          const isArrayField = arrayFields.includes(fieldName);
+
+          let extractedValueJson: string;
+          let valuesMatch: boolean;
+
+          if (isArrayField && Array.isArray(fieldData.value)) {
+            const currentArr: string[] = currentValueJson
+              ? JSON.parse(currentValueJson)
+              : [];
+            const currentSet = new Set(currentArr);
+            const newValues = (fieldData.value as string[]).filter(
+              (v) => !currentSet.has(v)
+            );
+
+            if (newValues.length === 0) {
+              // All extracted values already exist — auto-approve as confirmation
+              extractedValueJson = JSON.stringify(fieldData.value);
+              valuesMatch = true;
+            } else {
+              // Only store the genuinely new values
+              extractedValueJson = JSON.stringify(newValues);
+              valuesMatch = false;
+            }
+          } else {
+            extractedValueJson = JSON.stringify(fieldData.value);
+            valuesMatch =
+              currentValueJson !== null &&
+              normalizeForComparison(extractedValueJson) ===
+                normalizeForComparison(currentValueJson);
+          }
+
+          // For pending array extractions, deduplicate: skip if an identical
+          // suggestion already exists for this park+field in this session
+          if (!valuesMatch && isArrayField) {
+            const existing = await prisma.fieldExtraction.findFirst({
+              where: {
+                parkId,
+                fieldName,
+                status: "PENDING_REVIEW",
+              },
+            });
+            if (
+              existing?.extractedValue &&
+              normalizeForComparison(existing.extractedValue) ===
+                normalizeForComparison(extractedValueJson)
+            ) {
+              // Duplicate suggestion — skip
+              fieldsFoundInSources.set(
+                fieldName,
+                (fieldsFoundInSources.get(fieldName) ?? 0) + 1
+              );
+              continue;
+            }
+          }
 
           await prisma.fieldExtraction.create({
             data: {

@@ -142,8 +142,10 @@ export function FieldExtractionReview({ extractions }: Props) {
                         </p>
                       </div>
                       <div>
-                        <p className="text-gray-500 text-xs mb-1">Extracted Value</p>
-                        <p className="text-gray-900 font-mono bg-blue-50 rounded px-2 py-1 break-all">
+                        <p className="text-gray-500 text-xs mb-1">
+                          {isArrayField(extraction.fieldName) ? "New values to add" : "Extracted Value"}
+                        </p>
+                        <p className={`text-gray-900 font-mono rounded px-2 py-1 break-all ${isArrayField(extraction.fieldName) ? "bg-green-50" : "bg-blue-50"}`}>
                           {extraction.extractedValue ? formatValue(extraction.extractedValue) : <span className="italic text-gray-400">null</span>}
                         </p>
                       </div>
@@ -209,6 +211,11 @@ function ConfidenceBadge({ score }: { score: number | null }) {
       {Math.round(score * 100)}%
     </span>
   );
+}
+
+const ARRAY_FIELDS = new Set(["terrain", "amenities", "camping", "vehicleTypes"]);
+function isArrayField(fieldName: string): boolean {
+  return ARRAY_FIELDS.has(fieldName);
 }
 
 function formatValue(jsonStr: string): string {
