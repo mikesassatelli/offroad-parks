@@ -119,13 +119,28 @@
 
 | Key | Title | Status | Type | Notes |
 |-----|-------|--------|------|-------|
+| OP-77 | AI Data Context Engine (Phase 1) | done | feature | Core pipeline: SerpApi source discovery, Cheerio content extraction, LLM structured extraction (Claude Sonnet via AI SDK), admin review queue, source management UI. 9 modules, 4 Prisma models, 6 API routes, 3 admin pages, 121 tests. Merged 2026-04-06. |
+| OP-77a | Source Management Controls | done | feature | Skip/unskip, trust/untrust, wrong-park rejection, one-time robots.txt override, reliability scoring. Merged 2026-04-06. |
+| OP-77b | Array Field Additive Handling | done | bug | Array fields (terrain, amenities, camping, vehicleTypes) are now additive — suggestions show only new values, approvals add rather than replace, independent suggestions don't supersede each other. Review queue reconciles stale extractions on load. Merged 2026-04-06. |
 | OP-78 | Source Reliability Tiers & Domain Lists | backlog | feature | needs-refinement. Admin-managed trusted/blocked domain lists. Government & known-good sites (riderplanet-usa, state DNR) get high reliability; unreliable registries blocked. Source type hierarchy (government > established directory > unknown registry) weights extraction confidence. |
 | OP-79 | Extraction Accuracy Feedback Loop | backlog | feature | needs-refinement. Track approve/reject rates per source domain from admin reviews. High-rejection sources auto-flagged for review or exclusion. Dashboard shows source accuracy trends over time. Passive learning without retraining. |
 | OP-80 | Bulk Park Research | backlog | feature | needs-refinement. Admin UI to trigger research for multiple parks at once. Progress tracking, cost estimation before launch, abort capability, rate limiting. |
-| OP-81 | Wrong-Park Detection Guard | backlog | feature | needs-refinement. AI validation step confirming extracted data is about the target park, not a neighboring park on the same registry/directory page. Critical for multi-park listing sites that confuse the extractor. |
+| OP-81 | Wrong-Park Detection Guard | backlog | feature | needs-refinement. AI validation step confirming extracted data is about the target park, not a neighboring park on the same registry/directory page. Critical for multi-park listing sites that confuse the extractor. Manual wrong-park button shipped in OP-77a; this is the automated AI guard. |
 | OP-82 | Extraction Validation Rules | backlog | feature | needs-refinement. Post-extraction business logic: lat/lng in correct state, prices in reasonable ranges, phone numbers valid format, URLs resolve, array values match known enums. Catches AI hallucinations before review queue. |
 | OP-83 | Multi-Source Cross-Validation | backlog | feature | needs-refinement. Compare field values across multiple sources. Agreement from 2+ reliable sources raises confidence. Disagreements flagged as conflicts for OP-84 resolution. Feeds into source reliability scoring (OP-78). |
 | OP-84 | Field Conflict Resolution UI | backlog | feature | needs-refinement. When multiple sources disagree on a field value, surface conflicts in review queue with side-by-side source comparison. Smart resolution suggestions based on source reliability. |
+| OP-89 | Scheduled Research Runs (Vercel Cron) | backlog | feature | needs-refinement. Cron job to auto-research parks with NEEDS_RESEARCH status. Rate limiting, daily token budget cap, prioritize by researchPriority. Distinct from OP-80 (admin-triggered batch). |
+
+---
+
+## E19 · AI Park Discovery *(Phase 3)*
+
+| Key | Title | Status | Type | Notes |
+|-----|-------|--------|------|-------|
+| OP-85 | Park Discovery: State-Level Search | backlog | feature | needs-refinement. SerpApi queries by state for OHV/offroad parks not in DB. Dedup against existing parks (name + state fuzzy match). Returns candidate list for admin review. |
+| OP-86 | Park Discovery: Admin Review & Seeding | backlog | feature | needs-refinement. Admin UI to review discovered park candidates. Accept creates seed Park record (name, state, coordinates if found). Reject blacklists from future discovery. |
+| OP-87 | Park Discovery: Auto-Research Pipeline | backlog | feature | After seeding a discovered park, automatically trigger researchPark() to populate fields. Links into existing Phase 1 pipeline. |
+| OP-88 | Park Discovery: Batch State Scan | backlog | feature | needs-refinement. Run discovery across all 50 states or a selected set. Progress tracking, dedup across states, cost estimation before launch. |
 
 ---
 
