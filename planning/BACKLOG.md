@@ -115,6 +115,20 @@
 
 ---
 
+## E18 · AI Data Context Engine — Quality & Scale *(Phase 2)*
+
+| Key | Title | Status | Type | Notes |
+|-----|-------|--------|------|-------|
+| OP-78 | Source Reliability Tiers & Domain Lists | backlog | feature | needs-refinement. Admin-managed trusted/blocked domain lists. Government & known-good sites (riderplanet-usa, state DNR) get high reliability; unreliable registries blocked. Source type hierarchy (government > established directory > unknown registry) weights extraction confidence. |
+| OP-79 | Extraction Accuracy Feedback Loop | backlog | feature | needs-refinement. Track approve/reject rates per source domain from admin reviews. High-rejection sources auto-flagged for review or exclusion. Dashboard shows source accuracy trends over time. Passive learning without retraining. |
+| OP-80 | Bulk Park Research | backlog | feature | needs-refinement. Admin UI to trigger research for multiple parks at once. Progress tracking, cost estimation before launch, abort capability, rate limiting. |
+| OP-81 | Wrong-Park Detection Guard | backlog | feature | needs-refinement. AI validation step confirming extracted data is about the target park, not a neighboring park on the same registry/directory page. Critical for multi-park listing sites that confuse the extractor. |
+| OP-82 | Extraction Validation Rules | backlog | feature | needs-refinement. Post-extraction business logic: lat/lng in correct state, prices in reasonable ranges, phone numbers valid format, URLs resolve, array values match known enums. Catches AI hallucinations before review queue. |
+| OP-83 | Multi-Source Cross-Validation | backlog | feature | needs-refinement. Compare field values across multiple sources. Agreement from 2+ reliable sources raises confidence. Disagreements flagged as conflicts for OP-84 resolution. Feeds into source reliability scoring (OP-78). |
+| OP-84 | Field Conflict Resolution UI | backlog | feature | needs-refinement. When multiple sources disagree on a field value, surface conflicts in review queue with side-by-side source comparison. Smart resolution suggestions based on source reliability. |
+
+---
+
 ## E15 · Digital Waivers *(Phase 3)*
 
 | Key | Title | Status | Type | Notes |
