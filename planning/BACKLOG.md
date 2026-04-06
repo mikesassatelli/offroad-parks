@@ -1,6 +1,6 @@
 # Offroad Parks Backlog
 <!-- Last updated: 2026-03-30 -->
-<!-- Migrated from backlog.yaml. backlog.yaml is now archived (read-only). -->
+<!-- Canonical backlog. See also: ROADMAP.md (strategy), SPRINT.md (sprint history). -->
 
 **Status values:** `backlog` · `in-progress` · `done` · `blocked`
 **Flags:** `needs-refinement` = not startable without a scoping conversation first
@@ -70,6 +70,7 @@
 | OP-21 | Spike: Validate Filters/Sorts After Schema Expansion | done | spike | Spike doc written; flagsRequired/sparkArrestorRequired filters + most-reviewed sort shipped. Merged 2026-03-30. |
 | OP-56 | Parks Near Me (Geolocation) | done | feature | Browser geolocation, haversine distance, distance-nearest sort, Near Me button in SearchHeader, distanceMi on ParkCard. Merged 2026-03-30. |
 | OP-28 | Smart/AI-Powered Nearby Services | backlog | feature | needs-refinement. Fuel, diesel, campgrounds, water, RV dump lookup via API/AI; show on park detail. |
+| OP-35 | Smart/AI-Powered Park Recommendations | backlog | feature | needs-refinement. AI-powered park recommendations based on preferences. |
 
 ---
 
@@ -165,19 +166,6 @@
 
 ---
 
-## E6 · Map, Routing & Conditions *(Future)*
-
-| Key | Title | Status | Type | Notes |
-|-----|-------|--------|------|-------|
-| OP-31 | Saved & Shareable Routes | backlog | feature | needs-refinement. Save routes to profile, share via link. (Superseded by E8 — kept for reference.) |
-| OP-32 | Route Optimization & Turn-by-Turn | backlog | feature | needs-refinement. Multi-stop route optimization, turn-by-turn directions. |
-| OP-33 | Weather Integration | backlog | feature | needs-refinement. Current and forecast weather for parks. (See E10.) |
-| OP-34 | Parks Near Me (Geolocation) | backlog | feature | needs-refinement. (See OP-56 in E4.) |
-| OP-35 | Smart Recommendations | backlog | feature | needs-refinement. AI-powered park recommendations based on preferences. |
-| OP-36 | Visit Tracking & Achievements | backlog | feature | needs-refinement. (See E11.) |
-
----
-
 ## E8 · Saved & Shareable Routes *(Future)*
 
 | Key | Title | Status | Type | Notes |
@@ -188,6 +176,7 @@
 | OP-45 | Route Profile Integration | backlog | feature | Routes tab in user profile; list/edit/delete saved routes. |
 | OP-46 | GPX Export & Mapping Services | backlog | feature | needs-refinement. GPX download, open in Google/Apple Maps, consider Gaia GPS/onX. |
 | OP-47 | Public Route Gallery | backlog | feature | needs-refinement. Browse public routes, search/filter, sort by popularity. Stretch feature. |
+| OP-32 | Route Optimization & Turn-by-Turn | backlog | feature | needs-refinement. Multi-stop route optimization, turn-by-turn directions. |
 
 ---
 
