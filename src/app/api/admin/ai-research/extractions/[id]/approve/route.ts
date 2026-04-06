@@ -187,5 +187,11 @@ export async function POST(request: Request, { params }: RouteParams) {
     }
   });
 
+  // OP-79: Record feedback for accuracy tracking
+  if (extraction.dataSourceId) {
+    const { recordFeedback } = await import("@/lib/ai/feedback-loop");
+    recordFeedback(extraction.dataSourceId, "approve").catch(() => {});
+  }
+
   return NextResponse.json({ success: true });
 }

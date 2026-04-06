@@ -15,6 +15,7 @@ import {
   getCurrentFieldValue,
 } from "./research-lifecycle";
 import { isAllowedByRobots, clearRobotsCache } from "./robots";
+import { getDefaultReliabilityForSource } from "./domain-reliability";
 import { discoverSources } from "./source-discovery";
 
 /**
@@ -93,6 +94,14 @@ export async function researchPark(
       );
 
       for (const source of newSources) {
+        // Look up domain-level reliability for this source
+        const domainReliability = await getDefaultReliabilityForSource(
+          source.url
+        );
+
+        // Skip blocked domains (reliability === 0 from a blocked domain)
+        if (domainReliability === 0) continue;
+
         await prisma.dataSource.create({
           data: {
             parkId,
@@ -100,6 +109,7 @@ export async function researchPark(
             title: source.title,
             type: source.type,
             origin: "AI_DISCOVERED",
+            reliability: domainReliability,
           },
         });
         totalSourcesFound++;
@@ -122,6 +132,9 @@ export async function researchPark(
 
     // Track which fields were found across all sources
     const fieldsFoundInSources = new Map<string, number>();
+
+    // OP-82: Collect validation warnings across all sources
+    const validationWarnings: string[] = [];
 
     // Stage 2 & 3: Content Extraction + Data Extraction per source
     for (const source of sources) {
@@ -174,6 +187,25 @@ export async function researchPark(
           continue;
         }
 
+        // OP-81: Wrong-park detection guard
+        const { validateParkRelevance } = await import("./wrong-park-guard");
+        const relevance = await validateParkRelevance(
+          park.name,
+          park.address?.state ?? "",
+          content.text,
+        );
+        totalInputTokens += relevance.inputTokens;
+        totalOutputTokens += relevance.outputTokens;
+
+        if (!relevance.isRelevant) {
+          // Auto-mark as wrong park
+          await prisma.dataSource.update({
+            where: { id: source.id },
+            data: { crawlStatus: "WRONG_PARK", crawlError: relevance.reason },
+          });
+          continue;
+        }
+
         // Link source to session
         await prisma.researchSessionSource.create({
           data: { sessionId: session.id, dataSourceId: source.id },
@@ -209,6 +241,15 @@ export async function researchPark(
           const fieldName = addressFields.includes(key)
             ? `address.${key}`
             : key;
+
+          // OP-82: Post-extraction validation
+          const { validateExtraction } = await import("./extraction-validator");
+          const validation = validateExtraction(fieldName, fieldData.value, park.address?.state ?? null);
+          if (!validation.valid) {
+            // Drop this field — don't create a FieldExtraction record
+            validationWarnings.push(`${fieldName}: ${validation.reason}`);
+            continue;
+          }
 
           const currentValueJson = getCurrentFieldValue(
             park as unknown as import("@/lib/types").DbPark,
@@ -373,9 +414,15 @@ export async function researchPark(
     });
 
     // Complete session
+    const summaryParts = [
+      `Processed ${sources.length} sources. Extracted ${totalFieldsExtracted} fields. ${remainingFields.length} fields remaining.`,
+    ];
+    if (validationWarnings.length > 0) {
+      summaryParts.push(`Validation warnings: ${validationWarnings.join("; ")}`);
+    }
     await completeSession(session.id, {
       status: "COMPLETED",
-      summary: `Processed ${sources.length} sources. Extracted ${totalFieldsExtracted} fields. ${remainingFields.length} fields remaining.`,
+      summary: summaryParts.join(" "),
       fieldsExtracted: totalFieldsExtracted,
       sourcesFound: totalSourcesFound,
       inputTokens: totalInputTokens,

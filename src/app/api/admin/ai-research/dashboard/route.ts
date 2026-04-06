@@ -56,6 +56,9 @@ export async function GET() {
     completedAt: s.completedAt?.toISOString() ?? null,
   }));
 
+  const { getDomainAccuracyStats } = await import("@/lib/ai/feedback-loop");
+  const domainAccuracy = await getDomainAccuracyStats();
+
   const dashboard: AIResearchDashboard = {
     totalParks,
     parksByResearchStatus,
@@ -63,6 +66,7 @@ export async function GET() {
     totalSessions,
     totalCostUSD: costResult._sum.estimatedCostUSD ?? 0,
     recentSessions,
+    domainAccuracy,
   };
 
   return NextResponse.json(dashboard);

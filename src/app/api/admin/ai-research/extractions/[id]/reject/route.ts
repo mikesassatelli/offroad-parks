@@ -10,7 +10,10 @@ export async function POST(_request: Request, { params }: RouteParams) {
 
   const { id } = await params;
 
-  const extraction = await prisma.fieldExtraction.findUnique({ where: { id } });
+  const extraction = await prisma.fieldExtraction.findUnique({
+    where: { id },
+    select: { id: true, status: true, dataSourceId: true },
+  });
   if (!extraction) {
     return NextResponse.json({ error: "Extraction not found" }, { status: 404 });
   }
@@ -26,6 +29,12 @@ export async function POST(_request: Request, { params }: RouteParams) {
       verifiedBy: adminResult.user.id,
     },
   });
+
+  // OP-79: Record feedback for accuracy tracking
+  if (extraction.dataSourceId) {
+    const { recordFeedback } = await import("@/lib/ai/feedback-loop");
+    recordFeedback(extraction.dataSourceId, "reject").catch(() => {});
+  }
 
   return NextResponse.json({ success: true });
 }

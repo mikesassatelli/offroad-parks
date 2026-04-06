@@ -78,6 +78,7 @@ export type FieldConfidence = "OPERATOR_CONFIRMED" | "HUMAN_VERIFIED" | "AI_EXTR
 export type FieldExtractionStatus = "PENDING_REVIEW" | "APPROVED" | "REJECTED" | "SUPERSEDED" | "CONFLICT";
 export type ResearchTrigger = "SCHEDULED_CRON" | "ADMIN_MANUAL" | "OPERATOR_SOURCES" | "NEW_PARK_SEEDED" | "SOURCE_CHANGED";
 export type ResearchSessionStatus = "IN_PROGRESS" | "COMPLETED" | "FAILED" | "PARTIAL";
+export type ParkCandidateStatus = "PENDING" | "ACCEPTED" | "REJECTED";
 
 // Ownership type
 export type Ownership = "private" | "public" | "mixed" | "unknown";
@@ -418,6 +419,8 @@ export type DataSourceSummary = {
   contentChanged: boolean;
   crawlStatus: CrawlStatus;
   crawlError: string | null;
+  approveCount: number;
+  rejectCount: number;
   createdAt: string;
 };
 
@@ -455,6 +458,14 @@ export type ResearchSessionSummary = {
   completedAt: string | null;
 };
 
+export type DomainAccuracyStat = {
+  domain: string;
+  totalApproves: number;
+  totalRejects: number;
+  accuracy: number;
+  sourceCount: number;
+};
+
 export type AIResearchDashboard = {
   totalParks: number;
   parksByResearchStatus: Record<ResearchStatus, number>;
@@ -462,4 +473,30 @@ export type AIResearchDashboard = {
   totalSessions: number;
   totalCostUSD: number;
   recentSessions: ResearchSessionSummary[];
+  domainAccuracy?: DomainAccuracyStat[];
+};
+
+// Domain Reliability (OP-78)
+export type DomainReliabilitySummary = {
+  id: string;
+  domainPattern: string;
+  defaultReliability: number;
+  isBlocked: boolean;
+  notes: string | null;
+  createdAt: string;
+};
+
+// Park Discovery (OP-85/86)
+export type ParkCandidateSummary = {
+  id: string;
+  name: string;
+  state: string;
+  city: string | null;
+  estimatedLat: number | null;
+  estimatedLng: number | null;
+  sourceUrl: string | null;
+  status: ParkCandidateStatus;
+  rejectedReason: string | null;
+  seededParkId: string | null;
+  createdAt: string;
 };

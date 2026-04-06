@@ -1,10 +1,12 @@
 import { prisma } from "@/lib/prisma";
+import { getDomainAccuracyStats } from "@/lib/ai/feedback-loop";
 import Link from "next/link";
 import {
   BrainCircuit,
   DollarSign,
   FileSearch,
   AlertCircle,
+  BarChart3,
 } from "lucide-react";
 
 export default async function AIResearchPage() {
@@ -18,6 +20,7 @@ export default async function AIResearchPage() {
     totalSessions,
     costResult,
     recentSessions,
+    domainAccuracy,
   ] = await Promise.all([
     prisma.park.count(),
     prisma.park.count({ where: { researchStatus: "NEEDS_RESEARCH" } }),
@@ -32,6 +35,7 @@ export default async function AIResearchPage() {
       orderBy: { createdAt: "desc" },
       take: 10,
     }),
+    getDomainAccuracyStats(),
   ]);
 
   const totalCost = costResult._sum.estimatedCostUSD ?? 0;
@@ -104,6 +108,55 @@ export default async function AIResearchPage() {
             <p className="mt-1 text-2xl font-bold text-blue-900">{maintenance}</p>
           </div>
         </div>
+      </div>
+
+      {/* Domain Accuracy */}
+      <div className="rounded-lg border border-gray-200 bg-white p-6">
+        <div className="flex items-center gap-2 mb-4">
+          <BarChart3 className="w-5 h-5 text-gray-500" />
+          <h2 className="text-lg font-semibold text-gray-900">Domain Accuracy</h2>
+        </div>
+        {domainAccuracy.length === 0 ? (
+          <p className="text-gray-500 text-sm">No extraction reviews yet. Approve or reject extractions to see accuracy data.</p>
+        ) : (
+          <div className="overflow-x-auto">
+            <table className="min-w-full divide-y divide-gray-200">
+              <thead>
+                <tr>
+                  <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Domain</th>
+                  <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Approves</th>
+                  <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Rejects</th>
+                  <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Accuracy %</th>
+                  <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Sources</th>
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-gray-200">
+                {domainAccuracy.map((d) => {
+                  const pct = Math.round(d.accuracy * 100);
+                  const colorClass =
+                    pct >= 70
+                      ? "text-green-700"
+                      : pct >= 40
+                        ? "text-yellow-700"
+                        : "text-red-700";
+                  return (
+                    <tr key={d.domain} className="hover:bg-gray-50">
+                      <td className="px-4 py-3 text-sm font-medium text-gray-900">{d.domain}</td>
+                      <td className="px-4 py-3 text-sm text-gray-900">{d.totalApproves}</td>
+                      <td className="px-4 py-3 text-sm text-gray-900">{d.totalRejects}</td>
+                      <td className="px-4 py-3">
+                        <span className={`text-sm font-medium ${colorClass}`}>
+                          {pct}%
+                        </span>
+                      </td>
+                      <td className="px-4 py-3 text-sm text-gray-900">{d.sourceCount}</td>
+                    </tr>
+                  );
+                })}
+              </tbody>
+            </table>
+          </div>
+        )}
       </div>
 
       {/* Recent Sessions */}
