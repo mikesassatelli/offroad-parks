@@ -132,10 +132,11 @@ export async function discoverParksInState(state: string): Promise<{
   }
 
   // 1. Run 3 searches in parallel
+  // Avoid exact-match quotes — they're too restrictive for discovery
   const queries = [
-    `"off-road parks in ${state}"`,
-    `"OHV riding areas ${state}"`,
-    `"ATV trails ${state} open to public"`,
+    `off-road parks ${state} OHV`,
+    `OHV riding areas ${state} ATV UTV`,
+    `${state} off-road trails open to public`,
   ];
 
   const searchResults = await Promise.all(
