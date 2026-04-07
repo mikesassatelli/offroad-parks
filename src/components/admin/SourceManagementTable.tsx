@@ -192,6 +192,12 @@ export function SourceManagementTable({ sources, parkId }: Props) {
                         Official
                       </span>
                     )}
+                    {source.approveCount + source.rejectCount > 0 &&
+                      source.approveCount / (source.approveCount + source.rejectCount) < 0.2 && (
+                      <span className="ml-2 inline-flex items-center px-1.5 py-0.5 rounded text-xs font-medium bg-red-100 text-red-800">
+                        Low Accuracy
+                      </span>
+                    )}
                   </td>
                   <td className="px-4 py-3 text-sm text-gray-500 capitalize">{source.type}</td>
                   <td className="px-4 py-3 text-sm text-gray-500">

@@ -43,6 +43,7 @@ export default defineConfig({
         // AI Research Engine - integration-only files
         "src/lib/ai/research-pipeline.ts", // Orchestrator: Prisma + LLM + network
         "src/lib/ai/park-data-extractor.ts", // LLM wrapper: requires Anthropic API
+        "src/lib/ai/park-discovery.ts", // Discovery: SerpApi + LLM + Prisma (helpers tested separately)
         "src/lib/ai/field-display-names.ts", // Pure constant map, no logic
 
         // AI Research - server components and API routes with Prisma/auth deps

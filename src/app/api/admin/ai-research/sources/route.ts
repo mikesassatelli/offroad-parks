@@ -33,6 +33,8 @@ export async function GET(request: Request) {
     contentChanged: s.contentChanged,
     crawlStatus: s.crawlStatus,
     crawlError: s.crawlError,
+    approveCount: s.approveCount,
+    rejectCount: s.rejectCount,
     createdAt: s.createdAt.toISOString(),
   }));
 

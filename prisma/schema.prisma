@@ -646,6 +646,8 @@ model DataSource {
   crawlStatus      CrawlStatus   @default(PENDING)
   crawlError       String?       @db.Text
   robotsOverride   Boolean       @default(false)
+  approveCount     Int           @default(0)
+  rejectCount      Int           @default(0)
 
   park              Park                    @relation(fields: [parkId], references: [id], onDelete: Cascade)
   fieldExtractions  FieldExtraction[]
@@ -724,4 +726,45 @@ model ResearchSessionSource {
   dataSource DataSource      @relation(fields: [dataSourceId], references: [id], onDelete: Cascade)
 
   @@unique([sessionId, dataSourceId])
+}
+
+// ── Domain Reliability (OP-78) ────────────────────────────────────────────
+
+model DomainReliability {
+  id                 String   @id @default(cuid())
+  domainPattern      String   @unique  // e.g. "riderplanet-usa.com", ".gov"
+  defaultReliability Int      @default(50)
+  isBlocked          Boolean  @default(false)
+  notes              String?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+// ── Park Discovery (OP-85) ────────────────────────────────────────────────
+
+enum ParkCandidateStatus {
+  PENDING
+  ACCEPTED
+  REJECTED
+}
+
+model ParkCandidate {
+  id              String               @id @default(cuid())
+  name            String
+  state           String
+  city            String?
+  estimatedLat    Float?
+  estimatedLng    Float?
+  sourceUrl       String?
+  status          ParkCandidateStatus  @default(PENDING)
+  rejectedReason  String?
+  seededParkId    String?              // Set when ACCEPTED → Park created
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@unique([name, state])
+  @@index([status])
+  @@index([state])
 }

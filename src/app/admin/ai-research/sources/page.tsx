@@ -1,6 +1,7 @@
 import { prisma } from "@/lib/prisma";
-import type { DataSourceSummary } from "@/lib/types";
+import type { DataSourceSummary, DomainReliabilitySummary } from "@/lib/types";
 import { SourceManagementTable } from "@/components/admin/SourceManagementTable";
+import { DomainReliabilityTable } from "@/components/admin/DomainReliabilityTable";
 
 export default async function SourcesPage({
   searchParams,
@@ -8,6 +9,20 @@ export default async function SourcesPage({
   searchParams: Promise<{ parkId?: string }>;
 }) {
   const { parkId } = await searchParams;
+
+  // Fetch domain reliability entries for the top section
+  const domainEntries = await prisma.domainReliability.findMany({
+    orderBy: { defaultReliability: "desc" },
+  });
+
+  const domainSummaries: DomainReliabilitySummary[] = domainEntries.map((d) => ({
+    id: d.id,
+    domainPattern: d.domainPattern,
+    defaultReliability: d.defaultReliability,
+    isBlocked: d.isBlocked,
+    notes: d.notes,
+    createdAt: d.createdAt.toISOString(),
+  }));
 
   // If no parkId, show park list for selection
   if (!parkId) {
@@ -27,6 +42,12 @@ export default async function SourcesPage({
     return (
       <div className="space-y-6">
         <h1 className="text-2xl font-bold text-gray-900">Data Sources</h1>
+
+        {/* Domain Reliability Section */}
+        <DomainReliabilityTable domains={domainSummaries} />
+
+        <hr className="border-gray-200" />
+
         <p className="text-sm text-gray-500">Select a park to manage its data sources.</p>
         <div className="rounded-lg border border-gray-200 bg-white overflow-hidden">
           <table className="min-w-full divide-y divide-gray-200">
@@ -91,6 +112,8 @@ export default async function SourcesPage({
     contentChanged: s.contentChanged,
     crawlStatus: s.crawlStatus,
     crawlError: s.crawlError,
+    approveCount: s.approveCount,
+    rejectCount: s.rejectCount,
     createdAt: s.createdAt.toISOString(),
   }));
 
@@ -100,6 +123,12 @@ export default async function SourcesPage({
         <a href="/admin/ai-research/sources" className="text-sm text-blue-600 hover:text-blue-800">&larr; All Parks</a>
         <h1 className="text-2xl font-bold text-gray-900 mt-2">Sources: {park.name}</h1>
       </div>
+
+      {/* Domain Reliability Section */}
+      <DomainReliabilityTable domains={domainSummaries} />
+
+      <hr className="border-gray-200" />
+
       <SourceManagementTable sources={summaries} parkId={parkId} />
     </div>
   );
