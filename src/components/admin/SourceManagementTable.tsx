@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
-import { Plus, ExternalLink, Play, Loader2, ShieldCheck, ShieldOff, SkipForward, RotateCcw, Ban, Unlock } from "lucide-react";
+import { Plus, ExternalLink, Play, Loader2, ShieldCheck, ShieldOff, SkipForward, RotateCcw, Ban, Unlock, GitCompareArrows } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import type { DataSourceSummary } from "@/lib/types";
 
@@ -19,6 +19,8 @@ export function SourceManagementTable({ sources, parkId }: Props) {
   const [researching, setResearching] = useState(false);
   const [researchResult, setResearchResult] = useState<string | null>(null);
   const [processingSourceId, setProcessingSourceId] = useState<string | null>(null);
+  const [crossValidating, setCrossValidating] = useState(false);
+  const [crossValidationResult, setCrossValidationResult] = useState<string | null>(null);
 
   const handleResearch = async () => {
     setResearching(true);
@@ -39,6 +41,38 @@ export function SourceManagementTable({ sources, parkId }: Props) {
       setResearchResult(`Error: ${err instanceof Error ? err.message : "Network error"}`);
     } finally {
       setResearching(false);
+    }
+  };
+
+  const handleCrossValidate = async () => {
+    setCrossValidating(true);
+    setCrossValidationResult(null);
+    try {
+      const response = await fetch(
+        "/api/admin/ai-research/cross-validation",
+        {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ parkId }),
+        }
+      );
+      const data = await response.json();
+      if (response.ok) {
+        setCrossValidationResult(
+          `Cross-validation complete: ${data.agreementCount} agreement(s), ${data.conflictCount} conflict(s) found`
+        );
+        router.refresh();
+      } else {
+        setCrossValidationResult(
+          `Error: ${data.error || "Cross-validation failed"}`
+        );
+      }
+    } catch (err) {
+      setCrossValidationResult(
+        `Error: ${err instanceof Error ? err.message : "Network error"}`
+      );
+    } finally {
+      setCrossValidating(false);
     }
   };
 
@@ -95,23 +129,43 @@ export function SourceManagementTable({ sources, parkId }: Props) {
             Crawl all sources, discover new ones via web search, and extract park data using AI.
           </p>
         </div>
-        <Button
-          onClick={handleResearch}
-          disabled={researching}
-          size="sm"
-        >
-          {researching ? (
-            <>
-              <Loader2 className="w-4 h-4 mr-1 animate-spin" />
-              Researching...
-            </>
-          ) : (
-            <>
-              <Play className="w-4 h-4 mr-1" />
-              Run Research
-            </>
-          )}
-        </Button>
+        <div className="flex items-center gap-2">
+          <Button
+            onClick={handleCrossValidate}
+            disabled={crossValidating}
+            size="sm"
+            variant="outline"
+          >
+            {crossValidating ? (
+              <>
+                <Loader2 className="w-4 h-4 mr-1 animate-spin" />
+                Validating...
+              </>
+            ) : (
+              <>
+                <GitCompareArrows className="w-4 h-4 mr-1" />
+                Cross-validate
+              </>
+            )}
+          </Button>
+          <Button
+            onClick={handleResearch}
+            disabled={researching}
+            size="sm"
+          >
+            {researching ? (
+              <>
+                <Loader2 className="w-4 h-4 mr-1 animate-spin" />
+                Researching...
+              </>
+            ) : (
+              <>
+                <Play className="w-4 h-4 mr-1" />
+                Run Research
+              </>
+            )}
+          </Button>
+        </div>
       </div>
       {researchResult && (
         <div
@@ -122,6 +176,17 @@ export function SourceManagementTable({ sources, parkId }: Props) {
           }`}
         >
           {researchResult}
+        </div>
+      )}
+      {crossValidationResult && (
+        <div
+          className={`rounded-lg border px-4 py-3 text-sm ${
+            crossValidationResult.startsWith("Error")
+              ? "bg-red-50 border-red-200 text-red-800"
+              : "bg-blue-50 border-blue-200 text-blue-800"
+          }`}
+        >
+          {crossValidationResult}
         </div>
       )}
 

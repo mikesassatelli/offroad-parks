@@ -40,15 +40,31 @@ export default defineConfig({
         "src/app/admin/reviews/page.tsx", // Server component with Prisma
         "src/lib/types.ts", // Pure type definitions, no logic to test
 
-        // AI Research Engine - integration-only files
+        // AI Research Engine - integration-only files (require Prisma/LLM/network)
         "src/lib/ai/research-pipeline.ts", // Orchestrator: Prisma + LLM + network
         "src/lib/ai/park-data-extractor.ts", // LLM wrapper: requires Anthropic API
-        "src/lib/ai/park-discovery.ts", // Discovery: SerpApi + LLM + Prisma (helpers tested separately)
+        "src/lib/ai/park-discovery.ts", // Discovery: SerpApi + LLM + Prisma
         "src/lib/ai/field-display-names.ts", // Pure constant map, no logic
+        "src/lib/ai/bulk-research.ts", // Orchestrator: Prisma + researchPark calls
+        "src/lib/ai/cross-validation.ts", // Prisma queries (normalizer tested separately)
+        "src/lib/ai/feedback-loop.ts", // Prisma aggregation queries
+        "src/lib/ai/domain-reliability.ts", // Prisma queries
+        "src/lib/ai/seed-domain-reliability.ts", // Prisma upserts
 
-        // AI Research - server components and API routes with Prisma/auth deps
+        // AI Research admin — server components, API routes, and admin-only client components
         "src/app/admin/ai-research/**",
         "src/app/api/admin/ai-research/**",
+        "src/components/admin/DomainReliabilityTable.tsx",
+        "src/components/admin/ParkDiscoveryTable.tsx",
+        "src/components/admin/BulkResearchPanel.tsx",
+        "src/components/admin/ConflictResolutionTable.tsx",
+
+        // Admin API routes with Prisma/auth deps (tested via E2E)
+        "src/app/api/admin/parks/list/route.ts",
+        "src/app/api/admin/photos/**",
+        "src/app/api/admin/reviews/**",
+        "src/app/api/parks/[slug]/conditions/[conditionId]/route.ts",
+        "src/app/api/reviews/user/route.ts",
       ],
       thresholds: {
         lines: 65,

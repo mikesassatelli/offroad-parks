@@ -79,6 +79,7 @@ export type FieldExtractionStatus = "PENDING_REVIEW" | "APPROVED" | "REJECTED" |
 export type ResearchTrigger = "SCHEDULED_CRON" | "ADMIN_MANUAL" | "OPERATOR_SOURCES" | "NEW_PARK_SEEDED" | "SOURCE_CHANGED";
 export type ResearchSessionStatus = "IN_PROGRESS" | "COMPLETED" | "FAILED" | "PARTIAL";
 export type ParkCandidateStatus = "PENDING" | "ACCEPTED" | "REJECTED";
+export type BulkResearchJobStatus = "QUEUED" | "RUNNING" | "COMPLETED" | "FAILED" | "ABORTED";
 
 // Ownership type
 export type Ownership = "private" | "public" | "mixed" | "unknown";
@@ -499,4 +500,37 @@ export type ParkCandidateSummary = {
   rejectedReason: string | null;
   seededParkId: string | null;
   createdAt: string;
+};
+
+// Bulk Research (OP-80)
+export type BulkResearchJobSummary = {
+  id: string;
+  status: BulkResearchJobStatus;
+  totalParks: number;
+  completedParks: number;
+  failedParks: number;
+  currentParkId: string | null;
+  currentParkName: string | null;
+  maxParks: number;
+  maxCostUSD: number;
+  spentCostUSD: number;
+  errorMessage: string | null;
+  startedAt: string | null;
+  completedAt: string | null;
+  createdAt: string;
+};
+
+// Cross-Validation (OP-83)
+export type CrossValidationResult = {
+  fieldName: string;
+  values: Array<{
+    value: string;
+    sourceId: string;
+    sourceUrl: string;
+    sourceReliability: number;
+    confidence: number | null;
+    extractionId: string;
+  }>;
+  agreedValue: string | null;
+  isConflict: boolean;
 };

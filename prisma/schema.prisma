@@ -728,6 +728,37 @@ model ResearchSessionSource {
   @@unique([sessionId, dataSourceId])
 }
 
+// ── Bulk Research (OP-80) ─────────────────────────────────────────────────
+
+enum BulkResearchJobStatus {
+  QUEUED
+  RUNNING
+  COMPLETED
+  FAILED
+  ABORTED
+}
+
+model BulkResearchJob {
+  id              String                 @id @default(cuid())
+  status          BulkResearchJobStatus  @default(QUEUED)
+  parkIds         Json                   // String[] of park IDs to research
+  totalParks      Int
+  completedParks  Int                    @default(0)
+  failedParks     Int                    @default(0)
+  currentParkId   String?
+  maxParks        Int                    // Budget cap: max parks
+  maxCostUSD      Float                  // Budget cap: max dollars
+  spentCostUSD    Float                  @default(0)
+  errorMessage    String?                @db.Text
+  startedAt       DateTime?
+  completedAt     DateTime?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([status])
+}
+
 // ── Domain Reliability (OP-78) ────────────────────────────────────────────
 
 model DomainReliability {

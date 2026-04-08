@@ -3,12 +3,14 @@ import Link from "next/link";
 import { redirect } from "next/navigation";
 import {
   Activity,
+  AlertTriangle,
   BrainCircuit,
   Camera,
   ClipboardCheck,
   ClipboardList,
   Globe,
   Home,
+  Layers,
   LayoutDashboard,
   LogOut,
   MapPin,
@@ -162,11 +164,25 @@ export default async function AdminLayout({
               <span className="font-medium text-sm">Sources</span>
             </Link>
             <Link
+              href="/admin/ai-research/bulk-research"
+              className="flex items-center gap-3 px-4 py-3 text-gray-700 rounded-lg hover:bg-gray-100 transition-colors pl-8"
+            >
+              <Layers className="w-4 h-4" />
+              <span className="font-medium text-sm">Bulk Research</span>
+            </Link>
+            <Link
               href="/admin/ai-research/discovery"
               className="flex items-center gap-3 px-4 py-3 text-gray-700 rounded-lg hover:bg-gray-100 transition-colors pl-8"
             >
               <Search className="w-4 h-4" />
               <span className="font-medium text-sm">Park Discovery</span>
+            </Link>
+            <Link
+              href="/admin/ai-research/conflicts"
+              className="flex items-center gap-3 px-4 py-3 text-gray-700 rounded-lg hover:bg-gray-100 transition-colors pl-8"
+            >
+              <AlertTriangle className="w-4 h-4" />
+              <span className="font-medium text-sm">Conflicts</span>
             </Link>
             <Link
               href="/admin/users"

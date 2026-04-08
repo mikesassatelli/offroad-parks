@@ -1,8 +1,12 @@
+import { NextResponse } from "next/server";
+import { requireAdmin } from "@/lib/api-helpers";
 import { prisma } from "@/lib/prisma";
 import { FIELD_DISPLAY_NAMES } from "@/lib/ai/field-display-names";
-import { ConflictResolutionTable } from "@/components/admin/ConflictResolutionTable";
 
-export default async function ConflictsPage() {
+export async function GET() {
+  const adminResult = await requireAdmin();
+  if (adminResult instanceof NextResponse) return adminResult;
+
   const extractions = await prisma.fieldExtraction.findMany({
     where: { status: "CONFLICT" },
     include: {
@@ -73,43 +77,8 @@ export default async function ConflictsPage() {
     (a, b) => b.extractions.length - a.extractions.length,
   );
 
-  // Count unique parks with conflicts
-  const parksWithConflicts = new Set(conflicts.map((c) => c.parkId)).size;
-
-  return (
-    <div className="space-y-6">
-      <div>
-        <h1 className="text-2xl font-bold text-gray-900">Field Conflicts</h1>
-        <p className="mt-1 text-sm text-gray-600">
-          Review and resolve conflicting field values from multiple sources.
-        </p>
-      </div>
-
-      {/* Stats */}
-      <div className="flex gap-4">
-        <div className="rounded-lg border border-gray-200 bg-white px-4 py-3">
-          <p className="text-xs text-gray-500">Conflicting Fields</p>
-          <p className="text-xl font-bold text-gray-900">{conflicts.length}</p>
-        </div>
-        <div className="rounded-lg border border-gray-200 bg-white px-4 py-3">
-          <p className="text-xs text-gray-500">Parks Affected</p>
-          <p className="text-xl font-bold text-gray-900">{parksWithConflicts}</p>
-        </div>
-        <div className="rounded-lg border border-gray-200 bg-white px-4 py-3">
-          <p className="text-xs text-gray-500">Total Extractions</p>
-          <p className="text-xl font-bold text-gray-900">{extractions.length}</p>
-        </div>
-      </div>
-
-      {conflicts.length === 0 ? (
-        <div className="rounded-lg border border-gray-200 bg-white p-12 text-center">
-          <p className="text-gray-500">
-            No field conflicts to resolve. All sources agree!
-          </p>
-        </div>
-      ) : (
-        <ConflictResolutionTable conflicts={conflicts} />
-      )}
-    </div>
-  );
+  return NextResponse.json({
+    conflicts,
+    totalConflicts: conflicts.length,
+  });
 }

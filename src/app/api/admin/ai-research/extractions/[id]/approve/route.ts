@@ -32,8 +32,8 @@ export async function POST(request: Request, { params }: RouteParams) {
   if (!extraction) {
     return NextResponse.json({ error: "Extraction not found" }, { status: 404 });
   }
-  if (extraction.status !== "PENDING_REVIEW") {
-    return NextResponse.json({ error: "Extraction is not pending review" }, { status: 400 });
+  if (extraction.status !== "PENDING_REVIEW" && extraction.status !== "CONFLICT") {
+    return NextResponse.json({ error: "Extraction is not pending review or in conflict" }, { status: 400 });
   }
 
   const valueStr = editedValue ?? extraction.extractedValue;
@@ -122,7 +122,7 @@ export async function POST(request: Request, { params }: RouteParams) {
         where: {
           parkId,
           fieldName,
-          status: "PENDING_REVIEW",
+          status: { in: ["PENDING_REVIEW", "CONFLICT"] },
           id: { not: id },
         },
       });
@@ -149,7 +149,7 @@ export async function POST(request: Request, { params }: RouteParams) {
         where: {
           parkId,
           fieldName,
-          status: "PENDING_REVIEW",
+          status: { in: ["PENDING_REVIEW", "CONFLICT"] },
           id: { not: id },
         },
         data: { status: "SUPERSEDED" },

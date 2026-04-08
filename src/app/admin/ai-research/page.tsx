@@ -8,6 +8,7 @@ import {
   AlertCircle,
   BarChart3,
 } from "lucide-react";
+import { BulkResearchPanel } from "@/components/admin/BulkResearchPanel";
 
 export default async function AIResearchPage() {
   const [
@@ -86,6 +87,9 @@ export default async function AIResearchPage() {
           <p className="mt-2 text-2xl font-bold text-gray-900">${totalCost.toFixed(2)}</p>
         </div>
       </div>
+
+      {/* Bulk Research */}
+      <BulkResearchPanel />
 
       {/* Research Status Breakdown */}
       <div className="rounded-lg border border-gray-200 bg-white p-6">
