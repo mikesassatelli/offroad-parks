@@ -1,3 +1,47 @@
+# Sprint 5 · Week of 2026-04-14
+
+## Goal
+Close the biggest "unfinished" gap on the consumer site: parks without photos. Ship a better default visual so no park card ever looks broken, then automate Google Places photo sourcing so the AI discovery pipeline stops bottlenecking on manual photo hunts.
+
+## In Progress
+*(none)*
+
+## Up Next
+- [ ] OP-91a — Schema: `googlePlaceId` field + backfill job
+- [ ] OP-91b — Places Photo Sync Pipeline
+- [ ] OP-91c — AI Discovery → Places Integration (depends on 91a + 91b)
+
+## Blocked
+*(none)*
+
+## Done This Sprint
+- [x] ~~OP-90~~ Park Card Default Filler Redesign — stylized sepia map hero (Option 2A.iii, "Light sepia" intensity) replaces the Camera-icon filler for parks without user photos. Reusable `ParkMapHero` component on both the card grid and detail-page sidebar; pre-generated to Vercel Blob at park-creation time with live Mapbox as fallback. Admin backfill at `/admin/map-heroes`. Tracked design-calibration chapters: 4 variants → 5 V2 flavors → 5 typography options → final 3 → 4 finalists → vintage intensity calibration.
+- [x] ~~fix/leaflet-ssr~~ Pre-existing `GET /` SSR error — Leaflet touched `window` at module load via PIN_COLORS import chain (RouteListItem → markers.ts → L.icon). Fixed by extracting PIN_COLORS into its own SSR-safe module. Shipped as a dedicated commit on the OP-90 PR.
+- [x] ~~fix/condition-badge~~ Pre-existing bug — `trailConditions` not included in main page query, so `latestCondition` was always undefined on cards and the ConditionBadge never rendered. 3-line fix included on the OP-90 PR.
+
+## Notes / Decisions
+- OP-90 calibration was iterative: started with 4 strategic directions (map hero / topo / generative poster / typography), narrowed to 5 V2 flavors, then 5 typography options, then 4 finalists, then a final vintage-intensity sweep after feedback that the initial sepia+multiply treatment read as "washed out." Final recipe: sepia 0.3, saturate 1.0, contrast 1.03, hue-rotate -5deg, no multiply blend, vignette at 0.15.
+- Level-3 Blob caching ships with OP-90 (not deferred): pre-generation happens at park creation (user submit, admin bulk, AI discovery approval) and on admin coord edits. Mapbox is live-fallback only.
+- OP-91 splits into schema/backfill (91a), photo sync (91b), and discovery integration (91c). 91a must ship first; 91b and 91c can run in parallel once 91a lands.
+- Provenance discipline: every Places-sourced photo is downloaded to our Blob storage at `parks/{parkId}/places-{hash}.jpg`. The `@@unique([url])` constraint added after OP-00 makes the old cross-park mix-up structurally impossible.
+- Auto-approve vs. admin-queue for 91b photos is deferred — will decide during implementation based on initial sample quality.
+
+---
+
+# Sprint 4 · Week of 2026-04-07 ✅
+
+## Goal
+Ship AI data context engine quality improvements and the first park discovery epic.
+
+## Done
+- [x] ~~OP-77~~ AI Data Context Engine (Phase 1) — PR #107 merged 2026-04-06; SerpApi + Cheerio + Claude Sonnet pipeline, admin review queue, 121 tests
+- [x] ~~OP-77a~~ Source Management Controls — merged with OP-77; skip/unskip, trust/untrust, wrong-park rejection
+- [x] ~~OP-77b~~ Array Field Additive Handling — PR #108/#109; additive suggestions, stale extraction reconciliation
+- [x] ~~discovery fix~~ Remove exact-match quotes from discovery search queries — PR #115 merged 2026-04-06
+- [x] ~~planning~~ Backlog updated with AI engine shipped work and E18/E19 epics — PRs #112/#113/#114 merged 2026-04-06
+
+---
+
 # Sprint 3 · Week of 2026-03-31
 
 ## Goal
