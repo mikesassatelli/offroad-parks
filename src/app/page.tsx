@@ -29,6 +29,20 @@ export default async function Page() {
           url: true,
         },
       },
+      // Latest published trail condition — drives the condition badge on
+      // the card. Without this, `park.latestCondition` is undefined on the
+      // home grid and the badge never renders (bug pre-dated OP-90).
+      trailConditions: {
+        where: { reportStatus: "PUBLISHED" },
+        orderBy: { createdAt: "desc" },
+        take: 1,
+        select: {
+          id: true,
+          status: true,
+          reportStatus: true,
+          createdAt: true,
+        },
+      },
     },
     orderBy: {
       name: "asc",

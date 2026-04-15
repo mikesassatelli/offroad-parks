@@ -1,5 +1,5 @@
 # Offroad Parks Backlog
-<!-- Last updated: 2026-03-30 -->
+<!-- Last updated: 2026-04-15 -->
 <!-- Canonical backlog. See also: ROADMAP.md (strategy), SPRINT.md (sprint history). -->
 
 **Status values:** `backlog` · `in-progress` · `done` · `blocked`
@@ -141,6 +141,22 @@
 | OP-86 | Park Discovery: Admin Review & Seeding | backlog | feature | needs-refinement. Admin UI to review discovered park candidates. Accept creates seed Park record (name, state, coordinates if found). Reject blacklists from future discovery. |
 | OP-87 | Park Discovery: Auto-Research Pipeline | backlog | feature | After seeding a discovered park, automatically trigger researchPark() to populate fields. Links into existing Phase 1 pipeline. |
 | OP-88 | Park Discovery: Batch State Scan | backlog | feature | needs-refinement. Run discovery across all 50 states or a selected set. Progress tracking, dedup across states, cost estimation before launch. |
+
+---
+
+## E20 · Photo Automation *(Phase 2)*
+
+**Problem:** ~2/3 of parks have no approved photo. The current "missing photo" state (large Camera icon on muted gradient in [ParkCard.tsx:82-108](../src/components/parks/ParkCard.tsx)) reads as broken/empty rather than intentional, making the site feel unfinished. Manual photo sourcing (mostly from Google Places) doesn't scale now that AI discovery (E19) adds parks in batches. Prior automated seeding attempt (OP-00 series) failed on provenance — dedup now enforced via `@@unique([url])` on `ParkPhoto`.
+
+**Strategy:** Two-track. (1) Replace default filler so every card looks intentional even without a photo. (2) Automate Google Places photo ingestion with strict provenance (Place ID match confidence, Blob-hosted images) so the old mix-up cannot recur.
+
+| Key | Title | Status | Type | Notes |
+|-----|-------|--------|------|-------|
+| OP-90 | Park Card Default Filler Redesign | done | feature | Stylized Mapbox sepia thumbnail (USGS-quadrangle legend, Light-sepia treatment) replaces the Camera-icon filler. Pre-generated to Vercel Blob at park creation; live Mapbox fallback. `ParkMapHero` component used on both card + detail-page sidebar. Admin backfill at `/admin/map-heroes`. Merged with OP-90 PR. |
+| OP-91 | Google Places Photo Integration | backlog | feature | Parent. Auto-source photos from Google Places Photos API with strict provenance. Covers backfill for existing parks and wiring into AI discovery for new parks. See 91a/91b/91c. |
+| OP-91a | Schema: `googlePlaceId` Field + Backfill Job | backlog | feature | needs-refinement. Add `googlePlaceId` (unique, nullable) to `Park`. Admin-triggered backfill job runs Places Text Search (name + city + state) per park; matches with high confidence (name similarity + distance-from-recorded-coords thresholds) auto-link; low-confidence matches queue for admin review. Idempotent. |
+| OP-91b | Places Photo Sync Pipeline | backlog | feature | needs-refinement. For parks with a `googlePlaceId`, fetch top N Places Photos, download to Vercel Blob at `parks/{parkId}/places-{hash}.jpg`, create `ParkPhoto` with `source: 'google_places'` and Google-required attribution. Blob URL uniqueness enforces per-photo provenance. Monthly refresh cron. Auto-approve vs. admin-queue is a setting. |
+| OP-91c | AI Discovery → Places Integration | backlog | feature | needs-refinement. Wire Places lookup into the AI discovery pipeline so new parks arrive with `googlePlaceId` stamped at seed time. 91b sync job then picks them up. Removes the "every new park needs manual photo hunt" bottleneck. Depends on OP-91a + OP-91b. |
 
 ---
 

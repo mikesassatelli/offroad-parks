@@ -9,6 +9,7 @@ import {
   ClipboardList,
   Globe,
   Home,
+  Image as ImageIcon,
   LayoutDashboard,
   LogOut,
   MapPin,
@@ -138,6 +139,13 @@ export default async function AdminLayout({
             >
               <ClipboardList className="w-5 h-5" />
               <span className="font-medium">Park Claims</span>
+            </Link>
+            <Link
+              href="/admin/map-heroes"
+              className="flex items-center gap-3 px-4 py-3 text-gray-700 rounded-lg hover:bg-gray-100 transition-colors"
+            >
+              <ImageIcon className="w-5 h-5" />
+              <span className="font-medium">Map Heroes</span>
             </Link>
             <div className="border-t border-gray-200 my-2"></div>
             <Link

@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { requireAdmin } from "@/lib/api-helpers";
 import { prisma } from "@/lib/prisma";
 import { researchPark } from "@/lib/ai/research-pipeline";
+import { generateMapHeroAsync } from "@/lib/map-hero/generate";
 import type { ParkCandidateStatus, ParkCandidateSummary } from "@/lib/types";
 
 function generateSlug(name: string): string {
@@ -163,6 +164,11 @@ export async function PATCH(request: Request) {
         err
       );
     });
+
+    // Fire-and-forget: generate map hero thumbnail (OP-90). Candidate coords
+    // come from discovery and are stored on the Park record, so this should
+    // succeed for all approved candidates.
+    generateMapHeroAsync(result.parkId, "discovery-accept");
 
     return NextResponse.json({
       success: true,

@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
+import { generateMapHeroAsync } from "@/lib/map-hero/generate";
 import type {
   Amenity,
   Camping,
@@ -180,6 +181,11 @@ export async function POST(request: Request) {
         address: true,
       },
     });
+
+    // Trigger map-hero generation in the background (OP-90). Doesn't block
+    // the response; errors are logged, and the card falls back to live
+    // Mapbox if this fails.
+    generateMapHeroAsync(park.id, "park-submit");
 
     return NextResponse.json({ success: true, park });
   } catch (error) {
