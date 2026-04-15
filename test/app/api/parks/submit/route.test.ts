@@ -17,6 +17,12 @@ vi.mock("@/lib/prisma", () => ({
   },
 }));
 
+// OP-90: map-hero generation is fire-and-forget; stub it so submit tests
+// don't log spurious warnings about missing Mapbox token.
+vi.mock("@/lib/map-hero/generate", () => ({
+  generateMapHeroAsync: vi.fn(),
+}));
+
 describe("POST /api/parks/submit", () => {
   beforeEach(() => {
     vi.clearAllMocks();

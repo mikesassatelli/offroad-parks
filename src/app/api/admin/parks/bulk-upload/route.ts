@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
+import { generateMapHeroAsync } from "@/lib/map-hero/generate";
 import {
   ALL_TERRAIN_TYPES,
   ALL_AMENITIES,
@@ -514,6 +515,12 @@ export async function POST(
         createdParks.push(createdPark.id);
       }
     });
+
+    // Trigger map-hero generation for each newly-created park (OP-90).
+    // Fire-and-forget — doesn't block the bulk-upload response.
+    for (const parkId of createdParks) {
+      generateMapHeroAsync(parkId, "bulk-upload");
+    }
 
     return NextResponse.json({
       success: true,

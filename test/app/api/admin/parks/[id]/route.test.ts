@@ -13,6 +13,7 @@ vi.mock("@/lib/prisma", () => ({
     park: {
       delete: vi.fn(),
       update: vi.fn(),
+      findUnique: vi.fn(),
     },
   },
 }));
@@ -20,6 +21,12 @@ vi.mock("@/lib/prisma", () => ({
 // Mock Next.js cache revalidation
 vi.mock("next/cache", () => ({
   revalidatePath: vi.fn(),
+}));
+
+// OP-90: map-hero generation is fire-and-forget; stub so tests don't trigger
+// real Mapbox / Blob calls.
+vi.mock("@/lib/map-hero/generate", () => ({
+  generateMapHeroAsync: vi.fn(),
 }));
 
 describe("DELETE /api/admin/parks/[id]", () => {
@@ -148,6 +155,13 @@ describe("DELETE /api/admin/parks/[id]", () => {
 describe("PATCH /api/admin/parks/[id]", () => {
   beforeEach(() => {
     vi.clearAllMocks();
+    // Default stub for the pre-update coord read (OP-90). Individual tests
+    // that care about coord-change detection override this.
+    vi.mocked(prisma.park.findUnique).mockResolvedValue({
+      latitude: null,
+      longitude: null,
+      address: null,
+    } as any);
   });
 
   const validUpdateData = {

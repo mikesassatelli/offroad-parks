@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { revalidatePath } from "next/cache";
 import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
+import { generateMapHeroAsync } from "@/lib/map-hero/generate";
 
 interface RouteParams {
   params: Promise<{
@@ -77,6 +78,22 @@ export async function PATCH(request: Request, { params }: RouteParams) {
       ...parkData
     } = body;
 
+    // Read existing coords so we can detect a change and regenerate the
+    // map hero only when needed (OP-90).
+    const existing = await prisma.park.findUnique({
+      where: { id },
+      select: {
+        latitude: true,
+        longitude: true,
+        address: { select: { latitude: true, longitude: true } },
+      },
+    });
+    const prevLat = existing?.latitude ?? existing?.address?.latitude ?? null;
+    const prevLng = existing?.longitude ?? existing?.address?.longitude ?? null;
+    const nextLat = parkData.latitude ?? address?.latitude ?? null;
+    const nextLng = parkData.longitude ?? address?.longitude ?? null;
+    const coordsChanged = prevLat !== nextLat || prevLng !== nextLng;
+
     // Build address update operation
     const addressOperation = address
       ? {
@@ -142,6 +159,11 @@ export async function PATCH(request: Request, { params }: RouteParams) {
     // Revalidate cached pages
     revalidatePath("/");
     revalidatePath(`/parks/${park.slug}`);
+
+    // Regenerate map hero if coords changed (OP-90).
+    if (coordsChanged) {
+      generateMapHeroAsync(park.id, "admin-edit");
+    }
 
     return NextResponse.json({ success: true, park });
   } catch (error) {
