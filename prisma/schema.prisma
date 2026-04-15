@@ -109,6 +109,12 @@ model Park {
   sparkArrestorRequired  Boolean?
   noiseLimitDBA          Int?
 
+  // Map hero (auto-generated thumbnail for parks without user photos).
+  // Populated by src/lib/map-hero/generate.ts on creation / coord change;
+  // card falls back to live Mapbox if this is null. OP-90.
+  mapHeroUrl          String?
+  mapHeroGeneratedAt  DateTime?
+
   // Aggregated review data
   averageRating            Float?
   averageDifficulty        Float?
