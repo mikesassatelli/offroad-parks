@@ -1,4 +1,15 @@
+/**
+ * Leaflet marker helpers. Leaflet touches `window` at module load, so this
+ * file must only be evaluated in the browser. All call sites reach this
+ * file through `next/dynamic` with `ssr: false` (e.g. MapView).
+ *
+ * Components that only need color metadata (not Leaflet icon objects)
+ * should import from `./pin-colors` instead, which stays SSR-safe.
+ */
 import L from "leaflet";
+
+import { PIN_COLORS } from "./pin-colors";
+export { PIN_COLORS } from "./pin-colors";
 
 // Fix for default marker icons in react-leaflet
 export const defaultIcon = L.icon({
@@ -35,18 +46,6 @@ function createTeardropIcon(bg: string, border: string, content: string, fontSiz
     popupAnchor: [0, -(size + 4)],
   });
 }
-
-// Available pin colors (hex bg, border)
-export const PIN_COLORS: Record<string, { bg: string; border: string; label: string }> = {
-  blue:   { bg: "#3b82f6", border: "#1d4ed8", label: "Blue" },
-  green:  { bg: "#22c55e", border: "#15803d", label: "Green" },
-  red:    { bg: "#ef4444", border: "#b91c1c", label: "Red" },
-  orange: { bg: "#f97316", border: "#c2410c", label: "Orange" },
-  purple: { bg: "#a855f7", border: "#7e22ce", label: "Purple" },
-  pink:   { bg: "#ec4899", border: "#be185d", label: "Pink" },
-  teal:   { bg: "#14b8a6", border: "#0f766e", label: "Teal" },
-  yellow: { bg: "#eab308", border: "#a16207", label: "Yellow" },
-};
 
 // Park pin — teardrop with index number, default blue
 export function createParkPinIcon(index: number, color = "blue") {

@@ -1,6 +1,6 @@
 import { Button } from "@/components/ui/button";
 import type { RouteWaypoint } from "@/lib/types";
-import { PIN_COLORS } from "@/features/map/utils/markers";
+import { PIN_COLORS } from "@/features/map/utils/pin-colors";
 import { GripVertical, X } from "lucide-react";
 import Link from "next/link";
 import { useState } from "react";
