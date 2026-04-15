@@ -62,6 +62,8 @@ function makePark(overrides: Partial<DbPark> = {}): DbPark {
     flagsRequired: null,
     sparkArrestorRequired: null,
     noiseLimitDBA: null,
+    mapHeroUrl: null,
+    mapHeroGeneratedAt: null,
     createdAt: new Date(),
     updatedAt: new Date(),
     terrain: [],
