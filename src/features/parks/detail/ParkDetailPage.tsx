@@ -17,6 +17,7 @@ import { ParkContactSidebar } from "./components/ParkContactSidebar";
 import { ParkOperationalCard } from "./components/ParkOperationalCard";
 import { ParkOverviewCard } from "./components/ParkOverviewCard";
 import { CampingInfoCard } from "./components/CampingInfoCard";
+import { ParkMapHero } from "@/components/parks/ParkMapHero";
 import { ReviewList, ReviewForm, StarRating, DifficultyRating } from "@/components/reviews";
 import { TrailConditionsDisplay } from "@/features/trail-conditions/TrailConditionsDisplay";
 import { useReviews } from "@/hooks/useReviews";
@@ -368,6 +369,14 @@ function ParkDetailPageInner({
           {/* Sidebar */}
           <div className="lg:col-span-1">
             <div className="sticky top-20 space-y-6">
+              {/* Map hero always renders above the sidebar cards (OP-90).
+                  Internally falls back to null when the park has neither a
+                  generated hero nor coords. */}
+              {(park.mapHeroUrl || park.coords) && (
+                <div className="rounded-lg border border-border shadow-sm overflow-hidden bg-card">
+                  <ParkMapHero park={park} size="card" />
+                </div>
+              )}
               <TrailConditionsDisplay parkSlug={park.id} />
               <ParkContactSidebar park={park} />
               <CampingInfoCard park={park} />
