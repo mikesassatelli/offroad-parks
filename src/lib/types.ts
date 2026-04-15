@@ -152,6 +152,9 @@ export type DbPark = {
   flagsRequired: boolean | null;
   sparkArrestorRequired: boolean | null;
   noiseLimitDBA: number | null;
+  // Map hero (OP-90)
+  mapHeroUrl: string | null;
+  mapHeroGeneratedAt: Date | null;
   // AI Research fields
   dataCompletenessScore: number | null;
   lastResearchedAt: Date | null;
@@ -204,6 +207,7 @@ export type Park = {
   vehicleTypes: VehicleType[];
   notes?: string;
   heroImage?: string | null;
+  mapHeroUrl?: string | null;
   // New operational fields
   datesOpen?: string;
   contactEmail?: string;
@@ -328,6 +332,7 @@ export function transformDbPark(dbPark: DbPark): Park {
     camping: dbPark.camping.map((c) => c.camping),
     vehicleTypes: dbPark.vehicleTypes.map((v) => v.vehicleType),
     notes: dbPark.notes ?? undefined,
+    mapHeroUrl: dbPark.mapHeroUrl ?? undefined,
     // New operational fields
     datesOpen: dbPark.datesOpen ?? undefined,
     contactEmail: dbPark.contactEmail ?? undefined,

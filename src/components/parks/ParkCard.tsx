@@ -8,6 +8,7 @@ import type { Amenity, Park, Terrain } from "@/lib/types";
 import { Camera, MapPin, Star, StarOff } from "lucide-react";
 import Link from "next/link";
 import Image from "next/image";
+import { ParkMapHero } from "@/components/parks/ParkMapHero";
 import { ConditionBadge } from "@/features/trail-conditions/ConditionBadge";
 import type { TrailConditionStatus } from "@/lib/trail-conditions";
 import { isConditionFresh } from "@/lib/trail-conditions";
@@ -43,14 +44,26 @@ export function ParkCard({
       ? park.latestCondition
       : null;
 
+  // Hero source priority (OP-90):
+  //   1. user-uploaded photo (park.heroImage)
+  //   2. pre-generated map hero / live Mapbox fallback (ParkMapHero)
+  //   3. bare Camera icon filler (only when a park has no coords at all)
+  const hasPhoto = !!park.heroImage;
+  const hasMapHero = !!park.mapHeroUrl || !!park.coords;
+
+  // Condition badge moved from bottom-left to top-left when the map hero
+  // renders, because the USGS-quadrangle legend lives in the bottom-left.
+  // Photos keep the original bottom-left badge placement.
+  const conditionOnTop = !hasPhoto && hasMapHero;
+
   return (
     <Link href={`/parks/${park.id}`} className="block h-full">
       <Card className="rounded-lg border border-border shadow-sm hover:shadow-md hover:border-primary/40 transition-all duration-150 cursor-pointer h-full flex flex-col overflow-hidden bg-card">
         {/* Hero Image */}
-        {park.heroImage ? (
+        {hasPhoto ? (
           <div className="relative h-48 w-full overflow-hidden bg-muted">
             <Image
-              src={park.heroImage}
+              src={park.heroImage!}
               alt={park.name}
               fill
               className="object-cover"
@@ -72,6 +85,32 @@ export function ParkCard({
             </div>
             {freshCondition && (
               <div className="absolute bottom-2 left-2 z-10">
+                <ConditionBadge
+                  status={freshCondition.status as TrailConditionStatus}
+                  size="xs"
+                />
+              </div>
+            )}
+          </div>
+        ) : hasMapHero ? (
+          <div className="relative">
+            <ParkMapHero park={park} size="card" />
+            <div className="absolute top-2 right-2 z-10">
+              <Button
+                size="icon"
+                variant={isFavorite ? "default" : "secondary"}
+                onClick={handleFavoriteClick}
+                className="flex-shrink-0 shadow-lg"
+              >
+                {isFavorite ? (
+                  <Star className="w-4 h-4 fill-current" />
+                ) : (
+                  <StarOff className="w-4 h-4" />
+                )}
+              </Button>
+            </div>
+            {freshCondition && (
+              <div className={`absolute ${conditionOnTop ? "top-2 left-2" : "bottom-2 left-2"} z-10`}>
                 <ConditionBadge
                   status={freshCondition.status as TrailConditionStatus}
                   size="xs"
