@@ -697,6 +697,99 @@ describe("POST /api/parks/submit", () => {
       expect(prisma.park.create).not.toHaveBeenCalled();
       expect(prisma.parkClaim.create).not.toHaveBeenCalled();
     });
+
+    it("should reject claim when claimantName is whitespace-only", async () => {
+      vi.mocked(auth).mockResolvedValue({ user: { id: "user-1" } } as any);
+      vi.mocked(prisma.park.findUnique).mockResolvedValue(null);
+
+      const request = new Request("http://localhost:3000/api/parks/submit", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          ...validParkData,
+          claim: {
+            claimantName: "   ",
+            claimantEmail: "jane@example.com",
+          },
+        }),
+      });
+
+      const response = await POST(request);
+      const body = await response.json();
+
+      expect(response.status).toBe(400);
+      expect(body).toEqual({ error: "Claim requires name and email" });
+      expect(prisma.park.create).not.toHaveBeenCalled();
+    });
+
+    it("should trim and coalesce optional claim fields to null", async () => {
+      vi.mocked(auth).mockResolvedValue({ user: { id: "user-1" } } as any);
+      vi.mocked(prisma.park.findUnique).mockResolvedValue(null);
+      vi.mocked(prisma.park.create).mockResolvedValue({
+        id: "park-1",
+        slug: "test-park",
+      } as any);
+      vi.mocked(prisma.parkClaim.create).mockResolvedValue({
+        id: "claim-2",
+        status: "PENDING",
+      } as any);
+
+      const request = new Request("http://localhost:3000/api/parks/submit", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          ...validParkData,
+          claim: {
+            claimantName: "  Jane Smith  ",
+            claimantEmail: "  jane@example.com  ",
+            // claimantPhone / businessName / message omitted entirely
+          },
+        }),
+      });
+
+      const response = await POST(request);
+      expect(response.status).toBe(200);
+
+      const claimCall = vi.mocked(prisma.parkClaim.create).mock.calls[0][0];
+      expect((claimCall as any).data).toMatchObject({
+        claimantName: "Jane Smith",
+        claimantEmail: "jane@example.com",
+        claimantPhone: null,
+        businessName: null,
+        message: null,
+      });
+    });
+  });
+
+  it("should map camping and vehicleType arrays into nested creates", async () => {
+    vi.mocked(auth).mockResolvedValue({ user: { id: "user-1" } } as any);
+    vi.mocked(prisma.park.findUnique).mockResolvedValue(null);
+    vi.mocked(prisma.park.create).mockResolvedValue({} as any);
+
+    const request = new Request("http://localhost:3000/api/parks/submit", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        ...validParkData,
+        camping: ["tent", "rv"],
+        vehicleTypes: ["atv", "utv"],
+      }),
+    });
+
+    await POST(request);
+
+    expect(prisma.park.create).toHaveBeenCalledWith(
+      expect.objectContaining({
+        data: expect.objectContaining({
+          camping: {
+            create: [{ camping: "tent" }, { camping: "rv" }],
+          },
+          vehicleTypes: {
+            create: [{ vehicleType: "atv" }, { vehicleType: "utv" }],
+          },
+        }),
+      }),
+    );
   });
 
   it("should use provided slug when explicitly provided", async () => {
