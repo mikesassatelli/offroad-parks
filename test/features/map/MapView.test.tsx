@@ -21,6 +21,16 @@ vi.mock("@/features/map/components/MapBoundsHandler", () => ({
   ),
 }));
 
+vi.mock("@/features/map/components/MapVisibilityHandler", () => ({
+  MapVisibilityHandler: ({ center, zoom }: any) => (
+    <div
+      data-testid="visibility-handler"
+      data-center-id={center?.id}
+      data-zoom={zoom}
+    />
+  ),
+}));
+
 vi.mock("@/features/map/components/ParkMarker", () => ({
   ParkMarker: ({ park, isInRoute, routeIndex }: any) => (
     <div
@@ -284,5 +294,56 @@ describe("MapView", () => {
       "data-route-index",
       "-1",
     );
+  });
+
+  describe("fitOnVisible (Location tab centering fix)", () => {
+    it("should not render visibility handler by default", () => {
+      render(<MapView parks={[mockPark1]} />);
+      expect(screen.queryByTestId("visibility-handler")).not.toBeInTheDocument();
+    });
+
+    it("should render visibility handler when fitOnVisible is set and exactly one park has coords", () => {
+      const { getByTestId } = render(
+        <MapView parks={[mockPark1]} fitOnVisible />,
+      );
+      const handler = getByTestId("visibility-handler");
+      expect(handler).toBeInTheDocument();
+      expect(handler).toHaveAttribute("data-center-id", "park-1");
+    });
+
+    it("should pass custom fitOnVisibleZoom through to the visibility handler", () => {
+      const { getByTestId } = render(
+        <MapView parks={[mockPark1]} fitOnVisible fitOnVisibleZoom={11} />,
+      );
+      expect(getByTestId("visibility-handler")).toHaveAttribute(
+        "data-zoom",
+        "11",
+      );
+    });
+
+    it("should not render visibility handler when fitOnVisible is set but multiple parks have coords", () => {
+      render(<MapView parks={[mockPark1, mockPark2]} fitOnVisible />);
+      expect(screen.queryByTestId("visibility-handler")).not.toBeInTheDocument();
+    });
+
+    it("should not render visibility handler when fitOnVisible is set but no parks have coords", () => {
+      render(<MapView parks={[mockParkNoCoords]} fitOnVisible />);
+      expect(screen.queryByTestId("visibility-handler")).not.toBeInTheDocument();
+    });
+
+    it("should use custom containerClassName when provided", () => {
+      const { container } = render(
+        <MapView
+          parks={[mockPark1]}
+          fitOnVisible
+          containerClassName="h-96 w-full custom-marker"
+        />,
+      );
+      const wrapper = container.querySelector(".custom-marker");
+      expect(wrapper).not.toBeNull();
+      expect(wrapper?.className).toContain("h-96");
+      // Default full-viewport height class must not leak through.
+      expect(wrapper?.className).not.toContain("calc(100vh");
+    });
   });
 });

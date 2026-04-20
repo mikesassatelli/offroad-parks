@@ -356,9 +356,19 @@ function ParkDetailPageInner({
                       <CardTitle>Location</CardTitle>
                     </CardHeader>
                     <CardContent>
-                      <div className="h-96 rounded-lg overflow-hidden">
-                        <MapView parks={[park]} />
-                      </div>
+                      {/* `fitOnVisible` fixes the Leaflet "centered too far
+                          north" bug: the Tabs panel isn't sized at MapView
+                          mount, so Leaflet caches stale container
+                          dimensions. The handler re-invalidates size + sets
+                          the view on the park's coords once the container
+                          stabilises. `containerClassName` overrides MapView's
+                          default full-viewport height so the map respects
+                          the surrounding Card layout. */}
+                      <MapView
+                        parks={[park]}
+                        fitOnVisible
+                        containerClassName="h-96 w-full rounded-lg overflow-hidden border shadow-sm"
+                      />
                     </CardContent>
                   </Card>
                 </TabsContent>
