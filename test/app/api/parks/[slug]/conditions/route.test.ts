@@ -128,6 +128,72 @@ describe("POST /api/parks/[slug]/conditions", () => {
     expect(res.status).toBe(404);
   });
 
+  it("should return 400 when request body is not valid JSON", async () => {
+    vi.mocked(auth).mockResolvedValue({ user: { id: "user-1" } } as any);
+    vi.mocked(prisma.park.findUnique).mockResolvedValue(mockPark as any);
+
+    // Build a Request whose body isn't valid JSON. Next.js' Request.json()
+    // will throw, and the route should convert that into a 400.
+    const req = new Request("http://localhost/api/parks/test-park/conditions", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: "not-json{{{",
+    });
+    const res = await POST(req, { params: Promise.resolve({ slug: "test-park" }) });
+    const data = await res.json();
+
+    expect(res.status).toBe(400);
+    expect(data.error).toBe("Invalid JSON");
+    // Must short-circuit before attempting to write a condition.
+    expect(prisma.trailCondition.create).not.toHaveBeenCalled();
+  });
+
+  it("should return 400 when status field is missing", async () => {
+    vi.mocked(auth).mockResolvedValue({ user: { id: "user-1" } } as any);
+    vi.mocked(prisma.park.findUnique).mockResolvedValue(mockPark as any);
+
+    const req = new Request("http://localhost/api/parks/test-park/conditions", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ note: "no status here" }),
+    });
+    const res = await POST(req, { params: Promise.resolve({ slug: "test-park" }) });
+    const data = await res.json();
+
+    expect(res.status).toBe(400);
+    expect(data.error).toMatch(/status must be one of/i);
+    expect(prisma.trailCondition.create).not.toHaveBeenCalled();
+  });
+
+  it("operator auto-publish is skipped when park has no operator (operatorId is null)", async () => {
+    // Regression guard for the `park.operatorId ? ... : false` short-circuit:
+    // a logged-in user submitting to an unowned park must not trigger an
+    // operatorUser lookup.
+    vi.mocked(auth).mockResolvedValue({ user: { id: "user-1" } } as any);
+    vi.mocked(prisma.park.findUnique).mockResolvedValue(mockPark as any);
+    vi.mocked(prisma.trailCondition.findFirst).mockResolvedValue(null);
+    vi.mocked(prisma.trailCondition.create).mockResolvedValue({
+      id: "cond-noop",
+      reportStatus: "PUBLISHED",
+      note: null,
+      status: "OPEN",
+      user: mockUser,
+    } as any);
+
+    const req = new Request("http://localhost/api/parks/test-park/conditions", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ status: "OPEN" }),
+    });
+    const res = await POST(req, { params: Promise.resolve({ slug: "test-park" }) });
+
+    expect(res.status).toBe(201);
+    expect(prisma.operatorUser.findUnique).not.toHaveBeenCalled();
+
+    const createCall = vi.mocked(prisma.trailCondition.create).mock.calls[0][0];
+    expect(createCall.data.isOperatorPost).toBe(false);
+  });
+
   it("should return 400 for invalid status", async () => {
     vi.mocked(auth).mockResolvedValue({ user: { id: "user-1" } } as any);
     vi.mocked(prisma.park.findUnique).mockResolvedValue(mockPark as any);
