@@ -30,7 +30,6 @@ export default defineConfig({
         "src/lib/prisma.ts", // Singleton pattern, tested indirectly
         "src/app/admin/layout.tsx", // Server component with async auth
         "src/app/admin/page.tsx", // Redirect-only page
-        "src/app/admin/settings/page.tsx", // Placeholder server component
         "src/app/admin/users/page.tsx", // Server component with Prisma
         "src/app/admin/parks/new/page.tsx", // Server component wrapper
         "src/app/admin/parks/[id]/edit/page.tsx", // Server component for editing parks
