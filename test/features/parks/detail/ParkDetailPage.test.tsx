@@ -62,8 +62,14 @@ vi.mock("@/components/parks/PhotoUploadForm", () => ({
 // Mock MapView with dynamic import
 vi.mock("next/dynamic", () => ({
   default: (importFunc: any, options: any) => {
-    const Component = ({ parks }: any) => (
-      <div data-testid="map-view">{parks.length} parks on map</div>
+    const Component = ({ parks, fitOnVisible, alwaysShowLabel }: any) => (
+      <div
+        data-testid="map-view"
+        data-fit-on-visible={fitOnVisible ? "true" : "false"}
+        data-always-show-label={alwaysShowLabel ? "true" : "false"}
+      >
+        {parks.length} parks on map
+      </div>
     );
     Component.displayName = "MapView";
     return Component;
@@ -351,6 +357,16 @@ describe("ParkDetailPage", () => {
     expect(screen.getAllByText("Location").length).toBeGreaterThan(0);
     expect(screen.getByTestId("map-view")).toBeInTheDocument();
     expect(screen.getByTestId("map-view")).toHaveTextContent("1 parks on map");
+  });
+
+  it("should enable fitOnVisible + alwaysShowLabel on the Location tab map", () => {
+    // The Location tab map should fix centering (fitOnVisible) AND surface the
+    // park name label next to the single marker (alwaysShowLabel).
+    render(<ParkDetailPage park={mockPark} photos={[]} />);
+
+    const mapView = screen.getByTestId("map-view");
+    expect(mapView).toHaveAttribute("data-fit-on-visible", "true");
+    expect(mapView).toHaveAttribute("data-always-show-label", "true");
   });
 
   it("should not render map when coords not provided", () => {

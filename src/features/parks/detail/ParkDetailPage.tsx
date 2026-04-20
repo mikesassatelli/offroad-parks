@@ -382,10 +382,16 @@ function ParkDetailPageInner({
                           the view on the park's coords once the container
                           stabilises. `containerClassName` overrides MapView's
                           default full-viewport height so the map respects
-                          the surrounding Card layout. */}
+                          the surrounding Card layout. `alwaysShowLabel`
+                          forces the park name tooltip to render regardless
+                          of zoom — the default `fitOnVisibleZoom` of 8 is
+                          below the search map's label threshold (9) and
+                          there is only one marker so there is no overlap
+                          risk. */}
                       <MapView
                         parks={[park]}
                         fitOnVisible
+                        alwaysShowLabel
                         containerClassName="h-96 w-full rounded-lg overflow-hidden border shadow-sm"
                       />
                     </CardContent>
