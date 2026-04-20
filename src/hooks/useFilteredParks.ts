@@ -1,6 +1,7 @@
-import { useMemo, useState } from "react";
+import { useCallback, useMemo, useState } from "react";
 import type { Park } from "@/lib/types";
 import { haversineDistance } from "@/lib/geo";
+import type { SavedSearchFilters } from "@/lib/search-preferences";
 
 export type SortOption = "name" | "price" | "miles" | "acres" | "rating" | "difficulty-high" | "difficulty-low" | "most-reviewed" | "distance-nearest";
 
@@ -224,6 +225,59 @@ export function useFilteredParks({ parks, userCoords }: UseFilteredParksProps) {
     setSparkArrestorRequired("");
   };
 
+  /** Serialise the current Filters panel state into the shape we persist
+   * in the user-default-preference API (excludes ephemeral search/sort). */
+  const getCurrentFilters = useCallback((): SavedSearchFilters => {
+    return {
+      selectedState: selectedState ?? null,
+      selectedTerrains,
+      selectedAmenities,
+      selectedCamping,
+      selectedVehicleTypes,
+      minTrailMiles,
+      minAcres,
+      minRating,
+      selectedOwnership,
+      permitRequired: permitRequired as SavedSearchFilters["permitRequired"],
+      membershipRequired:
+        membershipRequired as SavedSearchFilters["membershipRequired"],
+      flagsRequired: flagsRequired as SavedSearchFilters["flagsRequired"],
+      sparkArrestorRequired:
+        sparkArrestorRequired as SavedSearchFilters["sparkArrestorRequired"],
+    };
+  }, [
+    selectedState,
+    selectedTerrains,
+    selectedAmenities,
+    selectedCamping,
+    selectedVehicleTypes,
+    minTrailMiles,
+    minAcres,
+    minRating,
+    selectedOwnership,
+    permitRequired,
+    membershipRequired,
+    flagsRequired,
+    sparkArrestorRequired,
+  ]);
+
+  /** Replace the current Filters panel state with a saved preference blob. */
+  const applyFilters = useCallback((filters: SavedSearchFilters) => {
+    setSelectedState(filters.selectedState ?? undefined);
+    setSelectedTerrains(filters.selectedTerrains ?? []);
+    setSelectedAmenities(filters.selectedAmenities ?? []);
+    setSelectedCamping(filters.selectedCamping ?? []);
+    setSelectedVehicleTypes(filters.selectedVehicleTypes ?? []);
+    setMinTrailMiles(filters.minTrailMiles ?? 0);
+    setMinAcres(filters.minAcres ?? 0);
+    setMinRating(filters.minRating ?? "");
+    setSelectedOwnership(filters.selectedOwnership ?? "");
+    setPermitRequired(filters.permitRequired ?? "");
+    setMembershipRequired(filters.membershipRequired ?? "");
+    setFlagsRequired(filters.flagsRequired ?? "");
+    setSparkArrestorRequired(filters.sparkArrestorRequired ?? "");
+  }, []);
+
   return {
     searchQuery,
     setSearchQuery,
@@ -260,5 +314,7 @@ export function useFilteredParks({ parks, userCoords }: UseFilteredParksProps) {
     availableStates,
     filteredParks,
     clearAllFilters,
+    getCurrentFilters,
+    applyFilters,
   };
 }

@@ -399,4 +399,72 @@ describe("SearchFiltersPanel", () => {
 
     expect(mockProps.onCampingChange).toHaveBeenCalledWith(["cabin"]);
   });
+
+  describe("saved-defaults controls", () => {
+    it("does not render the saved-defaults section when the flag is off (anonymous users)", () => {
+      render(<SearchFiltersPanel {...mockProps} />);
+
+      expect(screen.queryByTestId("saved-defaults-controls")).toBeNull();
+      expect(screen.queryByText("Save as default")).toBeNull();
+      expect(screen.queryByText("Reset to default")).toBeNull();
+    });
+
+    it("renders the Save-as-default button but hides Reset-to-default when no saved default exists", () => {
+      render(
+        <SearchFiltersPanel
+          {...mockProps}
+          showSavedDefaultsControls
+          hasSavedDefault={false}
+        />,
+      );
+
+      expect(screen.getByTestId("saved-defaults-controls")).toBeInTheDocument();
+      expect(screen.getByText("Save as default")).toBeInTheDocument();
+      expect(screen.queryByText("Reset to default")).toBeNull();
+    });
+
+    it("renders both Save and Reset buttons when a saved default exists", () => {
+      render(
+        <SearchFiltersPanel
+          {...mockProps}
+          showSavedDefaultsControls
+          hasSavedDefault
+        />,
+      );
+
+      expect(screen.getByText("Save as default")).toBeInTheDocument();
+      expect(screen.getByText("Reset to default")).toBeInTheDocument();
+    });
+
+    it("invokes onSaveAsDefault when the Save button is clicked", () => {
+      const onSaveAsDefault = vi.fn();
+      render(
+        <SearchFiltersPanel
+          {...mockProps}
+          showSavedDefaultsControls
+          onSaveAsDefault={onSaveAsDefault}
+        />,
+      );
+
+      fireEvent.click(screen.getByText("Save as default"));
+
+      expect(onSaveAsDefault).toHaveBeenCalledTimes(1);
+    });
+
+    it("invokes onResetToDefault when the Reset button is clicked", () => {
+      const onResetToDefault = vi.fn();
+      render(
+        <SearchFiltersPanel
+          {...mockProps}
+          showSavedDefaultsControls
+          hasSavedDefault
+          onResetToDefault={onResetToDefault}
+        />,
+      );
+
+      fireEvent.click(screen.getByText("Reset to default"));
+
+      expect(onResetToDefault).toHaveBeenCalledTimes(1);
+    });
+  });
 });

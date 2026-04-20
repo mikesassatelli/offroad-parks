@@ -77,6 +77,7 @@ export default async function EditParkPage({ params }: EditParkPageProps) {
     maxVehicleWidthInches: park.maxVehicleWidthInches?.toString() || "",
     flagsRequired: park.flagsRequired || false,
     sparkArrestorRequired: park.sparkArrestorRequired || false,
+    helmetsRequired: park.helmetsRequired || false,
     noiseLimitDBA: park.noiseLimitDBA?.toString() || "",
     // Address fields
     streetAddress: park.address?.streetAddress || "",

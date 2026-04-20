@@ -8,8 +8,8 @@ import {
   ALL_CAMPING_TYPES,
   ALL_VEHICLE_TYPES,
   ALL_OWNERSHIP_TYPES,
-  US_STATES,
 } from "@/lib/constants";
+import { normalizeStateName } from "@/lib/us-states";
 import type {
   Terrain,
   Amenity,
@@ -45,6 +45,7 @@ interface BulkParkInput {
   maxVehicleWidthInches?: number | null;
   flagsRequired?: boolean;
   sparkArrestorRequired?: boolean;
+  helmetsRequired?: boolean;
   noiseLimitDBA?: number | null;
   // Address fields (flat in CSV/JSON) - state is required
   streetAddress?: string;
@@ -97,11 +98,11 @@ function validateParkEntry(
       field: "state",
       message: "State is required",
     });
-  } else if (!US_STATES.includes(park.state)) {
+  } else if (!normalizeStateName(park.state)) {
     errors.push({
       row: rowIndex,
       field: "state",
-      message: `Invalid state. Must be one of: ${US_STATES.join(", ")}`,
+      message: `Invalid state: "${park.state}". Provide a US state full name (e.g. "Arkansas") or 2-letter code (e.g. "AR").`,
     });
   }
 
@@ -439,18 +440,22 @@ export async function POST(
             maxVehicleWidthInches: park.maxVehicleWidthInches ?? null,
             flagsRequired: park.flagsRequired ?? null,
             sparkArrestorRequired: park.sparkArrestorRequired ?? null,
+            helmetsRequired: park.helmetsRequired ?? null,
             noiseLimitDBA: park.noiseLimitDBA ?? null,
           },
         });
 
-        // Create Address record (state is required)
+        // Create Address record (state is required).
+        // `park.state` has already been validated above; normalize to the
+        // canonical full name here so inputs like "ar" land as "Arkansas".
+        const canonicalState = normalizeStateName(park.state) as string;
         await tx.address.create({
           data: {
             parkId: createdPark.id,
             streetAddress: park.streetAddress || null,
             streetAddress2: park.streetAddress2 || null,
             city: park.city || null,
-            state: park.state, // Required
+            state: canonicalState,
             zipCode: park.zipCode || null,
             county: park.county || null,
             latitude: park.latitude ?? null,

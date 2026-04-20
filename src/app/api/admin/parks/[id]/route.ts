@@ -3,6 +3,7 @@ import { revalidatePath } from "next/cache";
 import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { generateMapHeroAsync } from "@/lib/map-hero/generate";
+import { normalizeStateName } from "@/lib/us-states";
 
 interface RouteParams {
   params: Promise<{
@@ -94,6 +95,28 @@ export async function PATCH(request: Request, { params }: RouteParams) {
     const nextLng = parkData.longitude ?? address?.longitude ?? null;
     const coordsChanged = prevLat !== nextLat || prevLng !== nextLng;
 
+    // Defensive normalization: the admin edit form now posts canonical state
+    // names via the dropdown, but anything else calling this route (future
+    // API consumers, bulk edits) could still send a code.
+    let normalizedState: string | null = null;
+    if (address) {
+      if (!address.state) {
+        return NextResponse.json(
+          { error: "State is required on the address." },
+          { status: 400 }
+        );
+      }
+      normalizedState = normalizeStateName(address.state);
+      if (!normalizedState) {
+        return NextResponse.json(
+          {
+            error: `Invalid state: "${address.state}". Provide a US state full name or 2-letter code.`,
+          },
+          { status: 400 }
+        );
+      }
+    }
+
     // Build address update operation
     const addressOperation = address
       ? {
@@ -102,7 +125,7 @@ export async function PATCH(request: Request, { params }: RouteParams) {
               streetAddress: address.streetAddress || null,
               streetAddress2: address.streetAddress2 || null,
               city: address.city || null,
-              state: address.state || null,
+              state: normalizedState as string, // validated above
               zipCode: address.zipCode || null,
               county: address.county || null,
               latitude: address.latitude || null,
@@ -112,7 +135,7 @@ export async function PATCH(request: Request, { params }: RouteParams) {
               streetAddress: address.streetAddress || null,
               streetAddress2: address.streetAddress2 || null,
               city: address.city || null,
-              state: address.state || null,
+              state: normalizedState as string, // validated above
               zipCode: address.zipCode || null,
               county: address.county || null,
               latitude: address.latitude || null,
