@@ -47,8 +47,8 @@ export default async function ParkDiscoveryPage({
   return (
     <div className="space-y-6">
       <div>
-        <h1 className="text-2xl font-bold text-gray-900">Park Discovery</h1>
-        <p className="text-sm text-gray-500 mt-1">
+        <h1 className="text-2xl font-bold text-foreground">Park Discovery</h1>
+        <p className="text-sm text-muted-foreground mt-1">
           Review AI-discovered park candidates and seed them into the database.
         </p>
       </div>
@@ -63,7 +63,7 @@ export default async function ParkDiscoveryPage({
 
       {/* Status Filter */}
       <div className="flex items-center gap-2">
-        <span className="text-sm font-medium text-gray-700">Filter:</span>
+        <span className="text-sm font-medium text-foreground">Filter:</span>
         <StatusFilterLink
           href="/admin/ai-research/discovery"
           label="All"
@@ -101,16 +101,16 @@ function StatCard({
   color?: "gray" | "green" | "red";
 }) {
   const colorStyles = {
-    gray: "text-gray-900",
-    green: "text-green-700",
-    red: "text-red-700",
+    gray: "text-foreground",
+    green: "text-green-700 dark:text-green-400",
+    red: "text-red-700 dark:text-red-400",
   };
 
   return (
-    <div className="rounded-lg border border-gray-200 bg-white p-4">
-      <p className="text-xs font-medium text-gray-500 uppercase">{label}</p>
+    <div className="rounded-lg border border-border bg-card p-4">
+      <p className="text-xs font-medium text-muted-foreground uppercase">{label}</p>
       <p
-        className={`text-2xl font-bold mt-1 ${color ? colorStyles[color] : "text-gray-900"}`}
+        className={`text-2xl font-bold mt-1 ${color ? colorStyles[color] : "text-foreground"}`}
       >
         {value}
       </p>
@@ -132,8 +132,8 @@ function StatusFilterLink({
       href={href}
       className={`px-3 py-1 rounded-full text-sm font-medium transition-colors ${
         active
-          ? "bg-gray-900 text-white"
-          : "bg-gray-100 text-gray-700 hover:bg-gray-200"
+          ? "bg-primary text-primary-foreground"
+          : "bg-muted text-foreground hover:bg-accent"
       }`}
     >
       {label}

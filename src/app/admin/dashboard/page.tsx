@@ -94,7 +94,7 @@ export default async function AdminDashboard() {
 
   return (
     <div>
-      <h1 className="text-3xl font-bold text-gray-900 mb-8">Dashboard</h1>
+      <h1 className="text-3xl font-bold text-foreground mb-8">Dashboard</h1>
 
       {/* Stats Grid */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
@@ -103,14 +103,14 @@ export default async function AdminDashboard() {
           return (
             <div
               key={stat.name}
-              className="bg-white rounded-lg shadow p-6 border border-gray-200"
+              className="bg-card rounded-lg shadow p-6 border border-border"
             >
               <div className="flex items-center justify-between">
                 <div>
-                  <p className="text-sm font-medium text-gray-600">
+                  <p className="text-sm font-medium text-muted-foreground">
                     {stat.name}
                   </p>
-                  <p className="text-3xl font-bold text-gray-900 mt-2">
+                  <p className="text-3xl font-bold text-foreground mt-2">
                     {stat.value}
                   </p>
                 </div>
@@ -124,40 +124,40 @@ export default async function AdminDashboard() {
       </div>
 
       {/* Recent Pending Parks */}
-      <div className="bg-white rounded-lg shadow border border-gray-200">
-        <div className="p-6 border-b border-gray-200">
-          <h2 className="text-xl font-semibold text-gray-900">
+      <div className="bg-card rounded-lg shadow border border-border">
+        <div className="p-6 border-b border-border">
+          <h2 className="text-xl font-semibold text-foreground">
             Recent Pending Parks
           </h2>
         </div>
-        <div className="divide-y divide-gray-200">
+        <div className="divide-y divide-border">
           {recentPendingParks.length === 0 ? (
-            <div className="p-6 text-center text-gray-500">
+            <div className="p-6 text-center text-muted-foreground">
               No pending parks to review
             </div>
           ) : (
             recentPendingParks.map((park) => (
               <div
                 key={park.id}
-                className="p-6 hover:bg-gray-50 transition-colors"
+                className="p-6 hover:bg-accent/50 transition-colors"
               >
                 <div className="flex items-center justify-between">
                   <div>
-                    <h3 className="text-lg font-medium text-gray-900">
+                    <h3 className="text-lg font-medium text-foreground">
                       {park.name}
                     </h3>
-                    <p className="text-sm text-gray-600">
+                    <p className="text-sm text-muted-foreground">
                       {park.address?.city ? `${park.address.city}, ` : ""}
                       {park.address?.state}
                     </p>
-                    <p className="text-xs text-gray-500 mt-1">
+                    <p className="text-xs text-muted-foreground mt-1">
                       Submitted by: {park.submitterName || "Anonymous"} •{" "}
                       {new Date(park.createdAt).toLocaleDateString()}
                     </p>
                   </div>
                   <a
                     href={`/admin/parks?highlight=${park.id}`}
-                    className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors text-sm font-medium"
+                    className="px-4 py-2 bg-primary text-primary-foreground rounded-lg hover:bg-primary/90 transition-colors text-sm font-medium"
                   >
                     Review
                   </a>
@@ -169,19 +169,19 @@ export default async function AdminDashboard() {
       </div>
 
       {/* Recent Photos */}
-      <div className="mt-8 bg-white rounded-lg shadow border border-gray-200">
-        <div className="p-6 border-b border-gray-200 flex items-center justify-between">
-          <h2 className="text-xl font-semibold text-gray-900">Recent Photos</h2>
+      <div className="mt-8 bg-card rounded-lg shadow border border-border">
+        <div className="p-6 border-b border-border flex items-center justify-between">
+          <h2 className="text-xl font-semibold text-foreground">Recent Photos</h2>
           <Link
             href="/admin/photos"
-            className="text-sm text-blue-600 hover:text-blue-700 font-medium"
+            className="text-sm text-primary hover:text-primary/80 font-medium"
           >
             View All →
           </Link>
         </div>
         <div className="p-6">
           {recentPhotos.length === 0 ? (
-            <div className="text-center text-gray-500 py-8">
+            <div className="text-center text-muted-foreground py-8">
               No photos uploaded yet
             </div>
           ) : (
@@ -190,7 +190,7 @@ export default async function AdminDashboard() {
                 <Link
                   key={photo.id}
                   href={`/parks/${photo.park.slug}`}
-                  className="group relative aspect-square rounded-lg overflow-hidden border border-gray-200 hover:border-blue-500 transition-colors"
+                  className="group relative aspect-square rounded-lg overflow-hidden border border-border hover:border-primary transition-colors"
                 >
                   <Image
                     src={photo.url}

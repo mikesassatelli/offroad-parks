@@ -114,10 +114,10 @@ export function ParkManagementTable({ parks, highlightId }: Props) {
 
   const getStatusBadge = (status: ParkStatus) => {
     const styles = {
-      PENDING: "bg-yellow-100 text-yellow-800 border-yellow-200",
-      APPROVED: "bg-green-100 text-green-800 border-green-200",
-      REJECTED: "bg-red-100 text-red-800 border-red-200",
-      DRAFT: "bg-gray-100 text-gray-800 border-gray-200",
+      PENDING: "bg-yellow-100 dark:bg-yellow-900/30 text-yellow-800 dark:text-yellow-300 border-yellow-200 dark:border-yellow-900/50",
+      APPROVED: "bg-green-100 dark:bg-green-900/30 text-green-800 dark:text-green-300 border-green-200 dark:border-green-900/50",
+      REJECTED: "bg-red-100 dark:bg-red-900/30 text-red-800 dark:text-red-300 border-red-200 dark:border-red-900/50",
+      DRAFT: "bg-muted text-foreground border-border",
     };
 
     return (
@@ -130,67 +130,67 @@ export function ParkManagementTable({ parks, highlightId }: Props) {
   };
 
   return (
-    <div className="bg-white rounded-lg shadow border border-gray-200 overflow-hidden">
-      <div className="px-6 py-3 border-b border-gray-200">
+    <div className="bg-card rounded-lg shadow border border-border overflow-hidden">
+      <div className="px-6 py-3 border-b border-border">
         <input
           type="text"
           placeholder="Search by name, city, or state..."
           value={search}
           onChange={(e) => setSearch(e.target.value)}
-          className="w-full max-w-sm px-4 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent"
+          className="w-full max-w-sm px-4 py-2 border border-input bg-background text-foreground rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-ring focus:border-transparent"
         />
       </div>
       {filteredParks.length === 0 ? (
         <div className="p-12 text-center">
-          <MapPin className="w-12 h-12 text-gray-400 mx-auto mb-4" />
-          <h3 className="text-lg font-medium text-gray-900 mb-2">
+          <MapPin className="w-12 h-12 text-muted-foreground mx-auto mb-4" />
+          <h3 className="text-lg font-medium text-foreground mb-2">
             No parks found
           </h3>
-          <p className="text-gray-600">
+          <p className="text-muted-foreground">
             No parks match the current filter criteria.
           </p>
         </div>
       ) : (
       <div className="overflow-x-auto">
-        <table className="min-w-full divide-y divide-gray-200">
-          <thead className="bg-gray-50">
+        <table className="min-w-full divide-y divide-border">
+          <thead className="bg-muted/50">
             <tr>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+              <th className="px-6 py-3 text-left text-xs font-medium text-muted-foreground uppercase tracking-wider">
                 Park
               </th>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+              <th className="px-6 py-3 text-left text-xs font-medium text-muted-foreground uppercase tracking-wider">
                 Location
               </th>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+              <th className="px-6 py-3 text-left text-xs font-medium text-muted-foreground uppercase tracking-wider">
                 Status
               </th>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+              <th className="px-6 py-3 text-left text-xs font-medium text-muted-foreground uppercase tracking-wider">
                 Submitted By
               </th>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+              <th className="px-6 py-3 text-left text-xs font-medium text-muted-foreground uppercase tracking-wider">
                 Date
               </th>
-              <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
+              <th className="px-6 py-3 text-right text-xs font-medium text-muted-foreground uppercase tracking-wider">
                 Actions
               </th>
             </tr>
           </thead>
-          <tbody className="bg-white divide-y divide-gray-200">
+          <tbody className="bg-card divide-y divide-border">
             {filteredParks.map((park) => (
               <tr
                 key={park.id}
-                className={`hover:bg-gray-50 transition-colors ${
-                  park.id === highlightId ? "bg-blue-50" : ""
+                className={`hover:bg-accent/50 transition-colors ${
+                  park.id === highlightId ? "bg-primary/10" : ""
                 }`}
               >
                 <td className="px-6 py-4 whitespace-nowrap">
                   <div className="flex items-center gap-2">
-                    <div className="text-sm font-medium text-gray-900">
+                    <div className="text-sm font-medium text-foreground">
                       {park.name}
                     </div>
                     {park.status === "APPROVED" && park.photos.length === 0 && (
                       <span
-                        className="inline-flex items-center gap-1 px-1.5 py-0.5 text-[10px] font-semibold rounded-full bg-amber-100 text-amber-700 border border-amber-200"
+                        className="inline-flex items-center gap-1 px-1.5 py-0.5 text-[10px] font-semibold rounded-full bg-amber-100 dark:bg-amber-900/30 text-amber-700 dark:text-amber-300 border border-amber-200 dark:border-amber-900/50"
                         title="No approved photos"
                       >
                         <Camera className="w-2.5 h-2.5" />
@@ -198,10 +198,10 @@ export function ParkManagementTable({ parks, highlightId }: Props) {
                       </span>
                     )}
                   </div>
-                  <div className="text-xs text-gray-500">{park.slug}</div>
+                  <div className="text-xs text-muted-foreground">{park.slug}</div>
                 </td>
                 <td className="px-6 py-4 whitespace-nowrap">
-                  <div className="text-sm text-gray-900">
+                  <div className="text-sm text-foreground">
                     {park.address?.city ? `${park.address.city}, ` : ""}
                     {park.address?.state ?? "Unknown"}
                   </div>
@@ -210,18 +210,18 @@ export function ParkManagementTable({ parks, highlightId }: Props) {
                   {getStatusBadge(park.status)}
                 </td>
                 <td className="px-6 py-4 whitespace-nowrap">
-                  <div className="text-sm text-gray-900">
+                  <div className="text-sm text-foreground">
                     {park.submittedBy?.name ||
                       park.submitterName ||
                       "Anonymous"}
                   </div>
                   {park.submittedBy?.email && (
-                    <div className="text-xs text-gray-500">
+                    <div className="text-xs text-muted-foreground">
                       {park.submittedBy.email}
                     </div>
                   )}
                 </td>
-                <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                <td className="px-6 py-4 whitespace-nowrap text-sm text-muted-foreground">
                   {new Date(park.createdAt).toLocaleDateString()}
                 </td>
                 <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
@@ -231,7 +231,7 @@ export function ParkManagementTable({ parks, highlightId }: Props) {
                         <button
                           onClick={() => handleApprove(park.id)}
                           disabled={processingId === park.id}
-                          className="text-green-600 hover:text-green-900 disabled:opacity-50 disabled:cursor-not-allowed"
+                          className="text-green-600 dark:text-green-400 hover:text-green-900 dark:hover:text-green-200 disabled:opacity-50 disabled:cursor-not-allowed"
                           title="Approve"
                         >
                           <CheckCircle className="w-5 h-5" />
@@ -239,7 +239,7 @@ export function ParkManagementTable({ parks, highlightId }: Props) {
                         <button
                           onClick={() => handleReject(park.id)}
                           disabled={processingId === park.id}
-                          className="text-red-600 hover:text-red-900 disabled:opacity-50 disabled:cursor-not-allowed"
+                          className="text-red-600 dark:text-red-400 hover:text-red-900 dark:hover:text-red-200 disabled:opacity-50 disabled:cursor-not-allowed"
                           title="Reject"
                         >
                           <XCircle className="w-5 h-5" />
@@ -248,7 +248,7 @@ export function ParkManagementTable({ parks, highlightId }: Props) {
                     )}
                     <a
                       href={`/admin/parks/${park.id}/edit`}
-                      className="text-blue-600 hover:text-blue-900"
+                      className="text-primary hover:text-primary/80"
                       title="Edit"
                     >
                       <Edit className="w-5 h-5" />
@@ -256,7 +256,7 @@ export function ParkManagementTable({ parks, highlightId }: Props) {
                     <button
                       onClick={() => handleDelete(park.id, park.name)}
                       disabled={processingId === park.id}
-                      className="text-red-600 hover:text-red-900 disabled:opacity-50 disabled:cursor-not-allowed"
+                      className="text-red-600 dark:text-red-400 hover:text-red-900 dark:hover:text-red-200 disabled:opacity-50 disabled:cursor-not-allowed"
                       title="Delete"
                     >
                       <Trash2 className="w-5 h-5" />

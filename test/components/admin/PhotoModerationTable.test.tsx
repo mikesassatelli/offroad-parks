@@ -604,7 +604,7 @@ describe("PhotoModerationTable", () => {
     // Find the status badge
     const statusBadge = screen.getByText("UNKNOWN_STATUS");
     expect(statusBadge).toBeInTheDocument();
-    expect(statusBadge.className).toContain("bg-gray-100");
-    expect(statusBadge.className).toContain("text-gray-800");
+    expect(statusBadge.className).toContain("bg-muted");
+    expect(statusBadge.className).toContain("text-foreground");
   });
 });

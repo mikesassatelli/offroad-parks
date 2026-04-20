@@ -161,8 +161,8 @@ export default function AdminClaimsPage() {
     <div>
       <div className="flex items-center justify-between mb-6">
         <div>
-          <h1 className="text-2xl font-bold text-gray-900">Park Claims</h1>
-          <p className="text-gray-500 text-sm mt-1">
+          <h1 className="text-2xl font-bold text-foreground">Park Claims</h1>
+          <p className="text-muted-foreground text-sm mt-1">
             Review and action park ownership claim requests
           </p>
         </div>
@@ -182,12 +182,12 @@ export default function AdminClaimsPage() {
       {isLoading ? (
         <div className="space-y-4">
           {[1, 2, 3].map((i) => (
-            <div key={i} className="h-40 bg-gray-100 rounded-lg animate-pulse" />
+            <div key={i} className="h-40 bg-muted rounded-lg animate-pulse" />
           ))}
         </div>
       ) : claims.length === 0 ? (
         <Card>
-          <CardContent className="py-12 text-center text-gray-500">
+          <CardContent className="py-12 text-center text-muted-foreground">
             No {status.toLowerCase()} claims found.
           </CardContent>
         </Card>
@@ -198,12 +198,12 @@ export default function AdminClaimsPage() {
               <CardHeader className="pb-3">
                 <div className="flex items-start justify-between">
                   <div className="flex items-start gap-3">
-                    <Building2 className="w-5 h-5 text-gray-400 mt-0.5 flex-shrink-0" />
+                    <Building2 className="w-5 h-5 text-muted-foreground mt-0.5 flex-shrink-0" />
                     <div>
                       <CardTitle className="text-base">
                         <a
                           href={`/parks/${claim.park.slug}`}
-                          className="hover:underline text-blue-700"
+                          className="hover:underline text-primary"
                           target="_blank"
                           rel="noopener noreferrer"
                         >
@@ -211,7 +211,7 @@ export default function AdminClaimsPage() {
                         </a>
                       </CardTitle>
                       {claim.park.address && (
-                        <p className="text-xs text-gray-500 flex items-center gap-1 mt-0.5">
+                        <p className="text-xs text-muted-foreground flex items-center gap-1 mt-0.5">
                           <MapPin className="w-3 h-3" />
                           {claim.park.address.city
                             ? `${claim.park.address.city}, `
@@ -228,7 +228,7 @@ export default function AdminClaimsPage() {
                     <Button
                       size="sm"
                       variant="ghost"
-                      className="h-7 w-7 p-0 text-gray-400 hover:text-destructive"
+                      className="h-7 w-7 p-0 text-muted-foreground hover:text-destructive"
                       onClick={() => handleDelete(claim.id, claim.claimantName)}
                       disabled={actionLoading === claim.id}
                       data-testid={`delete-${claim.id}`}
@@ -243,34 +243,34 @@ export default function AdminClaimsPage() {
               <CardContent className="space-y-3">
                 {/* Org + submitter */}
                 <div className="grid sm:grid-cols-2 gap-3 text-sm">
-                  <div className="flex items-start gap-2 text-gray-700">
-                    <Building2 className="w-4 h-4 text-gray-400 flex-shrink-0 mt-0.5" />
+                  <div className="flex items-start gap-2 text-foreground">
+                    <Building2 className="w-4 h-4 text-muted-foreground flex-shrink-0 mt-0.5" />
                     <div>
-                      <p className="text-xs text-gray-400 leading-none mb-0.5">Organization</p>
+                      <p className="text-xs text-muted-foreground leading-none mb-0.5">Organization</p>
                       <p className="font-medium">{claim.businessName ?? "—"}</p>
                     </div>
                   </div>
-                  <div className="flex items-start gap-2 text-gray-700">
-                    <User className="w-4 h-4 text-gray-400 flex-shrink-0 mt-0.5" />
+                  <div className="flex items-start gap-2 text-foreground">
+                    <User className="w-4 h-4 text-muted-foreground flex-shrink-0 mt-0.5" />
                     <div>
-                      <p className="text-xs text-gray-400 leading-none mb-0.5">Submitted by</p>
+                      <p className="text-xs text-muted-foreground leading-none mb-0.5">Submitted by</p>
                       <p className="font-medium">{claim.user.name || claim.user.email}</p>
-                      <p className="text-xs text-gray-500">{claim.claimantName}</p>
+                      <p className="text-xs text-muted-foreground">{claim.claimantName}</p>
                     </div>
                   </div>
                 </div>
 
                 {/* Contact details */}
                 <div className="space-y-1">
-                  <div className="flex items-center gap-2 text-gray-600 text-sm">
-                    <Mail className="w-3.5 h-3.5 text-gray-400" />
+                  <div className="flex items-center gap-2 text-muted-foreground text-sm">
+                    <Mail className="w-3.5 h-3.5 text-muted-foreground" />
                     <a href={`mailto:${claim.claimantEmail}`} className="hover:underline truncate">
                       {claim.claimantEmail}
                     </a>
                   </div>
                   {claim.claimantPhone && (
-                    <div className="flex items-center gap-2 text-gray-600 text-sm">
-                      <Phone className="w-3.5 h-3.5 text-gray-400" />
+                    <div className="flex items-center gap-2 text-muted-foreground text-sm">
+                      <Phone className="w-3.5 h-3.5 text-muted-foreground" />
                       <span>{claim.claimantPhone}</span>
                     </div>
                   )}
@@ -278,21 +278,21 @@ export default function AdminClaimsPage() {
 
                 {/* Message */}
                 {claim.message && (
-                  <div className="bg-gray-50 rounded-md px-3 py-2 flex gap-2">
-                    <MessageSquare className="w-4 h-4 text-gray-400 flex-shrink-0 mt-0.5" />
-                    <p className="text-sm text-gray-700">{claim.message}</p>
+                  <div className="bg-muted rounded-md px-3 py-2 flex gap-2">
+                    <MessageSquare className="w-4 h-4 text-muted-foreground flex-shrink-0 mt-0.5" />
+                    <p className="text-sm text-foreground">{claim.message}</p>
                   </div>
                 )}
 
                 {/* Submitted date */}
-                <p className="text-xs text-gray-400">
+                <p className="text-xs text-muted-foreground">
                   Submitted {new Date(claim.createdAt).toLocaleDateString()}
                 </p>
 
                 {/* Review notes */}
                 {claim.reviewNotes && (
-                  <div className="text-xs text-gray-500 bg-yellow-50 border border-yellow-200 rounded px-3 py-2">
-                    <span className="font-medium text-yellow-800">Admin note:</span>{" "}
+                  <div className="text-xs text-muted-foreground bg-yellow-50 dark:bg-yellow-900/20 border border-yellow-200 dark:border-yellow-900/40 rounded px-3 py-2">
+                    <span className="font-medium text-yellow-800 dark:text-yellow-300">Admin note:</span>{" "}
                     {claim.reviewNotes}
                   </div>
                 )}
@@ -372,7 +372,7 @@ export default function AdminClaimsPage() {
           >
             Previous
           </Button>
-          <span className="flex items-center text-sm text-gray-600 px-3">
+          <span className="flex items-center text-sm text-muted-foreground px-3">
             Page {page} of {pagination.totalPages}
           </span>
           <Button

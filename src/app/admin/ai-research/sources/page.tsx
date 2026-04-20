@@ -41,40 +41,40 @@ export default async function SourcesPage({
 
     return (
       <div className="space-y-6">
-        <h1 className="text-2xl font-bold text-gray-900">Data Sources</h1>
+        <h1 className="text-2xl font-bold text-foreground">Data Sources</h1>
 
         {/* Domain Reliability Section */}
         <DomainReliabilityTable domains={domainSummaries} />
 
-        <hr className="border-gray-200" />
+        <hr className="border-border" />
 
-        <p className="text-sm text-gray-500">Select a park to manage its data sources.</p>
-        <div className="rounded-lg border border-gray-200 bg-white overflow-hidden">
-          <table className="min-w-full divide-y divide-gray-200">
+        <p className="text-sm text-muted-foreground">Select a park to manage its data sources.</p>
+        <div className="rounded-lg border border-border bg-card overflow-hidden">
+          <table className="min-w-full divide-y divide-border">
             <thead>
               <tr>
-                <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Park</th>
-                <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">State</th>
-                <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Research Status</th>
-                <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Sources</th>
+                <th className="px-4 py-3 text-left text-xs font-medium text-muted-foreground uppercase">Park</th>
+                <th className="px-4 py-3 text-left text-xs font-medium text-muted-foreground uppercase">State</th>
+                <th className="px-4 py-3 text-left text-xs font-medium text-muted-foreground uppercase">Research Status</th>
+                <th className="px-4 py-3 text-left text-xs font-medium text-muted-foreground uppercase">Sources</th>
               </tr>
             </thead>
-            <tbody className="divide-y divide-gray-200">
+            <tbody className="divide-y divide-border">
               {parks.map((park) => (
-                <tr key={park.id} className="hover:bg-gray-50">
+                <tr key={park.id} className="hover:bg-accent/50 transition-colors">
                   <td className="px-4 py-3">
                     <a
                       href={`/admin/ai-research/sources?parkId=${park.id}`}
-                      className="text-sm font-medium text-blue-600 hover:text-blue-800"
+                      className="text-sm font-medium text-primary hover:text-primary/80"
                     >
                       {park.name}
                     </a>
                   </td>
-                  <td className="px-4 py-3 text-sm text-gray-500">{park.address?.state}</td>
+                  <td className="px-4 py-3 text-sm text-muted-foreground">{park.address?.state}</td>
                   <td className="px-4 py-3">
                     <ResearchStatusBadge status={park.researchStatus} />
                   </td>
-                  <td className="px-4 py-3 text-sm text-gray-900">{park._count.dataSources}</td>
+                  <td className="px-4 py-3 text-sm text-foreground">{park._count.dataSources}</td>
                 </tr>
               ))}
             </tbody>
@@ -91,7 +91,7 @@ export default async function SourcesPage({
   });
 
   if (!park) {
-    return <div className="text-red-600">Park not found.</div>;
+    return <div className="text-destructive">Park not found.</div>;
   }
 
   const sources = await prisma.dataSource.findMany({
@@ -120,14 +120,14 @@ export default async function SourcesPage({
   return (
     <div className="space-y-6">
       <div>
-        <a href="/admin/ai-research/sources" className="text-sm text-blue-600 hover:text-blue-800">&larr; All Parks</a>
-        <h1 className="text-2xl font-bold text-gray-900 mt-2">Sources: {park.name}</h1>
+        <a href="/admin/ai-research/sources" className="text-sm text-primary hover:text-primary/80">&larr; All Parks</a>
+        <h1 className="text-2xl font-bold text-foreground mt-2">Sources: {park.name}</h1>
       </div>
 
       {/* Domain Reliability Section */}
       <DomainReliabilityTable domains={domainSummaries} />
 
-      <hr className="border-gray-200" />
+      <hr className="border-border" />
 
       <SourceManagementTable sources={summaries} parkId={parkId} />
     </div>
@@ -136,14 +136,14 @@ export default async function SourcesPage({
 
 function ResearchStatusBadge({ status }: { status: string }) {
   const styles: Record<string, string> = {
-    NEEDS_RESEARCH: "bg-red-100 text-red-800 border-red-200",
-    IN_PROGRESS: "bg-yellow-100 text-yellow-800 border-yellow-200",
-    RESEARCHED: "bg-green-100 text-green-800 border-green-200",
-    MAINTENANCE: "bg-blue-100 text-blue-800 border-blue-200",
+    NEEDS_RESEARCH: "bg-red-100 dark:bg-red-900/30 text-red-800 dark:text-red-300 border-red-200 dark:border-red-900/50",
+    IN_PROGRESS: "bg-yellow-100 dark:bg-yellow-900/30 text-yellow-800 dark:text-yellow-300 border-yellow-200 dark:border-yellow-900/50",
+    RESEARCHED: "bg-green-100 dark:bg-green-900/30 text-green-800 dark:text-green-300 border-green-200 dark:border-green-900/50",
+    MAINTENANCE: "bg-blue-100 dark:bg-blue-900/30 text-blue-800 dark:text-blue-300 border-blue-200 dark:border-blue-900/50",
   };
 
   return (
-    <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium border ${styles[status] || "bg-gray-100 text-gray-800 border-gray-200"}`}>
+    <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium border ${styles[status] || "bg-muted text-foreground border-border"}`}>
       {status.replace("_", " ")}
     </span>
   );
