@@ -500,6 +500,193 @@ describe("PATCH /api/admin/parks/[id]", () => {
     consoleErrorSpy.mockRestore();
   });
 
+  it("returns 400 when address is provided without a state", async () => {
+    vi.mocked(auth).mockResolvedValue({
+      user: { id: "admin-123", role: "ADMIN" },
+    } as any);
+
+    const request = new Request(
+      "http://localhost:3000/api/admin/parks/park-123",
+      {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          ...validUpdateData,
+          address: { city: "Somewhere" }, // no state
+        }),
+      },
+    );
+
+    const params = Promise.resolve({ id: "park-123" });
+    const response = await PATCH(request, { params });
+    const data = await response.json();
+
+    expect(response.status).toBe(400);
+    expect(data).toEqual({ error: "State is required on the address." });
+    expect(prisma.park.update).not.toHaveBeenCalled();
+  });
+
+  it("returns 400 when address.state is not a recognized US state", async () => {
+    vi.mocked(auth).mockResolvedValue({
+      user: { id: "admin-123", role: "ADMIN" },
+    } as any);
+
+    const request = new Request(
+      "http://localhost:3000/api/admin/parks/park-123",
+      {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          ...validUpdateData,
+          address: { ...validUpdateData.address, state: "Narnia" },
+        }),
+      },
+    );
+
+    const params = Promise.resolve({ id: "park-123" });
+    const response = await PATCH(request, { params });
+    const data = await response.json();
+
+    expect(response.status).toBe(400);
+    expect(data.error).toContain(`Invalid state: "Narnia"`);
+    expect(prisma.park.update).not.toHaveBeenCalled();
+  });
+
+  it("normalizes a full state name with mixed casing when updating", async () => {
+    vi.mocked(auth).mockResolvedValue({
+      user: { id: "admin-123", role: "ADMIN" },
+    } as any);
+    vi.mocked(prisma.park.update).mockResolvedValue({
+      id: "park-123",
+      slug: "p",
+    } as any);
+
+    const request = new Request(
+      "http://localhost:3000/api/admin/parks/park-123",
+      {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          ...validUpdateData,
+          address: { ...validUpdateData.address, state: "new mexico" },
+        }),
+      },
+    );
+
+    const params = Promise.resolve({ id: "park-123" });
+    await PATCH(request, { params });
+
+    const updateCall = vi.mocked(prisma.park.update).mock.calls[0][0] as any;
+    expect(updateCall.data.address.upsert.create.state).toBe("New Mexico");
+    expect(updateCall.data.address.upsert.update.state).toBe("New Mexico");
+  });
+
+  it("regenerates map hero when coordinates change", async () => {
+    const { generateMapHeroAsync } = await import("@/lib/map-hero/generate");
+    vi.mocked(auth).mockResolvedValue({
+      user: { id: "admin-123", role: "ADMIN" },
+    } as any);
+
+    // Existing park has different coords
+    vi.mocked(prisma.park.findUnique).mockResolvedValue({
+      latitude: 10,
+      longitude: 20,
+      address: { latitude: 10, longitude: 20 },
+    } as any);
+
+    vi.mocked(prisma.park.update).mockResolvedValue({
+      id: "park-123",
+      slug: "updated",
+    } as any);
+
+    const request = new Request(
+      "http://localhost:3000/api/admin/parks/park-123",
+      {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(validUpdateData), // 34.0522 / -118.2437
+      },
+    );
+
+    await PATCH(request, { params: Promise.resolve({ id: "park-123" }) });
+
+    expect(generateMapHeroAsync).toHaveBeenCalledWith("park-123", "admin-edit");
+  });
+
+  it("does NOT regenerate map hero when coordinates are unchanged", async () => {
+    const { generateMapHeroAsync } = await import("@/lib/map-hero/generate");
+    vi.mocked(generateMapHeroAsync).mockClear();
+
+    vi.mocked(auth).mockResolvedValue({
+      user: { id: "admin-123", role: "ADMIN" },
+    } as any);
+
+    // Existing coords match payload
+    vi.mocked(prisma.park.findUnique).mockResolvedValue({
+      latitude: 34.0522,
+      longitude: -118.2437,
+      address: null,
+    } as any);
+
+    vi.mocked(prisma.park.update).mockResolvedValue({
+      id: "park-123",
+      slug: "updated",
+    } as any);
+
+    const request = new Request(
+      "http://localhost:3000/api/admin/parks/park-123",
+      {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(validUpdateData),
+      },
+    );
+
+    await PATCH(request, { params: Promise.resolve({ id: "park-123" }) });
+
+    expect(generateMapHeroAsync).not.toHaveBeenCalled();
+  });
+
+  it("strips flat address fields from the park update payload", async () => {
+    vi.mocked(auth).mockResolvedValue({
+      user: { id: "admin-123", role: "ADMIN" },
+    } as any);
+    vi.mocked(prisma.park.update).mockResolvedValue({
+      id: "park-123",
+      slug: "updated",
+    } as any);
+
+    const bodyWithFlatFields = {
+      ...validUpdateData,
+      // Flat address fields that should be stripped from the Park update
+      streetAddress: "123 Elm",
+      streetAddress2: "Suite 2",
+      addressCity: "Elsewhere",
+      addressState: "CA",
+      zipCode: "12345",
+      county: "Some County",
+    };
+
+    const request = new Request(
+      "http://localhost:3000/api/admin/parks/park-123",
+      {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(bodyWithFlatFields),
+      },
+    );
+
+    await PATCH(request, { params: Promise.resolve({ id: "park-123" }) });
+
+    const updateCall = vi.mocked(prisma.park.update).mock.calls[0][0] as any;
+    expect(updateCall.data).not.toHaveProperty("streetAddress");
+    expect(updateCall.data).not.toHaveProperty("streetAddress2");
+    expect(updateCall.data).not.toHaveProperty("addressCity");
+    expect(updateCall.data).not.toHaveProperty("addressState");
+    expect(updateCall.data).not.toHaveProperty("zipCode");
+    expect(updateCall.data).not.toHaveProperty("county");
+  });
+
   it("should preserve other park fields not in update data", async () => {
     // Arrange
     vi.mocked(auth).mockResolvedValue({

@@ -45,6 +45,17 @@ describe("stateCodeToName", () => {
     expect(stateCodeToName("")).toBeNull();
     expect(stateCodeToName("ARK")).toBeNull();
   });
+
+  it("returns null for non-string input", () => {
+    // @ts-expect-error - we explicitly test the runtime guard
+    expect(stateCodeToName(null)).toBeNull();
+    // @ts-expect-error - we explicitly test the runtime guard
+    expect(stateCodeToName(undefined)).toBeNull();
+    // @ts-expect-error - we explicitly test the runtime guard
+    expect(stateCodeToName(42)).toBeNull();
+    // @ts-expect-error - we explicitly test the runtime guard
+    expect(stateCodeToName({})).toBeNull();
+  });
 });
 
 describe("normalizeStateName", () => {
