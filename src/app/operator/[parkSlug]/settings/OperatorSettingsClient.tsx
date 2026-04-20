@@ -33,6 +33,7 @@ interface ParkData {
   maxVehicleWidthInches: number | null;
   flagsRequired: boolean | null;
   sparkArrestorRequired: boolean | null;
+  helmetsRequired: boolean | null;
   noiseLimitDBA: number | null;
   terrain: string[];
   amenities: string[];
@@ -340,6 +341,7 @@ export function OperatorSettingsClient({ parkSlug, parkName }: OperatorSettingsC
                 membershipRequired: park.membershipRequired ?? false,
                 flagsRequired: park.flagsRequired ?? false,
                 sparkArrestorRequired: park.sparkArrestorRequired ?? false,
+                helmetsRequired: park.helmetsRequired ?? false,
                 maxVehicleWidthInches: park.maxVehicleWidthInches?.toString() ?? "",
                 noiseLimitDBA: park.noiseLimitDBA?.toString() ?? "",
               }}

@@ -129,6 +129,7 @@ export default async function ParkPage({ params }: ParkPageProps) {
       photos={photos}
       currentUserId={session?.user?.id}
       isAdmin={isAdmin}
+      parkDbId={dbPark.id}
       existingClaim={existingClaim}
       isOperatorOfPark={isOperatorOfPark}
       operatorName={dbPark.operator?.name ?? null}
