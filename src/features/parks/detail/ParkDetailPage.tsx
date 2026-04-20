@@ -7,9 +7,10 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import type { Park } from "@/lib/types";
-import { Camera, CheckCircle, Clock, MapPin, MessageSquare } from "lucide-react";
+import { Camera, CheckCircle, Clock, MapPin, MessageSquare, Pencil } from "lucide-react";
 import { SessionProvider, useSession } from "next-auth/react";
 import dynamic from "next/dynamic";
+import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { ParkAttributesCards } from "./components/ParkAttributesCards";
 import { ParkClaimCTA } from "./components/ParkClaimCTA";
@@ -48,6 +49,8 @@ interface ParkDetailPageProps {
   photos: Photo[];
   currentUserId?: string;
   isAdmin?: boolean;
+  /** DB id of the park — used to build the admin edit link. */
+  parkDbId?: string;
   existingClaim?: { status: string; reviewNotes: string | null } | null;
   isOperatorOfPark?: boolean;
   operatorName?: string | null;
@@ -58,6 +61,7 @@ function ParkDetailPageInner({
   photos,
   currentUserId,
   isAdmin,
+  parkDbId,
   existingClaim,
   isOperatorOfPark,
   operatorName,
@@ -133,15 +137,30 @@ function ParkDetailPageInner({
       {/* Park Title Section */}
       <div className="bg-card border-b border-border">
         <div className="max-w-7xl mx-auto px-6 py-6">
-          <h1 className="text-3xl font-bold tracking-tight text-foreground">
-            {park.name}
-          </h1>
-          <div className="flex items-center gap-2 text-muted-foreground mt-2">
-            <MapPin className="w-4 h-4" />
-            <span>
-              {park.address.city ? `${park.address.city}, ` : ""}
-              {park.address.state}
-            </span>
+          <div className="flex items-start justify-between gap-4">
+            <div>
+              <h1 className="text-3xl font-bold tracking-tight text-foreground">
+                {park.name}
+              </h1>
+              <div className="flex items-center gap-2 text-muted-foreground mt-2">
+                <MapPin className="w-4 h-4" />
+                <span>
+                  {park.address.city ? `${park.address.city}, ` : ""}
+                  {park.address.state}
+                </span>
+              </div>
+            </div>
+            {isAdmin && parkDbId && (
+              <Button asChild variant="outline" size="sm">
+                <Link
+                  href={`/admin/parks/${parkDbId}/edit`}
+                  aria-label="Edit in Admin"
+                >
+                  <Pencil className="w-4 h-4" />
+                  Edit in Admin
+                </Link>
+              </Button>
+            )}
           </div>
           {(park.averageRating || park.averageDifficulty || park.averageTerrain || park.averageFacilities) && (
             <div className="flex flex-wrap items-center gap-x-6 gap-y-2 mt-4">
@@ -356,9 +375,19 @@ function ParkDetailPageInner({
                       <CardTitle>Location</CardTitle>
                     </CardHeader>
                     <CardContent>
-                      <div className="h-96 rounded-lg overflow-hidden">
-                        <MapView parks={[park]} />
-                      </div>
+                      {/* `fitOnVisible` fixes the Leaflet "centered too far
+                          north" bug: the Tabs panel isn't sized at MapView
+                          mount, so Leaflet caches stale container
+                          dimensions. The handler re-invalidates size + sets
+                          the view on the park's coords once the container
+                          stabilises. `containerClassName` overrides MapView's
+                          default full-viewport height so the map respects
+                          the surrounding Card layout. */}
+                      <MapView
+                        parks={[park]}
+                        fitOnVisible
+                        containerClassName="h-96 w-full rounded-lg overflow-hidden border shadow-sm"
+                      />
                     </CardContent>
                   </Card>
                 </TabsContent>

@@ -56,6 +56,7 @@ model User {
   parkClaims       ParkClaim[]
   parkEditLogs     ParkEditLog[]
   routes           Route[]
+  searchPreference UserSearchPreference?
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -107,6 +108,7 @@ model Park {
   maxVehicleWidthInches  Int?
   flagsRequired          Boolean?
   sparkArrestorRequired  Boolean?
+  helmetsRequired        Boolean?
   noiseLimitDBA          Int?
 
   // Map hero (auto-generated thumbnail for parks without user photos).
@@ -613,6 +615,25 @@ model ParkEditLog {
   @@index([parkId])
   @@index([userId])
   @@index([createdAt])
+}
+
+// Saved Filters panel default — one row per user.
+// Persists a user's preferred park-search Filters panel state so it can be
+// auto-applied on their next visit and restored on demand.
+//
+// The `filters` Json blob holds the full Filters panel state shape (state,
+// vehicle types, terrain, amenities, camping, rating, sliders, etc.).
+// Schema is validated server-side on upsert via Zod (userSearchPreferenceSchema).
+model UserSearchPreference {
+  id        String   @id @default(cuid())
+  userId    String   @unique
+  filters   Json
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
 }
 
 // Route Builder / Trip Planner

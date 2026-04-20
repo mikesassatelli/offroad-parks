@@ -1,12 +1,14 @@
 "use client";
-import { useState, useMemo } from "react";
+import { useState, useMemo, useEffect, useRef } from "react";
 import dynamic from "next/dynamic";
 import { SessionProvider, useSession } from "next-auth/react";
 import type { Park } from "@/lib/types";
 import { useFilteredParks } from "@/hooks/useFilteredParks";
 import { useFavorites } from "@/hooks/useFavorites";
 import { useRouteBuilder } from "@/hooks/useRouteBuilder";
+import { useSearchPreferences } from "@/hooks/useSearchPreferences";
 import { haversineDistance } from "@/lib/geo";
+import { FILTER_QUERY_KEYS } from "@/lib/search-preferences";
 import { AppHeader } from "@/components/layout/AppHeader";
 import { SearchHeader } from "@/components/layout/SearchHeader";
 import { SearchFiltersPanel } from "@/components/parks/SearchFiltersPanel";
@@ -67,7 +69,45 @@ function OffroadParksAppInner({ parks }: OffroadParksAppProps) {
     availableStates,
     filteredParks,
     clearAllFilters,
+    getCurrentFilters,
+    applyFilters,
   } = useFilteredParks({ parks, userCoords });
+
+  const {
+    preference,
+    hasPreference,
+    isAuthenticated,
+    isSaving: isSavingPreference,
+    savePreference,
+  } = useSearchPreferences();
+
+  // Auto-apply the saved default on first load — unless the URL already
+  // carries filter query params, in which case the explicit URL state wins.
+  const autoAppliedRef = useRef(false);
+  useEffect(() => {
+    if (autoAppliedRef.current) return;
+    if (!preference?.filters) return;
+    if (typeof window !== "undefined") {
+      const search = new URLSearchParams(window.location.search);
+      const urlHasFilters = FILTER_QUERY_KEYS.some((key) => search.has(key));
+      if (urlHasFilters) {
+        autoAppliedRef.current = true;
+        return;
+      }
+    }
+    applyFilters(preference.filters);
+    autoAppliedRef.current = true;
+  }, [preference, applyFilters]);
+
+  const handleSaveAsDefault = async () => {
+    await savePreference(getCurrentFilters());
+  };
+
+  const handleResetToDefault = async () => {
+    if (preference?.filters) {
+      applyFilters(preference.filters);
+    }
+  };
 
   const handleUseMyLocation = () => {
     if (!navigator.geolocation) return;
@@ -180,6 +220,11 @@ function OffroadParksAppInner({ parks }: OffroadParksAppProps) {
             sparkArrestorRequired={sparkArrestorRequired}
             onSparkArrestorRequiredChange={setSparkArrestorRequired}
             onClearFilters={clearAllFilters}
+            showSavedDefaultsControls={isAuthenticated}
+            hasSavedDefault={hasPreference}
+            isSavingDefault={isSavingPreference}
+            onSaveAsDefault={handleSaveAsDefault}
+            onResetToDefault={handleResetToDefault}
           />
 
           <div className="lg:col-span-4">

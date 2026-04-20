@@ -944,6 +944,202 @@ describe("ParkSubmissionForm", () => {
     alertSpy.mockRestore();
   });
 
+  describe("Operator claim section", () => {
+    it("should not render claim section on admin form", () => {
+      render(<ParkSubmissionForm isAdminForm={true} />);
+      expect(
+        screen.queryByLabelText(/i operate this park/i),
+      ).not.toBeInTheDocument();
+    });
+
+    it("should render claim checkbox on public form but keep fields hidden until toggled", () => {
+      render(<ParkSubmissionForm isAdminForm={false} />);
+      expect(
+        screen.getByLabelText(/i operate this park/i),
+      ).toBeInTheDocument();
+      expect(
+        screen.queryByLabelText(/organization or business name/i),
+      ).not.toBeInTheDocument();
+      expect(screen.queryByLabelText(/your name \*/i)).not.toBeInTheDocument();
+      expect(
+        screen.queryByLabelText(/contact email \*/i),
+      ).not.toBeInTheDocument();
+    });
+
+    it("should reveal claim fields when checkbox is toggled on", () => {
+      render(<ParkSubmissionForm isAdminForm={false} />);
+
+      const claimCheckbox = screen.getByLabelText(/i operate this park/i);
+      fireEvent.click(claimCheckbox);
+
+      expect(claimCheckbox).toBeChecked();
+      expect(
+        screen.getByLabelText(/organization or business name/i),
+      ).toBeInTheDocument();
+      expect(screen.getByLabelText(/your name \*/i)).toBeInTheDocument();
+      expect(screen.getByLabelText(/contact email \*/i)).toBeInTheDocument();
+      expect(screen.getByLabelText(/phone \(optional\)/i)).toBeInTheDocument();
+      expect(
+        screen.getByLabelText(/why are you claiming this park/i),
+      ).toBeInTheDocument();
+    });
+
+    it("should hide claim fields again when checkbox toggled off", () => {
+      render(<ParkSubmissionForm isAdminForm={false} />);
+
+      const claimCheckbox = screen.getByLabelText(/i operate this park/i);
+      fireEvent.click(claimCheckbox);
+      expect(
+        screen.getByLabelText(/organization or business name/i),
+      ).toBeInTheDocument();
+
+      fireEvent.click(claimCheckbox);
+      expect(claimCheckbox).not.toBeChecked();
+      expect(
+        screen.queryByLabelText(/organization or business name/i),
+      ).not.toBeInTheDocument();
+    });
+
+    it("should submit without a claim payload when checkbox is unchecked", async () => {
+      const mockFetch = vi.fn().mockResolvedValue({
+        ok: true,
+        json: async () => ({ park: { slug: "test-park", id: "park-123" } }),
+      });
+      global.fetch = mockFetch;
+
+      const { container } = render(<ParkSubmissionForm isAdminForm={false} />);
+
+      const form = container.querySelector("form");
+      fireEvent.submit(form!);
+
+      await waitFor(() => {
+        expect(mockFetch).toHaveBeenCalled();
+      });
+
+      const body = JSON.parse(mockFetch.mock.calls[0][1].body);
+      expect(body.claim).toBeUndefined();
+    });
+
+    it("should submit with a fully-populated claim payload when checkbox is checked", async () => {
+      const mockFetch = vi.fn().mockResolvedValue({
+        ok: true,
+        json: async () => ({ park: { slug: "test-park", id: "park-123" } }),
+      });
+      global.fetch = mockFetch;
+
+      const { container } = render(<ParkSubmissionForm isAdminForm={false} />);
+
+      const claimCheckbox = screen.getByLabelText(/i operate this park/i);
+      fireEvent.click(claimCheckbox);
+
+      fireEvent.change(
+        screen.getByLabelText(/organization or business name/i),
+        {
+          target: {
+            name: "claimBusinessName",
+            value: "Desert Riders Association",
+          },
+        },
+      );
+      fireEvent.change(screen.getByLabelText(/your name \*/i), {
+        target: { name: "claimantName", value: "Jane Smith" },
+      });
+      fireEvent.change(screen.getByLabelText(/contact email \*/i), {
+        target: { name: "claimantEmail", value: "jane@example.com" },
+      });
+      fireEvent.change(screen.getByLabelText(/phone \(optional\)/i), {
+        target: { name: "claimantPhone", value: "(555) 123-4567" },
+      });
+      fireEvent.change(
+        screen.getByLabelText(/why are you claiming this park/i),
+        { target: { name: "claimMessage", value: "I manage this park." } },
+      );
+
+      const form = container.querySelector("form");
+      fireEvent.submit(form!);
+
+      await waitFor(() => {
+        expect(mockFetch).toHaveBeenCalled();
+      });
+
+      const body = JSON.parse(mockFetch.mock.calls[0][1].body);
+      expect(body.claim).toEqual({
+        claimantName: "Jane Smith",
+        claimantEmail: "jane@example.com",
+        claimantPhone: "(555) 123-4567",
+        businessName: "Desert Riders Association",
+        message: "I manage this park.",
+      });
+    });
+
+    it("should omit undefined optional claim fields when only required fields are filled", async () => {
+      const mockFetch = vi.fn().mockResolvedValue({
+        ok: true,
+        json: async () => ({ park: { slug: "test-park", id: "park-123" } }),
+      });
+      global.fetch = mockFetch;
+
+      const { container } = render(<ParkSubmissionForm isAdminForm={false} />);
+
+      fireEvent.click(screen.getByLabelText(/i operate this park/i));
+
+      fireEvent.change(screen.getByLabelText(/your name \*/i), {
+        target: { name: "claimantName", value: "Jane" },
+      });
+      fireEvent.change(screen.getByLabelText(/contact email \*/i), {
+        target: { name: "claimantEmail", value: "jane@example.com" },
+      });
+
+      const form = container.querySelector("form");
+      fireEvent.submit(form!);
+
+      await waitFor(() => {
+        expect(mockFetch).toHaveBeenCalled();
+      });
+
+      const body = JSON.parse(mockFetch.mock.calls[0][1].body);
+      expect(body.claim).toEqual({
+        claimantName: "Jane",
+        claimantEmail: "jane@example.com",
+        // Empty strings coerce to undefined via `|| undefined` so they are
+        // omitted from the JSON payload entirely.
+        claimantPhone: undefined,
+        businessName: undefined,
+        message: undefined,
+      });
+    });
+
+    it("should show the claim-specific success alert when a claim is submitted", async () => {
+      const mockFetch = vi.fn().mockResolvedValue({
+        ok: true,
+        json: async () => ({ park: { slug: "test-park", id: "park-123" } }),
+      });
+      global.fetch = mockFetch;
+      const alertSpy = vi.spyOn(window, "alert").mockImplementation(() => {});
+
+      const { container } = render(<ParkSubmissionForm isAdminForm={false} />);
+
+      fireEvent.click(screen.getByLabelText(/i operate this park/i));
+      fireEvent.change(screen.getByLabelText(/your name \*/i), {
+        target: { name: "claimantName", value: "Jane" },
+      });
+      fireEvent.change(screen.getByLabelText(/contact email \*/i), {
+        target: { name: "claimantEmail", value: "jane@example.com" },
+      });
+
+      const form = container.querySelector("form");
+      fireEvent.submit(form!);
+
+      await waitFor(() => {
+        expect(alertSpy).toHaveBeenCalledWith(
+          expect.stringContaining("operator claim"),
+        );
+      });
+
+      alertSpy.mockRestore();
+    });
+  });
+
   describe("Edit Mode", () => {
     const mockInitialData = {
       name: "Existing Park",
@@ -976,6 +1172,7 @@ describe("ParkSubmissionForm", () => {
       maxVehicleWidthInches: "",
       flagsRequired: false,
       sparkArrestorRequired: false,
+      helmetsRequired: false,
       noiseLimitDBA: "",
       streetAddress: "",
       streetAddress2: "",
@@ -1370,6 +1567,20 @@ describe("ParkSubmissionForm", () => {
 
       expect(
         screen.queryByText(/this park has.*existing photo/i),
+      ).not.toBeInTheDocument();
+    });
+
+    it("should not render operator claim section in edit mode", () => {
+      render(
+        <ParkSubmissionForm
+          isAdminForm={true}
+          initialData={mockInitialData}
+          parkId="park-123"
+        />,
+      );
+
+      expect(
+        screen.queryByLabelText(/i operate this park/i),
       ).not.toBeInTheDocument();
     });
 

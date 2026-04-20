@@ -31,6 +31,7 @@ interface BulkParkInput {
   maxVehicleWidthInches?: number | null;
   flagsRequired?: boolean;
   sparkArrestorRequired?: boolean;
+  helmetsRequired?: boolean;
   noiseLimitDBA?: number | null;
   // Address fields (flat in CSV/JSON) - state is required
   streetAddress?: string;
@@ -136,6 +137,7 @@ function downloadCSVTemplate() {
     "maxVehicleWidthInches",
     "flagsRequired",
     "sparkArrestorRequired",
+    "helmetsRequired",
     "noiseLimitDBA",
     // Address fields
     "streetAddress",
@@ -171,6 +173,7 @@ function downloadCSVTemplate() {
     "Day use permit",
     "false",
     "72",
+    "true",
     "true",
     "true",
     "96",
@@ -241,6 +244,7 @@ export function BulkParkUpload() {
           maxVehicleWidthInches: parseInteger(row.maxVehicleWidthInches),
           flagsRequired: parseBoolean(row.flagsRequired),
           sparkArrestorRequired: parseBoolean(row.sparkArrestorRequired),
+          helmetsRequired: parseBoolean(row.helmetsRequired),
           noiseLimitDBA: parseInteger(row.noiseLimitDBA),
           // Address fields
           streetAddress: row.streetAddress || undefined,
@@ -313,6 +317,7 @@ export function BulkParkUpload() {
           maxVehicleWidthInches: park.maxVehicleWidthInches ?? null,
           flagsRequired: park.flagsRequired,
           sparkArrestorRequired: park.sparkArrestorRequired,
+          helmetsRequired: park.helmetsRequired,
           noiseLimitDBA: park.noiseLimitDBA ?? null,
           // Address fields
           streetAddress: park.streetAddress,
@@ -473,7 +478,7 @@ export function BulkParkUpload() {
             <strong>Valid ownership types:</strong> {ALL_OWNERSHIP_TYPES.join(", ")}
           </div>
           <div>
-            <strong>Boolean fields:</strong> permitRequired, membershipRequired, flagsRequired, sparkArrestorRequired - use &quot;true&quot;/&quot;false&quot; or &quot;yes&quot;/&quot;no&quot;
+            <strong>Boolean fields:</strong> permitRequired, membershipRequired, flagsRequired, sparkArrestorRequired, helmetsRequired - use &quot;true&quot;/&quot;false&quot; or &quot;yes&quot;/&quot;no&quot;
           </div>
           <div>
             <strong>Numeric fields:</strong> maxVehicleWidthInches, noiseLimitDBA - must be non-negative integers
