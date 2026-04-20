@@ -81,6 +81,7 @@ export const PARK_TO_FORM_FIELD_MAP = {
   maxVehicleWidthInches: "maxVehicleWidthInches",
   flagsRequired: "flagsRequired",
   sparkArrestorRequired: "sparkArrestorRequired",
+  helmetsRequired: "helmetsRequired",
   noiseLimitDBA: "noiseLimitDBA",
 
   // Address (nested in Park.address)
@@ -135,6 +136,7 @@ export const BULK_UPLOAD_FIELD_MAP = {
   maxVehicleWidthInches: "maxVehicleWidthInches",
   flagsRequired: "flagsRequired",
   sparkArrestorRequired: "sparkArrestorRequired",
+  helmetsRequired: "helmetsRequired",
   noiseLimitDBA: "noiseLimitDBA",
   // Address fields (flat in CSV)
   streetAddress: "streetAddress",

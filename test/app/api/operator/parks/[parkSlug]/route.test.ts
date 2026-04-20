@@ -63,6 +63,7 @@ const mockPark = {
   maxVehicleWidthInches: null,
   flagsRequired: null,
   sparkArrestorRequired: null,
+  helmetsRequired: null,
   noiseLimitDBA: null,
   terrain: [{ terrain: "sand" }, { terrain: "rocks" }],
   amenities: [{ amenity: "restrooms" }],

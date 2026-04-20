@@ -48,6 +48,7 @@ export const EXTRACTABLE_FIELDS: Record<string, string> = {
   maxVehicleWidthInches: "number",
   flagsRequired: "boolean",
   sparkArrestorRequired: "boolean",
+  helmetsRequired: "boolean",
   noiseLimitDBA: "number",
   "address.streetAddress": "string",
   "address.city": "string",
