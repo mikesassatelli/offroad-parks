@@ -4,6 +4,7 @@ import { useMemo, useState } from "react";
 import { MapContainer, TileLayer, useMapEvents } from "react-leaflet";
 import type { Park, RouteWaypoint } from "@/lib/types";
 import { MapBoundsHandler } from "./components/MapBoundsHandler";
+import { MapVisibilityHandler } from "./components/MapVisibilityHandler";
 import { CustomWaypointMarker } from "./components/CustomWaypointMarker";
 import { ParkMarker } from "./components/ParkMarker";
 import { RoutePolylines } from "./components/RoutePolylines";
@@ -49,6 +50,24 @@ interface MapViewProps {
   isParkInRoute?: (parkId: string) => boolean;
   onMapClick?: (lat: number, lng: number) => void;
   onRemoveWaypoint?: (waypointId: string) => void;
+  /**
+   * Opt-in fix for the "map centered too far north" bug that occurs when the
+   * map is rendered inside a Radix Tabs panel (or any container that becomes
+   * visible after mount). When enabled, the map invalidates its cached
+   * container size whenever the container resizes and re-centers on the
+   * single provided park. Only meaningful when exactly one park with coords
+   * is rendered (e.g. the park detail Location tab).
+   */
+  fitOnVisible?: boolean;
+  /** Zoom used by `fitOnVisible` when recentering. Defaults to 8. */
+  fitOnVisibleZoom?: number;
+  /**
+   * Override the default outer container classes. When omitted the map fills
+   * a full-height-minus-header layout (used on the main `/` map view). The
+   * park detail Location tab passes its own height via this prop so the map
+   * respects the surrounding `Card` height.
+   */
+  containerClassName?: string;
 }
 
 export function MapView({
@@ -59,6 +78,9 @@ export function MapView({
   isParkInRoute,
   onMapClick,
   onRemoveWaypoint,
+  fitOnVisible = false,
+  fitOnVisibleZoom = 8,
+  containerClassName,
 }: MapViewProps) {
   const [zoomLevel, setZoomLevel] = useState(4);
 
@@ -75,11 +97,23 @@ export function MapView({
     return [firstPark.coords!.lat, firstPark.coords!.lng];
   }, [parksWithCoordinates]);
 
+  const wrapperClassName =
+    containerClassName ??
+    "h-[calc(100vh-12rem)] w-full rounded-lg overflow-hidden border shadow-sm";
+
+  // When `fitOnVisible` is set the caller is rendering a single-park detail
+  // view inside a lazily-shown panel. We recenter on that park once the
+  // container has its real dimensions. See MapVisibilityHandler for details.
+  const visibilityCenter =
+    fitOnVisible && parksWithCoordinates.length === 1
+      ? parksWithCoordinates[0]
+      : undefined;
+
   return (
-    <div className="h-[calc(100vh-12rem)] w-full rounded-lg overflow-hidden border shadow-sm">
+    <div className={wrapperClassName}>
       <MapContainer
         center={centerPosition}
-        zoom={4}
+        zoom={fitOnVisible ? fitOnVisibleZoom : 4}
         style={{ height: "100%", width: "100%" }}
         scrollWheelZoom={true}
       >
@@ -91,6 +125,12 @@ export function MapView({
           parks={parksWithCoordinates}
           waypoints={routeWaypoints.length > 0 ? routeWaypoints : undefined}
         />
+        {visibilityCenter && (
+          <MapVisibilityHandler
+            center={visibilityCenter}
+            zoom={fitOnVisibleZoom}
+          />
+        )}
         {onMapClick && <MapClickHandler onMapClick={onMapClick} />}
         <ZoomTracker onZoomChange={setZoomLevel} />
 
