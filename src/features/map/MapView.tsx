@@ -68,6 +68,14 @@ interface MapViewProps {
    * respects the surrounding `Card` height.
    */
   containerClassName?: string;
+  /**
+   * Always render the park name label next to each marker, bypassing the
+   * default `zoom >= LABEL_ZOOM_THRESHOLD` gate. Useful on single-park views
+   * (e.g. the park detail Location tab) where there is no overlap risk and
+   * the default starting zoom (8) is below the threshold (9), so the label
+   * would otherwise never show.
+   */
+  alwaysShowLabel?: boolean;
 }
 
 export function MapView({
@@ -81,6 +89,7 @@ export function MapView({
   fitOnVisible = false,
   fitOnVisibleZoom = 8,
   containerClassName,
+  alwaysShowLabel = false,
 }: MapViewProps) {
   const [zoomLevel, setZoomLevel] = useState(4);
 
@@ -166,7 +175,7 @@ export function MapView({
               routeIndex={routeIndex}
               routeWaypoint={routeWaypoint}
               onAddToRoute={onAddToRoute}
-              showLabel={zoomLevel >= LABEL_ZOOM_THRESHOLD}
+              showLabel={alwaysShowLabel || zoomLevel >= LABEL_ZOOM_THRESHOLD}
             />
           );
         })}

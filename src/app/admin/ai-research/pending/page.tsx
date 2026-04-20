@@ -42,12 +42,12 @@ export default async function PendingReviewsPage() {
   return (
     <div className="space-y-6">
       <div className="flex items-center justify-between">
-        <h1 className="text-2xl font-bold text-gray-900">Review Queue</h1>
-        <p className="text-sm text-gray-500">{summaries.length} pending extraction{summaries.length !== 1 ? "s" : ""}</p>
+        <h1 className="text-2xl font-bold text-foreground">Review Queue</h1>
+        <p className="text-sm text-muted-foreground">{summaries.length} pending extraction{summaries.length !== 1 ? "s" : ""}</p>
       </div>
       {summaries.length === 0 ? (
-        <div className="rounded-lg border border-gray-200 bg-white p-12 text-center">
-          <p className="text-gray-500">No extractions pending review.</p>
+        <div className="rounded-lg border border-border bg-card p-12 text-center">
+          <p className="text-muted-foreground">No extractions pending review.</p>
         </div>
       ) : (
         <FieldExtractionReview extractions={summaries} />

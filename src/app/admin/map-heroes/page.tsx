@@ -38,11 +38,11 @@ export default async function AdminMapHeroesPage() {
   return (
     <div>
       <div className="mb-8">
-        <h1 className="text-3xl font-bold text-gray-900 mb-2 flex items-center gap-2">
+        <h1 className="text-3xl font-bold text-foreground mb-2 flex items-center gap-2">
           <ImageIcon className="w-8 h-8" />
           Map Hero Backfill
         </h1>
-        <p className="text-gray-600 max-w-3xl">
+        <p className="text-muted-foreground max-w-3xl">
           Generates a Mapbox static-image thumbnail for each park without one
           and stores it in Vercel Blob. New parks are covered automatically at
           creation time — this page is only needed to catch up existing parks.
@@ -78,16 +78,16 @@ function StatCard({
   hint?: string;
 }) {
   const toneClasses = {
-    neutral: "text-gray-900 border-gray-200",
-    success: "text-green-700 border-green-200",
-    warn: "text-orange-700 border-orange-200",
-    muted: "text-gray-500 border-gray-200",
+    neutral: "text-foreground border-border",
+    success: "text-green-700 dark:text-green-400 border-green-200 dark:border-green-900/40",
+    warn: "text-orange-700 dark:text-orange-400 border-orange-200 dark:border-orange-900/40",
+    muted: "text-muted-foreground border-border",
   } as const;
   return (
-    <div className={`bg-white rounded-lg border p-4 ${toneClasses[tone]}`}>
+    <div className={`bg-card rounded-lg border p-4 ${toneClasses[tone]}`}>
       <div className="text-2xl font-bold">{value}</div>
-      <div className="text-sm text-gray-600">{label}</div>
-      {hint && <div className="text-xs text-gray-400 mt-1">{hint}</div>}
+      <div className="text-sm text-muted-foreground">{label}</div>
+      {hint && <div className="text-xs text-muted-foreground mt-1">{hint}</div>}
     </div>
   );
 }

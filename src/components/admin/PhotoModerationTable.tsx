@@ -122,10 +122,10 @@ export function PhotoModerationTable({ photos }: PhotoModerationTableProps) {
 
   const getStatusColor = (status: string) => {
     switch (status) {
-      case "PENDING":  return "bg-orange-100 text-orange-800";
-      case "APPROVED": return "bg-green-100 text-green-800";
-      case "REJECTED": return "bg-red-100 text-red-800";
-      default:         return "bg-gray-100 text-gray-800";
+      case "PENDING":  return "bg-orange-100 dark:bg-orange-900/30 text-orange-800 dark:text-orange-300";
+      case "APPROVED": return "bg-green-100 dark:bg-green-900/30 text-green-800 dark:text-green-300";
+      case "REJECTED": return "bg-red-100 dark:bg-red-900/30 text-red-800 dark:text-red-300";
+      default:         return "bg-muted text-foreground";
     }
   };
 
@@ -161,8 +161,8 @@ export function PhotoModerationTable({ photos }: PhotoModerationTableProps) {
   );
 
   const renderPhotoCard = (photo: Photo) => (
-    <div key={photo.id} className="border border-gray-200 rounded-lg overflow-hidden">
-      <div className="relative h-48 bg-gray-100">
+    <div key={photo.id} className="border border-border rounded-lg overflow-hidden bg-card">
+      <div className="relative h-48 bg-muted">
         <Image
           src={photo.url}
           alt={photo.caption || "Park photo"}
@@ -173,14 +173,14 @@ export function PhotoModerationTable({ photos }: PhotoModerationTableProps) {
       </div>
       <div className="p-4 space-y-3">
         <div>
-          <Link href={`/parks/${photo.park.slug}`} className="font-medium text-gray-900 hover:text-primary flex items-center gap-1">
+          <Link href={`/parks/${photo.park.slug}`} className="font-medium text-foreground hover:text-primary flex items-center gap-1">
             {photo.park.name}
             <ExternalLink className="w-3 h-3" />
           </Link>
         </div>
-        {photo.caption && <p className="text-sm text-gray-600 line-clamp-2">{photo.caption}</p>}
-        <div className="text-xs text-gray-500">Uploaded by: {photo.user?.name || "Unknown"}</div>
-        <div className="text-xs text-gray-500">{new Date(photo.createdAt).toLocaleDateString()}</div>
+        {photo.caption && <p className="text-sm text-muted-foreground line-clamp-2">{photo.caption}</p>}
+        <div className="text-xs text-muted-foreground">Uploaded by: {photo.user?.name || "Unknown"}</div>
+        <div className="text-xs text-muted-foreground">{new Date(photo.createdAt).toLocaleDateString()}</div>
         <span className={`inline-block px-2 py-1 text-xs font-medium rounded-full ${getStatusColor(photo.status)}`}>
           {photo.status}
         </span>
@@ -190,16 +190,16 @@ export function PhotoModerationTable({ photos }: PhotoModerationTableProps) {
   );
 
   return (
-    <div className="bg-white rounded-lg shadow border border-gray-200">
+    <div className="bg-card rounded-lg shadow border border-border">
       {/* Toolbar */}
-      <div className="border-b border-gray-200 px-6 py-3 space-y-3">
+      <div className="border-b border-border px-6 py-3 space-y-3">
         {/* Search */}
         <input
           type="text"
           placeholder="Search by park name..."
           value={search}
           onChange={(e) => setSearch(e.target.value)}
-          className="w-full max-w-sm px-4 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent"
+          className="w-full max-w-sm px-4 py-2 border border-input bg-background text-foreground rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-ring focus:border-transparent"
         />
         <div className="flex flex-wrap items-center gap-4">
           {/* Status filter */}
@@ -211,7 +211,7 @@ export function PhotoModerationTable({ photos }: PhotoModerationTableProps) {
                 className={`px-3 py-1.5 rounded-md text-sm font-medium transition-colors ${
                   statusFilter === s
                     ? "bg-primary text-primary-foreground"
-                    : "bg-gray-100 text-gray-700 hover:bg-gray-200"
+                    : "bg-muted text-foreground hover:bg-accent"
                 }`}
               >
                 {s}
@@ -229,8 +229,8 @@ export function PhotoModerationTable({ photos }: PhotoModerationTableProps) {
               onClick={() => setViewMode("flat")}
               className={`px-3 py-1.5 rounded-md text-sm font-medium transition-colors ${
                 viewMode === "flat"
-                  ? "bg-gray-800 text-white"
-                  : "bg-gray-100 text-gray-700 hover:bg-gray-200"
+                  ? "bg-foreground text-background"
+                  : "bg-muted text-foreground hover:bg-accent"
               }`}
             >
               All Photos
@@ -239,8 +239,8 @@ export function PhotoModerationTable({ photos }: PhotoModerationTableProps) {
               onClick={() => setViewMode("byPark")}
               className={`px-3 py-1.5 rounded-md text-sm font-medium transition-colors ${
                 viewMode === "byPark"
-                  ? "bg-gray-800 text-white"
-                  : "bg-gray-100 text-gray-700 hover:bg-gray-200"
+                  ? "bg-foreground text-background"
+                  : "bg-muted text-foreground hover:bg-accent"
               }`}
             >
               By Park
@@ -253,7 +253,7 @@ export function PhotoModerationTable({ photos }: PhotoModerationTableProps) {
         {/* ── Flat view ── */}
         {viewMode === "flat" && (
           filteredPhotos.length === 0 ? (
-            <div className="text-center py-12 text-gray-500">No photos found</div>
+            <div className="text-center py-12 text-muted-foreground">No photos found</div>
           ) : (
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
               {filteredPhotos.map((photo) => renderPhotoCard(photo))}
@@ -264,7 +264,7 @@ export function PhotoModerationTable({ photos }: PhotoModerationTableProps) {
         {/* ── By Park view ── */}
         {viewMode === "byPark" && (
           parkGroups.length === 0 ? (
-            <div className="text-center py-12 text-gray-500">No photos found</div>
+            <div className="text-center py-12 text-muted-foreground">No photos found</div>
           ) : (
             <div className="space-y-8">
               {parkGroups.map(([parkId, group]) => {
@@ -274,18 +274,18 @@ export function PhotoModerationTable({ photos }: PhotoModerationTableProps) {
                     <div className="flex items-center gap-3 mb-3">
                       <Link
                         href={`/parks/${group.slug}`}
-                        className={`font-semibold text-gray-900 hover:text-primary flex items-center gap-1 ${
-                          !hasApproved ? "text-orange-600" : ""
+                        className={`font-semibold text-foreground hover:text-primary flex items-center gap-1 ${
+                          !hasApproved ? "text-orange-600 dark:text-orange-400" : ""
                         }`}
                       >
                         {group.parkName}
                         <ExternalLink className="w-3 h-3" />
                       </Link>
-                      <span className="text-xs bg-gray-100 text-gray-600 px-2 py-0.5 rounded-full">
+                      <span className="text-xs bg-muted text-muted-foreground px-2 py-0.5 rounded-full">
                         {group.photos.length} {group.photos.length === 1 ? "photo" : "photos"}
                       </span>
                       {!hasApproved && (
-                        <span className="text-xs bg-orange-100 text-orange-700 px-2 py-0.5 rounded-full">
+                        <span className="text-xs bg-orange-100 dark:bg-orange-900/30 text-orange-700 dark:text-orange-300 px-2 py-0.5 rounded-full">
                           no approved photo
                         </span>
                       )}

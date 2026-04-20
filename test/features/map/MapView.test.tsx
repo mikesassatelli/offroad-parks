@@ -55,11 +55,12 @@ vi.mock("@/features/map/components/CustomWaypointMarker", () => ({
 }));
 
 vi.mock("@/features/map/components/ParkMarker", () => ({
-  ParkMarker: ({ park, isInRoute, routeIndex }: any) => (
+  ParkMarker: ({ park, isInRoute, routeIndex, showLabel }: any) => (
     <div
       data-testid={`park-marker-${park.id}`}
       data-in-route={isInRoute}
       data-route-index={routeIndex}
+      data-show-label={showLabel ? "true" : "false"}
     >
       {park.name}
     </div>
@@ -405,6 +406,55 @@ describe("MapView", () => {
       );
       // MapContainer receives the same default zoom in this mode.
       expect(getByTestId("map-container")).toHaveAttribute("data-zoom", "8");
+    });
+  });
+
+  describe("alwaysShowLabel (single-park label override)", () => {
+    it("should not render a park label by default at the initial zoom", () => {
+      // Initial zoom (4) is below LABEL_ZOOM_THRESHOLD (9) so labels stay hidden.
+      const { getByTestId } = render(<MapView parks={[mockPark1]} />);
+      expect(getByTestId("park-marker-park-1")).toHaveAttribute(
+        "data-show-label",
+        "false",
+      );
+    });
+
+    it("should force the park label on when alwaysShowLabel is set, even at a low zoom", () => {
+      const { getByTestId } = render(
+        <MapView parks={[mockPark1]} alwaysShowLabel />,
+      );
+      expect(getByTestId("park-marker-park-1")).toHaveAttribute(
+        "data-show-label",
+        "true",
+      );
+    });
+
+    it("should force labels on for every rendered park when alwaysShowLabel is set", () => {
+      const { getByTestId } = render(
+        <MapView parks={[mockPark1, mockPark2]} alwaysShowLabel />,
+      );
+      expect(getByTestId("park-marker-park-1")).toHaveAttribute(
+        "data-show-label",
+        "true",
+      );
+      expect(getByTestId("park-marker-park-2")).toHaveAttribute(
+        "data-show-label",
+        "true",
+      );
+    });
+
+    it("should flip labels on via zoom even when alwaysShowLabel is false", () => {
+      const { getByTestId } = render(<MapView parks={[mockPark1]} />);
+      const zoomHandlers = useMapEventsHandlers.filter(
+        (h) => typeof h.zoomend === "function",
+      );
+      act(() => {
+        zoomHandlers[0].zoomend({ target: { getZoom: () => 10 } });
+      });
+      expect(getByTestId("park-marker-park-1")).toHaveAttribute(
+        "data-show-label",
+        "true",
+      );
     });
   });
 

@@ -35,33 +35,33 @@ export default async function AdminConditionsPage() {
   return (
     <div>
       <div className="mb-8">
-        <h1 className="text-3xl font-bold text-gray-900 mb-2 flex items-center gap-2">
+        <h1 className="text-3xl font-bold text-foreground mb-2 flex items-center gap-2">
           <Activity className="w-8 h-8" />
           Trail Conditions
         </h1>
-        <p className="text-gray-600">
+        <p className="text-muted-foreground">
           Review and moderate community trail condition reports
         </p>
       </div>
 
       <div className="grid grid-cols-2 md:grid-cols-3 gap-4 mb-6">
-        <div className="bg-white rounded-lg border border-orange-200 p-4">
-          <div className="text-2xl font-bold text-orange-600">
+        <div className="bg-card rounded-lg border border-orange-200 dark:border-orange-900/40 p-4">
+          <div className="text-2xl font-bold text-orange-600 dark:text-orange-400">
             {pendingCount}
           </div>
-          <div className="text-sm text-gray-600">Pending Review</div>
+          <div className="text-sm text-muted-foreground">Pending Review</div>
         </div>
-        <div className="bg-white rounded-lg border border-gray-200 p-4">
-          <div className="text-2xl font-bold text-green-600">
+        <div className="bg-card rounded-lg border border-border p-4">
+          <div className="text-2xl font-bold text-green-600 dark:text-green-400">
             {publishedCount}
           </div>
-          <div className="text-sm text-gray-600">Published</div>
+          <div className="text-sm text-muted-foreground">Published</div>
         </div>
-        <div className="bg-white rounded-lg border border-gray-200 p-4">
-          <div className="text-2xl font-bold text-gray-700">
+        <div className="bg-card rounded-lg border border-border p-4">
+          <div className="text-2xl font-bold text-foreground">
             {conditions.length}
           </div>
-          <div className="text-sm text-gray-600">Total Reports</div>
+          <div className="text-sm text-muted-foreground">Total Reports</div>
         </div>
       </div>
 

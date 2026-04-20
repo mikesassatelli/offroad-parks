@@ -219,17 +219,17 @@ export function ParkDiscoveryTable({ candidates }: Props) {
   return (
     <div className="space-y-4">
       {/* Discover Parks */}
-      <div className="rounded-lg border border-gray-200 bg-white p-4">
-        <p className="text-sm font-medium text-gray-900 mb-2">
+      <div className="rounded-lg border border-border bg-card p-4">
+        <p className="text-sm font-medium text-foreground mb-2">
           Discover Parks
         </p>
         <div className="flex items-end gap-3">
           <div className="flex-1 max-w-xs">
-            <label className="block text-xs text-gray-500 mb-1">State</label>
+            <label className="block text-xs text-muted-foreground mb-1">State</label>
             <select
               value={discoverState}
               onChange={(e) => setDiscoverState(e.target.value)}
-              className="w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:border-blue-500 focus:ring-1 focus:ring-blue-500"
+              className="w-full rounded-md border border-input bg-background text-foreground px-3 py-2 text-sm focus:border-ring focus:ring-1 focus:ring-ring"
             >
               <option value="">Select a state...</option>
               {US_STATES.map((s) => (
@@ -261,8 +261,8 @@ export function ParkDiscoveryTable({ candidates }: Props) {
           <div
             className={`mt-3 rounded-lg border px-4 py-3 text-sm ${
               discoverResult.startsWith("Error")
-                ? "bg-red-50 border-red-200 text-red-800"
-                : "bg-green-50 border-green-200 text-green-800"
+                ? "bg-red-50 dark:bg-red-900/20 border-red-200 dark:border-red-900/40 text-red-800 dark:text-red-300"
+                : "bg-green-50 dark:bg-green-900/20 border-green-200 dark:border-green-900/40 text-green-800 dark:text-green-300"
             }`}
           >
             {discoverResult}
@@ -278,7 +278,7 @@ export function ParkDiscoveryTable({ candidates }: Props) {
             size="sm"
             onClick={handleBulkAccept}
             disabled={isProcessing}
-            className="text-green-700 border-green-300 hover:bg-green-50"
+            className="text-green-700 dark:text-green-400 border-green-300 dark:border-green-900/50 hover:bg-green-50 dark:hover:bg-green-900/20"
           >
             {processingBulk === "accept" ? (
               <Loader2 className="w-4 h-4 mr-1 animate-spin" />
@@ -292,7 +292,7 @@ export function ParkDiscoveryTable({ candidates }: Props) {
             size="sm"
             onClick={handleBulkReject}
             disabled={isProcessing}
-            className="text-red-700 border-red-300 hover:bg-red-50"
+            className="text-red-700 dark:text-red-400 border-red-300 dark:border-red-900/50 hover:bg-red-50 dark:hover:bg-red-900/20"
           >
             {processingBulk === "reject" ? (
               <Loader2 className="w-4 h-4 mr-1 animate-spin" />
@@ -306,53 +306,53 @@ export function ParkDiscoveryTable({ candidates }: Props) {
 
       {/* Candidates Table */}
       {candidates.length === 0 ? (
-        <div className="rounded-lg border border-gray-200 bg-white p-8 text-center">
-          <p className="text-gray-500 text-sm">
+        <div className="rounded-lg border border-border bg-card p-8 text-center">
+          <p className="text-muted-foreground text-sm">
             No candidates found. Use the search above to discover parks in a
             state.
           </p>
         </div>
       ) : (
-        <div className="rounded-lg border border-gray-200 bg-white overflow-hidden">
-          <table className="min-w-full divide-y divide-gray-200">
+        <div className="rounded-lg border border-border bg-card overflow-hidden">
+          <table className="min-w-full divide-y divide-border">
             <thead>
               <tr>
-                <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">
+                <th className="px-4 py-3 text-left text-xs font-medium text-muted-foreground uppercase">
                   Name
                 </th>
-                <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">
+                <th className="px-4 py-3 text-left text-xs font-medium text-muted-foreground uppercase">
                   State
                 </th>
-                <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">
+                <th className="px-4 py-3 text-left text-xs font-medium text-muted-foreground uppercase">
                   City
                 </th>
-                <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">
+                <th className="px-4 py-3 text-left text-xs font-medium text-muted-foreground uppercase">
                   Coordinates
                 </th>
-                <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">
+                <th className="px-4 py-3 text-left text-xs font-medium text-muted-foreground uppercase">
                   Source
                 </th>
-                <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">
+                <th className="px-4 py-3 text-left text-xs font-medium text-muted-foreground uppercase">
                   Status
                 </th>
-                <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">
+                <th className="px-4 py-3 text-left text-xs font-medium text-muted-foreground uppercase">
                   Actions
                 </th>
               </tr>
             </thead>
-            <tbody className="divide-y divide-gray-200">
+            <tbody className="divide-y divide-border">
               {candidates.map((candidate) => (
-                <tr key={candidate.id} className="hover:bg-gray-50">
-                  <td className="px-4 py-3 text-sm font-medium text-gray-900">
+                <tr key={candidate.id} className="hover:bg-accent/50 transition-colors">
+                  <td className="px-4 py-3 text-sm font-medium text-foreground">
                     {candidate.name}
                   </td>
-                  <td className="px-4 py-3 text-sm text-gray-500">
+                  <td className="px-4 py-3 text-sm text-muted-foreground">
                     {candidate.state}
                   </td>
-                  <td className="px-4 py-3 text-sm text-gray-500">
+                  <td className="px-4 py-3 text-sm text-muted-foreground">
                     {candidate.city || "\u2014"}
                   </td>
-                  <td className="px-4 py-3 text-sm text-gray-500">
+                  <td className="px-4 py-3 text-sm text-muted-foreground">
                     {candidate.estimatedLat && candidate.estimatedLng
                       ? `${candidate.estimatedLat.toFixed(4)}, ${candidate.estimatedLng.toFixed(4)}`
                       : "\u2014"}
@@ -363,13 +363,13 @@ export function ParkDiscoveryTable({ candidates }: Props) {
                         href={candidate.sourceUrl}
                         target="_blank"
                         rel="noopener noreferrer"
-                        className="inline-flex items-center gap-1 text-sm text-blue-600 hover:text-blue-800 max-w-[200px] truncate"
+                        className="inline-flex items-center gap-1 text-sm text-primary hover:text-primary/80 max-w-[200px] truncate"
                       >
                         <ExternalLink className="w-3 h-3 flex-shrink-0" />
                         Link
                       </a>
                     ) : (
-                      <span className="text-sm text-gray-400">{"\u2014"}</span>
+                      <span className="text-sm text-muted-foreground">{"\u2014"}</span>
                     )}
                   </td>
                   <td className="px-4 py-3">
@@ -388,7 +388,7 @@ export function ParkDiscoveryTable({ candidates }: Props) {
                           onClick={() => handleAccept(candidate.id)}
                           disabled={isProcessing}
                           title="Accept — create park"
-                          className="text-green-600 hover:text-green-700 hover:bg-green-50"
+                          className="text-green-600 dark:text-green-400 hover:text-green-700 dark:hover:text-green-300 hover:bg-green-50 dark:hover:bg-green-900/20"
                         >
                           {processingId === candidate.id ? (
                             <Loader2 className="w-5 h-5 animate-spin" />
@@ -408,7 +408,7 @@ export function ParkDiscoveryTable({ candidates }: Props) {
                                   [candidate.id]: e.target.value,
                                 }))
                               }
-                              className="w-32 rounded-md border border-gray-300 px-2 py-1 text-xs focus:border-red-500 focus:ring-1 focus:ring-red-500"
+                              className="w-32 rounded-md border border-input bg-background text-foreground px-2 py-1 text-xs focus:border-destructive focus:ring-1 focus:ring-destructive"
                               onKeyDown={(e) => {
                                 if (e.key === "Enter")
                                   handleReject(candidate.id);
@@ -422,7 +422,7 @@ export function ParkDiscoveryTable({ candidates }: Props) {
                               onClick={() => handleReject(candidate.id)}
                               disabled={isProcessing}
                               title="Confirm reject"
-                              className="text-red-600 hover:text-red-700 hover:bg-red-50"
+                              className="text-red-600 dark:text-red-400 hover:text-red-700 dark:hover:text-red-300 hover:bg-red-50 dark:hover:bg-red-900/20"
                             >
                               <XCircle className="w-4 h-4" />
                             </Button>
@@ -436,7 +436,7 @@ export function ParkDiscoveryTable({ candidates }: Props) {
                             }
                             disabled={isProcessing}
                             title="Reject"
-                            className="text-red-600 hover:text-red-700 hover:bg-red-50"
+                            className="text-red-600 dark:text-red-400 hover:text-red-700 dark:hover:text-red-300 hover:bg-red-50 dark:hover:bg-red-900/20"
                           >
                             <XCircle className="w-5 h-5" />
                           </Button>
@@ -464,16 +464,16 @@ function StatusBadge({
   rejectedReason: string | null;
 }) {
   const styles: Record<string, string> = {
-    PENDING: "bg-gray-100 text-gray-800 border-gray-200",
-    ACCEPTED: "bg-green-100 text-green-800 border-green-200",
-    REJECTED: "bg-red-100 text-red-800 border-red-200",
+    PENDING: "bg-muted text-foreground border-border",
+    ACCEPTED: "bg-green-100 dark:bg-green-900/30 text-green-800 dark:text-green-300 border-green-200 dark:border-green-900/50",
+    REJECTED: "bg-red-100 dark:bg-red-900/30 text-red-800 dark:text-red-300 border-red-200 dark:border-red-900/50",
   };
 
   if (status === "ACCEPTED" && seededParkId) {
     return (
       <Link
         href={`/admin/parks/${seededParkId}`}
-        className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium border ${styles.ACCEPTED} hover:bg-green-200 transition-colors`}
+        className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium border ${styles.ACCEPTED} hover:bg-green-200 dark:hover:bg-green-900/50 transition-colors`}
       >
         Seeded
       </Link>
