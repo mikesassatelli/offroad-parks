@@ -465,6 +465,60 @@ describe("ParkDetailPage", () => {
     expect(mainContent).toBeInTheDocument();
   });
 
+  describe("Edit in Admin quick link", () => {
+    it("should render the admin edit link when isAdmin is true and parkDbId is provided", () => {
+      render(
+        <ParkDetailPage
+          park={mockPark}
+          photos={[]}
+          isAdmin
+          parkDbId="db-park-123"
+        />,
+      );
+
+      const link = screen.getByRole("link", { name: /edit in admin/i });
+      expect(link).toBeInTheDocument();
+      expect(link).toHaveAttribute("href", "/admin/parks/db-park-123/edit");
+    });
+
+    it("should not render the admin edit link for a non-admin user", () => {
+      vi.mocked(useSession).mockReturnValue({
+        data: { user: { id: "user-1", name: "Regular User" } },
+      } as any);
+
+      render(
+        <ParkDetailPage
+          park={mockPark}
+          photos={[]}
+          isAdmin={false}
+          parkDbId="db-park-123"
+        />,
+      );
+
+      expect(
+        screen.queryByRole("link", { name: /edit in admin/i }),
+      ).not.toBeInTheDocument();
+    });
+
+    it("should not render the admin edit link for anonymous users", () => {
+      vi.mocked(useSession).mockReturnValue({ data: null } as any);
+
+      render(<ParkDetailPage park={mockPark} photos={[]} />);
+
+      expect(
+        screen.queryByRole("link", { name: /edit in admin/i }),
+      ).not.toBeInTheDocument();
+    });
+
+    it("should not render the admin edit link when parkDbId is missing", () => {
+      render(<ParkDetailPage park={mockPark} photos={[]} isAdmin />);
+
+      expect(
+        screen.queryByRole("link", { name: /edit in admin/i }),
+      ).not.toBeInTheDocument();
+    });
+  });
+
   it("should render sidebar in col-span-1", () => {
     const { container } = render(
       <ParkDetailPage park={mockPark} photos={[]} />,
