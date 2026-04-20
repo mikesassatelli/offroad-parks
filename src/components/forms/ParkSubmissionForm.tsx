@@ -66,6 +66,16 @@ interface FormData {
   addressState: string;
   zipCode: string;
   county: string;
+  // Operator claim ("I operate this park") — only sent when claimAsOperator
+  // is true. Creates a PENDING ParkClaim tied to the newly-created park.
+  // Optional so admin/edit flows (which never show this UI) can pass
+  // initialData without these fields.
+  claimAsOperator?: boolean;
+  claimBusinessName?: string;
+  claimantName?: string;
+  claimantEmail?: string;
+  claimantPhone?: string;
+  claimMessage?: string;
 }
 
 interface ParkSubmissionFormProps {
@@ -128,6 +138,13 @@ export function ParkSubmissionForm({
       addressState: "",
       zipCode: "",
       county: "",
+      // Operator claim defaults
+      claimAsOperator: false,
+      claimBusinessName: "",
+      claimantName: "",
+      claimantEmail: "",
+      claimantPhone: "",
+      claimMessage: "",
     },
   );
 
@@ -245,6 +262,19 @@ export function ParkSubmissionForm({
             zipCode: formData.zipCode || null,
             county: formData.county || null,
           },
+          // Only send claim payload in create mode when the submitter asserted
+          // they operate this park. Creates a PENDING ParkClaim linked to the
+          // newly-created park; admin approval is still required.
+          claim:
+            !isEditMode && formData.claimAsOperator
+              ? {
+                  claimantName: formData.claimantName,
+                  claimantEmail: formData.claimantEmail,
+                  claimantPhone: formData.claimantPhone || undefined,
+                  businessName: formData.claimBusinessName || undefined,
+                  message: formData.claimMessage || undefined,
+                }
+              : undefined,
         }),
       });
 
@@ -272,12 +302,16 @@ export function ParkSubmissionForm({
           }
         }
 
+        const claimSubmitted =
+          !isEditMode && !isAdminForm && formData.claimAsOperator;
         alert(
           isEditMode
             ? "Park updated successfully!"
             : isAdminForm
               ? "Park created successfully!"
-              : "Park submitted for review! An admin will review it soon.",
+              : claimSubmitted
+                ? "Park submitted for review! Your operator claim has also been submitted and will be reviewed by an admin."
+                : "Park submitted for review! An admin will review it soon.",
         );
         if (isAdminForm) {
           router.push(`/admin/parks?highlight=${resultParkId}`);
@@ -695,6 +729,101 @@ export function ParkSubmissionForm({
           maxLength={2000}
         />
       </div>
+
+      {/* Operator Claim — public form only, create mode only. Admin form and
+          edit mode skip this since admins manage claims separately. */}
+      {!isAdminForm && !isEditMode && (
+        <div className="border border-border rounded-lg p-4 space-y-3">
+          <div className="flex items-start gap-2">
+            <Checkbox
+              id="claimAsOperator"
+              checked={formData.claimAsOperator}
+              onCheckedChange={(checked) =>
+                setFormData((prev) => ({ ...prev, claimAsOperator: !!checked }))
+              }
+            />
+            <div>
+              <Label htmlFor="claimAsOperator" className="font-semibold">
+                I operate this park
+              </Label>
+              <p className="text-xs text-muted-foreground mt-1">
+                Check this if you own or manage this park and want to claim the
+                listing. An admin will review your claim separately — park
+                approval alone does not approve the claim.
+              </p>
+            </div>
+          </div>
+
+          {formData.claimAsOperator && (
+            <div className="space-y-3 pt-2 border-t border-border">
+              <div>
+                <Label htmlFor="claimBusinessName">
+                  Organization or business name *
+                </Label>
+                <Input
+                  id="claimBusinessName"
+                  name="claimBusinessName"
+                  value={formData.claimBusinessName}
+                  onChange={handleInputChange}
+                  placeholder="Iowa DNR, Desert Riders Association…"
+                  maxLength={200}
+                  required={formData.claimAsOperator}
+                />
+              </div>
+              <div>
+                <Label htmlFor="claimantName">Your name *</Label>
+                <Input
+                  id="claimantName"
+                  name="claimantName"
+                  value={formData.claimantName}
+                  onChange={handleInputChange}
+                  placeholder="Jane Smith"
+                  maxLength={200}
+                  required={formData.claimAsOperator}
+                />
+              </div>
+              <div>
+                <Label htmlFor="claimantEmail">Contact email *</Label>
+                <Input
+                  id="claimantEmail"
+                  name="claimantEmail"
+                  type="email"
+                  value={formData.claimantEmail}
+                  onChange={handleInputChange}
+                  placeholder="jane@example.com"
+                  required={formData.claimAsOperator}
+                />
+              </div>
+              <div>
+                <Label htmlFor="claimantPhone">Phone (optional)</Label>
+                <Input
+                  id="claimantPhone"
+                  name="claimantPhone"
+                  type="tel"
+                  value={formData.claimantPhone}
+                  onChange={handleInputChange}
+                  placeholder="(555) 555-5555"
+                  maxLength={30}
+                />
+              </div>
+              <div>
+                <Label htmlFor="claimMessage">
+                  Why are you claiming this park? (optional)
+                </Label>
+                <Textarea
+                  id="claimMessage"
+                  name="claimMessage"
+                  value={formData.claimMessage}
+                  onChange={handleInputChange}
+                  rows={3}
+                  placeholder="I am the owner/manager of this park..."
+                  maxLength={2000}
+                />
+              </div>
+            </div>
+          )}
+        </div>
+      )}
 
       {/* Photos */}
       {!isEditMode && (
