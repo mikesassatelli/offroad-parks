@@ -151,6 +151,7 @@ export type DbPark = {
   maxVehicleWidthInches: number | null;
   flagsRequired: boolean | null;
   sparkArrestorRequired: boolean | null;
+  helmetsRequired: boolean | null;
   noiseLimitDBA: number | null;
   // Map hero (OP-90)
   mapHeroUrl: string | null;
@@ -218,6 +219,7 @@ export type Park = {
   maxVehicleWidthInches?: number;
   flagsRequired?: boolean;
   sparkArrestorRequired?: boolean;
+  helmetsRequired?: boolean;
   noiseLimitDBA?: number;
   // Address (required - has state for filtering)
   address: Address;
@@ -343,6 +345,7 @@ export function transformDbPark(dbPark: DbPark): Park {
     maxVehicleWidthInches: dbPark.maxVehicleWidthInches ?? undefined,
     flagsRequired: dbPark.flagsRequired ?? undefined,
     sparkArrestorRequired: dbPark.sparkArrestorRequired ?? undefined,
+    helmetsRequired: dbPark.helmetsRequired ?? undefined,
     noiseLimitDBA: dbPark.noiseLimitDBA ?? undefined,
     // Address (required - has state for filtering)
     address: {

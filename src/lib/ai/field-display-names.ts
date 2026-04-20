@@ -22,6 +22,7 @@ export const FIELD_DISPLAY_NAMES: Record<string, string> = {
   maxVehicleWidthInches: "Max Vehicle Width (inches)",
   flagsRequired: "Whip Flags Required",
   sparkArrestorRequired: "Spark Arrestor Required",
+  helmetsRequired: "Helmets Required",
   noiseLimitDBA: "Noise Limit (dBA)",
   "address.streetAddress": "Street Address",
   "address.city": "City",

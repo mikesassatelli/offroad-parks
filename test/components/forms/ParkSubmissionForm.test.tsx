@@ -976,6 +976,7 @@ describe("ParkSubmissionForm", () => {
       maxVehicleWidthInches: "",
       flagsRequired: false,
       sparkArrestorRequired: false,
+      helmetsRequired: false,
       noiseLimitDBA: "",
       streetAddress: "",
       streetAddress2: "",
