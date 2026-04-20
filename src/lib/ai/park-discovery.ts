@@ -3,6 +3,7 @@ import { EXTRACTION_MODEL } from "./config";
 import { parkCandidateSchema } from "./discovery-schemas";
 import type { DiscoveredParkCandidate } from "./discovery-schemas";
 import { prisma } from "@/lib/prisma";
+import { normalizeStateName } from "@/lib/us-states";
 
 // ── Levenshtein distance (standard DP) ───────────────────────────────────────
 
@@ -131,12 +132,19 @@ export async function discoverParksInState(state: string): Promise<{
     throw new Error("SERPAPI_API_KEY is not configured");
   }
 
+  // Callers may pass a 2-letter code or a full name — normalize so we always
+  // store the canonical full name on candidates/addresses.
+  const canonicalState = normalizeStateName(state);
+  if (!canonicalState) {
+    throw new Error(`Unknown US state: "${canonicalState}"`);
+  }
+
   // 1. Run 3 searches in parallel
   // Avoid exact-match quotes — they're too restrictive for discovery
   const queries = [
-    `off-road parks ${state} OHV`,
-    `OHV riding areas ${state} ATV UTV`,
-    `${state} off-road trails open to public`,
+    `off-road parks ${canonicalState} OHV`,
+    `OHV riding areas ${canonicalState} ATV UTV`,
+    `${canonicalState} off-road trails open to public`,
   ];
 
   const searchResults = await Promise.all(
@@ -160,7 +168,7 @@ export async function discoverParksInState(state: string): Promise<{
   const systemPrompt =
     "You are identifying distinct off-road/OHV parks from web search results. Extract every unique park mentioned. Only include parks that appear to be real, named off-road riding areas (not private land, not individual trails within a park, not stores/dealers). Deduplicate — if the same park appears in multiple results, include it only once.";
 
-  const userPrompt = `Extract all distinct off-road/OHV parks found in these search results for ${state}:\n\n${snippetText}`;
+  const userPrompt = `Extract all distinct off-road/OHV parks found in these search results for ${canonicalState}:\n\n${snippetText}`;
 
   const result = await generateObject({
     model: EXTRACTION_MODEL,
@@ -176,11 +184,11 @@ export async function discoverParksInState(state: string): Promise<{
   // 3. Fuzzy dedup against existing parks and candidates
   const [existingParks, existingCandidates] = await Promise.all([
     prisma.park.findMany({
-      where: { address: { state } },
+      where: { address: { state: canonicalState } },
       select: { name: true },
     }),
     prisma.parkCandidate.findMany({
-      where: { state },
+      where: { state: canonicalState },
       select: { name: true },
     }),
   ]);
@@ -215,7 +223,11 @@ export async function discoverParksInState(state: string): Promise<{
 
     dedupedCandidates.push({
       name: candidate.name,
-      state: candidate.state,
+      // The Zod schema already normalizes `candidate.state`, but pin it to
+      // the caller's target state to be completely safe — the discovery
+      // search is scoped to `canonicalState`, so a candidate attributed to
+      // a different state is almost certainly a hallucination.
+      state: canonicalState,
       city: candidate.city ?? null,
       estimatedLat: candidate.estimatedLat ?? null,
       estimatedLng: candidate.estimatedLng ?? null,
