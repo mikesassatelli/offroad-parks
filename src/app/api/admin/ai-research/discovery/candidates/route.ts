@@ -3,6 +3,7 @@ import { requireAdmin } from "@/lib/api-helpers";
 import { prisma } from "@/lib/prisma";
 import { researchPark } from "@/lib/ai/research-pipeline";
 import { generateMapHeroAsync } from "@/lib/map-hero/generate";
+import { normalizeStateName } from "@/lib/us-states";
 import type { ParkCandidateStatus, ParkCandidateSummary } from "@/lib/types";
 
 function generateSlug(name: string): string {
@@ -37,7 +38,11 @@ export async function GET(request: Request) {
     where.status = status as ParkCandidateStatus;
   }
   if (state) {
-    where.state = state.toUpperCase();
+    // Candidate rows now store canonical full state names ("Arkansas"), but
+    // callers may still pass either a 2-letter code or a full name. Normalize
+    // defensively; fall back to the raw value so unknown inputs still produce
+    // an empty result rather than silently ignoring the filter.
+    where.state = normalizeStateName(state) ?? state;
   }
 
   const [candidates, total] = await Promise.all([
@@ -123,6 +128,19 @@ export async function PATCH(request: Request) {
   }
 
   // action === "accept"
+  // Defensive normalization: old candidates created before state normalization
+  // may still have 2-letter codes stored. Reject rather than silently seed a
+  // park with a bad state value.
+  const canonicalState = normalizeStateName(candidate.state);
+  if (!canonicalState) {
+    return NextResponse.json(
+      {
+        error: `Candidate has an unrecognizable state value: "${candidate.state}". Fix the candidate record before accepting.`,
+      },
+      { status: 400 }
+    );
+  }
+
   try {
     const slug = await ensureUniqueSlug(generateSlug(candidate.name));
 
@@ -141,7 +159,7 @@ export async function PATCH(request: Request) {
       await tx.address.create({
         data: {
           parkId: park.id,
-          state: candidate.state,
+          state: canonicalState,
           city: candidate.city,
         },
       });

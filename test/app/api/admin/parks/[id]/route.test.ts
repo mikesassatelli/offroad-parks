@@ -321,11 +321,11 @@ describe("PATCH /api/admin/parks/[id]", () => {
           upsert: {
             create: expect.objectContaining({
               city: "Los Angeles",
-              state: "CA",
+              state: "California",
             }),
             update: expect.objectContaining({
               city: "Los Angeles",
-              state: "CA",
+              state: "California",
             }),
           },
         },

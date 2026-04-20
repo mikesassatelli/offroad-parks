@@ -8,8 +8,8 @@ import {
   ALL_CAMPING_TYPES,
   ALL_VEHICLE_TYPES,
   ALL_OWNERSHIP_TYPES,
-  US_STATES,
 } from "@/lib/constants";
+import { normalizeStateName } from "@/lib/us-states";
 import type {
   Terrain,
   Amenity,
@@ -97,11 +97,11 @@ function validateParkEntry(
       field: "state",
       message: "State is required",
     });
-  } else if (!US_STATES.includes(park.state)) {
+  } else if (!normalizeStateName(park.state)) {
     errors.push({
       row: rowIndex,
       field: "state",
-      message: `Invalid state. Must be one of: ${US_STATES.join(", ")}`,
+      message: `Invalid state: "${park.state}". Provide a US state full name (e.g. "Arkansas") or 2-letter code (e.g. "AR").`,
     });
   }
 
@@ -443,14 +443,17 @@ export async function POST(
           },
         });
 
-        // Create Address record (state is required)
+        // Create Address record (state is required).
+        // `park.state` has already been validated above; normalize to the
+        // canonical full name here so inputs like "ar" land as "Arkansas".
+        const canonicalState = normalizeStateName(park.state) as string;
         await tx.address.create({
           data: {
             parkId: createdPark.id,
             streetAddress: park.streetAddress || null,
             streetAddress2: park.streetAddress2 || null,
             city: park.city || null,
-            state: park.state, // Required
+            state: canonicalState,
             zipCode: park.zipCode || null,
             county: park.county || null,
             latitude: park.latitude ?? null,

@@ -7,6 +7,7 @@ import type {
   VehicleType,
   VisitCondition,
 } from "@/lib/types";
+import { US_STATE_NAMES } from "@/lib/us-states";
 
 export const ALL_AMENITIES: Amenity[] = [
   "restrooms",
@@ -56,58 +57,13 @@ export const ALL_VEHICLE_TYPES: VehicleType[] = [
   "fullSize",
 ];
 
-export const US_STATES = [
-  "Alabama",
-  "Alaska",
-  "Arizona",
-  "Arkansas",
-  "California",
-  "Colorado",
-  "Connecticut",
-  "Delaware",
-  "Florida",
-  "Georgia",
-  "Hawaii",
-  "Idaho",
-  "Illinois",
-  "Indiana",
-  "Iowa",
-  "Kansas",
-  "Kentucky",
-  "Louisiana",
-  "Maine",
-  "Maryland",
-  "Massachusetts",
-  "Michigan",
-  "Minnesota",
-  "Mississippi",
-  "Missouri",
-  "Montana",
-  "Nebraska",
-  "Nevada",
-  "New Hampshire",
-  "New Jersey",
-  "New Mexico",
-  "New York",
-  "North Carolina",
-  "North Dakota",
-  "Ohio",
-  "Oklahoma",
-  "Oregon",
-  "Pennsylvania",
-  "Rhode Island",
-  "South Carolina",
-  "South Dakota",
-  "Tennessee",
-  "Texas",
-  "Utah",
-  "Vermont",
-  "Virginia",
-  "Washington",
-  "West Virginia",
-  "Wisconsin",
-  "Wyoming",
-];
+/**
+ * Re-export of the canonical 50-state list. Kept as a mutable string[] for
+ * backwards compatibility with callers that use `includes` on `string` input.
+ * For new code, prefer importing `US_STATE_NAMES` or using
+ * `normalizeStateName` from `@/lib/us-states`.
+ */
+export const US_STATES: string[] = [...US_STATE_NAMES];
 
 // Review system constants
 export const ALL_VISIT_CONDITIONS: VisitCondition[] = [

@@ -463,7 +463,7 @@ describe("POST /api/parks/submit", () => {
           address: {
             create: expect.objectContaining({
               city: "Test City",
-              state: "CA",
+              state: "California",
             }),
           },
         }),
@@ -504,6 +504,80 @@ describe("POST /api/parks/submit", () => {
         }),
       }),
     );
+  });
+
+  it("should normalize a 2-letter state code to the canonical full name", async () => {
+    vi.mocked(auth).mockResolvedValue({ user: { id: "user-123" } } as any);
+    vi.mocked(prisma.park.findUnique).mockResolvedValue(null);
+    vi.mocked(prisma.park.create).mockResolvedValue({} as any);
+
+    const request = new Request("http://localhost:3000/api/parks/submit", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        ...validParkData,
+        address: { ...validParkData.address, state: "ar" },
+      }),
+    });
+
+    await POST(request);
+
+    expect(prisma.park.create).toHaveBeenCalledWith(
+      expect.objectContaining({
+        data: expect.objectContaining({
+          address: {
+            create: expect.objectContaining({ state: "Arkansas" }),
+          },
+        }),
+      })
+    );
+  });
+
+  it("should normalize a full state name with weird casing", async () => {
+    vi.mocked(auth).mockResolvedValue({ user: { id: "user-123" } } as any);
+    vi.mocked(prisma.park.findUnique).mockResolvedValue(null);
+    vi.mocked(prisma.park.create).mockResolvedValue({} as any);
+
+    const request = new Request("http://localhost:3000/api/parks/submit", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        ...validParkData,
+        address: { ...validParkData.address, state: "  nEw mExIcO " },
+      }),
+    });
+
+    await POST(request);
+
+    expect(prisma.park.create).toHaveBeenCalledWith(
+      expect.objectContaining({
+        data: expect.objectContaining({
+          address: {
+            create: expect.objectContaining({ state: "New Mexico" }),
+          },
+        }),
+      })
+    );
+  });
+
+  it("should reject an unrecognizable state with 400", async () => {
+    vi.mocked(auth).mockResolvedValue({ user: { id: "user-123" } } as any);
+
+    const request = new Request("http://localhost:3000/api/parks/submit", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        ...validParkData,
+        address: { ...validParkData.address, state: "Narnia" },
+      }),
+    });
+
+    const response = await POST(request);
+    const data = await response.json();
+
+    expect(response.status).toBe(400);
+    expect(data.error).toContain("Invalid state");
+    expect(prisma.park.create).not.toHaveBeenCalled();
   });
 
   it("should use provided slug when explicitly provided", async () => {
