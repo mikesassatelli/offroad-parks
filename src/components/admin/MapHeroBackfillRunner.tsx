@@ -112,7 +112,7 @@ export function MapHeroBackfillRunner({ initialRemaining }: { initialRemaining: 
           </Button>
         )}
         {state.running && (
-          <div className="flex items-center gap-2 text-sm text-gray-600">
+          <div className="flex items-center gap-2 text-sm text-muted-foreground">
             <Loader2 className="w-4 h-4 animate-spin" />
             Processing batches…
           </div>
@@ -122,48 +122,48 @@ export function MapHeroBackfillRunner({ initialRemaining }: { initialRemaining: 
       {(state.running || state.processed > 0) && (
         <div className="grid grid-cols-3 gap-4 text-sm">
           <div>
-            <div className="text-gray-500">Processed</div>
+            <div className="text-muted-foreground">Processed</div>
             <div className="text-xl font-semibold">{state.processed}</div>
           </div>
           <div>
-            <div className="text-gray-500">Succeeded</div>
-            <div className="text-xl font-semibold text-green-700">{state.succeeded}</div>
+            <div className="text-muted-foreground">Succeeded</div>
+            <div className="text-xl font-semibold text-green-700 dark:text-green-400">{state.succeeded}</div>
           </div>
           <div>
-            <div className="text-gray-500">Remaining</div>
+            <div className="text-muted-foreground">Remaining</div>
             <div className="text-xl font-semibold">{state.remaining}</div>
           </div>
         </div>
       )}
 
       {done && (
-        <div className="flex items-center gap-2 text-green-700 bg-green-50 border border-green-200 rounded px-3 py-2 text-sm">
+        <div className="flex items-center gap-2 text-green-700 dark:text-green-300 bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-900/40 rounded px-3 py-2 text-sm">
           <CheckCircle2 className="w-4 h-4" />
           All eligible parks have a map hero.
         </div>
       )}
 
       {state.error && (
-        <div className="flex items-start gap-2 text-red-700 bg-red-50 border border-red-200 rounded px-3 py-2 text-sm">
+        <div className="flex items-start gap-2 text-red-700 dark:text-red-300 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-900/40 rounded px-3 py-2 text-sm">
           <AlertCircle className="w-4 h-4 mt-0.5" />
           <div>
             <div className="font-medium">Batch failed</div>
-            <div className="text-red-600 break-all">{state.error}</div>
+            <div className="text-red-600 dark:text-red-400 break-all">{state.error}</div>
           </div>
         </div>
       )}
 
       {state.failures.length > 0 && (
-        <div className="border border-amber-200 bg-amber-50 rounded px-3 py-2">
-          <div className="flex items-center gap-2 text-amber-900 font-medium mb-2 text-sm">
+        <div className="border border-amber-200 dark:border-amber-900/40 bg-amber-50 dark:bg-amber-900/20 rounded px-3 py-2">
+          <div className="flex items-center gap-2 text-amber-900 dark:text-amber-200 font-medium mb-2 text-sm">
             <AlertCircle className="w-4 h-4" />
             {state.failures.length} park(s) failed
           </div>
-          <ul className="text-xs text-amber-900 space-y-0.5 max-h-48 overflow-y-auto">
+          <ul className="text-xs text-amber-900 dark:text-amber-200 space-y-0.5 max-h-48 overflow-y-auto">
             {state.failures.map((f) => (
               <li key={f.parkId}>
                 <span className="font-medium">{f.parkName}</span>
-                <span className="text-amber-700"> — {f.reason}</span>
+                <span className="text-amber-700 dark:text-amber-400"> — {f.reason}</span>
               </li>
             ))}
           </ul>

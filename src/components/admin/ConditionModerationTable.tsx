@@ -105,15 +105,15 @@ export function ConditionModerationTable({
   ).length;
 
   return (
-    <div className="bg-white rounded-lg shadow border border-gray-200">
+    <div className="bg-card rounded-lg shadow border border-border">
       {/* Toolbar */}
-      <div className="border-b border-gray-200 px-6 py-3 space-y-3">
+      <div className="border-b border-border px-6 py-3 space-y-3">
         <input
           type="text"
           placeholder="Search by park name..."
           value={search}
           onChange={(e) => setSearch(e.target.value)}
-          className="w-full max-w-sm px-4 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent"
+          className="w-full max-w-sm px-4 py-2 border border-input bg-background text-foreground rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-ring focus:border-transparent"
         />
         <div className="flex gap-2">
           {(
@@ -129,7 +129,7 @@ export function ConditionModerationTable({
               className={`px-3 py-1.5 rounded-md text-sm font-medium transition-colors ${
                 statusFilter === key
                   ? "bg-primary text-primary-foreground"
-                  : "bg-gray-100 text-gray-700 hover:bg-gray-200"
+                  : "bg-muted text-foreground hover:bg-accent"
               }`}
             >
               {label}
@@ -144,49 +144,49 @@ export function ConditionModerationTable({
       {/* Table */}
       <div className="overflow-x-auto">
         {filteredConditions.length === 0 ? (
-          <div className="text-center py-12 text-gray-500">
+          <div className="text-center py-12 text-muted-foreground">
             {statusFilter === "PENDING_REVIEW"
               ? "No condition reports pending review"
               : "No condition reports found"}
           </div>
         ) : (
           <table className="w-full text-sm">
-            <thead className="bg-gray-50 border-b border-gray-200">
+            <thead className="bg-muted/50 border-b border-border">
               <tr>
-                <th className="text-left px-6 py-3 font-medium text-gray-600">
+                <th className="text-left px-6 py-3 font-medium text-muted-foreground">
                   Park
                 </th>
-                <th className="text-left px-6 py-3 font-medium text-gray-600">
+                <th className="text-left px-6 py-3 font-medium text-muted-foreground">
                   Reporter
                 </th>
-                <th className="text-left px-6 py-3 font-medium text-gray-600">
+                <th className="text-left px-6 py-3 font-medium text-muted-foreground">
                   Status
                 </th>
-                <th className="text-left px-6 py-3 font-medium text-gray-600">
+                <th className="text-left px-6 py-3 font-medium text-muted-foreground">
                   Note
                 </th>
-                <th className="text-left px-6 py-3 font-medium text-gray-600">
+                <th className="text-left px-6 py-3 font-medium text-muted-foreground">
                   Submitted
                 </th>
-                <th className="text-left px-6 py-3 font-medium text-gray-600">
+                <th className="text-left px-6 py-3 font-medium text-muted-foreground">
                   Actions
                 </th>
               </tr>
             </thead>
-            <tbody className="divide-y divide-gray-100">
+            <tbody className="divide-y divide-border">
               {filteredConditions.map((condition) => {
                 const label = CONDITION_LABELS[condition.status];
                 const isPending = condition.reportStatus === "PENDING_REVIEW";
                 return (
                   <tr
                     key={condition.id}
-                    className={isPending ? "bg-orange-50" : "hover:bg-gray-50"}
+                    className={isPending ? "bg-orange-50 dark:bg-orange-900/10" : "hover:bg-accent/50 transition-colors"}
                   >
                     {/* Park */}
                     <td className="px-6 py-4">
                       <Link
                         href={`/parks/${condition.park.slug}`}
-                        className="font-medium text-gray-900 hover:text-primary flex items-center gap-1"
+                        className="font-medium text-foreground hover:text-primary flex items-center gap-1"
                       >
                         {condition.park.name}
                         <ExternalLink className="w-3 h-3 flex-shrink-0" />
@@ -194,7 +194,7 @@ export function ConditionModerationTable({
                     </td>
 
                     {/* Reporter */}
-                    <td className="px-6 py-4 text-gray-600">
+                    <td className="px-6 py-4 text-muted-foreground">
                       {condition.user?.name || condition.user?.email || "Unknown"}
                     </td>
 
@@ -202,7 +202,7 @@ export function ConditionModerationTable({
                     <td className="px-6 py-4">
                       <span
                         className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium
-                          bg-${label.color}-100 text-${label.color}-800`}
+                          bg-${label.color}-100 dark:bg-${label.color}-900/30 text-${label.color}-800 dark:text-${label.color}-300`}
                       >
                         {label.label}
                       </span>
@@ -211,16 +211,16 @@ export function ConditionModerationTable({
                     {/* Note */}
                     <td className="px-6 py-4 max-w-xs">
                       {condition.note ? (
-                        <p className="text-gray-700 italic line-clamp-2 text-xs">
+                        <p className="text-foreground italic line-clamp-2 text-xs">
                           &ldquo;{condition.note}&rdquo;
                         </p>
                       ) : (
-                        <span className="text-gray-400 text-xs">—</span>
+                        <span className="text-muted-foreground text-xs">—</span>
                       )}
                     </td>
 
                     {/* Age */}
-                    <td className="px-6 py-4 text-gray-500 whitespace-nowrap">
+                    <td className="px-6 py-4 text-muted-foreground whitespace-nowrap">
                       {formatConditionAge(condition.createdAt)}
                     </td>
 
@@ -247,7 +247,7 @@ export function ConditionModerationTable({
                           </Button>
                         </div>
                       ) : (
-                        <span className="text-xs text-green-600 font-medium">
+                        <span className="text-xs text-green-600 dark:text-green-400 font-medium">
                           Published
                         </span>
                       )}

@@ -94,19 +94,19 @@ export function FieldExtractionReview({ extractions }: Props) {
   return (
     <div className="space-y-8">
       {Array.from(grouped.entries()).map(([parkId, parkExtractions]) => (
-        <div key={parkId} className="rounded-lg border border-gray-200 bg-white overflow-hidden">
-          <div className="bg-gray-50 px-6 py-3 border-b border-gray-200 flex items-center justify-between">
-            <h2 className="text-lg font-semibold text-gray-900">
+        <div key={parkId} className="rounded-lg border border-border bg-card overflow-hidden">
+          <div className="bg-muted/50 px-6 py-3 border-b border-border flex items-center justify-between">
+            <h2 className="text-lg font-semibold text-foreground">
               {parkExtractions[0].parkName}
             </h2>
             <div className="flex items-center gap-2">
-              <span className="text-xs text-gray-500 mr-2">{parkExtractions.length} field{parkExtractions.length !== 1 ? "s" : ""}</span>
+              <span className="text-xs text-muted-foreground mr-2">{parkExtractions.length} field{parkExtractions.length !== 1 ? "s" : ""}</span>
               <Button
                 variant="outline"
                 size="sm"
                 onClick={() => handleBulkApprove(parkId, parkExtractions.map(e => e.id))}
                 disabled={processingId !== null || processingBulk !== null}
-                className="text-green-700 border-green-300 hover:bg-green-50"
+                className="text-green-700 dark:text-green-400 border-green-300 dark:border-green-900/50 hover:bg-green-50 dark:hover:bg-green-900/20"
               >
                 <CheckCheck className="w-4 h-4 mr-1" />
                 Approve All
@@ -116,37 +116,37 @@ export function FieldExtractionReview({ extractions }: Props) {
                 size="sm"
                 onClick={() => handleBulkReject(parkId, parkExtractions.map(e => e.id))}
                 disabled={processingId !== null || processingBulk !== null}
-                className="text-red-700 border-red-300 hover:bg-red-50"
+                className="text-red-700 dark:text-red-400 border-red-300 dark:border-red-900/50 hover:bg-red-50 dark:hover:bg-red-900/20"
               >
                 <XOctagon className="w-4 h-4 mr-1" />
                 Reject All
               </Button>
             </div>
           </div>
-          <div className="divide-y divide-gray-100">
+          <div className="divide-y divide-border">
             {parkExtractions.map((extraction) => (
               <div key={extraction.id} className="px-6 py-4">
                 <div className="flex items-start justify-between gap-4">
                   <div className="flex-1 min-w-0">
                     <div className="flex items-center gap-3 mb-2">
-                      <span className="font-medium text-gray-900">
+                      <span className="font-medium text-foreground">
                         {FIELD_DISPLAY_NAMES[extraction.fieldName] || extraction.fieldName}
                       </span>
                       <ConfidenceBadge score={extraction.confidenceScore} />
                     </div>
                     <div className="grid grid-cols-2 gap-4 text-sm">
                       <div>
-                        <p className="text-gray-500 text-xs mb-1">Current Value</p>
-                        <p className="text-gray-700 font-mono bg-gray-50 rounded px-2 py-1 break-all">
-                          {extraction.currentValue ? formatValue(extraction.currentValue) : <span className="italic text-gray-400">empty</span>}
+                        <p className="text-muted-foreground text-xs mb-1">Current Value</p>
+                        <p className="text-foreground font-mono bg-muted rounded px-2 py-1 break-all">
+                          {extraction.currentValue ? formatValue(extraction.currentValue) : <span className="italic text-muted-foreground">empty</span>}
                         </p>
                       </div>
                       <div>
-                        <p className="text-gray-500 text-xs mb-1">
+                        <p className="text-muted-foreground text-xs mb-1">
                           {isArrayField(extraction.fieldName) ? "New values to add" : "Extracted Value"}
                         </p>
-                        <p className={`text-gray-900 font-mono rounded px-2 py-1 break-all ${isArrayField(extraction.fieldName) ? "bg-green-50" : "bg-blue-50"}`}>
-                          {extraction.extractedValue ? formatValue(extraction.extractedValue) : <span className="italic text-gray-400">null</span>}
+                        <p className={`text-foreground font-mono rounded px-2 py-1 break-all ${isArrayField(extraction.fieldName) ? "bg-green-50 dark:bg-green-900/20" : "bg-blue-50 dark:bg-blue-900/20"}`}>
+                          {extraction.extractedValue ? formatValue(extraction.extractedValue) : <span className="italic text-muted-foreground">null</span>}
                         </p>
                       </div>
                     </div>
@@ -156,7 +156,7 @@ export function FieldExtractionReview({ extractions }: Props) {
                           href={extraction.sourceUrl}
                           target="_blank"
                           rel="noopener noreferrer"
-                          className="inline-flex items-center gap-1 text-xs text-blue-600 hover:text-blue-800"
+                          className="inline-flex items-center gap-1 text-xs text-primary hover:text-primary/80"
                         >
                           <ExternalLink className="w-3 h-3" />
                           {extraction.sourceTitle || extraction.sourceUrl}
@@ -170,7 +170,7 @@ export function FieldExtractionReview({ extractions }: Props) {
                       size="icon-sm"
                       onClick={() => handleApprove(extraction.id)}
                       disabled={processingId !== null}
-                      className="text-green-600 hover:text-green-700 hover:bg-green-50"
+                      className="text-green-600 dark:text-green-400 hover:text-green-700 dark:hover:text-green-300 hover:bg-green-50 dark:hover:bg-green-900/20"
                     >
                       <CheckCircle className="w-5 h-5" />
                     </Button>
@@ -179,7 +179,7 @@ export function FieldExtractionReview({ extractions }: Props) {
                       size="icon-sm"
                       onClick={() => handleReject(extraction.id)}
                       disabled={processingId !== null}
-                      className="text-red-600 hover:text-red-700 hover:bg-red-50"
+                      className="text-red-600 dark:text-red-400 hover:text-red-700 dark:hover:text-red-300 hover:bg-red-50 dark:hover:bg-red-900/20"
                     >
                       <XCircle className="w-5 h-5" />
                     </Button>
@@ -199,11 +199,11 @@ function ConfidenceBadge({ score }: { score: number | null }) {
 
   let color: string;
   if (score >= 0.7) {
-    color = "bg-green-100 text-green-800 border-green-200";
+    color = "bg-green-100 dark:bg-green-900/30 text-green-800 dark:text-green-300 border-green-200 dark:border-green-900/50";
   } else if (score >= 0.5) {
-    color = "bg-yellow-100 text-yellow-800 border-yellow-200";
+    color = "bg-yellow-100 dark:bg-yellow-900/30 text-yellow-800 dark:text-yellow-300 border-yellow-200 dark:border-yellow-900/50";
   } else {
-    color = "bg-red-100 text-red-800 border-red-200";
+    color = "bg-red-100 dark:bg-red-900/30 text-red-800 dark:text-red-300 border-red-200 dark:border-red-900/50";
   }
 
   return (

@@ -231,7 +231,7 @@ describe("ParkManagementTable", () => {
     );
 
     const rows = container.querySelectorAll("tbody tr");
-    expect(rows[1]).toHaveClass("bg-blue-50");
+    expect(rows[1].className).toContain("bg-primary/10");
   });
 
   it("should approve park when approve button clicked", async () => {
@@ -406,7 +406,7 @@ describe("ParkManagementTable", () => {
 
     const rows = container.querySelectorAll("tbody tr");
     rows.forEach((row) => {
-      expect(row).toHaveClass("hover:bg-gray-50");
+      expect(row.className).toContain("hover:bg-accent/50");
     });
   });
 

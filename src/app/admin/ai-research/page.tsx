@@ -43,11 +43,11 @@ export default async function AIResearchPage() {
   return (
     <div className="space-y-6">
       <div className="flex items-center justify-between">
-        <h1 className="text-2xl font-bold text-gray-900">AI Research</h1>
+        <h1 className="text-2xl font-bold text-foreground">AI Research</h1>
         {pendingReviewCount > 0 && (
           <Link
             href="/admin/ai-research/pending"
-            className="inline-flex items-center gap-2 rounded-lg bg-yellow-50 px-4 py-2 text-sm font-medium text-yellow-800 border border-yellow-200 hover:bg-yellow-100 transition-colors"
+            className="inline-flex items-center gap-2 rounded-lg bg-yellow-50 dark:bg-yellow-900/20 px-4 py-2 text-sm font-medium text-yellow-800 dark:text-yellow-300 border border-yellow-200 dark:border-yellow-900/40 hover:bg-yellow-100 dark:hover:bg-yellow-900/30 transition-colors"
           >
             <AlertCircle className="w-4 h-4" />
             {pendingReviewCount} pending review{pendingReviewCount !== 1 ? "s" : ""}
@@ -57,99 +57,99 @@ export default async function AIResearchPage() {
 
       {/* Stats Grid */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-        <div className="rounded-lg border border-gray-200 bg-white p-6">
-          <div className="flex items-center gap-2 text-sm text-gray-500">
+        <div className="rounded-lg border border-border bg-card p-6">
+          <div className="flex items-center gap-2 text-sm text-muted-foreground">
             <BrainCircuit className="w-4 h-4" />
             Total Parks
           </div>
-          <p className="mt-2 text-2xl font-bold text-gray-900">{totalParks}</p>
+          <p className="mt-2 text-2xl font-bold text-foreground">{totalParks}</p>
         </div>
-        <div className="rounded-lg border border-gray-200 bg-white p-6">
-          <div className="flex items-center gap-2 text-sm text-gray-500">
+        <div className="rounded-lg border border-border bg-card p-6">
+          <div className="flex items-center gap-2 text-sm text-muted-foreground">
             <AlertCircle className="w-4 h-4" />
             Pending Reviews
           </div>
-          <p className="mt-2 text-2xl font-bold text-yellow-600">{pendingReviewCount}</p>
+          <p className="mt-2 text-2xl font-bold text-yellow-600 dark:text-yellow-400">{pendingReviewCount}</p>
         </div>
-        <div className="rounded-lg border border-gray-200 bg-white p-6">
-          <div className="flex items-center gap-2 text-sm text-gray-500">
+        <div className="rounded-lg border border-border bg-card p-6">
+          <div className="flex items-center gap-2 text-sm text-muted-foreground">
             <FileSearch className="w-4 h-4" />
             Research Sessions
           </div>
-          <p className="mt-2 text-2xl font-bold text-gray-900">{totalSessions}</p>
+          <p className="mt-2 text-2xl font-bold text-foreground">{totalSessions}</p>
         </div>
-        <div className="rounded-lg border border-gray-200 bg-white p-6">
-          <div className="flex items-center gap-2 text-sm text-gray-500">
+        <div className="rounded-lg border border-border bg-card p-6">
+          <div className="flex items-center gap-2 text-sm text-muted-foreground">
             <DollarSign className="w-4 h-4" />
             Total Cost
           </div>
-          <p className="mt-2 text-2xl font-bold text-gray-900">${totalCost.toFixed(2)}</p>
+          <p className="mt-2 text-2xl font-bold text-foreground">${totalCost.toFixed(2)}</p>
         </div>
       </div>
 
       {/* Research Status Breakdown */}
-      <div className="rounded-lg border border-gray-200 bg-white p-6">
-        <h2 className="text-lg font-semibold text-gray-900 mb-4">Research Status</h2>
+      <div className="rounded-lg border border-border bg-card p-6">
+        <h2 className="text-lg font-semibold text-foreground mb-4">Research Status</h2>
         <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
-          <div className="rounded-lg bg-red-50 border border-red-200 p-4">
-            <p className="text-sm text-red-600 font-medium">Needs Research</p>
-            <p className="mt-1 text-2xl font-bold text-red-900">{needsResearch}</p>
+          <div className="rounded-lg bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-900/40 p-4">
+            <p className="text-sm text-red-600 dark:text-red-400 font-medium">Needs Research</p>
+            <p className="mt-1 text-2xl font-bold text-red-900 dark:text-red-200">{needsResearch}</p>
           </div>
-          <div className="rounded-lg bg-yellow-50 border border-yellow-200 p-4">
-            <p className="text-sm text-yellow-600 font-medium">In Progress</p>
-            <p className="mt-1 text-2xl font-bold text-yellow-900">{inProgress}</p>
+          <div className="rounded-lg bg-yellow-50 dark:bg-yellow-900/20 border border-yellow-200 dark:border-yellow-900/40 p-4">
+            <p className="text-sm text-yellow-600 dark:text-yellow-400 font-medium">In Progress</p>
+            <p className="mt-1 text-2xl font-bold text-yellow-900 dark:text-yellow-200">{inProgress}</p>
           </div>
-          <div className="rounded-lg bg-green-50 border border-green-200 p-4">
-            <p className="text-sm text-green-600 font-medium">Researched</p>
-            <p className="mt-1 text-2xl font-bold text-green-900">{researched}</p>
+          <div className="rounded-lg bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-900/40 p-4">
+            <p className="text-sm text-green-600 dark:text-green-400 font-medium">Researched</p>
+            <p className="mt-1 text-2xl font-bold text-green-900 dark:text-green-200">{researched}</p>
           </div>
-          <div className="rounded-lg bg-blue-50 border border-blue-200 p-4">
-            <p className="text-sm text-blue-600 font-medium">Maintenance</p>
-            <p className="mt-1 text-2xl font-bold text-blue-900">{maintenance}</p>
+          <div className="rounded-lg bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-900/40 p-4">
+            <p className="text-sm text-blue-600 dark:text-blue-400 font-medium">Maintenance</p>
+            <p className="mt-1 text-2xl font-bold text-blue-900 dark:text-blue-200">{maintenance}</p>
           </div>
         </div>
       </div>
 
       {/* Domain Accuracy */}
-      <div className="rounded-lg border border-gray-200 bg-white p-6">
+      <div className="rounded-lg border border-border bg-card p-6">
         <div className="flex items-center gap-2 mb-4">
-          <BarChart3 className="w-5 h-5 text-gray-500" />
-          <h2 className="text-lg font-semibold text-gray-900">Domain Accuracy</h2>
+          <BarChart3 className="w-5 h-5 text-muted-foreground" />
+          <h2 className="text-lg font-semibold text-foreground">Domain Accuracy</h2>
         </div>
         {domainAccuracy.length === 0 ? (
-          <p className="text-gray-500 text-sm">No extraction reviews yet. Approve or reject extractions to see accuracy data.</p>
+          <p className="text-muted-foreground text-sm">No extraction reviews yet. Approve or reject extractions to see accuracy data.</p>
         ) : (
           <div className="overflow-x-auto">
-            <table className="min-w-full divide-y divide-gray-200">
+            <table className="min-w-full divide-y divide-border">
               <thead>
                 <tr>
-                  <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Domain</th>
-                  <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Approves</th>
-                  <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Rejects</th>
-                  <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Accuracy %</th>
-                  <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Sources</th>
+                  <th className="px-4 py-3 text-left text-xs font-medium text-muted-foreground uppercase">Domain</th>
+                  <th className="px-4 py-3 text-left text-xs font-medium text-muted-foreground uppercase">Approves</th>
+                  <th className="px-4 py-3 text-left text-xs font-medium text-muted-foreground uppercase">Rejects</th>
+                  <th className="px-4 py-3 text-left text-xs font-medium text-muted-foreground uppercase">Accuracy %</th>
+                  <th className="px-4 py-3 text-left text-xs font-medium text-muted-foreground uppercase">Sources</th>
                 </tr>
               </thead>
-              <tbody className="divide-y divide-gray-200">
+              <tbody className="divide-y divide-border">
                 {domainAccuracy.map((d) => {
                   const pct = Math.round(d.accuracy * 100);
                   const colorClass =
                     pct >= 70
-                      ? "text-green-700"
+                      ? "text-green-700 dark:text-green-400"
                       : pct >= 40
-                        ? "text-yellow-700"
-                        : "text-red-700";
+                        ? "text-yellow-700 dark:text-yellow-400"
+                        : "text-red-700 dark:text-red-400";
                   return (
-                    <tr key={d.domain} className="hover:bg-gray-50">
-                      <td className="px-4 py-3 text-sm font-medium text-gray-900">{d.domain}</td>
-                      <td className="px-4 py-3 text-sm text-gray-900">{d.totalApproves}</td>
-                      <td className="px-4 py-3 text-sm text-gray-900">{d.totalRejects}</td>
+                    <tr key={d.domain} className="hover:bg-accent/50 transition-colors">
+                      <td className="px-4 py-3 text-sm font-medium text-foreground">{d.domain}</td>
+                      <td className="px-4 py-3 text-sm text-foreground">{d.totalApproves}</td>
+                      <td className="px-4 py-3 text-sm text-foreground">{d.totalRejects}</td>
                       <td className="px-4 py-3">
                         <span className={`text-sm font-medium ${colorClass}`}>
                           {pct}%
                         </span>
                       </td>
-                      <td className="px-4 py-3 text-sm text-gray-900">{d.sourceCount}</td>
+                      <td className="px-4 py-3 text-sm text-foreground">{d.sourceCount}</td>
                     </tr>
                   );
                 })}
@@ -160,44 +160,44 @@ export default async function AIResearchPage() {
       </div>
 
       {/* Recent Sessions */}
-      <div className="rounded-lg border border-gray-200 bg-white p-6">
-        <h2 className="text-lg font-semibold text-gray-900 mb-4">Recent Sessions</h2>
+      <div className="rounded-lg border border-border bg-card p-6">
+        <h2 className="text-lg font-semibold text-foreground mb-4">Recent Sessions</h2>
         {recentSessions.length === 0 ? (
-          <p className="text-gray-500 text-sm">No research sessions yet. Trigger research on a park to get started.</p>
+          <p className="text-muted-foreground text-sm">No research sessions yet. Trigger research on a park to get started.</p>
         ) : (
           <div className="overflow-x-auto">
-            <table className="min-w-full divide-y divide-gray-200">
+            <table className="min-w-full divide-y divide-border">
               <thead>
                 <tr>
-                  <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Park</th>
-                  <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Trigger</th>
-                  <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Status</th>
-                  <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Fields</th>
-                  <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Cost</th>
-                  <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Date</th>
+                  <th className="px-4 py-3 text-left text-xs font-medium text-muted-foreground uppercase">Park</th>
+                  <th className="px-4 py-3 text-left text-xs font-medium text-muted-foreground uppercase">Trigger</th>
+                  <th className="px-4 py-3 text-left text-xs font-medium text-muted-foreground uppercase">Status</th>
+                  <th className="px-4 py-3 text-left text-xs font-medium text-muted-foreground uppercase">Fields</th>
+                  <th className="px-4 py-3 text-left text-xs font-medium text-muted-foreground uppercase">Cost</th>
+                  <th className="px-4 py-3 text-left text-xs font-medium text-muted-foreground uppercase">Date</th>
                 </tr>
               </thead>
-              <tbody className="divide-y divide-gray-200">
+              <tbody className="divide-y divide-border">
                 {recentSessions.map((session) => (
-                  <tr key={session.id} className="hover:bg-gray-50">
-                    <td className="px-4 py-3 text-sm font-medium text-gray-900">
-                      <Link href={`/parks/${session.park.slug}`} className="hover:text-blue-600">
+                  <tr key={session.id} className="hover:bg-accent/50 transition-colors">
+                    <td className="px-4 py-3 text-sm font-medium text-foreground">
+                      <Link href={`/parks/${session.park.slug}`} className="hover:text-primary">
                         {session.park.name}
                       </Link>
                     </td>
-                    <td className="px-4 py-3 text-sm text-gray-500">
+                    <td className="px-4 py-3 text-sm text-muted-foreground">
                       {formatTrigger(session.trigger)}
                     </td>
                     <td className="px-4 py-3">
                       <SessionStatusBadge status={session.status} />
                     </td>
-                    <td className="px-4 py-3 text-sm text-gray-900">
+                    <td className="px-4 py-3 text-sm text-foreground">
                       {session.fieldsExtracted}
                     </td>
-                    <td className="px-4 py-3 text-sm text-gray-900">
+                    <td className="px-4 py-3 text-sm text-foreground">
                       ${session.estimatedCostUSD.toFixed(3)}
                     </td>
-                    <td className="px-4 py-3 text-sm text-gray-500">
+                    <td className="px-4 py-3 text-sm text-muted-foreground">
                       {new Date(session.startedAt).toLocaleDateString()}
                     </td>
                   </tr>
@@ -213,14 +213,14 @@ export default async function AIResearchPage() {
 
 function SessionStatusBadge({ status }: { status: string }) {
   const styles: Record<string, string> = {
-    IN_PROGRESS: "bg-blue-100 text-blue-800 border-blue-200",
-    COMPLETED: "bg-green-100 text-green-800 border-green-200",
-    FAILED: "bg-red-100 text-red-800 border-red-200",
-    PARTIAL: "bg-yellow-100 text-yellow-800 border-yellow-200",
+    IN_PROGRESS: "bg-blue-100 dark:bg-blue-900/30 text-blue-800 dark:text-blue-300 border-blue-200 dark:border-blue-900/50",
+    COMPLETED: "bg-green-100 dark:bg-green-900/30 text-green-800 dark:text-green-300 border-green-200 dark:border-green-900/50",
+    FAILED: "bg-red-100 dark:bg-red-900/30 text-red-800 dark:text-red-300 border-red-200 dark:border-red-900/50",
+    PARTIAL: "bg-yellow-100 dark:bg-yellow-900/30 text-yellow-800 dark:text-yellow-300 border-yellow-200 dark:border-yellow-900/50",
   };
 
   return (
-    <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium border ${styles[status] || "bg-gray-100 text-gray-800 border-gray-200"}`}>
+    <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium border ${styles[status] || "bg-muted text-foreground border-border"}`}>
       {status.replace("_", " ")}
     </span>
   );

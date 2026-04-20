@@ -243,7 +243,7 @@ describe("AdminParksPage", () => {
     const { container } = render(component);
 
     const pendingLink = screen.getByRole("link", { name: /pending/i });
-    expect(pendingLink.className).toContain("border-blue-500");
+    expect(pendingLink.className).toContain("border-primary");
   });
 
   it("should convert status to uppercase for where clause", async () => {
