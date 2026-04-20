@@ -23,7 +23,7 @@ import {
 } from "@/lib/constants";
 import { formatAmenity, formatCamping, formatOwnership, formatTerrain } from "@/lib/formatting";
 import type { Amenity, Camping, Terrain } from "@/lib/types";
-import { ChevronDown, RotateCcw } from "lucide-react";
+import { BookmarkCheck, ChevronDown, RotateCcw, Star } from "lucide-react";
 
 interface SearchFiltersPanelProps {
   selectedState: string | undefined;
@@ -56,6 +56,13 @@ interface SearchFiltersPanelProps {
   sparkArrestorRequired: string;
   onSparkArrestorRequiredChange: (value: string) => void;
   onClearFilters: () => void;
+  // Saved-default-filters controls. When `showSavedDefaultsControls` is false
+  // (anonymous users) the related buttons are not rendered at all.
+  showSavedDefaultsControls?: boolean;
+  hasSavedDefault?: boolean;
+  isSavingDefault?: boolean;
+  onSaveAsDefault?: () => void;
+  onResetToDefault?: () => void;
 }
 
 function FilterSection({
@@ -122,6 +129,11 @@ export function SearchFiltersPanel({
   sparkArrestorRequired,
   onSparkArrestorRequiredChange,
   onClearFilters,
+  showSavedDefaultsControls = false,
+  hasSavedDefault = false,
+  isSavingDefault = false,
+  onSaveAsDefault,
+  onResetToDefault,
 }: SearchFiltersPanelProps) {
   const handleStateChange = (value: string) => {
     onStateChange(value === "__all" ? undefined : value);
@@ -220,6 +232,39 @@ export function SearchFiltersPanel({
           Reset
         </Button>
       </div>
+
+      {/* Saved-default controls — signed-in only */}
+      {showSavedDefaultsControls && (
+        <div
+          data-testid="saved-defaults-controls"
+          className="flex flex-wrap gap-2 py-3"
+        >
+          <Button
+            type="button"
+            variant="outline"
+            size="sm"
+            onClick={onSaveAsDefault}
+            disabled={isSavingDefault}
+            className="h-7 gap-1.5 text-xs"
+          >
+            <Star className="h-3 w-3" />
+            Save as default
+          </Button>
+          {hasSavedDefault && (
+            <Button
+              type="button"
+              variant="ghost"
+              size="sm"
+              onClick={onResetToDefault}
+              disabled={isSavingDefault}
+              className="h-7 gap-1.5 text-xs text-muted-foreground hover:text-foreground"
+            >
+              <BookmarkCheck className="h-3 w-3" />
+              Reset to default
+            </Button>
+          )}
+        </div>
+      )}
 
       {/* State */}
       <FilterSection title="State" defaultOpen count={selectedState ? 1 : 0}>

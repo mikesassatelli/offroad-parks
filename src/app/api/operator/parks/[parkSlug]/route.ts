@@ -31,6 +31,7 @@ const ALLOWED_SCALAR_FIELDS = new Set([
   "maxVehicleWidthInches",
   "flagsRequired",
   "sparkArrestorRequired",
+  "helmetsRequired",
   "noiseLimitDBA",
 ]);
 
@@ -63,6 +64,7 @@ const PARK_SCALAR_SELECT = {
   maxVehicleWidthInches: true,
   flagsRequired: true,
   sparkArrestorRequired: true,
+  helmetsRequired: true,
   noiseLimitDBA: true,
 } as const;
 

@@ -45,6 +45,7 @@ interface BulkParkInput {
   maxVehicleWidthInches?: number | null;
   flagsRequired?: boolean;
   sparkArrestorRequired?: boolean;
+  helmetsRequired?: boolean;
   noiseLimitDBA?: number | null;
   // Address fields (flat in CSV/JSON) - state is required
   streetAddress?: string;
@@ -439,6 +440,7 @@ export async function POST(
             maxVehicleWidthInches: park.maxVehicleWidthInches ?? null,
             flagsRequired: park.flagsRequired ?? null,
             sparkArrestorRequired: park.sparkArrestorRequired ?? null,
+            helmetsRequired: park.helmetsRequired ?? null,
             noiseLimitDBA: park.noiseLimitDBA ?? null,
           },
         });
