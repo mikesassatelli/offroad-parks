@@ -81,6 +81,30 @@ describe("MapVisibilityHandler", () => {
     expect(setView).not.toHaveBeenCalled();
   });
 
+  it("should still run the initial recenter when ResizeObserver is unavailable", () => {
+    const container = document.createElement("div");
+    getContainer.mockReturnValue(container);
+
+    const originalRO = globalThis.ResizeObserver;
+    // Simulate an environment without ResizeObserver (older browsers, some
+    // JSDOM configurations). The handler should still perform its initial
+    // size invalidation + setView and then bail out cleanly.
+    // @ts-expect-error - intentionally removing to cover the guard branch.
+    delete globalThis.ResizeObserver;
+
+    render(<MapVisibilityHandler center={park} zoom={7} />);
+
+    expect(invalidateSize).toHaveBeenCalledTimes(1);
+    expect(setView).toHaveBeenCalledTimes(1);
+    expect(setView).toHaveBeenCalledWith(
+      [park.coords!.lat, park.coords!.lng],
+      7,
+      { animate: false },
+    );
+
+    globalThis.ResizeObserver = originalRO;
+  });
+
   it("should recenter again when the ResizeObserver fires", () => {
     const container = document.createElement("div");
     getContainer.mockReturnValue(container);
