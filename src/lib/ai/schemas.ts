@@ -51,6 +51,7 @@ export const parkExtractionSchema = z.object({
   maxVehicleWidthInches: field(z.number().int().min(0)),
   flagsRequired: field(z.boolean()),
   sparkArrestorRequired: field(z.boolean()),
+  helmetsRequired: field(z.boolean()),
   noiseLimitDBA: field(z.number().int().min(0)),
 
   // Address

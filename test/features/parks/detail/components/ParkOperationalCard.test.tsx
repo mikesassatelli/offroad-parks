@@ -102,6 +102,12 @@ describe("ParkOperationalCard", () => {
     expect(screen.getByText("Spark Arrestor Required")).toBeInTheDocument();
   });
 
+  it("should show helmets required badge when helmetsRequired is true", () => {
+    const park = { ...basePark, helmetsRequired: true };
+    render(<ParkOperationalCard park={park} />);
+    expect(screen.getByText("Helmets Required")).toBeInTheDocument();
+  });
+
   it("should not show requirement badges when boolean flags are false", () => {
     const park = {
       ...basePark,
@@ -109,6 +115,7 @@ describe("ParkOperationalCard", () => {
       membershipRequired: false,
       flagsRequired: false,
       sparkArrestorRequired: false,
+      helmetsRequired: false,
       datesOpen: "Year-round", // ensure card renders
     };
     render(<ParkOperationalCard park={park} />);
@@ -116,6 +123,7 @@ describe("ParkOperationalCard", () => {
     expect(screen.queryByText("Membership Required")).not.toBeInTheDocument();
     expect(screen.queryByText("Flag Required")).not.toBeInTheDocument();
     expect(screen.queryByText("Spark Arrestor Required")).not.toBeInTheDocument();
+    expect(screen.queryByText("Helmets Required")).not.toBeInTheDocument();
   });
 
   it("should show requirement badges with destructive variant", () => {
