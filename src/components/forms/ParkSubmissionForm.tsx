@@ -58,6 +58,7 @@ interface FormData {
   maxVehicleWidthInches: string;
   flagsRequired: boolean;
   sparkArrestorRequired: boolean;
+  helmetsRequired: boolean;
   noiseLimitDBA: string;
   // Address fields
   streetAddress: string;
@@ -130,6 +131,7 @@ export function ParkSubmissionForm({
       maxVehicleWidthInches: "",
       flagsRequired: false,
       sparkArrestorRequired: false,
+      helmetsRequired: false,
       noiseLimitDBA: "",
       // Address fields
       streetAddress: "",
@@ -709,6 +711,7 @@ export function ParkSubmissionForm({
             membershipRequired: formData.membershipRequired,
             flagsRequired: formData.flagsRequired,
             sparkArrestorRequired: formData.sparkArrestorRequired,
+            helmetsRequired: formData.helmetsRequired,
             maxVehicleWidthInches: formData.maxVehicleWidthInches,
             noiseLimitDBA: formData.noiseLimitDBA,
           }}

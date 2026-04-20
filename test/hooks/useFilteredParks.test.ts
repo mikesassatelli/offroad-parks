@@ -581,4 +581,206 @@ describe("useFilteredParks", () => {
     expect(result.current.filteredParks[1].dayPassUSD).toBe(30);
     expect(result.current.filteredParks[2].dayPassUSD).toBeUndefined();
   });
+
+  describe("getCurrentFilters", () => {
+    it("serialises default state with selectedState as null", () => {
+      const { result } = renderHook(() =>
+        useFilteredParks({ parks: mockParks }),
+      );
+
+      expect(result.current.getCurrentFilters()).toEqual({
+        selectedState: null,
+        selectedTerrains: [],
+        selectedAmenities: [],
+        selectedCamping: [],
+        selectedVehicleTypes: [],
+        minTrailMiles: 0,
+        minAcres: 0,
+        minRating: "",
+        selectedOwnership: "",
+        permitRequired: "",
+        membershipRequired: "",
+        flagsRequired: "",
+        sparkArrestorRequired: "",
+      });
+    });
+
+    it("reflects the current panel state after filters are set", () => {
+      const { result } = renderHook(() =>
+        useFilteredParks({ parks: mockParks }),
+      );
+
+      act(() => {
+        result.current.setSelectedState("California");
+        result.current.setSelectedTerrains(["sand", "rocks"]);
+        result.current.setSelectedAmenities(["restrooms"]);
+        result.current.setSelectedCamping(["tent"]);
+        result.current.setSelectedVehicleTypes(["atv"]);
+        result.current.setMinTrailMiles(25);
+        result.current.setMinAcres(500);
+        result.current.setMinRating("4");
+        result.current.setSelectedOwnership("public");
+        result.current.setPermitRequired("yes");
+        result.current.setMembershipRequired("no");
+        result.current.setFlagsRequired("yes");
+        result.current.setSparkArrestorRequired("no");
+      });
+
+      expect(result.current.getCurrentFilters()).toEqual({
+        selectedState: "California",
+        selectedTerrains: ["sand", "rocks"],
+        selectedAmenities: ["restrooms"],
+        selectedCamping: ["tent"],
+        selectedVehicleTypes: ["atv"],
+        minTrailMiles: 25,
+        minAcres: 500,
+        minRating: "4",
+        selectedOwnership: "public",
+        permitRequired: "yes",
+        membershipRequired: "no",
+        flagsRequired: "yes",
+        sparkArrestorRequired: "no",
+      });
+    });
+
+    it("does not include ephemeral searchQuery or sortOption", () => {
+      const { result } = renderHook(() =>
+        useFilteredParks({ parks: mockParks }),
+      );
+
+      act(() => {
+        result.current.setSearchQuery("rocky");
+        result.current.setSortOption("rating");
+      });
+
+      const snapshot = result.current.getCurrentFilters();
+      expect(snapshot).not.toHaveProperty("searchQuery");
+      expect(snapshot).not.toHaveProperty("sortOption");
+    });
+  });
+
+  describe("applyFilters", () => {
+    it("replaces the panel state with the supplied saved filters", () => {
+      const { result } = renderHook(() =>
+        useFilteredParks({ parks: mockParks }),
+      );
+
+      act(() => {
+        result.current.applyFilters({
+          selectedState: "Colorado",
+          selectedTerrains: ["mud"],
+          selectedAmenities: ["fuel"],
+          selectedCamping: [],
+          selectedVehicleTypes: ["sxs"],
+          minTrailMiles: 50,
+          minAcres: 1000,
+          minRating: "3",
+          selectedOwnership: "public",
+          permitRequired: "yes",
+          membershipRequired: "",
+          flagsRequired: "no",
+          sparkArrestorRequired: "yes",
+        });
+      });
+
+      expect(result.current.selectedState).toBe("Colorado");
+      expect(result.current.selectedTerrains).toEqual(["mud"]);
+      expect(result.current.selectedAmenities).toEqual(["fuel"]);
+      expect(result.current.selectedCamping).toEqual([]);
+      expect(result.current.selectedVehicleTypes).toEqual(["sxs"]);
+      expect(result.current.minTrailMiles).toBe(50);
+      expect(result.current.minAcres).toBe(1000);
+      expect(result.current.minRating).toBe("3");
+      expect(result.current.selectedOwnership).toBe("public");
+      expect(result.current.permitRequired).toBe("yes");
+      expect(result.current.membershipRequired).toBe("");
+      expect(result.current.flagsRequired).toBe("no");
+      expect(result.current.sparkArrestorRequired).toBe("yes");
+    });
+
+    it("narrows the filtered park list after applyFilters", () => {
+      const { result } = renderHook(() =>
+        useFilteredParks({ parks: mockParks }),
+      );
+
+      // Apply only a state + terrain filter (no required fields) so we can
+      // assert the filter pipeline picked up the new state.
+      act(() => {
+        result.current.applyFilters({
+          selectedState: "Colorado",
+          selectedTerrains: ["mud"],
+          selectedAmenities: [],
+          selectedCamping: [],
+          selectedVehicleTypes: [],
+          minTrailMiles: 0,
+          minAcres: 0,
+          minRating: "",
+          selectedOwnership: "",
+          permitRequired: "",
+          membershipRequired: "",
+          flagsRequired: "",
+          sparkArrestorRequired: "",
+        });
+      });
+
+      expect(result.current.filteredParks.map((p) => p.id)).toEqual(["park-2"]);
+    });
+
+    it("treats null selectedState as 'no state filter' (undefined)", () => {
+      const { result } = renderHook(() =>
+        useFilteredParks({ parks: mockParks }),
+      );
+
+      act(() => {
+        result.current.setSelectedState("California");
+      });
+      expect(result.current.selectedState).toBe("California");
+
+      act(() => {
+        result.current.applyFilters({
+          selectedState: null,
+          selectedTerrains: [],
+          selectedAmenities: [],
+          selectedCamping: [],
+          selectedVehicleTypes: [],
+          minTrailMiles: 0,
+          minAcres: 0,
+          minRating: "",
+          selectedOwnership: "",
+          permitRequired: "",
+          membershipRequired: "",
+          flagsRequired: "",
+          sparkArrestorRequired: "",
+        });
+      });
+
+      expect(result.current.selectedState).toBeUndefined();
+    });
+
+    it("round-trips through getCurrentFilters/applyFilters without changes", () => {
+      const { result } = renderHook(() =>
+        useFilteredParks({ parks: mockParks }),
+      );
+
+      act(() => {
+        result.current.setSelectedState("California");
+        result.current.setSelectedTerrains(["sand"]);
+        result.current.setMinTrailMiles(10);
+        result.current.setPermitRequired("yes");
+      });
+
+      const snapshot = result.current.getCurrentFilters();
+
+      act(() => {
+        result.current.clearAllFilters();
+      });
+      expect(result.current.selectedState).toBeUndefined();
+
+      act(() => {
+        result.current.applyFilters(snapshot);
+      });
+
+      expect(result.current.getCurrentFilters()).toEqual(snapshot);
+    });
+  });
 });

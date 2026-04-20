@@ -53,6 +53,7 @@ interface SubmitParkRequest {
   maxVehicleWidthInches?: number | null;
   flagsRequired?: boolean;
   sparkArrestorRequired?: boolean;
+  helmetsRequired?: boolean;
   noiseLimitDBA?: number | null;
   // Address fields (state is required)
   address: {
@@ -165,6 +166,7 @@ export async function POST(request: Request) {
         maxVehicleWidthInches: data.maxVehicleWidthInches || null,
         flagsRequired: data.flagsRequired ?? null,
         sparkArrestorRequired: data.sparkArrestorRequired ?? null,
+        helmetsRequired: data.helmetsRequired ?? null,
         noiseLimitDBA: data.noiseLimitDBA || null,
         // Admin submissions are auto-approved
         status: (isAdmin ? "APPROVED" : "PENDING") as ParkStatus,
