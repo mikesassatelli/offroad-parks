@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { generateMapHeroAsync } from "@/lib/map-hero/generate";
+import { normalizeStateName } from "@/lib/us-states";
 import type {
   Amenity,
   Camping,
@@ -89,6 +90,18 @@ export async function POST(request: Request) {
     if (!data.name || !data.address?.state) {
       return NextResponse.json(
         { error: "Name and state are required" },
+        { status: 400 },
+      );
+    }
+
+    // Normalize state to canonical full name (e.g. "AR" → "Arkansas").
+    // Reject the submission if the value isn't a recognizable US state.
+    const canonicalState = normalizeStateName(data.address.state);
+    if (!canonicalState) {
+      return NextResponse.json(
+        {
+          error: `Invalid state: "${data.address.state}". Provide a US state full name or 2-letter code.`,
+        },
         { status: 400 },
       );
     }
@@ -196,7 +209,7 @@ export async function POST(request: Request) {
             streetAddress: data.address.streetAddress || null,
             streetAddress2: data.address.streetAddress2 || null,
             city: data.address.city || null,
-            state: data.address.state, // Required
+            state: canonicalState, // Normalized full name (e.g. "Arkansas")
             zipCode: data.address.zipCode || null,
             county: data.address.county || null,
             latitude: data.address.latitude || null,

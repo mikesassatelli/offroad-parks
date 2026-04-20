@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { requireAdmin } from "@/lib/api-helpers";
 import { discoverParksInState } from "@/lib/ai/park-discovery";
 import { estimateCost } from "@/lib/ai/config";
+import { normalizeStateName } from "@/lib/us-states";
 
 export async function POST(request: Request) {
   const adminResult = await requireAdmin();
@@ -19,16 +20,20 @@ export async function POST(request: Request) {
 
   const { state } = body;
 
-  if (!state || typeof state !== "string" || state.length !== 2) {
+  const canonicalState = normalizeStateName(state);
+  if (!canonicalState) {
     return NextResponse.json(
-      { error: "state must be a two-letter abbreviation" },
+      {
+        error:
+          "state must be a US state full name (e.g. 'Arkansas') or 2-letter code (e.g. 'AR')",
+      },
       { status: 400 }
     );
   }
 
   try {
     const { candidates, inputTokens, outputTokens } =
-      await discoverParksInState(state.toUpperCase());
+      await discoverParksInState(canonicalState);
 
     return NextResponse.json({
       success: true,

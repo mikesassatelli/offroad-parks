@@ -17,7 +17,6 @@ import {
   MessageSquare,
   PlusCircle,
   Search,
-  Settings,
   Upload,
   Users,
 } from "lucide-react";
@@ -184,13 +183,6 @@ export default async function AdminLayout({
             >
               <Users className="w-5 h-5" />
               <span className="font-medium">Users</span>
-            </Link>
-            <Link
-              href="/admin/settings"
-              className="flex items-center gap-3 px-4 py-3 text-foreground rounded-lg hover:bg-accent hover:text-accent-foreground transition-colors"
-            >
-              <Settings className="w-5 h-5" />
-              <span className="font-medium">Settings</span>
             </Link>
           </nav>
         </aside>

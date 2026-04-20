@@ -15,6 +15,8 @@
     "db:studio": "prisma studio",
     "db:seed-reviews": "tsx prisma/seed-reviews.ts",
     "db:seed-reviews:wipe": "tsx prisma/seed-reviews.ts --wipe",
+    "db:normalize-states": "tsx prisma/normalize-state-values.ts",
+    "db:normalize-states:dry": "tsx prisma/normalize-state-values.ts --dry",
     "prepare": "husky",
     "format": "prettier --write .",
     "format:check": "prettier --check .",
