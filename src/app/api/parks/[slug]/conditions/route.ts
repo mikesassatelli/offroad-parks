@@ -55,8 +55,9 @@ export async function GET(_request: Request, { params }: RouteParams) {
 
 // POST /api/parks/[slug]/conditions
 // Submit a trail condition report. Must be logged in.
-// - No note → PUBLISHED immediately
-// - Note present → PENDING_REVIEW (admin must approve)
+// - Admins (any park) and operators of the target park → auto-approved (PUBLISHED)
+// - Regular users with no note → PUBLISHED immediately
+// - Regular users with a note → PENDING_REVIEW (admin must approve)
 export async function POST(request: Request, { params }: RouteParams) {
   const session = await auth();
   if (!session?.user?.id) {
@@ -69,6 +70,25 @@ export async function POST(request: Request, { params }: RouteParams) {
   if (!park) {
     return NextResponse.json({ error: "Park not found" }, { status: 404 });
   }
+
+  const userRole = (session.user as { role?: string }).role;
+  const isAdmin = userRole === "ADMIN";
+
+  // Operator scope is park-specific: user must be a member of the operator
+  // account that owns this park.
+  const isOperatorOfPark = !isAdmin && park.operatorId
+    ? !!(await prisma.operatorUser.findUnique({
+        where: {
+          operatorId_userId: {
+            operatorId: park.operatorId,
+            userId: session.user.id,
+          },
+        },
+        select: { id: true },
+      }))
+    : false;
+
+  const isPrivilegedSubmitter = isAdmin || isOperatorOfPark;
 
   let data: { status?: string; note?: string };
   try {
@@ -103,7 +123,9 @@ export async function POST(request: Request, { params }: RouteParams) {
   }
 
   const note = data.note?.trim() || null;
-  const reportStatus = note ? "PENDING_REVIEW" : "PUBLISHED";
+  // Admins and operators of this park bypass the note-based moderation gate.
+  const reportStatus =
+    isPrivilegedSubmitter || !note ? "PUBLISHED" : "PENDING_REVIEW";
 
   const condition = await prisma.trailCondition.create({
     data: {
@@ -112,6 +134,8 @@ export async function POST(request: Request, { params }: RouteParams) {
       status: data.status as TrailConditionStatus,
       note,
       reportStatus,
+      // Flag operator-authored posts so the UI can label them as official.
+      isOperatorPost: isOperatorOfPark,
     },
     include: {
       user: {
