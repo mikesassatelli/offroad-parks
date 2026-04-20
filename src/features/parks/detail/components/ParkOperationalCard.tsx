@@ -10,6 +10,7 @@ import {
   FileWarning,
   Flag,
   Flame,
+  HardHat,
   Info,
   Volume2,
 } from "lucide-react";
@@ -45,6 +46,7 @@ export function ParkOperationalCard({ park }: ParkOperationalCardProps) {
     park.maxVehicleWidthInches ||
     park.flagsRequired ||
     park.sparkArrestorRequired ||
+    park.helmetsRequired ||
     park.noiseLimitDBA;
 
   if (!hasAny) return null;
@@ -93,7 +95,8 @@ export function ParkOperationalCard({ park }: ParkOperationalCardProps) {
         {(park.permitRequired ||
           park.membershipRequired ||
           park.flagsRequired ||
-          park.sparkArrestorRequired) && (
+          park.sparkArrestorRequired ||
+          park.helmetsRequired) && (
           <div className="pt-1">
             <p className="text-sm text-muted-foreground mb-2">Requirements</p>
             <div className="flex flex-wrap gap-2">
@@ -119,6 +122,12 @@ export function ParkOperationalCard({ park }: ParkOperationalCardProps) {
                 <Badge variant="destructive" className="gap-1.5">
                   <Flame className="w-3 h-3" />
                   Spark Arrestor Required
+                </Badge>
+              )}
+              {park.helmetsRequired && (
+                <Badge variant="destructive" className="gap-1.5">
+                  <HardHat className="w-3 h-3" />
+                  Helmets Required
                 </Badge>
               )}
             </div>
