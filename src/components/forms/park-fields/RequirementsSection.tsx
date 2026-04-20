@@ -10,6 +10,7 @@ export interface RequirementsValues {
   membershipRequired: boolean;
   flagsRequired: boolean;
   sparkArrestorRequired: boolean;
+  helmetsRequired: boolean;
   maxVehicleWidthInches: string;
   noiseLimitDBA: string;
 }
@@ -88,6 +89,20 @@ export function RequirementsSection({ values, onChange }: RequirementsSectionPro
           className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
         >
           Spark Arrestor Required
+        </label>
+      </div>
+
+      <div className="flex items-center space-x-2">
+        <Checkbox
+          id="helmetsRequired"
+          checked={values.helmetsRequired}
+          onCheckedChange={(checked) => onChange("helmetsRequired", !!checked)}
+        />
+        <label
+          htmlFor="helmetsRequired"
+          className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
+        >
+          Helmets Required
         </label>
       </div>
 

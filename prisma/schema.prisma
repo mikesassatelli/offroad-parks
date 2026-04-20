@@ -107,6 +107,7 @@ model Park {
   maxVehicleWidthInches  Int?
   flagsRequired          Boolean?
   sparkArrestorRequired  Boolean?
+  helmetsRequired        Boolean?
   noiseLimitDBA          Int?
 
   // Map hero (auto-generated thumbnail for parks without user photos).

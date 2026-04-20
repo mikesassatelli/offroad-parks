@@ -30,6 +30,7 @@ const defaultValues: RequirementsValues = {
   membershipRequired: false,
   flagsRequired: false,
   sparkArrestorRequired: false,
+  helmetsRequired: false,
   maxVehicleWidthInches: "",
   noiseLimitDBA: "",
 };
@@ -41,6 +42,7 @@ describe("RequirementsSection", () => {
     expect(screen.getByLabelText(/membership required/i)).toBeInTheDocument();
     expect(screen.getByLabelText(/whip flags required/i)).toBeInTheDocument();
     expect(screen.getByLabelText(/spark arrestor required/i)).toBeInTheDocument();
+    expect(screen.getByLabelText(/helmets required/i)).toBeInTheDocument();
   });
 
   it("hides permit type input when permit not required", () => {
@@ -98,6 +100,7 @@ describe("RequirementsSection", () => {
       membershipRequired: true,
       flagsRequired: true,
       sparkArrestorRequired: true,
+      helmetsRequired: true,
       maxVehicleWidthInches: "60",
       noiseLimitDBA: "96",
     };
@@ -106,5 +109,6 @@ describe("RequirementsSection", () => {
     expect(screen.getByLabelText(/membership required/i)).toBeChecked();
     expect(screen.getByLabelText(/whip flags required/i)).toBeChecked();
     expect(screen.getByLabelText(/spark arrestor required/i)).toBeChecked();
+    expect(screen.getByLabelText(/helmets required/i)).toBeChecked();
   });
 });
