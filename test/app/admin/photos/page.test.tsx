@@ -108,11 +108,11 @@ describe("AdminPhotosPage", () => {
     const { container } = render(component);
 
     // Find the pending stat card by its label, then check the count
-    const pendingCards = Array.from(container.querySelectorAll(".bg-white"));
+    const pendingCards = Array.from(container.querySelectorAll(".bg-card"));
     const pendingCard = pendingCards.find((card) =>
       card.textContent?.includes("Pending Review"),
     );
-    expect(pendingCard?.querySelector(".text-orange-600")?.textContent).toBe(
+    expect(pendingCard?.querySelector('[class*="text-orange"]')?.textContent).toBe(
       "1",
     );
   });
@@ -154,11 +154,11 @@ describe("AdminPhotosPage", () => {
     const { container } = render(component);
 
     // Check all counts are 0
-    const pendingCards = Array.from(container.querySelectorAll(".bg-white"));
+    const pendingCards = Array.from(container.querySelectorAll(".bg-card"));
     const pendingCard = pendingCards.find((card) =>
       card.textContent?.includes("Pending Review"),
     );
-    expect(pendingCard?.querySelector(".text-orange-600")?.textContent).toBe(
+    expect(pendingCard?.querySelector('[class*="text-orange"]')?.textContent).toBe(
       "0",
     );
 

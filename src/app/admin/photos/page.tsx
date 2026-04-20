@@ -47,31 +47,31 @@ export default async function AdminPhotosPage() {
   return (
     <div>
       <div className="mb-8">
-        <h1 className="text-3xl font-bold text-gray-900 mb-2 flex items-center gap-2">
+        <h1 className="text-3xl font-bold text-foreground mb-2 flex items-center gap-2">
           <Camera className="w-8 h-8" />
           Photo Moderation
         </h1>
-        <p className="text-gray-600">
+        <p className="text-muted-foreground">
           Review, moderate, and audit park photos
         </p>
       </div>
 
       <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
-        <div className="bg-white rounded-lg border border-gray-200 p-4">
-          <div className="text-2xl font-bold text-orange-600">{pendingCount}</div>
-          <div className="text-sm text-gray-600">Pending Review</div>
+        <div className="bg-card rounded-lg border border-border p-4">
+          <div className="text-2xl font-bold text-orange-600 dark:text-orange-400">{pendingCount}</div>
+          <div className="text-sm text-muted-foreground">Pending Review</div>
         </div>
-        <div className="bg-white rounded-lg border border-gray-200 p-4">
-          <div className="text-2xl font-bold text-green-600">{approvedCount}</div>
-          <div className="text-sm text-gray-600">Approved</div>
+        <div className="bg-card rounded-lg border border-border p-4">
+          <div className="text-2xl font-bold text-green-600 dark:text-green-400">{approvedCount}</div>
+          <div className="text-sm text-muted-foreground">Approved</div>
         </div>
-        <div className="bg-white rounded-lg border border-gray-200 p-4">
-          <div className="text-2xl font-bold text-red-600">{rejectedCount}</div>
-          <div className="text-sm text-gray-600">Rejected</div>
+        <div className="bg-card rounded-lg border border-border p-4">
+          <div className="text-2xl font-bold text-red-600 dark:text-red-400">{rejectedCount}</div>
+          <div className="text-sm text-muted-foreground">Rejected</div>
         </div>
-        <div className="bg-white rounded-lg border border-orange-200 p-4">
-          <div className="text-2xl font-bold text-orange-500">{noPhotoCount}</div>
-          <div className="text-sm text-gray-600">Parks Without Approved Photo</div>
+        <div className="bg-card rounded-lg border border-orange-200 dark:border-orange-900/40 p-4">
+          <div className="text-2xl font-bold text-orange-500 dark:text-orange-400">{noPhotoCount}</div>
+          <div className="text-sm text-muted-foreground">Parks Without Approved Photo</div>
         </div>
       </div>
 

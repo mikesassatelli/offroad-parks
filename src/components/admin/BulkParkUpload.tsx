@@ -560,11 +560,11 @@ export function BulkParkUpload() {
 
       {/* Errors */}
       {errors.length > 0 && (
-        <div className="border border-red-200 bg-red-50 rounded-lg p-4">
-          <h3 className="font-semibold text-red-900 mb-2">
+        <div className="border border-red-200 dark:border-red-900/40 bg-red-50 dark:bg-red-900/20 rounded-lg p-4">
+          <h3 className="font-semibold text-red-900 dark:text-red-200 mb-2">
             Validation Errors ({errors.length})
           </h3>
-          <ul className="list-disc list-inside space-y-1 text-sm text-red-800">
+          <ul className="list-disc list-inside space-y-1 text-sm text-red-800 dark:text-red-300">
             {errors.slice(0, 10).map((error, index) => (
               <li key={index}>
                 <strong>Row {error.row}</strong> - {error.field}:{" "}
@@ -572,7 +572,7 @@ export function BulkParkUpload() {
               </li>
             ))}
             {errors.length > 10 && (
-              <li className="text-red-600">
+              <li className="text-red-600 dark:text-red-400">
                 ... and {errors.length - 10} more error
                 {errors.length - 10 !== 1 ? "s" : ""}
               </li>
@@ -583,11 +583,11 @@ export function BulkParkUpload() {
 
       {/* Success Message */}
       {uploadResult?.success && (
-        <div className="border border-green-200 bg-green-50 rounded-lg p-4">
-          <h3 className="font-semibold text-green-900 mb-2">
+        <div className="border border-green-200 dark:border-green-900/40 bg-green-50 dark:bg-green-900/20 rounded-lg p-4">
+          <h3 className="font-semibold text-green-900 dark:text-green-200 mb-2">
             Upload Successful!
           </h3>
-          <p className="text-sm text-green-800">
+          <p className="text-sm text-green-800 dark:text-green-300">
             Successfully created {uploadResult.created} park
             {uploadResult.created !== 1 ? "s" : ""}. All parks have been
             automatically approved.
