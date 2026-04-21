@@ -97,11 +97,15 @@ GOOGLE_CLIENT_SECRET="your-google-client-secret"
 
 ### 4. Set up the database
 
-Push the Prisma schema to your database:
+Apply the versioned Prisma migrations to your database:
 
 ```bash
-npm run db:push
+npx prisma migrate deploy
 ```
+
+For an empty local database, you can alternatively run `npm run db:migrate` to create and apply migrations interactively.
+
+If your database already matches the current schema (e.g. a pre-existing dev DB that was previously managed by `prisma db push`), you'll need to baseline it once — see the [Prisma migrations](#prisma-migrations) section below.
 
 ### 5. Run the development server
 
@@ -131,8 +135,37 @@ Open [http://localhost:3000](http://localhost:3000) to see the application.
 
 ### Database
 
-- `npm run db:push` - Push Prisma schema to database
+- `npm run db:migrate` - Create and apply a new Prisma migration in dev (wraps `prisma migrate dev`). Pass a name via `npm run db:migrate -- --name <short_description>`.
+- `npm run db:push` - Push the schema directly without a migration (emergency / prototyping only; bypasses migration history)
 - `npm run db:studio` - Open Prisma Studio (database GUI)
+
+## Prisma Migrations
+
+Schema changes use **versioned migrations** (not `prisma db push`).
+
+### Dev workflow
+
+After editing `prisma/schema.prisma`:
+
+```bash
+npm run db:migrate -- --name <short_description>
+```
+
+This creates a new folder under `prisma/migrations/<timestamp>_<name>/` with a `migration.sql`. **Commit that folder** alongside your schema change.
+
+### Production
+
+The `npm run build` script runs `prisma migrate deploy` automatically before `next build`, so pending migrations are applied on every Vercel deploy.
+
+### Baselining an existing database
+
+If you see `Error: P3005 — The database schema is not empty`, the database pre-dates the migrations folder and needs to be baselined. Run once per environment:
+
+```bash
+npx prisma migrate resolve --applied 0_init
+```
+
+This marks the `0_init` baseline migration as already applied without running it. Subsequent migrations will apply normally.
 
 ## Project Structure
 
