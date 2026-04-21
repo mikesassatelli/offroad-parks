@@ -153,11 +153,67 @@ export function useRouteBuilder() {
     [waypoints, routeResult],
   );
 
+  // Override an existing saved route (PATCH). Used by the route builder's
+  // primary Save button when the user reopened a route via `?routeId=…`.
+  const updateRoute = useCallback(
+    async (
+      id: string,
+      title?: string,
+      isPublic?: boolean,
+    ): Promise<SavedRoute | null> => {
+      if (waypoints.length < 2) return null;
+      setIsSaving(true);
+      try {
+        const body: Record<string, unknown> = {
+          waypoints,
+          routeGeometry: routeResult?.geometry ?? null,
+          totalDistanceMi: routeResult?.distanceMi ?? null,
+          estimatedDurationMin: routeResult?.durationMin ?? null,
+        };
+        if (title !== undefined) body.title = title.trim();
+        if (isPublic !== undefined) body.isPublic = isPublic;
+        const res = await fetch(`/api/routes/${id}`, {
+          method: "PATCH",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(body),
+        });
+        if (!res.ok) return null;
+        const saved: SavedRoute = await res.json();
+        setSavedRouteId(saved.id);
+        return saved;
+      } catch {
+        return null;
+      } finally {
+        setIsSaving(false);
+      }
+    },
+    [waypoints, routeResult],
+  );
+
   const loadRoute = useCallback((route: SavedRoute) => {
     setWaypoints(route.waypoints);
     setSavedRouteId(route.id);
     // routeGeometry will be re-fetched by the routing effect
   }, []);
+
+  // Fetch a saved route by id and hydrate the builder state. Returns the
+  // loaded SavedRoute on success, `null` on failure (e.g. not found, not
+  // owned, network error).
+  const loadRouteById = useCallback(
+    async (id: string): Promise<SavedRoute | null> => {
+      try {
+        const res = await fetch(`/api/routes/${id}`);
+        if (!res.ok) return null;
+        const route: SavedRoute = await res.json();
+        setWaypoints(route.waypoints ?? []);
+        setSavedRouteId(route.id);
+        return route;
+      } catch {
+        return null;
+      }
+    },
+    [],
+  );
 
   const setWaypointIcon = useCallback((waypointId: string, icon: string) => {
     setWaypoints((current) =>
@@ -185,7 +241,9 @@ export function useRouteBuilder() {
     addCustomWaypoint,
     removeWaypoint,
     loadRoute,
+    loadRouteById,
     saveRoute,
+    updateRoute,
     setWaypointIcon,
     setWaypointColor,
     // Backward compat
