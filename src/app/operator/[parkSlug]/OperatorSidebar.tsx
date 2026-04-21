@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { useSearchParams } from "next/navigation";
-import { Activity, BarChart3, MapPin } from "lucide-react";
+import { Activity, BarChart3, MapPin, Megaphone } from "lucide-react";
 
 interface OperatorSidebarProps {
   parkSlug: string;
@@ -16,6 +16,7 @@ export function OperatorSidebar({ parkSlug }: OperatorSidebarProps) {
   const links = [
     { href: `/operator/${parkSlug}/dashboard${fromParam}`, label: "Dashboard", icon: BarChart3 },
     { href: `/operator/${parkSlug}/conditions${fromParam}`, label: "Trail Status", icon: Activity },
+    { href: `/operator/${parkSlug}/alerts${fromParam}`, label: "Alerts", icon: Megaphone },
     { href: `/operator/${parkSlug}/settings${fromParam}`, label: "Park Details", icon: MapPin },
   ];
 
