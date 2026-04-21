@@ -35,6 +35,8 @@ const ALLOWED_SCALAR_FIELDS = new Set([
   "noiseLimitDBA",
 ]);
 
+const VALID_HERO_SOURCES = new Set(["AUTO", "PHOTO", "MAP"]);
+
 // Array/relation fields that operators can update
 const ALLOWED_ARRAY_FIELDS = new Set(["terrain", "amenities", "camping", "vehicleTypes"]);
 
@@ -66,6 +68,8 @@ const PARK_SCALAR_SELECT = {
   sparkArrestorRequired: true,
   helmetsRequired: true,
   noiseLimitDBA: true,
+  heroSource: true,
+  heroPhotoId: true,
 } as const;
 
 const PARK_ARRAY_SELECT = {
@@ -142,6 +146,77 @@ export async function PATCH(request: Request, { params }: RouteParams) {
     if (currentValue !== value) {
       updateData[key] = value;
       changes[key] = { from: currentValue, to: value };
+    }
+  }
+
+  // Hero selection: heroSource + heroPhotoId. Validate before applying.
+  if ("heroSource" in body || "heroPhotoId" in body) {
+    const incomingSource =
+      "heroSource" in body ? body.heroSource : park.heroSource;
+    const incomingPhotoId =
+      "heroPhotoId" in body
+        ? (body.heroPhotoId as string | null | undefined)
+        : park.heroPhotoId;
+
+    if (
+      typeof incomingSource !== "string" ||
+      !VALID_HERO_SOURCES.has(incomingSource)
+    ) {
+      return NextResponse.json(
+        { error: "Invalid heroSource" },
+        { status: 400 }
+      );
+    }
+
+    // heroPhotoId must be null/undefined OR reference an APPROVED photo on this park.
+    let resolvedPhotoId: string | null = null;
+    if (incomingSource === "PHOTO") {
+      if (!incomingPhotoId || typeof incomingPhotoId !== "string") {
+        return NextResponse.json(
+          { error: "heroPhotoId is required when heroSource is PHOTO" },
+          { status: 400 }
+        );
+      }
+      const photo = await prisma.parkPhoto.findUnique({
+        where: { id: incomingPhotoId },
+        select: { id: true, parkId: true, status: true },
+      });
+      if (!photo || photo.parkId !== park.id) {
+        return NextResponse.json(
+          { error: "heroPhotoId does not belong to this park" },
+          { status: 400 }
+        );
+      }
+      if (photo.status !== "APPROVED") {
+        return NextResponse.json(
+          { error: "heroPhotoId must reference an APPROVED photo" },
+          { status: 400 }
+        );
+      }
+      resolvedPhotoId = photo.id;
+    } else if (incomingPhotoId && typeof incomingPhotoId === "string") {
+      // Caller supplied a photoId but source != PHOTO — validate it still
+      // belongs to this park (and approved), so we can persist it for an
+      // easy toggle back without losing the selection.
+      const photo = await prisma.parkPhoto.findUnique({
+        where: { id: incomingPhotoId },
+        select: { id: true, parkId: true, status: true },
+      });
+      if (!photo || photo.parkId !== park.id || photo.status !== "APPROVED") {
+        // Silently clear rather than 400 — non-PHOTO modes don't use it.
+        resolvedPhotoId = null;
+      } else {
+        resolvedPhotoId = photo.id;
+      }
+    }
+
+    if (incomingSource !== park.heroSource) {
+      updateData.heroSource = incomingSource;
+      changes.heroSource = { from: park.heroSource, to: incomingSource };
+    }
+    if (resolvedPhotoId !== park.heroPhotoId) {
+      updateData.heroPhotoId = resolvedPhotoId;
+      changes.heroPhotoId = { from: park.heroPhotoId, to: resolvedPhotoId };
     }
   }
 

@@ -1,6 +1,7 @@
 import { redirect } from "next/navigation";
 import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
+import { resolveParkHeroImage } from "@/lib/park-hero";
 import { transformDbPark, transformDbReview } from "@/lib/types";
 import type { DbReview } from "@/lib/types";
 import { UserProfileClient } from "@/components/profile/UserProfileClient";
@@ -32,7 +33,16 @@ export default async function ProfilePage() {
               createdAt: "desc",
             },
             select: {
+              id: true,
               url: true,
+              status: true,
+            },
+          },
+          heroPhoto: {
+            select: {
+              id: true,
+              url: true,
+              status: true,
             },
           },
         },
@@ -45,7 +55,7 @@ export default async function ProfilePage() {
     .filter((f) => f.park.status === "APPROVED")
     .map((f) => ({
       ...transformDbPark(f.park),
-      heroImage: f.park.photos[0]?.url || null,
+      heroImage: resolveParkHeroImage(f.park),
     }));
 
   // Fetch user's reviews
