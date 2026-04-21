@@ -140,6 +140,8 @@ model Park {
   address          Address?
   operator         Operator?        @relation(fields: [operatorId], references: [id], onDelete: SetNull)
   operatorId       String?
+  // Per-park override of the operator org name displayed on the park detail page
+  operatorDisplayName String?
   parkClaims       ParkClaim[]
   editLogs         ParkEditLog[]
 

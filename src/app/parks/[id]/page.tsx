@@ -80,6 +80,13 @@ export default async function ParkPage({ params }: ParkPageProps) {
     notFound();
   }
 
+  // Resolve the operator display name: prefer the per-park override when it is
+  // a non-empty trimmed string, otherwise fall back to the operator org name.
+  const override = dbPark.operatorDisplayName?.trim();
+  const resolvedOperatorName = override && override.length > 0
+    ? override
+    : (dbPark.operator?.name ?? null);
+
   // Fetch approved photos for this park
   const photos = await prisma.parkPhoto.findMany({
     where: {
@@ -132,7 +139,7 @@ export default async function ParkPage({ params }: ParkPageProps) {
       parkDbId={dbPark.id}
       existingClaim={existingClaim}
       isOperatorOfPark={isOperatorOfPark}
-      operatorName={dbPark.operator?.name ?? null}
+      operatorName={resolvedOperatorName}
     />
   );
 }
