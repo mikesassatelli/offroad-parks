@@ -8,8 +8,9 @@ import { geocodeSuggestions } from "@/features/map/utils/routing";
 import type { RouteResult } from "@/features/map/utils/routing";
 import { RouteListHeader } from "./components/RouteListHeader";
 import { RouteListItem } from "./components/RouteListItem";
+import { ShareRouteDialog } from "./ShareRouteDialog";
 import { Button } from "@/components/ui/button";
-import { Check, Copy, Loader2, MapPin, X } from "lucide-react";
+import { Check, Copy, Loader2, MapPin, Share2, X } from "lucide-react";
 
 interface RouteListProps {
   waypoints: RouteWaypoint[];
@@ -36,6 +37,12 @@ interface RouteListProps {
   ) => Promise<SavedRoute | null>;
   /** When set, the builder is editing an already-saved route. */
   loadedRouteId?: string | null;
+  /**
+   * Full snapshot of the currently-loaded saved route. When provided, the
+   * "Share settings" entry in the Save & Share panel can open the share
+   * dialog without requiring a fresh save first.
+   */
+  loadedRoute?: SavedRoute | null;
   /** Controlled route title. Falls back to local state when omitted. */
   routeTitle?: string;
   onRouteTitleChange?: (value: string) => void;
@@ -61,6 +68,7 @@ export function RouteList({
   onSaveRoute,
   onUpdateRoute,
   loadedRouteId,
+  loadedRoute,
   routeTitle: routeTitleProp,
   onRouteTitleChange,
   isSaving,
@@ -105,8 +113,46 @@ export function RouteList({
   const searchContainerRef = useRef<HTMLDivElement>(null);
 
   // Save / share state
-  const [savedRoute, setSavedRoute] = useState<SavedRoute | null>(null);
+  const [savedRoute, setSavedRoute] = useState<SavedRoute | null>(
+    loadedRoute ?? null,
+  );
   const [copied, setCopied] = useState(false);
+
+  // Seed savedRoute when the builder loads a saved route via `?routeId=…`.
+  useEffect(() => {
+    if (loadedRoute) {
+      setSavedRoute((current) =>
+        current && current.id === loadedRoute.id ? current : loadedRoute,
+      );
+    }
+  }, [loadedRoute]);
+  const [shareDialogRoute, setShareDialogRoute] = useState<SavedRoute | null>(
+    null,
+  );
+
+  const handleToggleShare = async (
+    target: SavedRoute,
+    next: boolean,
+  ): Promise<SavedRoute | null> => {
+    try {
+      const res = await fetch(`/api/routes/${target.id}`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ isPublic: next }),
+      });
+      if (!res.ok) return null;
+      const updated: SavedRoute = await res.json();
+      setSavedRoute((current) =>
+        current && current.id === updated.id ? { ...current, ...updated } : current,
+      );
+      setShareDialogRoute((current) =>
+        current && current.id === updated.id ? { ...current, ...updated } : current,
+      );
+      return updated;
+    } catch {
+      return null;
+    }
+  };
 
   const handleDragStart = (index: number) => setDraggedIndex(index);
 
@@ -372,11 +418,29 @@ export function RouteList({
                     </>
                   )}
                 </Button>
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  className="w-full"
+                  onClick={() => setShareDialogRoute(savedRoute)}
+                  aria-label="Open share settings"
+                >
+                  <Share2 className="w-3 h-3 mr-1" />
+                  Share settings
+                </Button>
               </div>
             )}
           </div>
         )}
       </CardContent>
+
+      <ShareRouteDialog
+        route={shareDialogRoute}
+        onOpenChange={(open) => {
+          if (!open) setShareDialogRoute(null);
+        }}
+        onToggleShare={handleToggleShare}
+      />
     </Card>
   );
 }
