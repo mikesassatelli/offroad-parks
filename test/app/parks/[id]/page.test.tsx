@@ -21,6 +21,9 @@ vi.mock("@/lib/prisma", () => ({
     parkClaim: {
       findUnique: vi.fn().mockResolvedValue(null),
     },
+    parkAlert: {
+      findMany: vi.fn().mockResolvedValue([]),
+    },
   },
 }));
 

@@ -57,6 +57,7 @@ model User {
   parkEditLogs     ParkEditLog[]
   routes           Route[]
   searchPreference UserSearchPreference?
+  parkAlerts       ParkAlert[]
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -152,6 +153,7 @@ model Park {
   operatorDisplayName String?
   parkClaims       ParkClaim[]
   editLogs         ParkEditLog[]
+  parkAlerts       ParkAlert[]
 
   // AI Research fields
   dataSources          DataSource[]
@@ -811,4 +813,37 @@ model ParkCandidate {
   @@unique([name, state])
   @@index([status])
   @@index([state])
+}
+
+// ── Park Alerts ────────────────────────────────────────────────────────────
+// Operator-posted alerts (closures, events, weather warnings) that render as
+// dismissible banners at the top of the park detail page. Distinct from
+// TrailCondition — alerts are time-bounded announcements, not status updates.
+
+enum ParkAlertSeverity {
+  INFO
+  WARNING
+  DANGER
+  SUCCESS
+}
+
+model ParkAlert {
+  id        String            @id @default(cuid())
+  parkId    String
+  userId    String            // operator user who posted
+  title     String
+  body      String?           @db.Text
+  severity  ParkAlertSeverity @default(INFO)
+  startsAt  DateTime?         // null = active immediately
+  expiresAt DateTime?         // null = indefinite
+  isActive  Boolean           @default(true)
+
+  park Park @relation(fields: [parkId], references: [id], onDelete: Cascade)
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([parkId, isActive])
+  @@index([expiresAt])
 }
