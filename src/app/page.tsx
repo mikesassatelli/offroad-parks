@@ -1,5 +1,6 @@
 import UtvParksApp from "@/components/ui/OffroadParksApp";
 import { prisma } from "@/lib/prisma";
+import { resolveParkHeroImage } from "@/lib/park-hero";
 import { transformDbPark } from "@/lib/types";
 
 // Force dynamic rendering to always show fresh data
@@ -26,7 +27,16 @@ export default async function Page() {
           createdAt: "desc",
         },
         select: {
+          id: true,
           url: true,
+          status: true,
+        },
+      },
+      heroPhoto: {
+        select: {
+          id: true,
+          url: true,
+          status: true,
         },
       },
       // Latest published trail condition — drives the condition badge on
@@ -49,10 +59,10 @@ export default async function Page() {
     },
   });
 
-  // Transform to client format with hero images
+  // Transform to client format with hero images (respects operator selection)
   const parks = dbParks.map((park) => ({
     ...transformDbPark(park),
-    heroImage: park.photos[0]?.url || null,
+    heroImage: resolveParkHeroImage(park),
   }));
 
   return <UtvParksApp parks={parks} />;

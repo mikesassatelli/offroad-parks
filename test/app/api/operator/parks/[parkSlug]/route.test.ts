@@ -65,6 +65,7 @@ const mockPark = {
   sparkArrestorRequired: null,
   helmetsRequired: null,
   noiseLimitDBA: null,
+  operatorDisplayName: null,
   terrain: [{ terrain: "sand" }, { terrain: "rocks" }],
   amenities: [{ amenity: "restrooms" }],
   camping: [],
@@ -226,6 +227,91 @@ describe("PATCH /api/operator/parks/[parkSlug]", () => {
     });
     // Amenity not changed — should not be touched
     expect(txParkAmenity.deleteMany).not.toHaveBeenCalled();
+  });
+
+  describe("operatorDisplayName", () => {
+    it("should accept and trim operatorDisplayName", async () => {
+      (auth as any).mockResolvedValue(operatorSession);
+      (prisma.park.findUnique as any).mockResolvedValue(mockPark);
+
+      const txParkUpdate = vi.fn().mockResolvedValue({});
+      const updatedPark = { ...mockPark, operatorDisplayName: "Custom Name" };
+
+      (prisma.$transaction as any).mockImplementation(async (fn: any) => {
+        return fn({
+          park: {
+            update: txParkUpdate,
+            findUnique: vi.fn().mockResolvedValue(updatedPark),
+          },
+          parkTerrain: { deleteMany: vi.fn(), createMany: vi.fn() },
+          parkAmenity: { deleteMany: vi.fn(), createMany: vi.fn() },
+          parkCamping: { deleteMany: vi.fn(), createMany: vi.fn() },
+          parkVehicleType: { deleteMany: vi.fn(), createMany: vi.fn() },
+          parkEditLog: { create: vi.fn().mockResolvedValue({ id: "log-1" }) },
+        });
+      });
+
+      const response = await PATCH(
+        makePatchRequest({ operatorDisplayName: "  Custom Name  " }),
+        { params: Promise.resolve({ parkSlug: "test-park" }) }
+      );
+
+      expect(response.status).toBe(200);
+      expect(txParkUpdate).toHaveBeenCalledWith({
+        where: { id: "park-1" },
+        data: { operatorDisplayName: "Custom Name" },
+      });
+    });
+
+    it("should normalize empty/whitespace-only operatorDisplayName to null", async () => {
+      (auth as any).mockResolvedValue(operatorSession);
+      (prisma.park.findUnique as any).mockResolvedValue({
+        ...mockPark,
+        operatorDisplayName: "Previous",
+      });
+
+      const txParkUpdate = vi.fn().mockResolvedValue({});
+      const updatedPark = { ...mockPark, operatorDisplayName: null };
+
+      (prisma.$transaction as any).mockImplementation(async (fn: any) => {
+        return fn({
+          park: {
+            update: txParkUpdate,
+            findUnique: vi.fn().mockResolvedValue(updatedPark),
+          },
+          parkTerrain: { deleteMany: vi.fn(), createMany: vi.fn() },
+          parkAmenity: { deleteMany: vi.fn(), createMany: vi.fn() },
+          parkCamping: { deleteMany: vi.fn(), createMany: vi.fn() },
+          parkVehicleType: { deleteMany: vi.fn(), createMany: vi.fn() },
+          parkEditLog: { create: vi.fn().mockResolvedValue({ id: "log-1" }) },
+        });
+      });
+
+      const response = await PATCH(
+        makePatchRequest({ operatorDisplayName: "   " }),
+        { params: Promise.resolve({ parkSlug: "test-park" }) }
+      );
+
+      expect(response.status).toBe(200);
+      expect(txParkUpdate).toHaveBeenCalledWith({
+        where: { id: "park-1" },
+        data: { operatorDisplayName: null },
+      });
+    });
+
+    it("should reject operatorDisplayName longer than 200 characters", async () => {
+      (auth as any).mockResolvedValue(operatorSession);
+      (prisma.park.findUnique as any).mockResolvedValue(mockPark);
+
+      const response = await PATCH(
+        makePatchRequest({ operatorDisplayName: "a".repeat(201) }),
+        { params: Promise.resolve({ parkSlug: "test-park" }) }
+      );
+
+      expect(response.status).toBe(400);
+      const data = await response.json();
+      expect(data.error).toMatch(/200 characters/);
+    });
   });
 
   it("should handle clearing all terrain by passing empty array", async () => {
