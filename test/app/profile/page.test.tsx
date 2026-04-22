@@ -90,7 +90,10 @@ describe("ProfilePage", () => {
               where: { status: "APPROVED" },
               take: 1,
               orderBy: { createdAt: "desc" },
-              select: { url: true },
+              select: { id: true, url: true, status: true },
+            },
+            heroPhoto: {
+              select: { id: true, url: true, status: true },
             },
           },
         },

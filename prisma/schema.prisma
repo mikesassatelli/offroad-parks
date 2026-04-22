@@ -118,6 +118,14 @@ model Park {
   mapHeroUrl          String?
   mapHeroGeneratedAt  DateTime?
 
+  // Operator-selected hero image for their park card.
+  // - heroSource AUTO (default): first APPROVED photo, falls back to map hero.
+  // - heroSource PHOTO: use heroPhotoId (must be an APPROVED photo on this park).
+  // - heroSource MAP: force use of map hero (mapHeroUrl or live ParkMapHero).
+  heroPhotoId String?    @unique
+  heroPhoto   ParkPhoto? @relation("ParkHeroPhoto", fields: [heroPhotoId], references: [id], onDelete: SetNull)
+  heroSource  HeroSource @default(AUTO)
+
   // Aggregated review data
   averageRating            Float?
   averageDifficulty        Float?
@@ -141,6 +149,8 @@ model Park {
   address          Address?
   operator         Operator?        @relation(fields: [operatorId], references: [id], onDelete: SetNull)
   operatorId       String?
+  // Per-park override of the operator org name displayed on the park detail page
+  operatorDisplayName String?
   parkClaims       ParkClaim[]
   editLogs         ParkEditLog[]
   parkAlerts       ParkAlert[]
@@ -376,8 +386,9 @@ model ParkPhoto {
   caption String?     @db.Text
   status  PhotoStatus @default(PENDING)
 
-  park Park  @relation(fields: [parkId], references: [id], onDelete: Cascade)
-  user User? @relation(fields: [userId], references: [id], onDelete: SetNull)
+  park       Park  @relation(fields: [parkId], references: [id], onDelete: Cascade)
+  user       User? @relation(fields: [userId], references: [id], onDelete: SetNull)
+  heroForPark Park? @relation("ParkHeroPhoto")
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -386,6 +397,12 @@ model ParkPhoto {
   @@index([parkId])
   @@index([userId])
   @@index([status])
+}
+
+enum HeroSource {
+  AUTO
+  PHOTO
+  MAP
 }
 
 enum PhotoStatus {
