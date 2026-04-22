@@ -37,6 +37,7 @@ export default defineConfig({
         "src/app/admin/parks/bulk-upload/page.tsx", // Server component wrapper
         "src/app/admin/photos/bulk-upload/page.tsx", // Server component with Prisma
         "src/app/admin/reviews/page.tsx", // Server component with Prisma
+        "src/app/routes/page.tsx", // Server component with Prisma + auth
         "src/lib/types.ts", // Pure type definitions, no logic to test
 
         // AI Research Engine - integration-only files

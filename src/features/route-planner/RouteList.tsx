@@ -22,6 +22,23 @@ interface RouteListProps {
   routeResult?: RouteResult | null;
   isRouting?: boolean;
   onSaveRoute?: (title: string, isPublic: boolean) => Promise<SavedRoute | null>;
+  /**
+   * Override an already-saved route (PATCH). Present only when the builder
+   * knows the current waypoints came from a reopened saved route (i.e. the
+   * page loaded with `?routeId=…`). When provided, the primary "Save" button
+   * PATCHes the existing route and a secondary "Save as new" button POSTs a
+   * fresh copy.
+   */
+  onUpdateRoute?: (
+    id: string,
+    title?: string,
+    isPublic?: boolean,
+  ) => Promise<SavedRoute | null>;
+  /** When set, the builder is editing an already-saved route. */
+  loadedRouteId?: string | null;
+  /** Controlled route title. Falls back to local state when omitted. */
+  routeTitle?: string;
+  onRouteTitleChange?: (value: string) => void;
   isSaving?: boolean;
   /** @deprecated Use waypoints */
   routeParks?: RouteWaypoint[];
@@ -42,6 +59,10 @@ export function RouteList({
   routeResult,
   isRouting,
   onSaveRoute,
+  onUpdateRoute,
+  loadedRouteId,
+  routeTitle: routeTitleProp,
+  onRouteTitleChange,
   isSaving,
   // backward compat
   routeParks,
@@ -58,15 +79,21 @@ export function RouteList({
   const [draggedIndex, setDraggedIndex] = useState<number | null>(null);
   const [dragOverIndex, setDragOverIndex] = useState<number | null>(null);
 
+  // Route title — controlled by parent when `routeTitleProp` is provided so
+  // the reopen flow can seed the title from the loaded route.
+  const [localRouteTitle, setLocalRouteTitle] = useState("");
+  const routeTitle = routeTitleProp ?? localRouteTitle;
+  const setRouteTitle = (value: string) => {
+    if (onRouteTitleChange) onRouteTitleChange(value);
+    else setLocalRouteTitle(value);
+  };
+
   const handleClearRoute = () => {
     setSavedRoute(null);
     setRouteTitle("");
     setCopied(false);
     onClearRoute();
   };
-
-  // Route title
-  const [routeTitle, setRouteTitle] = useState("");
 
   // Custom waypoint autocomplete search
   const [showCustomSearch, setShowCustomSearch] = useState(false);
@@ -147,6 +174,20 @@ export function RouteList({
   }, [showCustomSearch]);
 
   const handleSave = async () => {
+    if (!routeTitle.trim()) return;
+    // If the builder is editing a reopened route, the primary Save PATCHes
+    // (overrides) the existing record. Otherwise it creates a new one.
+    if (loadedRouteId && onUpdateRoute) {
+      const saved = await onUpdateRoute(loadedRouteId, routeTitle.trim(), false);
+      if (saved) setSavedRoute(saved);
+      return;
+    }
+    if (!onSaveRoute) return;
+    const saved = await onSaveRoute(routeTitle.trim(), false);
+    if (saved) setSavedRoute(saved);
+  };
+
+  const handleSaveAsNew = async () => {
     if (!onSaveRoute || !routeTitle.trim()) return;
     const saved = await onSaveRoute(routeTitle.trim(), false);
     if (saved) setSavedRoute(saved);
@@ -264,7 +305,7 @@ export function RouteList({
         </div>
 
         {/* Save & Share (authenticated, 2+ waypoints) */}
-        {isAuthenticated && waypoints.length >= 2 && onSaveRoute && (
+        {isAuthenticated && waypoints.length >= 2 && (onSaveRoute || onUpdateRoute) && (
           <div className="mt-4 pt-4 border-t">
             <p className="text-xs font-semibold uppercase tracking-widest text-muted-foreground mb-3">
               Save &amp; Share
@@ -290,10 +331,23 @@ export function RouteList({
                       <Loader2 className="w-3 h-3 mr-1 animate-spin" />
                       Saving…
                     </>
+                  ) : loadedRouteId && onUpdateRoute ? (
+                    "Update Route"
                   ) : (
                     "Save Route"
                   )}
                 </Button>
+                {loadedRouteId && onUpdateRoute && onSaveRoute && (
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    className="w-full"
+                    onClick={handleSaveAsNew}
+                    disabled={isSaving || !routeTitle.trim()}
+                  >
+                    Save as new
+                  </Button>
+                )}
               </div>
             ) : (
               <div className="space-y-2">

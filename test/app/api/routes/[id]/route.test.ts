@@ -129,6 +129,45 @@ describe("PATCH /api/routes/[id]", () => {
 
     expect(response.status).toBe(200);
     expect(data.title).toBe("Updated Title");
+    expect(prisma.route.update).toHaveBeenCalledWith(
+      expect.objectContaining({
+        where: { id: "route-1" },
+        data: expect.objectContaining({ title: "Updated Title" }),
+      }),
+    );
+  });
+
+  it("should override waypoints/geometry when provided (reopen-override flow)", async () => {
+    vi.mocked(auth).mockResolvedValue({ user: { id: "user-123" } } as any);
+    vi.mocked(prisma.route.findUnique).mockResolvedValue(mockRoute as any);
+    vi.mocked(prisma.route.update).mockResolvedValue(mockRoute as any);
+
+    const newWaypoints = [
+      { id: "w1", type: "park", label: "A", lat: 1, lng: 2 },
+      { id: "w2", type: "park", label: "B", lat: 3, lng: 4 },
+      { id: "w3", type: "custom", label: "C", lat: 5, lng: 6 },
+    ];
+
+    const response = await PATCH(
+      makeRequest("PATCH", {
+        waypoints: newWaypoints,
+        totalDistanceMi: 250,
+        estimatedDurationMin: 300,
+      }),
+      makeContext("route-1"),
+    );
+
+    expect(response.status).toBe(200);
+    expect(prisma.route.update).toHaveBeenCalledWith(
+      expect.objectContaining({
+        where: { id: "route-1" },
+        data: expect.objectContaining({
+          waypoints: newWaypoints,
+          totalDistanceMi: 250,
+          estimatedDurationMin: 300,
+        }),
+      }),
+    );
   });
 });
 

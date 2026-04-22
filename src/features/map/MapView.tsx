@@ -1,7 +1,7 @@
 "use client";
 
 import { useMemo, useState } from "react";
-import { MapContainer, TileLayer, useMapEvents } from "react-leaflet";
+import { MapContainer, Polyline, TileLayer, useMapEvents } from "react-leaflet";
 import type { Park, RouteWaypoint } from "@/lib/types";
 import { MapBoundsHandler } from "./components/MapBoundsHandler";
 import { MapVisibilityHandler } from "./components/MapVisibilityHandler";
@@ -42,10 +42,60 @@ function ZoomTracker({ onZoomChange }: ZoomTrackerProps) {
   return null;
 }
 
+interface SavedRoutePreviewPolylineProps {
+  waypoints: RouteWaypoint[];
+  geometry?: GeoJSON.LineString | null;
+}
+
+/**
+ * Renders a saved route's geometry as a preview polyline. Prefers the stored
+ * `routeGeometry` (real road-following line) but falls back to straight
+ * waypoint-to-waypoint segments when none is available.
+ */
+function SavedRoutePreviewPolyline({
+  waypoints,
+  geometry,
+}: SavedRoutePreviewPolylineProps) {
+  if (geometry && Array.isArray(geometry.coordinates)) {
+    const positions: [number, number][] = geometry.coordinates.map(
+      ([lng, lat]) => [lat, lng],
+    );
+    return (
+      <Polyline
+        positions={positions}
+        color="#f97316"
+        weight={4}
+        opacity={0.9}
+      />
+    );
+  }
+
+  const positions: [number, number][] = waypoints.map((w) => [w.lat, w.lng]);
+  return (
+    <Polyline
+      positions={positions}
+      color="#f97316"
+      weight={3}
+      opacity={0.8}
+      dashArray="8, 8"
+    />
+  );
+}
+
 interface MapViewProps {
   parks: Park[];
   routeWaypoints?: RouteWaypoint[];
   routeGeometry?: GeoJSON.LineString | null;
+  /**
+   * Optional *preview* overlay of a saved route — rendered as a secondary
+   * polyline above the in-progress builder route. Used by the "My Routes"
+   * panel on the map tab to preview a saved route without disturbing the
+   * user's current builder state. Rendered only when waypoints length >= 2.
+   */
+  savedRoutePreview?: {
+    waypoints: RouteWaypoint[];
+    geometry?: GeoJSON.LineString | null;
+  } | null;
   onAddToRoute?: (park: Park) => void;
   isParkInRoute?: (parkId: string) => boolean;
   onMapClick?: (lat: number, lng: number) => void;
@@ -82,6 +132,7 @@ export function MapView({
   parks,
   routeWaypoints = [],
   routeGeometry,
+  savedRoutePreview,
   onAddToRoute,
   isParkInRoute,
   onMapClick,
@@ -148,6 +199,15 @@ export function MapView({
           routeParks={routeWaypoints}
           routeGeometry={routeGeometry}
         />
+
+        {/* Preview overlay for a saved route — orange, rendered above the
+            builder polyline so it stays distinct. */}
+        {savedRoutePreview && savedRoutePreview.waypoints.length >= 2 && (
+          <SavedRoutePreviewPolyline
+            waypoints={savedRoutePreview.waypoints}
+            geometry={savedRoutePreview.geometry ?? null}
+          />
+        )}
 
         {/* Render custom waypoint markers (orange) */}
         {routeWaypoints

@@ -2,7 +2,8 @@
 import { useState, useMemo, useEffect, useRef } from "react";
 import dynamic from "next/dynamic";
 import { SessionProvider, useSession } from "next-auth/react";
-import type { Park } from "@/lib/types";
+import { useSearchParams } from "next/navigation";
+import type { Park, SavedRoute } from "@/lib/types";
 import { useFilteredParks } from "@/hooks/useFilteredParks";
 import { useFavorites } from "@/hooks/useFavorites";
 import { useRouteBuilder } from "@/hooks/useRouteBuilder";
@@ -14,6 +15,7 @@ import { SearchHeader } from "@/components/layout/SearchHeader";
 import { SearchFiltersPanel } from "@/components/parks/SearchFiltersPanel";
 import { ParkCard } from "@/components/parks/ParkCard";
 import { RouteList } from "@/features/route-planner/RouteList";
+import { MyRoutesOverlayPanel } from "@/features/route-planner/MyRoutesOverlayPanel";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { LayoutGrid, Map } from "lucide-react";
 
@@ -29,7 +31,12 @@ interface OffroadParksAppProps {
 
 function OffroadParksAppInner({ parks }: OffroadParksAppProps) {
   const { data: session } = useSession();
-  const [activeView, setActiveView] = useState<"list" | "map">("list");
+  const searchParams = useSearchParams();
+  const routeIdParam = searchParams?.get("routeId") ?? null;
+  const viewParam = searchParams?.get("view");
+  const [activeView, setActiveView] = useState<"list" | "map">(
+    viewParam === "map" || routeIdParam ? "map" : "list",
+  );
   const [userCoords, setUserCoords] = useState<{ lat: number; lng: number } | null>(null);
   const [locationLoading, setLocationLoading] = useState(false);
 
@@ -148,6 +155,7 @@ function OffroadParksAppInner({ parks }: OffroadParksAppProps) {
     routeResult,
     isRouting,
     isSaving,
+    savedRouteId,
     addParkToRoute,
     addCustomWaypoint,
     removeWaypoint,
@@ -155,9 +163,37 @@ function OffroadParksAppInner({ parks }: OffroadParksAppProps) {
     reorderRoute,
     isParkInRoute,
     saveRoute,
+    updateRoute,
+    loadRouteById,
     setWaypointIcon,
     setWaypointColor,
   } = useRouteBuilder();
+
+  // Route title tracked here so the `?routeId=…` reopen flow can seed it from
+  // the loaded route and so the PATCH/POST buttons can both use the current
+  // title. The `<RouteList>` component consumes these via props.
+  const [routeTitle, setRouteTitle] = useState("");
+
+  // Saved route previewed via the "My Routes" overlay panel (map tab only).
+  // Kept separate from the in-progress builder state so toggling a preview
+  // doesn't mutate the user's current waypoints.
+  const [previewRoute, setPreviewRoute] = useState<SavedRoute | null>(null);
+
+  // Load a saved route when `?routeId=…` is present on first mount. Scoped to
+  // a ref so we don't re-fetch on every query param change.
+  const loadedRouteIdRef = useRef<string | null>(null);
+  useEffect(() => {
+    if (!routeIdParam) return;
+    if (loadedRouteIdRef.current === routeIdParam) return;
+    loadedRouteIdRef.current = routeIdParam;
+    (async () => {
+      const loaded: SavedRoute | null = await loadRouteById(routeIdParam);
+      if (loaded) {
+        setRouteTitle(loaded.title);
+        setActiveView("map");
+      }
+    })();
+  }, [routeIdParam, loadRouteById]);
 
   const user = session?.user
     ? {
@@ -264,16 +300,33 @@ function OffroadParksAppInner({ parks }: OffroadParksAppProps) {
                       parks={filteredParks}
                       routeWaypoints={waypoints}
                       routeGeometry={routeResult?.geometry}
+                      savedRoutePreview={
+                        previewRoute
+                          ? {
+                              waypoints: previewRoute.waypoints,
+                              geometry: previewRoute.routeGeometry,
+                            }
+                          : null
+                      }
                       onAddToRoute={addParkToRoute}
                       isParkInRoute={isParkInRoute}
                       onRemoveWaypoint={removeWaypoint}
                     />
                   </div>
                   <div className="lg:col-span-1">
+                    {session?.user && (
+                      <MyRoutesOverlayPanel
+                        onSelectRoute={setPreviewRoute}
+                        selectedRouteId={previewRoute?.id ?? null}
+                      />
+                    )}
                     <RouteList
                       waypoints={waypoints}
                       onRemoveWaypoint={removeWaypoint}
-                      onClearRoute={clearRoute}
+                      onClearRoute={() => {
+                        clearRoute();
+                        setRouteTitle("");
+                      }}
                       onReorderRoute={reorderRoute}
                       onAddCustomWaypoint={addCustomWaypoint}
                       onSetWaypointIcon={setWaypointIcon}
@@ -281,6 +334,10 @@ function OffroadParksAppInner({ parks }: OffroadParksAppProps) {
                       routeResult={routeResult}
                       isRouting={isRouting}
                       onSaveRoute={saveRoute}
+                      onUpdateRoute={updateRoute}
+                      loadedRouteId={savedRouteId}
+                      routeTitle={routeTitle}
+                      onRouteTitleChange={setRouteTitle}
                       isSaving={isSaving}
                     />
                   </div>
