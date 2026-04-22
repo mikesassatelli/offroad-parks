@@ -239,20 +239,24 @@ export function OperatorAlertsClient({ parkSlug, parkName }: OperatorAlertsClien
               <div>
                 <p className="text-sm font-medium mb-2">Severity</p>
                 <div className="grid grid-cols-4 gap-2">
-                  {SEVERITY_OPTIONS.map((opt) => (
-                    <button
-                      key={opt.value}
-                      type="button"
-                      onClick={() => setSeverity(opt.value)}
-                      className={`text-xs px-2 py-2 rounded-md border transition-all ${
-                        severity === opt.value
-                          ? `${opt.color} font-semibold ring-2 ring-offset-1 ring-blue-400`
-                          : "border-border bg-background hover:bg-muted"
-                      }`}
-                    >
-                      {opt.label}
-                    </button>
-                  ))}
+                  {SEVERITY_OPTIONS.map((opt) => {
+                    const OptIcon = SEVERITY_ICON[opt.value];
+                    return (
+                      <button
+                        key={opt.value}
+                        type="button"
+                        onClick={() => setSeverity(opt.value)}
+                        className={`flex items-center justify-center gap-1.5 text-xs px-2 py-2 rounded-md border transition-all ${
+                          severity === opt.value
+                            ? `${opt.color} font-semibold ring-2 ring-offset-1 ring-blue-400`
+                            : "border-border bg-background hover:bg-muted"
+                        }`}
+                      >
+                        <OptIcon className="w-3.5 h-3.5" />
+                        <span>{opt.label}</span>
+                      </button>
+                    );
+                  })}
                 </div>
               </div>
 
