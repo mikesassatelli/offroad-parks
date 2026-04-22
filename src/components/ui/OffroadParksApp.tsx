@@ -178,6 +178,9 @@ function OffroadParksAppInner({ parks }: OffroadParksAppProps) {
   // Kept separate from the in-progress builder state so toggling a preview
   // doesn't mutate the user's current waypoints.
   const [previewRoute, setPreviewRoute] = useState<SavedRoute | null>(null);
+  const [loadedRouteSnapshot, setLoadedRouteSnapshot] = useState<SavedRoute | null>(
+    null,
+  );
 
   // Load a saved route when `?routeId=…` is present on first mount. Scoped to
   // a ref so we don't re-fetch on every query param change.
@@ -191,6 +194,7 @@ function OffroadParksAppInner({ parks }: OffroadParksAppProps) {
       if (loaded) {
         setRouteTitle(loaded.title);
         setActiveView("map");
+        setLoadedRouteSnapshot(loaded);
       }
     })();
   }, [routeIdParam, loadRouteById]);
@@ -336,6 +340,7 @@ function OffroadParksAppInner({ parks }: OffroadParksAppProps) {
                       onSaveRoute={saveRoute}
                       onUpdateRoute={updateRoute}
                       loadedRouteId={savedRouteId}
+                      loadedRoute={loadedRouteSnapshot}
                       routeTitle={routeTitle}
                       onRouteTitleChange={setRouteTitle}
                       isSaving={isSaving}

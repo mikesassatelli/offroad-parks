@@ -13,7 +13,8 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import type { SavedRoute } from "@/lib/types";
-import { Loader2, Map as MapIcon, Pencil, Trash2 } from "lucide-react";
+import { Loader2, Map as MapIcon, Pencil, Share2, Trash2 } from "lucide-react";
+import { ShareRouteDialog } from "./ShareRouteDialog";
 
 interface SavedRoutesListProps {
   initialRoutes: SavedRoute[];
@@ -52,6 +53,32 @@ export function SavedRoutesList({ initialRoutes }: SavedRoutesListProps) {
   const [deleteTarget, setDeleteTarget] = useState<SavedRoute | null>(null);
   const [isDeleting, setIsDeleting] = useState(false);
   const [deleteError, setDeleteError] = useState<string | null>(null);
+
+  const [shareTarget, setShareTarget] = useState<SavedRoute | null>(null);
+
+  const handleToggleShare = async (
+    target: SavedRoute,
+    next: boolean,
+  ): Promise<SavedRoute | null> => {
+    try {
+      const res = await fetch(`/api/routes/${target.id}`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ isPublic: next }),
+      });
+      if (!res.ok) return null;
+      const updated: SavedRoute = await res.json();
+      setRoutes((current) =>
+        current.map((r) => (r.id === updated.id ? { ...r, ...updated } : r)),
+      );
+      setShareTarget((current) =>
+        current && current.id === updated.id ? { ...current, ...updated } : current,
+      );
+      return updated;
+    } catch {
+      return null;
+    }
+  };
 
   const handleOpen = (route: SavedRoute) => {
     router.push(`/?routeId=${route.id}`);
@@ -196,6 +223,15 @@ export function SavedRoutesList({ initialRoutes }: SavedRoutesListProps) {
                     </Button>
                     <Button
                       size="sm"
+                      variant="outline"
+                      onClick={() => setShareTarget(route)}
+                      aria-label={`Share ${route.title}`}
+                    >
+                      <Share2 className="w-4 h-4 mr-1" />
+                      Share
+                    </Button>
+                    <Button
+                      size="sm"
                       variant="ghost"
                       onClick={() => openDelete(route)}
                       aria-label={`Delete ${route.title}`}
@@ -265,6 +301,15 @@ export function SavedRoutesList({ initialRoutes }: SavedRoutesListProps) {
           </DialogFooter>
         </DialogContent>
       </Dialog>
+
+      {/* Share dialog */}
+      <ShareRouteDialog
+        route={shareTarget}
+        onOpenChange={(open) => {
+          if (!open) setShareTarget(null);
+        }}
+        onToggleShare={handleToggleShare}
+      />
 
       {/* Delete confirm dialog */}
       <Dialog
