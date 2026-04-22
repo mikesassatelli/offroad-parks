@@ -19,6 +19,7 @@ import { ParkOperationalCard } from "./components/ParkOperationalCard";
 import { ParkOverviewCard } from "./components/ParkOverviewCard";
 import { CampingInfoCard } from "./components/CampingInfoCard";
 import { ParkMapHero } from "@/components/parks/ParkMapHero";
+import { ParkAlertsBanner, type ParkAlertDisplay } from "@/components/parks/ParkAlertsBanner";
 import { ReviewList, ReviewForm, StarRating, DifficultyRating } from "@/components/reviews";
 import { TrailConditionsDisplay } from "@/features/trail-conditions/TrailConditionsDisplay";
 import { useReviews } from "@/hooks/useReviews";
@@ -54,6 +55,7 @@ interface ParkDetailPageProps {
   existingClaim?: { status: string; reviewNotes: string | null } | null;
   isOperatorOfPark?: boolean;
   operatorName?: string | null;
+  alerts?: ParkAlertDisplay[];
 }
 
 function ParkDetailPageInner({
@@ -65,6 +67,7 @@ function ParkDetailPageInner({
   existingClaim,
   isOperatorOfPark,
   operatorName,
+  alerts,
 }: ParkDetailPageProps) {
   const router = useRouter();
   const { data: session } = useSession();
@@ -194,6 +197,11 @@ function ParkDetailPageInner({
       </div>
 
       <main className="max-w-7xl mx-auto px-6 py-8">
+        {alerts && alerts.length > 0 && (
+          <div className="mb-6">
+            <ParkAlertsBanner alerts={alerts} />
+          </div>
+        )}
         <div className="grid lg:grid-cols-3 gap-6">
           {/* Main Content with Tabs */}
           <div className="lg:col-span-2">
