@@ -13,6 +13,7 @@ import { CheckCircle, MapPin } from "lucide-react";
 
 interface ParkData {
   name: string;
+  operatorDisplayName: string | null;
   website: string | null;
   phone: string | null;
   campingWebsite: string | null;
@@ -147,6 +148,22 @@ export function OperatorSettingsClient({ parkSlug, parkName }: OperatorSettingsC
                 onChange={(e) => handleChange("name", e.target.value)}
                 className="w-full text-sm border border-border rounded-md px-3 py-2 bg-background"
               />
+            </div>
+            <div>
+              <label className="text-sm font-medium block mb-1">
+                Display name on park detail page
+              </label>
+              <input
+                type="text"
+                maxLength={200}
+                value={park.operatorDisplayName ?? ""}
+                onChange={(e) => handleChange("operatorDisplayName", e.target.value)}
+                className="w-full text-sm border border-border rounded-md px-3 py-2 bg-background"
+                placeholder="e.g. Desert Riders Association"
+              />
+              <p className="text-xs text-muted-foreground mt-1">
+                Shown publicly as &ldquo;This listing is managed by {"{name}"}&rdquo;. Leave blank to use your account name.
+              </p>
             </div>
             <div className="grid sm:grid-cols-2 gap-4">
               <div>

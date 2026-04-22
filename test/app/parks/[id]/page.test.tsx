@@ -33,13 +33,14 @@ vi.mock("next/navigation", () => ({
 }));
 
 vi.mock("@/features/parks/detail/ParkDetailPage", () => ({
-  ParkDetailPage: ({ park, photos, currentUserId, isAdmin }: any) => (
+  ParkDetailPage: ({ park, photos, currentUserId, isAdmin, operatorName }: any) => (
     <div data-testid="park-detail-page">
       <h1>{park.name}</h1>
       <div data-testid="park-state">{park.state}</div>
       <div data-testid="photos-count">{photos.length} photos</div>
       <div data-testid="user-id">{currentUserId || "no-user"}</div>
       <div data-testid="is-admin">{isAdmin ? "admin" : "not-admin"}</div>
+      <div data-testid="operator-name">{operatorName ?? "no-operator"}</div>
     </div>
   ),
 }));
@@ -318,6 +319,84 @@ describe("Park Detail Page", () => {
       render(component);
 
       expect(screen.getByTestId("photos-count")).toHaveTextContent("0 photos");
+    });
+
+    describe("operator display name resolution", () => {
+      it("should use operatorDisplayName override when it is a non-empty trimmed string", async () => {
+        vi.mocked(prisma.park.findUnique).mockResolvedValue({
+          ...mockDbPark,
+          operatorDisplayName: "Custom Display Name",
+          operator: { name: "Account Name" },
+        } as any);
+        vi.mocked(prisma.parkPhoto.findMany).mockResolvedValue([]);
+        vi.mocked(auth).mockResolvedValue(null as any);
+
+        const component = await ParkPage({
+          params: Promise.resolve({ id: "test-park" }),
+        });
+        render(component);
+
+        expect(screen.getByTestId("operator-name")).toHaveTextContent(
+          "Custom Display Name"
+        );
+      });
+
+      it("should fall back to operator.name when operatorDisplayName is null", async () => {
+        vi.mocked(prisma.park.findUnique).mockResolvedValue({
+          ...mockDbPark,
+          operatorDisplayName: null,
+          operator: { name: "Account Name" },
+        } as any);
+        vi.mocked(prisma.parkPhoto.findMany).mockResolvedValue([]);
+        vi.mocked(auth).mockResolvedValue(null as any);
+
+        const component = await ParkPage({
+          params: Promise.resolve({ id: "test-park" }),
+        });
+        render(component);
+
+        expect(screen.getByTestId("operator-name")).toHaveTextContent(
+          "Account Name"
+        );
+      });
+
+      it("should fall back to operator.name when operatorDisplayName is whitespace-only", async () => {
+        vi.mocked(prisma.park.findUnique).mockResolvedValue({
+          ...mockDbPark,
+          operatorDisplayName: "   ",
+          operator: { name: "Account Name" },
+        } as any);
+        vi.mocked(prisma.parkPhoto.findMany).mockResolvedValue([]);
+        vi.mocked(auth).mockResolvedValue(null as any);
+
+        const component = await ParkPage({
+          params: Promise.resolve({ id: "test-park" }),
+        });
+        render(component);
+
+        expect(screen.getByTestId("operator-name")).toHaveTextContent(
+          "Account Name"
+        );
+      });
+
+      it("should pass null when neither override nor operator is set", async () => {
+        vi.mocked(prisma.park.findUnique).mockResolvedValue({
+          ...mockDbPark,
+          operatorDisplayName: null,
+          operator: null,
+        } as any);
+        vi.mocked(prisma.parkPhoto.findMany).mockResolvedValue([]);
+        vi.mocked(auth).mockResolvedValue(null as any);
+
+        const component = await ParkPage({
+          params: Promise.resolve({ id: "test-park" }),
+        });
+        render(component);
+
+        expect(screen.getByTestId("operator-name")).toHaveTextContent(
+          "no-operator"
+        );
+      });
     });
 
     it("should pass current user ID to detail page", async () => {

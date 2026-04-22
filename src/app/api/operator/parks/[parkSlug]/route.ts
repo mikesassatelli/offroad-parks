@@ -33,7 +33,11 @@ const ALLOWED_SCALAR_FIELDS = new Set([
   "sparkArrestorRequired",
   "helmetsRequired",
   "noiseLimitDBA",
+  "operatorDisplayName",
 ]);
+
+// Maximum length for the per-park operator display name override
+const OPERATOR_DISPLAY_NAME_MAX_LENGTH = 200;
 
 const VALID_HERO_SOURCES = new Set(["AUTO", "PHOTO", "MAP"]);
 
@@ -68,6 +72,7 @@ const PARK_SCALAR_SELECT = {
   sparkArrestorRequired: true,
   helmetsRequired: true,
   noiseLimitDBA: true,
+  operatorDisplayName: true,
   heroSource: true,
   heroPhotoId: true,
 } as const;
@@ -140,12 +145,33 @@ export async function PATCH(request: Request, { params }: RouteParams) {
   const updateData: PatchBody = {};
   const changes: Record<string, { from: unknown; to: unknown }> = {};
 
+  // Validate operatorDisplayName length (if provided) before any normalization
+  if ("operatorDisplayName" in body) {
+    const raw = body.operatorDisplayName;
+    if (typeof raw === "string" && raw.trim().length > OPERATOR_DISPLAY_NAME_MAX_LENGTH) {
+      return NextResponse.json(
+        { error: `operatorDisplayName must be at most ${OPERATOR_DISPLAY_NAME_MAX_LENGTH} characters` },
+        { status: 400 }
+      );
+    }
+  }
+
   for (const [key, value] of Object.entries(body)) {
     if (!ALLOWED_SCALAR_FIELDS.has(key)) continue;
+    let normalized: unknown = value;
+    // Trim operatorDisplayName; empty or whitespace-only → null so the override falls back
+    if (key === "operatorDisplayName") {
+      if (typeof value === "string") {
+        const trimmed = value.trim();
+        normalized = trimmed.length === 0 ? null : trimmed;
+      } else if (value == null) {
+        normalized = null;
+      }
+    }
     const currentValue = (park as Record<string, unknown>)[key];
-    if (currentValue !== value) {
-      updateData[key] = value;
-      changes[key] = { from: currentValue, to: value };
+    if (currentValue !== normalized) {
+      updateData[key] = normalized;
+      changes[key] = { from: currentValue, to: normalized };
     }
   }
 
