@@ -57,6 +57,7 @@ model User {
   parkEditLogs     ParkEditLog[]
   routes           Route[]
   searchPreference UserSearchPreference?
+  parkAlerts       ParkAlert[]
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -117,6 +118,14 @@ model Park {
   mapHeroUrl          String?
   mapHeroGeneratedAt  DateTime?
 
+  // Operator-selected hero image for their park card.
+  // - heroSource AUTO (default): first APPROVED photo, falls back to map hero.
+  // - heroSource PHOTO: use heroPhotoId (must be an APPROVED photo on this park).
+  // - heroSource MAP: force use of map hero (mapHeroUrl or live ParkMapHero).
+  heroPhotoId String?    @unique
+  heroPhoto   ParkPhoto? @relation("ParkHeroPhoto", fields: [heroPhotoId], references: [id], onDelete: SetNull)
+  heroSource  HeroSource @default(AUTO)
+
   // Aggregated review data
   averageRating            Float?
   averageDifficulty        Float?
@@ -140,8 +149,11 @@ model Park {
   address          Address?
   operator         Operator?        @relation(fields: [operatorId], references: [id], onDelete: SetNull)
   operatorId       String?
+  // Per-park override of the operator org name displayed on the park detail page
+  operatorDisplayName String?
   parkClaims       ParkClaim[]
   editLogs         ParkEditLog[]
+  parkAlerts       ParkAlert[]
 
   // AI Research fields
   dataSources          DataSource[]
@@ -374,8 +386,9 @@ model ParkPhoto {
   caption String?     @db.Text
   status  PhotoStatus @default(PENDING)
 
-  park Park  @relation(fields: [parkId], references: [id], onDelete: Cascade)
-  user User? @relation(fields: [userId], references: [id], onDelete: SetNull)
+  park       Park  @relation(fields: [parkId], references: [id], onDelete: Cascade)
+  user       User? @relation(fields: [userId], references: [id], onDelete: SetNull)
+  heroForPark Park? @relation("ParkHeroPhoto")
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -384,6 +397,12 @@ model ParkPhoto {
   @@index([parkId])
   @@index([userId])
   @@index([status])
+}
+
+enum HeroSource {
+  AUTO
+  PHOTO
+  MAP
 }
 
 enum PhotoStatus {
@@ -794,4 +813,37 @@ model ParkCandidate {
   @@unique([name, state])
   @@index([status])
   @@index([state])
+}
+
+// ── Park Alerts ────────────────────────────────────────────────────────────
+// Operator-posted alerts (closures, events, weather warnings) that render as
+// dismissible banners at the top of the park detail page. Distinct from
+// TrailCondition — alerts are time-bounded announcements, not status updates.
+
+enum ParkAlertSeverity {
+  INFO
+  WARNING
+  DANGER
+  SUCCESS
+}
+
+model ParkAlert {
+  id        String            @id @default(cuid())
+  parkId    String
+  userId    String            // operator user who posted
+  title     String
+  body      String?           @db.Text
+  severity  ParkAlertSeverity @default(INFO)
+  startsAt  DateTime?         // null = active immediately
+  expiresAt DateTime?         // null = indefinite
+  isActive  Boolean           @default(true)
+
+  park Park @relation(fields: [parkId], references: [id], onDelete: Cascade)
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([parkId, isActive])
+  @@index([expiresAt])
 }

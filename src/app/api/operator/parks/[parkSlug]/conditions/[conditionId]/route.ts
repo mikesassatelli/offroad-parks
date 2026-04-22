@@ -50,36 +50,60 @@ export async function PATCH(request: Request, { params }: RouteParams) {
     return NextResponse.json({ error: "Condition not found" }, { status: 404 });
   }
 
-  let body: { pinnedUntil?: string | null };
+  let body: { pinnedUntil?: string | null; reportStatus?: string };
   try {
     body = await request.json();
   } catch {
     return NextResponse.json({ error: "Invalid request body" }, { status: 400 });
   }
 
-  let pinnedUntil: Date | null = null;
-  if (body.pinnedUntil) {
-    const parsed = new Date(body.pinnedUntil);
-    if (isNaN(parsed.getTime()) || parsed <= new Date()) {
+  const updateData: { pinnedUntil?: Date | null; reportStatus?: "PENDING_REVIEW" | "PUBLISHED" } = {};
+
+  // Handle pinnedUntil updates
+  if ("pinnedUntil" in body) {
+    let pinnedUntil: Date | null = null;
+    if (body.pinnedUntil) {
+      const parsed = new Date(body.pinnedUntil);
+      if (isNaN(parsed.getTime()) || parsed <= new Date()) {
+        return NextResponse.json(
+          { error: "pinnedUntil must be a valid future date" },
+          { status: 400 }
+        );
+      }
+      const maxPin = new Date();
+      maxPin.setFullYear(maxPin.getFullYear() + 1);
+      if (parsed > maxPin) {
+        return NextResponse.json(
+          { error: "pinnedUntil cannot be more than 1 year in the future" },
+          { status: 400 }
+        );
+      }
+      pinnedUntil = parsed;
+    }
+    updateData.pinnedUntil = pinnedUntil;
+  }
+
+  // Handle moderation approvals (reportStatus)
+  if (body.reportStatus !== undefined) {
+    if (body.reportStatus !== "PUBLISHED") {
       return NextResponse.json(
-        { error: "pinnedUntil must be a valid future date" },
+        { error: "reportStatus must be 'PUBLISHED' (to approve)" },
         { status: 400 }
       );
     }
-    const maxPin = new Date();
-    maxPin.setFullYear(maxPin.getFullYear() + 1);
-    if (parsed > maxPin) {
-      return NextResponse.json(
-        { error: "pinnedUntil cannot be more than 1 year in the future" },
-        { status: 400 }
-      );
-    }
-    pinnedUntil = parsed;
+    updateData.reportStatus = "PUBLISHED";
+  }
+
+  if (Object.keys(updateData).length === 0) {
+    return NextResponse.json(
+      { error: "No valid fields to update" },
+      { status: 400 }
+    );
   }
 
   const updated = await prisma.trailCondition.update({
     where: { id: conditionId },
-    data: { pinnedUntil },
+    data: updateData,
   });
 
   return NextResponse.json({ success: true, condition: updated });

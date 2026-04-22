@@ -3,6 +3,8 @@ import { prisma } from "@/lib/prisma";
 import { transformDbPark } from "@/lib/types";
 import { ParkDetailPage } from "@/features/parks/detail/ParkDetailPage";
 import { auth } from "@/lib/auth";
+import { isAlertActive, sortAlertsForDisplay } from "@/lib/park-alerts";
+import type { ParkAlertDisplay } from "@/components/parks/ParkAlertsBanner";
 
 interface ParkPageProps {
   params: Promise<{ id: string }>;
@@ -80,6 +82,13 @@ export default async function ParkPage({ params }: ParkPageProps) {
     notFound();
   }
 
+  // Resolve the operator display name: prefer the per-park override when it is
+  // a non-empty trimmed string, otherwise fall back to the operator org name.
+  const override = dbPark.operatorDisplayName?.trim();
+  const resolvedOperatorName = override && override.length > 0
+    ? override
+    : (dbPark.operator?.name ?? null);
+
   // Fetch approved photos for this park
   const photos = await prisma.parkPhoto.findMany({
     where: {
@@ -100,6 +109,36 @@ export default async function ParkPage({ params }: ParkPageProps) {
   });
 
   const park = transformDbPark(dbPark);
+
+  // Fetch active operator-posted alerts. Filter in JS so the predicate stays in
+  // one place (src/lib/park-alerts#isAlertActive) and is unit-testable.
+  const now = new Date();
+  const candidateAlerts = await prisma.parkAlert.findMany({
+    where: {
+      parkId: dbPark.id,
+      isActive: true,
+      OR: [{ expiresAt: null }, { expiresAt: { gt: now } }],
+    },
+    select: {
+      id: true,
+      title: true,
+      body: true,
+      severity: true,
+      startsAt: true,
+      expiresAt: true,
+      isActive: true,
+      createdAt: true,
+    },
+  });
+  const activeAlerts: ParkAlertDisplay[] = sortAlertsForDisplay(
+    candidateAlerts.filter((a) => isAlertActive(a, now))
+  ).map((a) => ({
+    id: a.id,
+    title: a.title,
+    body: a.body,
+    severity: a.severity,
+    createdAt: a.createdAt.toISOString(),
+  }));
 
   const userRole = (session?.user as { role?: string })?.role;
   const isAdmin = userRole === "ADMIN";
@@ -132,7 +171,8 @@ export default async function ParkPage({ params }: ParkPageProps) {
       parkDbId={dbPark.id}
       existingClaim={existingClaim}
       isOperatorOfPark={isOperatorOfPark}
-      operatorName={dbPark.operator?.name ?? null}
+      operatorName={resolvedOperatorName}
+      alerts={activeAlerts}
     />
   );
 }
