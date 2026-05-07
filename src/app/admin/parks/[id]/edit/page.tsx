@@ -17,7 +17,7 @@ export default async function EditParkPage({ params }: EditParkPageProps) {
     redirect("/api/auth/signin");
   }
 
-  if (session.user.role !== "ADMIN") {
+  if (session.user.role !== "ADMIN" && session.user.role !== "SUPER_ADMIN") {
     redirect("/");
   }
 

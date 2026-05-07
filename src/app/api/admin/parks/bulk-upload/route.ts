@@ -347,7 +347,7 @@ export async function POST(
     }
 
     const userRole = (session.user as { role?: string })?.role;
-    if (userRole !== "ADMIN") {
+    if (userRole !== "ADMIN" && userRole !== "SUPER_ADMIN") {
       return NextResponse.json(
         { success: false, created: 0, errors: [] },
         { status: 403 }

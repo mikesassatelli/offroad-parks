@@ -1,4 +1,4 @@
-import { requireAdmin, requireAuth } from "@/lib/api-helpers";
+import { requireAdmin, requireAuth, requireSuperAdmin } from "@/lib/api-helpers";
 import { auth } from "@/lib/auth";
 import { NextResponse } from "next/server";
 import { vi, describe, it, expect, beforeEach } from "vitest";
@@ -53,6 +53,52 @@ describe("requireAdmin", () => {
     (auth as ReturnType<typeof vi.fn>).mockResolvedValue(session);
 
     const result = await requireAdmin();
+
+    expect(result).not.toBeInstanceOf(NextResponse);
+    expect(result).toEqual(session);
+  });
+
+  it("should return session when user is super admin", async () => {
+    const session = { user: { id: "su-1", role: "SUPER_ADMIN" } };
+    (auth as ReturnType<typeof vi.fn>).mockResolvedValue(session);
+
+    const result = await requireAdmin();
+
+    expect(result).not.toBeInstanceOf(NextResponse);
+    expect(result).toEqual(session);
+  });
+});
+
+describe("requireSuperAdmin", () => {
+  beforeEach(() => {
+    vi.clearAllMocks();
+  });
+
+  it("should return 401 when no session", async () => {
+    (auth as ReturnType<typeof vi.fn>).mockResolvedValue(null);
+
+    const result = await requireSuperAdmin();
+
+    expect(result).toBeInstanceOf(NextResponse);
+    expect((result as NextResponse).status).toBe(401);
+  });
+
+  it("should return 403 when user is a regular admin", async () => {
+    (auth as ReturnType<typeof vi.fn>).mockResolvedValue({
+      user: { id: "admin-1", role: "ADMIN" },
+    });
+
+    const result = await requireSuperAdmin();
+
+    expect(result).toBeInstanceOf(NextResponse);
+    expect((result as NextResponse).status).toBe(403);
+  });
+
+  it("should return session when user is super admin", async () => {
+    const session = { user: { id: "su-1", role: "SUPER_ADMIN" } };
+    (auth as ReturnType<typeof vi.fn>).mockResolvedValue(session);
+
+    const result = await requireSuperAdmin();
 
     expect(result).not.toBeInstanceOf(NextResponse);
     expect(result).toEqual(session);

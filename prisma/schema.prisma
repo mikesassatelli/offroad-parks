@@ -75,6 +75,7 @@ enum UserRole {
   USER
   ADMIN
   OPERATOR
+  SUPER_ADMIN
 }
 
 // Park Models

@@ -17,7 +17,7 @@ export default async function BulkUploadPage() {
 
   // Require admin role
   const userRole = (session.user as { role?: string })?.role;
-  if (userRole !== "ADMIN") {
+  if (userRole !== "ADMIN" && userRole !== "SUPER_ADMIN") {
     redirect("/");
   }
 

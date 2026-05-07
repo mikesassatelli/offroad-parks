@@ -14,7 +14,7 @@ type RouteParams = {
 // it has no remaining parks or users.
 export async function DELETE(_request: Request, { params }: RouteParams) {
   const session = await auth();
-  if (!session?.user?.id || session.user.role !== "ADMIN") {
+  if (!session?.user?.id || session.user.role !== "ADMIN" && session.user.role !== "SUPER_ADMIN") {
     return NextResponse.json({ error: "Forbidden" }, { status: 403 });
   }
 

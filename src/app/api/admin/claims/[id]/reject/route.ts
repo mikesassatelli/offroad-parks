@@ -15,7 +15,7 @@ interface RejectBody {
 // POST /api/admin/claims/[id]/reject
 export async function POST(request: Request, { params }: RouteParams) {
   const session = await auth();
-  if (!session?.user?.id || session.user.role !== "ADMIN") {
+  if (!session?.user?.id || session.user.role !== "ADMIN" && session.user.role !== "SUPER_ADMIN") {
     return NextResponse.json({ error: "Forbidden" }, { status: 403 });
   }
 

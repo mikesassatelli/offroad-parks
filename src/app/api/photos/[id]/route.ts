@@ -32,7 +32,7 @@ export async function DELETE(_request: Request, { params }: RouteParams) {
 
   // Check if user is authorized (photo owner or admin)
   const userRole = (session.user as { role?: string })?.role;
-  const isAdmin = userRole === "ADMIN";
+  const isAdmin = userRole === "ADMIN" || userRole === "SUPER_ADMIN";
   const isOwner = photo.userId === session.user.id;
 
   if (!isAdmin && !isOwner) {
