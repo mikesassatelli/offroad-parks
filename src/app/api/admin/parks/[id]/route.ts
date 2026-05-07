@@ -21,7 +21,7 @@ export async function DELETE(_request: Request, { params }: RouteParams) {
 
     // Check if user is admin
     const userRole = (session.user as { role?: string })?.role;
-    if (userRole !== "ADMIN") {
+    if (userRole !== "ADMIN" && userRole !== "SUPER_ADMIN") {
       return NextResponse.json({ error: "Forbidden" }, { status: 403 });
     }
 
@@ -56,7 +56,7 @@ export async function PATCH(request: Request, { params }: RouteParams) {
 
     // Check if user is admin
     const userRole = (session.user as { role?: string })?.role;
-    if (userRole !== "ADMIN") {
+    if (userRole !== "ADMIN" && userRole !== "SUPER_ADMIN") {
       return NextResponse.json({ error: "Forbidden" }, { status: 403 });
     }
 

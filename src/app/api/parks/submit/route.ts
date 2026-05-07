@@ -81,7 +81,7 @@ export async function POST(request: Request) {
   }
 
   const userRole = (session.user as { role?: string })?.role;
-  const isAdmin = userRole === "ADMIN";
+  const isAdmin = userRole === "ADMIN" || userRole === "SUPER_ADMIN";
 
   try {
     const data: SubmitParkRequest = await request.json();

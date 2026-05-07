@@ -12,7 +12,7 @@ type RouteParams = {
 // Approves a park claim: creates an Operator + OperatorUser, links park to operator, marks claim APPROVED.
 export async function POST(_request: Request, { params }: RouteParams) {
   const session = await auth();
-  if (!session?.user?.id || session.user.role !== "ADMIN") {
+  if (!session?.user?.id || (session.user.role !== "ADMIN" && session.user.role !== "SUPER_ADMIN")) {
     return NextResponse.json({ error: "Forbidden" }, { status: 403 });
   }
 
@@ -76,9 +76,9 @@ export async function POST(_request: Request, { params }: RouteParams) {
       },
     });
 
-    // Only promote to OPERATOR if the user isn't already an ADMIN —
+    // Only promote to OPERATOR if the user isn't already an ADMIN or SUPER_ADMIN —
     // admins can own parks without losing their admin privileges.
-    if (claim.user.role !== "ADMIN") {
+    if (claim.user.role !== "ADMIN" && claim.user.role !== "SUPER_ADMIN") {
       await tx.user.update({
         where: { id: claim.userId },
         data: { role: "OPERATOR" },

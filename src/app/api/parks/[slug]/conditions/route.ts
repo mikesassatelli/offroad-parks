@@ -72,7 +72,7 @@ export async function POST(request: Request, { params }: RouteParams) {
   }
 
   const userRole = (session.user as { role?: string }).role;
-  const isAdmin = userRole === "ADMIN";
+  const isAdmin = userRole === "ADMIN" || userRole === "SUPER_ADMIN";
 
   // Operator scope is park-specific: user must be a member of the operator
   // account that owns this park.

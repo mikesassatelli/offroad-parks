@@ -141,7 +141,7 @@ export default async function ParkPage({ params }: ParkPageProps) {
   }));
 
   const userRole = (session?.user as { role?: string })?.role;
-  const isAdmin = userRole === "ADMIN";
+  const isAdmin = userRole === "ADMIN" || userRole === "SUPER_ADMIN";
 
   // Fetch any existing claim from this user for this park (any status)
   const existingClaim = session?.user?.id

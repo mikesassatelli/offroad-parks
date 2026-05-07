@@ -16,7 +16,7 @@ export async function PATCH(
   }
 
   const userRole = (session.user as { role?: string })?.role;
-  if (userRole !== "ADMIN") {
+  if (userRole !== "ADMIN" && userRole !== "SUPER_ADMIN") {
     return NextResponse.json({ error: "Forbidden" }, { status: 403 });
   }
 
@@ -80,7 +80,7 @@ export async function DELETE(
   }
 
   const userRole = (session.user as { role?: string })?.role;
-  if (userRole !== "ADMIN") {
+  if (userRole !== "ADMIN" && userRole !== "SUPER_ADMIN") {
     return NextResponse.json({ error: "Forbidden" }, { status: 403 });
   }
 

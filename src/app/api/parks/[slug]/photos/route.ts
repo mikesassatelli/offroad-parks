@@ -71,7 +71,7 @@ export async function POST(request: Request, { params }: RouteParams) {
 
     // Check if user is admin
     const userRole = (session.user as { role?: string })?.role;
-    const isAdmin = userRole === "ADMIN";
+    const isAdmin = userRole === "ADMIN" || userRole === "SUPER_ADMIN";
 
     // Create photo record in database
     const photo = await prisma.parkPhoto.create({

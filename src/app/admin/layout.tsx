@@ -33,7 +33,7 @@ export default async function AdminLayout({
   }
 
   const userRole = (session.user as { role?: string })?.role;
-  if (userRole !== "ADMIN") {
+  if (userRole !== "ADMIN" && userRole !== "SUPER_ADMIN") {
     redirect("/");
   }
 
