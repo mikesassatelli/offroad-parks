@@ -73,6 +73,13 @@ describe("UserMenu", () => {
     role: "OPERATOR",
   };
 
+  const superAdminUser = {
+    name: "Super Admin",
+    email: "super@example.com",
+    image: null,
+    role: "SUPER_ADMIN",
+  };
+
   it("should render dropdown menu", () => {
     render(<UserMenu user={regularUser} onSignOut={mockOnSignOut} />);
 
@@ -164,6 +171,27 @@ describe("UserMenu", () => {
   it("should render Admin Panel link for admin users", () => {
     const { container } = render(
       <UserMenu user={adminUser} onSignOut={mockOnSignOut} />,
+    );
+
+    const adminLink = container.querySelector('a[href="/admin"]');
+    expect(adminLink).toBeInTheDocument();
+  });
+
+  it("should show Admin Panel for super admin users", () => {
+    render(<UserMenu user={superAdminUser} onSignOut={mockOnSignOut} />);
+
+    expect(screen.getByText("Admin Panel")).toBeInTheDocument();
+  });
+
+  it("should show Manage Parks for super admin users", () => {
+    render(<UserMenu user={superAdminUser} onSignOut={mockOnSignOut} />);
+
+    expect(screen.getByText("Manage Parks")).toBeInTheDocument();
+  });
+
+  it("should render Admin Panel link for super admin users", () => {
+    const { container } = render(
+      <UserMenu user={superAdminUser} onSignOut={mockOnSignOut} />,
     );
 
     const adminLink = container.querySelector('a[href="/admin"]');

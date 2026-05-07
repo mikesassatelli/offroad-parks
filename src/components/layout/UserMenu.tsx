@@ -22,6 +22,8 @@ interface UserMenuProps {
 }
 
 export function UserMenu({ user, onSignOut }: UserMenuProps) {
+  const isAdmin = user.role === "ADMIN" || user.role === "SUPER_ADMIN";
+  const showPrivilegedSection = isAdmin || user.role === "OPERATOR";
   return (
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
@@ -35,10 +37,10 @@ export function UserMenu({ user, onSignOut }: UserMenuProps) {
           <div className="font-medium">{user.name}</div>
           <div className="text-xs text-muted-foreground">{user.email}</div>
         </div>
-        {(user.role === "ADMIN" || user.role === "OPERATOR") && (
+        {showPrivilegedSection && (
           <>
             <DropdownMenuSeparator />
-            {user.role === "ADMIN" && (
+            {isAdmin && (
               <DropdownMenuItem asChild>
                 <Link href="/admin" className="cursor-pointer">
                   <Settings className="w-4 h-4 mr-2" />
