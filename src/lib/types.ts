@@ -235,6 +235,10 @@ export type Park = {
     status: string;
     createdAt: string;
   };
+  // OP-55: today's max precipitation probability (0–100), populated by the
+  // parks-list server page via NWS forecast. Null when no forecast is
+  // available (no coords / outside coverage / fetch timeout).
+  todaysRainChance?: number | null;
   // Operator
   hasOperator?: boolean;
 };

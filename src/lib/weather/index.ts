@@ -5,6 +5,7 @@ export {
   getActiveAlerts,
   getParkWeather,
 } from "./nws-client";
+export { getBatchRainProbabilities } from "./batch";
 export { weatherIconKey, type WeatherIconKey } from "./icons";
 export type {
   CurrentConditions,
