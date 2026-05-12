@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import { revalidatePath } from "next/cache";
+import { revalidatePath, revalidateTag } from "next/cache";
 import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { generateMapHeroAsync } from "@/lib/map-hero/generate";
@@ -184,8 +184,11 @@ export async function PATCH(request: Request, { params }: RouteParams) {
     revalidatePath(`/parks/${park.slug}`);
 
     // Regenerate map hero if coords changed (OP-90).
+    // Also invalidate the weather cache (OP-52) — the cached NWS grid
+    // resolution and forecast are tied to the previous coords.
     if (coordsChanged) {
       generateMapHeroAsync(park.id, "admin-edit");
+      revalidateTag(`park:${park.id}:weather`, "max");
     }
 
     return NextResponse.json({ success: true, park });

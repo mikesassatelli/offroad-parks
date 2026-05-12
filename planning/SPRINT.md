@@ -1,3 +1,26 @@
+# Sprint 6 · Week of 2026-05-11
+
+## Goal
+Ship weather integration end-to-end: NWS-backed forecast + current conditions on park detail, severe-alert banner, and rain-likelihood badge on park cards. All four E10 stories.
+
+## In Progress
+- [ ] OP-52 — NWS Integration & Caching
+- [ ] OP-53 — Current & Forecast Weather Display
+- [ ] OP-54 — Weather Alerts & Warnings
+- [ ] OP-55 — Rain Likelihood on Park Cards
+
+## Up Next
+*(none — focused sprint on E10)*
+
+## Blocked
+*(none)*
+
+## Notes / Decisions
+- E20 OP-91 (Google Places) deferred: Google Maps Platform ToS prohibits caching photo Content; live-fetch alternative costs ~$840/mo at projected traffic. OP-90 map hero + OP-00D community CTA cover the gap acceptably.
+- New epic E21 (User Notifications) created. OP-93 (severe-weather email alerts) shelved behind OP-92 (preferences foundation) — explicit opt-in only, every channel toggleable from profile.
+
+---
+
 # Sprint 5 · Week of 2026-04-14
 
 ## Goal
@@ -7,9 +30,7 @@ Close the biggest "unfinished" gap on the consumer site: parks without photos. S
 *(none)*
 
 ## Up Next
-- [ ] OP-91a — Schema: `googlePlaceId` field + backfill job
-- [ ] OP-91b — Places Photo Sync Pipeline
-- [ ] OP-91c — AI Discovery → Places Integration (depends on 91a + 91b)
+*(deferred — see Sprint 6)*
 
 ## Blocked
 *(none)*

@@ -5,6 +5,7 @@ import { ParkDetailPage } from "@/features/parks/detail/ParkDetailPage";
 import { auth } from "@/lib/auth";
 import { isAlertActive, sortAlertsForDisplay } from "@/lib/park-alerts";
 import type { ParkAlertDisplay } from "@/components/parks/ParkAlertsBanner";
+import { getCurrentConditions, getForecast } from "@/lib/weather";
 
 interface ParkPageProps {
   params: Promise<{ id: string }>;
@@ -140,6 +141,20 @@ export default async function ParkPage({ params }: ParkPageProps) {
     createdAt: a.createdAt.toISOString(),
   }));
 
+  // OP-53: weather data. Fetched in parallel; each surface degrades to
+  // null/empty independently on failure (NWS occasionally 5xx, outside-US
+  // coords resolve as null). Coords come from the park root, falling back
+  // to the address record — same precedence as map-hero generation.
+  const weatherLat = dbPark.latitude ?? dbPark.address?.latitude ?? null;
+  const weatherLng = dbPark.longitude ?? dbPark.address?.longitude ?? null;
+  const [weatherCurrent, weatherForecast] =
+    weatherLat != null && weatherLng != null
+      ? await Promise.all([
+          getCurrentConditions(dbPark.id, weatherLat, weatherLng),
+          getForecast(dbPark.id, weatherLat, weatherLng),
+        ])
+      : [null, []];
+
   const userRole = (session?.user as { role?: string })?.role;
   const isAdmin = userRole === "ADMIN" || userRole === "SUPER_ADMIN";
 
@@ -173,6 +188,8 @@ export default async function ParkPage({ params }: ParkPageProps) {
       isOperatorOfPark={isOperatorOfPark}
       operatorName={resolvedOperatorName}
       alerts={activeAlerts}
+      weatherCurrent={weatherCurrent}
+      weatherForecast={weatherForecast}
     />
   );
 }
