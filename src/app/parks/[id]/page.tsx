@@ -5,7 +5,7 @@ import { ParkDetailPage } from "@/features/parks/detail/ParkDetailPage";
 import { auth } from "@/lib/auth";
 import { isAlertActive, sortAlertsForDisplay } from "@/lib/park-alerts";
 import type { ParkAlertDisplay } from "@/components/parks/ParkAlertsBanner";
-import { getCurrentConditions, getForecast } from "@/lib/weather";
+import { getActiveAlerts, getCurrentConditions, getForecast } from "@/lib/weather";
 
 interface ParkPageProps {
   params: Promise<{ id: string }>;
@@ -147,13 +147,14 @@ export default async function ParkPage({ params }: ParkPageProps) {
   // to the address record — same precedence as map-hero generation.
   const weatherLat = dbPark.latitude ?? dbPark.address?.latitude ?? null;
   const weatherLng = dbPark.longitude ?? dbPark.address?.longitude ?? null;
-  const [weatherCurrent, weatherForecast] =
+  const [weatherCurrent, weatherForecast, weatherAlerts] =
     weatherLat != null && weatherLng != null
       ? await Promise.all([
           getCurrentConditions(dbPark.id, weatherLat, weatherLng),
           getForecast(dbPark.id, weatherLat, weatherLng),
+          getActiveAlerts(dbPark.id, weatherLat, weatherLng),
         ])
-      : [null, []];
+      : [null, [], []];
 
   const userRole = (session?.user as { role?: string })?.role;
   const isAdmin = userRole === "ADMIN" || userRole === "SUPER_ADMIN";
@@ -190,6 +191,7 @@ export default async function ParkPage({ params }: ParkPageProps) {
       alerts={activeAlerts}
       weatherCurrent={weatherCurrent}
       weatherForecast={weatherForecast}
+      weatherAlerts={weatherAlerts}
     />
   );
 }

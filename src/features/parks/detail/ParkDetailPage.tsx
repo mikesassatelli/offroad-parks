@@ -21,7 +21,12 @@ import { CampingInfoCard } from "./components/CampingInfoCard";
 import { ParkMapHero } from "@/components/parks/ParkMapHero";
 import { ParkAlertsBanner, type ParkAlertDisplay } from "@/components/parks/ParkAlertsBanner";
 import { WeatherCard } from "@/components/parks/WeatherCard";
-import type { CurrentConditions, DailyForecast } from "@/lib/weather/types";
+import { WeatherAlertsBanner } from "@/components/parks/WeatherAlertsBanner";
+import type {
+  CurrentConditions,
+  DailyForecast,
+  WeatherAlert,
+} from "@/lib/weather/types";
 import { ReviewList, ReviewForm, StarRating, DifficultyRating } from "@/components/reviews";
 import { TrailConditionsDisplay } from "@/features/trail-conditions/TrailConditionsDisplay";
 import { useReviews } from "@/hooks/useReviews";
@@ -62,6 +67,8 @@ interface ParkDetailPageProps {
   weatherCurrent?: CurrentConditions | null;
   /** OP-53: server-fetched 5-day forecast. Empty when unavailable. */
   weatherForecast?: DailyForecast[];
+  /** OP-54: server-fetched active NWS alerts. Empty when none / unavailable. */
+  weatherAlerts?: WeatherAlert[];
 }
 
 function ParkDetailPageInner({
@@ -76,6 +83,7 @@ function ParkDetailPageInner({
   alerts,
   weatherCurrent,
   weatherForecast,
+  weatherAlerts,
 }: ParkDetailPageProps) {
   const router = useRouter();
   const { data: session } = useSession();
@@ -205,6 +213,14 @@ function ParkDetailPageInner({
       </div>
 
       <main className="max-w-7xl mx-auto px-6 py-8">
+        {/* OP-54: NWS severe-weather alerts. Renders above operator alerts
+            because weather can be life-safety; operator messaging is
+            generally informational. Self-hides when no Severe+ alert. */}
+        {weatherAlerts && weatherAlerts.length > 0 && (
+          <div className="mb-4">
+            <WeatherAlertsBanner alerts={weatherAlerts} />
+          </div>
+        )}
         {alerts && alerts.length > 0 && (
           <div className="mb-6">
             <ParkAlertsBanner alerts={alerts} />
