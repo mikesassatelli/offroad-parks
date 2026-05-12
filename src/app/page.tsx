@@ -2,6 +2,7 @@ import UtvParksApp from "@/components/ui/OffroadParksApp";
 import { prisma } from "@/lib/prisma";
 import { resolveParkHeroImage } from "@/lib/park-hero";
 import { transformDbPark } from "@/lib/types";
+import { getBatchRainProbabilities } from "@/lib/weather";
 
 // Force dynamic rendering to always show fresh data
 export const dynamic = "force-dynamic";
@@ -59,10 +60,24 @@ export default async function Page() {
     },
   });
 
+  // OP-55: batched fetch of today's rain probability for each park. Uses
+  // the same forecast cache as OP-53 (6h TTL), so warm requests are
+  // basically free. Per-park 2s timeout + concurrency cap bound the
+  // first-render cost; parks that don't respond in time simply omit the
+  // badge until the next render.
+  const rainByParkId = await getBatchRainProbabilities(
+    dbParks.map((p) => ({
+      parkId: p.id,
+      latitude: p.latitude ?? p.address?.latitude ?? null,
+      longitude: p.longitude ?? p.address?.longitude ?? null,
+    })),
+  );
+
   // Transform to client format with hero images (respects operator selection)
   const parks = dbParks.map((park) => ({
     ...transformDbPark(park),
     heroImage: resolveParkHeroImage(park),
+    todaysRainChance: rainByParkId.get(park.id) ?? null,
   }));
 
   return <UtvParksApp parks={parks} />;

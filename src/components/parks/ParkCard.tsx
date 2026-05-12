@@ -10,6 +10,7 @@ import Link from "next/link";
 import Image from "next/image";
 import { ParkMapHero } from "@/components/parks/ParkMapHero";
 import { ConditionBadge } from "@/features/trail-conditions/ConditionBadge";
+import { RainBadge } from "@/components/parks/RainBadge";
 import type { TrailConditionStatus } from "@/lib/trail-conditions";
 import { isConditionFresh } from "@/lib/trail-conditions";
 
@@ -91,6 +92,11 @@ export function ParkCard({
                 />
               </div>
             )}
+            {park.todaysRainChance != null && (
+              <div className="absolute bottom-2 right-2 z-10">
+                <RainBadge probability={park.todaysRainChance} />
+              </div>
+            )}
           </div>
         ) : hasMapHero ? (
           <div className="relative">
@@ -117,6 +123,11 @@ export function ParkCard({
                 />
               </div>
             )}
+            {park.todaysRainChance != null && (
+              <div className="absolute bottom-2 right-2 z-10">
+                <RainBadge probability={park.todaysRainChance} />
+              </div>
+            )}
           </div>
         ) : (
           <div className="relative h-48 w-full bg-gradient-to-br from-muted to-muted/50 flex items-center justify-center">
@@ -141,6 +152,11 @@ export function ParkCard({
                   status={freshCondition.status as TrailConditionStatus}
                   size="xs"
                 />
+              </div>
+            )}
+            {park.todaysRainChance != null && (
+              <div className="absolute bottom-2 right-2 z-10">
+                <RainBadge probability={park.todaysRainChance} />
               </div>
             )}
           </div>

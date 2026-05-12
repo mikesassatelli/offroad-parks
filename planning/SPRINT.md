@@ -4,10 +4,7 @@
 Ship weather integration end-to-end: NWS-backed forecast + current conditions on park detail, severe-alert banner, and rain-likelihood badge on park cards. All four E10 stories.
 
 ## In Progress
-- [ ] OP-52 — NWS Integration & Caching
-- [ ] OP-53 — Current & Forecast Weather Display
-- [ ] OP-54 — Weather Alerts & Warnings
-- [ ] OP-55 — Rain Likelihood on Park Cards
+*(none)*
 
 ## Up Next
 *(none — focused sprint on E10)*
@@ -15,9 +12,17 @@ Ship weather integration end-to-end: NWS-backed forecast + current conditions on
 ## Blocked
 *(none)*
 
+## Done This Sprint
+- [x] ~~OP-52~~ NWS Integration & Caching — PR #138 merged 2026-05-12. `src/lib/weather/` with grid resolution, forecast (6h cache), current obs (30m), alerts (10m); coord-edit handler busts the per-park tag. Identifiable User-Agent. Graceful null/empty on NWS 5xx. 32 tests.
+- [x] ~~OP-53~~ Current & Forecast Weather Display — PR #138 merged 2026-05-12. `<WeatherCard />` between TrailConditionsDisplay and ParkContactSidebar on the park detail sidebar. Self-hides on missing data. 9 component tests.
+- [x] ~~OP-54~~ Weather Alerts & Warnings — PR #139 merged 2026-05-12. `<WeatherAlertsBanner />` shows Severe+ NWS alerts at the top of the park detail page with a "View all alerts" Dialog listing every active alert by severity. Park-closure indicator dropped per E10 lock-in. 9 tests.
+- [x] ~~OP-55~~ Rain Likelihood on Park Cards — PR #140 merged 2026-05-12. `<RainBadge />` at `bottom-2 right-2` on `<ParkCard />`. Color thresholds green <20% / amber 20–60% / red >60%. Batched server-side fetch (`getBatchRainProbabilities`) with per-park 2s timeout + 12-way concurrency cap; subsequent renders cache-hit. 19 tests.
+
 ## Notes / Decisions
 - E20 OP-91 (Google Places) deferred: Google Maps Platform ToS prohibits caching photo Content; live-fetch alternative costs ~$840/mo at projected traffic. OP-90 map hero + OP-00D community CTA cover the gap acceptably.
 - New epic E21 (User Notifications) created. OP-93 (severe-weather email alerts) shelved behind OP-92 (preferences foundation) — explicit opt-in only, every channel toggleable from profile.
+- E10 caching: forecast 6h, current obs 30m, alerts 10m, grid indefinite; coord-edit handler revalidates the per-park weather tag. First-render cost on the parks-list page is bounded by a 2s per-park timeout + concurrency cap of 12.
+- OP-54 dropped the "park closure indicator" — closures stay operator-controlled via OP-65; auto-closing on weather data is too high-stakes.
 
 ---
 
