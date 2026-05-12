@@ -21,6 +21,7 @@ vi.mock("@/lib/prisma", () => ({
 // Mock Next.js cache revalidation
 vi.mock("next/cache", () => ({
   revalidatePath: vi.fn(),
+  revalidateTag: vi.fn(),
 }));
 
 // OP-90: map-hero generation is fire-and-forget; stub so tests don't trigger

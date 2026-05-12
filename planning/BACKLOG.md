@@ -153,10 +153,10 @@
 | Key | Title | Status | Type | Notes |
 |-----|-------|--------|------|-------|
 | OP-90 | Park Card Default Filler Redesign | done | feature | Stylized Mapbox sepia thumbnail (USGS-quadrangle legend, Light-sepia treatment) replaces the Camera-icon filler. Pre-generated to Vercel Blob at park creation; live Mapbox fallback. `ParkMapHero` component used on both card + detail-page sidebar. Admin backfill at `/admin/map-heroes`. Merged with OP-90 PR. |
-| OP-91 | Google Places Photo Integration | backlog | feature | Parent. Auto-source photos from Google Places Photos API with strict provenance. Covers backfill for existing parks and wiring into AI discovery for new parks. See 91a/91b/91c. |
-| OP-91a | Schema: `googlePlaceId` Field + Backfill Job | backlog | feature | needs-refinement. Add `googlePlaceId` (unique, nullable) to `Park`. Admin-triggered backfill job runs Places Text Search (name + city + state) per park; matches with high confidence (name similarity + distance-from-recorded-coords thresholds) auto-link; low-confidence matches queue for admin review. Idempotent. |
-| OP-91b | Places Photo Sync Pipeline | backlog | feature | needs-refinement. For parks with a `googlePlaceId`, fetch top N Places Photos, download to Vercel Blob at `parks/{parkId}/places-{hash}.jpg`, create `ParkPhoto` with `source: 'google_places'` and Google-required attribution. Blob URL uniqueness enforces per-photo provenance. Monthly refresh cron. Auto-approve vs. admin-queue is a setting. |
-| OP-91c | AI Discovery → Places Integration | backlog | feature | needs-refinement. Wire Places lookup into the AI discovery pipeline so new parks arrive with `googlePlaceId` stamped at seed time. 91b sync job then picks them up. Removes the "every new park needs manual photo hunt" bottleneck. Depends on OP-91a + OP-91b. |
+| OP-91 | Google Places Photo Integration | deferred | feature | **Deferred 2026-05-12.** Two blockers: (1) Google Maps Platform ToS §3.2.3 prohibits caching/storing photo Content — we can persist Place IDs but not photo bytes, so the "download to Blob" provenance design is non-compliant. (2) Live-fetch alternative (Places Photo on every render) costs ~$840/mo at projected traffic; even detail-page-only hybrid is ~$84/mo. OP-90 map hero + OP-00D community CTA cover the gap acceptably for now. Revisit if/when traffic + cost economics change. |
+| OP-91a | Schema: `googlePlaceId` Field + Backfill Job | deferred | feature | Deferred with parent OP-91. |
+| OP-91b | Places Photo Sync Pipeline | deferred | feature | Deferred with parent OP-91. ToS blocker — Places photos cannot be downloaded to our own storage. |
+| OP-91c | AI Discovery → Places Integration | deferred | feature | Deferred with parent OP-91. |
 
 ---
 
@@ -189,14 +189,31 @@
 
 ---
 
-## E10 · Weather Integration *(Future)*
+## E10 · Weather Integration *(Phase 2)*
+
+**Provider: National Weather Service (api.weather.gov).** Free, no API key, US-only (all parks are US-based), authoritative for alerts. Two-step lookup: `/points/{lat},{lng}` → grid identifier (cached indefinitely per park, invalidated on coord edit) → `/gridpoints/.../forecast`. Grid resolution pre-warmed at park creation (alongside map-hero gen).
+
+**Caching (Next.js fetch cache with tags):** grid lookup indefinite, 7-day forecast 6h, current observations 30m, active alerts 10m. All tagged `park:{parkId}:weather` for coord-edit invalidation.
+
+**Parks without coordinates:** weather UI does not render. AI research backfills coords over time.
 
 | Key | Title | Status | Type | Notes |
 |-----|-------|--------|------|-------|
-| OP-52 | Weather API Integration & Caching | backlog | feature | needs-refinement. Provider selection, server-side caching with TTL, background refresh, rate limiting. |
-| OP-53 | Current & Forecast Weather Display | backlog | feature | Weather widget on park detail; current conditions + 5-7 day forecast; icons. |
-| OP-54 | Weather Alerts & Warnings | backlog | feature | needs-refinement. NWS alerts, severity levels, park closure indicators. |
-| OP-55 | Rain Likelihood on Park Cards | backlog | feature | Rain badge on ParkCard; color-coded probability; batch fetching for efficiency. |
+| OP-52 | NWS Integration & Caching | backlog | feature | `src/lib/weather/` module: `getOrResolveGrid`, `getForecast`, `getCurrentConditions`, `getActiveAlerts`. Vercel Runtime/Next fetch cache per table above. Identifiable User-Agent header. Hook grid pre-warm into park-creation pipeline. Graceful null fallback on NWS 5xx. Tests for cache hit/miss + error paths. |
+| OP-53 | Current & Forecast Weather Display | backlog | feature | `<WeatherCard />` on park detail sidebar. Current temp + conditions icon (Lucide) + feels-like. 5-day forecast row: day, icon, hi/lo, precip%. Loading skeleton + "Weather unavailable" empty state. |
+| OP-54 | Weather Alerts & Warnings | backlog | feature | NWS severe+ alerts as banner at top of park detail page (e.g. "Red Flag Warning until 6pm"). Full alerts list in modal on "View all alerts." **Park closure indicators are out of scope** — closures are operator-controlled via OP-65, not weather-driven. |
+| OP-55 | Rain Likelihood on Park Cards | backlog | feature | Rain badge (☂ + probability) on `<ParkCard />`. Today's max precip% across the day. Color thresholds: green <20%, amber 20–60%, red >60%. Server-rendered using same cache as OP-53 (most calls cache-hit). Hidden when forecast unavailable. |
+
+---
+
+## E21 · User Notifications *(Future)*
+
+**Premise:** Email notifications triggered by various events (severe weather at favorited parks, new reviews, operator updates, trail conditions). Centralized opt-in/opt-out preferences in user profile — no notification ships without granular user control.
+
+| Key | Title | Status | Type | Notes |
+|-----|-------|--------|------|-------|
+| OP-92 | Notification Preferences in User Profile | backlog | feature | needs-refinement. New `UserNotificationPreferences` model (or JSON column on `User`). Profile UI section with per-channel toggles: weather-alerts at favorited parks, new-review-on-favorited-park, operator-update, trail-condition-change. Default all OFF; explicit opt-in. One-click unsubscribe link in every email. Foundation for OP-93+. |
+| OP-93 | Severe Weather Email Alerts | backlog | feature | needs-refinement. Cron job scans favorited parks for active NWS severe+ alerts; sends email to opted-in users. Dedup so a user gets one email per (park, alert) pair. Depends on OP-92 + OP-54. |
 
 ---
 

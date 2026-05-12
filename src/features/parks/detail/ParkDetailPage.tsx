@@ -20,6 +20,8 @@ import { ParkOverviewCard } from "./components/ParkOverviewCard";
 import { CampingInfoCard } from "./components/CampingInfoCard";
 import { ParkMapHero } from "@/components/parks/ParkMapHero";
 import { ParkAlertsBanner, type ParkAlertDisplay } from "@/components/parks/ParkAlertsBanner";
+import { WeatherCard } from "@/components/parks/WeatherCard";
+import type { CurrentConditions, DailyForecast } from "@/lib/weather/types";
 import { ReviewList, ReviewForm, StarRating, DifficultyRating } from "@/components/reviews";
 import { TrailConditionsDisplay } from "@/features/trail-conditions/TrailConditionsDisplay";
 import { useReviews } from "@/hooks/useReviews";
@@ -56,6 +58,10 @@ interface ParkDetailPageProps {
   isOperatorOfPark?: boolean;
   operatorName?: string | null;
   alerts?: ParkAlertDisplay[];
+  /** OP-53: server-fetched current conditions. Null when unavailable. */
+  weatherCurrent?: CurrentConditions | null;
+  /** OP-53: server-fetched 5-day forecast. Empty when unavailable. */
+  weatherForecast?: DailyForecast[];
 }
 
 function ParkDetailPageInner({
@@ -68,6 +74,8 @@ function ParkDetailPageInner({
   isOperatorOfPark,
   operatorName,
   alerts,
+  weatherCurrent,
+  weatherForecast,
 }: ParkDetailPageProps) {
   const router = useRouter();
   const { data: session } = useSession();
@@ -421,6 +429,12 @@ function ParkDetailPageInner({
                 </div>
               )}
               <TrailConditionsDisplay parkSlug={park.id} />
+              {/* OP-53: NWS forecast + current. Renders nothing when both
+                  are empty (parks without coords or outside NWS coverage). */}
+              <WeatherCard
+                current={weatherCurrent ?? null}
+                forecast={weatherForecast ?? []}
+              />
               <ParkContactSidebar park={park} />
               <CampingInfoCard park={park} />
               <ParkClaimCTA
