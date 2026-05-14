@@ -5,6 +5,7 @@ import { ThemeToggle } from "@/components/ThemeToggle";
 import {
   Activity,
   BrainCircuit,
+  Building2,
   Camera,
   ClipboardCheck,
   ClipboardList,
@@ -142,6 +143,13 @@ export default async function AdminLayout({
             >
               <ClipboardList className="w-5 h-5" />
               <span className="font-medium">Park Claims</span>
+            </Link>
+            <Link
+              href="/admin/operators"
+              className="flex items-center gap-3 px-4 py-3 text-foreground rounded-lg hover:bg-accent hover:text-accent-foreground transition-colors"
+            >
+              <Building2 className="w-5 h-5" />
+              <span className="font-medium">Park Operators</span>
             </Link>
             <Link
               href="/admin/map-heroes"
