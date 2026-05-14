@@ -276,6 +276,7 @@ describe("Park Detail Page", () => {
           vehicleTypes: true,
           address: true,
           operator: { select: { name: true } },
+          heroPhoto: { select: { id: true, url: true, status: true } },
         },
       });
     });

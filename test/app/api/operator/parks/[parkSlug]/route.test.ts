@@ -37,6 +37,10 @@ vi.mock("@/lib/auth", () => ({
   auth: vi.fn(),
 }));
 
+vi.mock("next/cache", () => ({
+  revalidatePath: vi.fn(),
+}));
+
 const operatorSession = { user: { id: "user-1" } };
 
 const mockPark = {
@@ -176,6 +180,34 @@ describe("PATCH /api/operator/parks/[parkSlug]", () => {
     expect(response.status).toBe(200);
     const data = await response.json();
     expect(data.success).toBe(true);
+  });
+
+  it("revalidates the home grid + park detail page after a successful update", async () => {
+    const { revalidatePath } = await import("next/cache");
+    (auth as any).mockResolvedValue(operatorSession);
+    (prisma.park.findUnique as any).mockResolvedValue(mockPark);
+
+    const updatedPark = { ...mockPark, name: "Renamed" };
+    (prisma.$transaction as any).mockImplementation(async (fn: any) => {
+      return fn({
+        park: {
+          update: vi.fn().mockResolvedValue(updatedPark),
+          findUnique: vi.fn().mockResolvedValue(updatedPark),
+        },
+        parkTerrain: { deleteMany: vi.fn(), createMany: vi.fn() },
+        parkAmenity: { deleteMany: vi.fn(), createMany: vi.fn() },
+        parkCamping: { deleteMany: vi.fn(), createMany: vi.fn() },
+        parkVehicleType: { deleteMany: vi.fn(), createMany: vi.fn() },
+        parkEditLog: { create: vi.fn().mockResolvedValue({ id: "log-1" }) },
+      });
+    });
+
+    await PATCH(makePatchRequest({ name: "Renamed" }), {
+      params: Promise.resolve({ parkSlug: "test-park" }),
+    });
+
+    expect(revalidatePath).toHaveBeenCalledWith("/");
+    expect(revalidatePath).toHaveBeenCalledWith("/parks/test-park");
   });
 
   it("should ignore disallowed fields like status", async () => {

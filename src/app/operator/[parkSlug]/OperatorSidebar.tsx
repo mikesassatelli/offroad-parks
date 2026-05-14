@@ -27,7 +27,7 @@ export function OperatorSidebar({ parkSlug }: OperatorSidebarProps) {
     { href: `/operator/${parkSlug}/conditions${fromParam}`, label: "Trail Status", icon: Activity },
     { href: `/operator/${parkSlug}/alerts${fromParam}`, label: "Alerts", icon: Megaphone },
     { href: `/operator/${parkSlug}/settings${fromParam}`, label: "Park Details", icon: MapPin },
-    { href: `/operator/${parkSlug}/park-card${fromParam}`, label: "Park Card", icon: Image },
+    { href: `/operator/${parkSlug}/park-card${fromParam}`, label: "Header Photo", icon: Image },
     { href: `/operator/${parkSlug}/photos${fromParam}`, label: "Photos", icon: Camera },
     { href: `/operator/${parkSlug}/reviews${fromParam}`, label: "Reviews", icon: MessageSquare },
     { href: `/operator/${parkSlug}/moderation/conditions${fromParam}`, label: "Condition Reports", icon: ShieldAlert },
