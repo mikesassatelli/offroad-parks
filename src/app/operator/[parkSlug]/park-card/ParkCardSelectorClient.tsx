@@ -94,10 +94,11 @@ export function ParkCardSelectorClient({
   return (
     <div className="space-y-6">
       <header>
-        <h1 className="text-2xl font-semibold">Park Card</h1>
+        <h1 className="text-2xl font-semibold">Header Photo</h1>
         <p className="text-sm text-muted-foreground mt-1">
-          Choose which image is shown on your park&apos;s card across
-          Offroad Parks.
+          Choose the image used as your park&apos;s header. It appears on
+          your park card across the site <em>and</em> at the top of your
+          park&apos;s detail page.
         </p>
       </header>
 
@@ -121,7 +122,11 @@ export function ParkCardSelectorClient({
         {/* Selector */}
         <Card>
           <CardHeader>
-            <CardTitle className="text-base">Hero image source</CardTitle>
+            <CardTitle className="text-base">Header image source</CardTitle>
+            <p className="text-xs text-muted-foreground mt-1">
+              Applies to both the park card preview on the left and the
+              header image at the top of your park&apos;s detail page.
+            </p>
           </CardHeader>
           <CardContent className="space-y-4">
             <RadioRow

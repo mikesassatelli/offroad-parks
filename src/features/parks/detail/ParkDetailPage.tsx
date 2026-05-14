@@ -19,6 +19,7 @@ import { ParkOperationalCard } from "./components/ParkOperationalCard";
 import { ParkOverviewCard } from "./components/ParkOverviewCard";
 import { CampingInfoCard } from "./components/CampingInfoCard";
 import { ParkMapHero } from "@/components/parks/ParkMapHero";
+import Image from "next/image";
 import { ParkAlertsBanner, type ParkAlertDisplay } from "@/components/parks/ParkAlertsBanner";
 import { WeatherCard } from "@/components/parks/WeatherCard";
 import { WeatherAlertsBanner } from "@/components/parks/WeatherAlertsBanner";
@@ -436,13 +437,32 @@ function ParkDetailPageInner({
           {/* Sidebar */}
           <div className="lg:col-span-1">
             <div className="sticky top-20 space-y-6">
-              {/* Map hero always renders above the sidebar cards (OP-90).
-                  Internally falls back to null when the park has neither a
-                  generated hero nor coords. */}
-              {(park.mapHeroUrl || park.coords) && (
+              {/* Sidebar header image. Source priority mirrors the park
+                  card (OP-90 + operator hero selection):
+                    1. Operator-chosen photo (resolved server-side into
+                       `park.heroImage`) when heroSource is PHOTO, or the
+                       first APPROVED photo when AUTO.
+                    2. Generated/live map hero when heroSource is MAP, or
+                       AUTO with no approved photos.
+                    3. Nothing when neither is available. */}
+              {park.heroImage ? (
                 <div className="rounded-lg border border-border shadow-sm overflow-hidden bg-card">
-                  <ParkMapHero park={park} size="card" />
+                  <div className="relative h-48 w-full bg-muted">
+                    <Image
+                      src={park.heroImage}
+                      alt={park.name}
+                      fill
+                      className="object-cover"
+                      sizes="(max-width: 1024px) 100vw, 33vw"
+                    />
+                  </div>
                 </div>
+              ) : (
+                (park.mapHeroUrl || park.coords) && (
+                  <div className="rounded-lg border border-border shadow-sm overflow-hidden bg-card">
+                    <ParkMapHero park={park} size="card" />
+                  </div>
+                )
               )}
               <TrailConditionsDisplay parkSlug={park.id} />
               {/* OP-53: NWS forecast + current. Renders nothing when both

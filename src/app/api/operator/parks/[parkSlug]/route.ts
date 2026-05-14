@@ -1,4 +1,5 @@
 import { NextResponse } from "next/server";
+import { revalidatePath } from "next/cache";
 import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 
@@ -335,6 +336,12 @@ export async function PATCH(request: Request, { params }: RouteParams) {
   if (!result) {
     return NextResponse.json({ error: "Failed to fetch updated park" }, { status: 500 });
   }
+
+  // Bust the ISR cache for surfaces that read the updated fields. The home
+  // grid + park detail page both read heroSource/heroPhotoId; other operator
+  // edits (name, pricing, etc.) also surface there.
+  revalidatePath("/");
+  revalidatePath(`/parks/${parkSlug}`);
 
   return NextResponse.json({
     success: true,

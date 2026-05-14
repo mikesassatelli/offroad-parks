@@ -1,5 +1,6 @@
 import { notFound } from "next/navigation";
 import { prisma } from "@/lib/prisma";
+import { resolveParkHeroImage } from "@/lib/park-hero";
 import { transformDbPark } from "@/lib/types";
 import { ParkDetailPage } from "@/features/parks/detail/ParkDetailPage";
 import { auth } from "@/lib/auth";
@@ -76,6 +77,9 @@ export default async function ParkPage({ params }: ParkPageProps) {
       vehicleTypes: true,
       address: true,
       operator: { select: { name: true } },
+      // Include the operator-selected hero photo so the detail-page header
+      // image can mirror the park-card image (heroSource = PHOTO).
+      heroPhoto: { select: { id: true, url: true, status: true } },
     },
   });
 
@@ -109,7 +113,24 @@ export default async function ParkPage({ params }: ParkPageProps) {
     },
   });
 
-  const park = transformDbPark(dbPark);
+  // Resolve the operator-controlled header image. Mirrors the same source
+  // priority used on the park-card grid (`src/app/page.tsx`):
+  //   - heroSource = PHOTO → operator-selected photo URL
+  //   - heroSource = AUTO  → first APPROVED photo URL (or null → map hero)
+  //   - heroSource = MAP   → null (sidebar falls back to ParkMapHero)
+  // Without this the detail page always rendered the auto-generated map
+  // hero, ignoring the operator's choice from the operator portal.
+  const resolvedHeroImage = resolveParkHeroImage({
+    heroSource: dbPark.heroSource,
+    heroPhotoId: dbPark.heroPhotoId,
+    heroPhoto: dbPark.heroPhoto,
+    photos: photos.map((p) => ({ id: p.id, url: p.url, status: "APPROVED" })),
+  });
+
+  const park = {
+    ...transformDbPark(dbPark),
+    heroImage: resolvedHeroImage,
+  };
 
   // Fetch active operator-posted alerts. Filter in JS so the predicate stays in
   // one place (src/lib/park-alerts#isAlertActive) and is unit-testable.
