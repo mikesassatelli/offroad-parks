@@ -8,9 +8,28 @@ jobs:
   delete-neon-branch:
     runs-on: ubuntu-latest
     steps:
+      # NEON_PROJECT_ID lives in repo Secrets (not Variables). The earlier
+      # workflow referenced `vars.NEON_PROJECT_ID`, which resolved to an
+      # empty string and made `neonctl branches delete --project-id `
+      # fail with "Multiple projects found" on every closed PR.
+      #
+      # The guard step lets us skip cleanly (with a warning) if either
+      # secret is unset — orphaned preview branches can be recovered via
+      # the Neon dashboard, but a red X on every merged PR is just noise.
+      - name: Check Neon credentials are present
+        id: creds
+        run: |
+          if [ -n "${{ secrets.NEON_PROJECT_ID }}" ] && [ -n "${{ secrets.NEON_API_KEY }}" ]; then
+            echo "ok=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "::warning::Neon cleanup skipped — set NEON_PROJECT_ID and NEON_API_KEY in repo Secrets (Settings → Secrets and variables → Actions)."
+            echo "ok=false" >> "$GITHUB_OUTPUT"
+          fi
+
       - name: Delete Neon preview branch
+        if: steps.creds.outputs.ok == 'true'
         uses: neondatabase/delete-branch-action@v3
         with:
-          project_id: ${{ vars.NEON_PROJECT_ID }}
+          project_id: ${{ secrets.NEON_PROJECT_ID }}
           branch: preview/${{ github.event.pull_request.head.ref }}
           api_key: ${{ secrets.NEON_API_KEY }}
