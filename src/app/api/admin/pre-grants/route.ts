@@ -7,21 +7,32 @@ export const runtime = "nodejs";
 const ASSIGNABLE_ROLES = ["USER", "OPERATOR", "ADMIN", "SUPER_ADMIN"] as const;
 type AssignableRole = (typeof ASSIGNABLE_ROLES)[number];
 
-async function requireSuperAdmin() {
+interface SuperAdminContext {
+  userId: string;
+}
+
+/**
+ * Returns either the SUPER_ADMIN context (userId) for downstream use, or a
+ * NextResponse to bail with. The discriminator is `instanceof NextResponse`
+ * which TypeScript narrows reliably — unlike `"error" in obj` on object
+ * unions, which left earlier callers with a possibly-undefined inferred
+ * return type in the test file.
+ */
+async function requireSuperAdmin(): Promise<NextResponse | SuperAdminContext> {
   const session = await auth();
   if (!session?.user?.id) {
-    return { error: NextResponse.json({ error: "Unauthorized" }, { status: 401 }) };
+    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
   if (session.user.role !== "SUPER_ADMIN") {
-    return { error: NextResponse.json({ error: "Forbidden" }, { status: 403 }) };
+    return NextResponse.json({ error: "Forbidden" }, { status: 403 });
   }
-  return { session };
+  return { userId: session.user.id };
 }
 
 // GET /api/admin/pre-grants — list all pre-grants (SUPER_ADMIN only).
-export async function GET() {
-  const auth = await requireSuperAdmin();
-  if ("error" in auth) return auth.error;
+export async function GET(): Promise<NextResponse> {
+  const authResult = await requireSuperAdmin();
+  if (authResult instanceof NextResponse) return authResult;
 
   const grants = await prisma.userPreGrant.findMany({
     orderBy: [{ appliedAt: "asc" }, { createdAt: "desc" }],
@@ -32,9 +43,9 @@ export async function GET() {
 
 // POST /api/admin/pre-grants — create a new pre-grant (SUPER_ADMIN only).
 // Body: { email, grantRole?, operatorParkSlug?, notes? }
-export async function POST(request: Request) {
+export async function POST(request: Request): Promise<NextResponse> {
   const authResult = await requireSuperAdmin();
-  if ("error" in authResult) return authResult.error;
+  if (authResult instanceof NextResponse) return authResult;
 
   let body: {
     email?: string;
@@ -105,7 +116,7 @@ export async function POST(request: Request) {
       grantRole: (body.grantRole as AssignableRole | undefined) ?? null,
       operatorParkSlug: body.operatorParkSlug ?? null,
       notes: body.notes?.trim() || null,
-      createdByUserId: authResult.session.user.id,
+      createdByUserId: authResult.userId,
     },
   });
 
