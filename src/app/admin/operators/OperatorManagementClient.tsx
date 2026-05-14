@@ -450,11 +450,14 @@ function OperatorRow({
             </div>
           ) : (
             <>
+              {/* subscriptionStatus + subscriptionTier are Stripe-billing
+                  scaffolding (E14, not yet shipped). Every operator stays
+                  on the TRIALING · STANDARD defaults until Stripe webhooks
+                  cycle them, so showing them is just noise today. The
+                  fields are still returned in the API + kept on the row
+                  type — easy to unhide once OP-67/68 ship. */}
               <div className="flex items-center flex-wrap gap-2">
                 <h3 className="font-semibold">{op.name}</h3>
-                <span className="text-xs text-muted-foreground">
-                  {op.subscriptionStatus} · {op.subscriptionTier}
-                </span>
               </div>
               <div className="text-xs text-muted-foreground mt-1 flex flex-wrap items-center gap-3">
                 <span className="inline-flex items-center gap-1">
