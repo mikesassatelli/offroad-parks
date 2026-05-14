@@ -78,6 +78,31 @@ enum UserRole {
   SUPER_ADMIN
 }
 
+// Pre-grants — declare a role / operator membership that should be applied
+// the first time a user signs in with this email. Triggered by the NextAuth
+// `events.createUser` hook in src/lib/auth.ts. SUPER_ADMIN-managed via
+// /admin/pre-grants. Idempotent: applies once, then `appliedAt` is set and
+// later sign-ins skip it. Useful for onboarding beta testers without
+// requiring them to submit a ParkClaim or wait on manual admin action.
+model UserPreGrant {
+  id                String    @id @default(cuid())
+  // One pre-grant per email. Lookup happens by Google email at signup.
+  email             String    @unique
+  // Role to assign on first sign-in. Null = no role change.
+  grantRole         UserRole?
+  // Park slug to make this user an operator of. Mirrors the claim-approval
+  // transaction (creates Operator + OperatorUser + sets Park.operatorId).
+  operatorParkSlug  String?
+  notes             String?
+  // Audit: which user record the grant resolved to and when.
+  appliedAt         DateTime?
+  appliedToUserId   String?
+  createdByUserId   String?
+  createdAt         DateTime  @default(now())
+
+  @@index([email])
+}
+
 // Park Models
 model Park {
   id            String     @id @default(cuid())

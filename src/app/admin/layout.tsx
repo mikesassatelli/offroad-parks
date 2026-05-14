@@ -11,6 +11,7 @@ import {
   Globe,
   Home,
   Image as ImageIcon,
+  KeyRound,
   LayoutDashboard,
   LogOut,
   MapPin,
@@ -36,6 +37,7 @@ export default async function AdminLayout({
   if (userRole !== "ADMIN" && userRole !== "SUPER_ADMIN") {
     redirect("/");
   }
+  const isSuperAdmin = userRole === "SUPER_ADMIN";
 
   return (
     <div className="min-h-screen bg-background text-foreground">
@@ -184,6 +186,15 @@ export default async function AdminLayout({
               <Users className="w-5 h-5" />
               <span className="font-medium">Users</span>
             </Link>
+            {isSuperAdmin && (
+              <Link
+                href="/admin/pre-grants"
+                className="flex items-center gap-3 px-4 py-3 text-foreground rounded-lg hover:bg-accent hover:text-accent-foreground transition-colors"
+              >
+                <KeyRound className="w-5 h-5" />
+                <span className="font-medium">Pre-grants</span>
+              </Link>
+            )}
           </nav>
         </aside>
 
