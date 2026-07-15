@@ -3,6 +3,7 @@
  * Use these in API routes to reduce boilerplate.
  */
 import { NextResponse } from "next/server";
+import { z } from "zod";
 import type { Session } from "next-auth";
 import { auth } from "@/lib/auth";
 
@@ -21,7 +22,9 @@ const ADMIN_ROLES = new Set(["ADMIN", "SUPER_ADMIN"]);
  *   if (result instanceof NextResponse) return result;
  *   const session = result; // authenticated admin session
  */
-export async function requireAdmin(): Promise<AuthenticatedSession | NextResponse> {
+export async function requireAdmin(): Promise<
+  AuthenticatedSession | NextResponse
+> {
   const session = await auth();
   if (!session?.user?.id) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
@@ -36,7 +39,9 @@ export async function requireAdmin(): Promise<AuthenticatedSession | NextRespons
  * Verify the request comes from an authenticated SUPER_ADMIN user.
  * Used for actions only the super admin may take (e.g. promoting/demoting admins).
  */
-export async function requireSuperAdmin(): Promise<AuthenticatedSession | NextResponse> {
+export async function requireSuperAdmin(): Promise<
+  AuthenticatedSession | NextResponse
+> {
   const session = await auth();
   if (!session?.user?.id) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
@@ -51,10 +56,54 @@ export async function requireSuperAdmin(): Promise<AuthenticatedSession | NextRe
  * Verify the request comes from an authenticated user (any role).
  * Returns the session on success, or a NextResponse 401 on failure.
  */
-export async function requireAuth(): Promise<AuthenticatedSession | NextResponse> {
+export async function requireAuth(): Promise<
+  AuthenticatedSession | NextResponse
+> {
   const session = await auth();
   if (!session?.user?.id) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
   return session as AuthenticatedSession;
+}
+
+/**
+ * Parse and validate a JSON request body against a Zod schema.
+ *
+ * Returns `{ data }` with the parsed, typed body on success, or `{ response }`
+ * with a ready-to-return 400 on failure — malformed JSON yields
+ * `{ error: "Invalid JSON" }`; a schema mismatch yields the first issue's
+ * message plus a treeified `issues` object for field-level detail.
+ *
+ * Usage:
+ *   const parsed = await parseJsonBody(request, mySchema);
+ *   if ("response" in parsed) return parsed.response;
+ *   const body = parsed.data; // fully typed
+ */
+export async function parseJsonBody<T extends z.ZodType>(
+  request: Request,
+  schema: T,
+): Promise<{ data: z.infer<T> } | { response: NextResponse }> {
+  let raw: unknown;
+  try {
+    raw = await request.json();
+  } catch {
+    return {
+      response: NextResponse.json({ error: "Invalid JSON" }, { status: 400 }),
+    };
+  }
+
+  const parsed = schema.safeParse(raw);
+  if (!parsed.success) {
+    return {
+      response: NextResponse.json(
+        {
+          error: parsed.error.issues[0]?.message ?? "Invalid request body",
+          issues: z.treeifyError(parsed.error),
+        },
+        { status: 400 },
+      ),
+    };
+  }
+
+  return { data: parsed.data };
 }

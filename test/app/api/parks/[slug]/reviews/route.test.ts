@@ -31,8 +31,12 @@ describe("GET /api/parks/[slug]/reviews", () => {
   it("should return 404 if park not found", async () => {
     (prisma.park.findUnique as any).mockResolvedValue(null);
 
-    const request = new NextRequest("http://localhost/api/parks/test-park/reviews");
-    const response = await GET(request, { params: Promise.resolve({ slug: "test-park" }) });
+    const request = new NextRequest(
+      "http://localhost/api/parks/test-park/reviews",
+    );
+    const response = await GET(request, {
+      params: Promise.resolve({ slug: "test-park" }),
+    });
 
     expect(response.status).toBe(404);
   });
@@ -68,8 +72,12 @@ describe("GET /api/parks/[slug]/reviews", () => {
     (prisma.parkReview.findMany as any).mockResolvedValue(mockReviews);
     (auth as any).mockResolvedValue(null);
 
-    const request = new NextRequest("http://localhost/api/parks/test-park/reviews");
-    const response = await GET(request, { params: Promise.resolve({ slug: "test-park" }) });
+    const request = new NextRequest(
+      "http://localhost/api/parks/test-park/reviews",
+    );
+    const response = await GET(request, {
+      params: Promise.resolve({ slug: "test-park" }),
+    });
     const data = await response.json();
 
     expect(response.status).toBe(200);
@@ -86,18 +94,23 @@ describe("POST /api/parks/[slug]/reviews", () => {
   it("should return 401 for unauthenticated users", async () => {
     (auth as any).mockResolvedValue(null);
 
-    const request = new NextRequest("http://localhost/api/parks/test-park/reviews", {
-      method: "POST",
-      body: JSON.stringify({
-        overallRating: 5,
-        terrainRating: 4,
-        facilitiesRating: 4,
-        difficultyRating: 3,
-        body: "Test review",
-      }),
-    });
+    const request = new NextRequest(
+      "http://localhost/api/parks/test-park/reviews",
+      {
+        method: "POST",
+        body: JSON.stringify({
+          overallRating: 5,
+          terrainRating: 4,
+          facilitiesRating: 4,
+          difficultyRating: 3,
+          body: "Test review",
+        }),
+      },
+    );
 
-    const response = await POST(request, { params: Promise.resolve({ slug: "test-park" }) });
+    const response = await POST(request, {
+      params: Promise.resolve({ slug: "test-park" }),
+    });
 
     expect(response.status).toBe(401);
   });
@@ -106,18 +119,23 @@ describe("POST /api/parks/[slug]/reviews", () => {
     (auth as any).mockResolvedValue({ user: { id: "user-1" } });
     (prisma.park.findUnique as any).mockResolvedValue(null);
 
-    const request = new NextRequest("http://localhost/api/parks/test-park/reviews", {
-      method: "POST",
-      body: JSON.stringify({
-        overallRating: 5,
-        terrainRating: 4,
-        facilitiesRating: 4,
-        difficultyRating: 3,
-        body: "Test review",
-      }),
-    });
+    const request = new NextRequest(
+      "http://localhost/api/parks/test-park/reviews",
+      {
+        method: "POST",
+        body: JSON.stringify({
+          overallRating: 5,
+          terrainRating: 4,
+          facilitiesRating: 4,
+          difficultyRating: 3,
+          body: "Test review",
+        }),
+      },
+    );
 
-    const response = await POST(request, { params: Promise.resolve({ slug: "test-park" }) });
+    const response = await POST(request, {
+      params: Promise.resolve({ slug: "test-park" }),
+    });
 
     expect(response.status).toBe(404);
   });
@@ -130,18 +148,23 @@ describe("POST /api/parks/[slug]/reviews", () => {
     (prisma.park.findUnique as any).mockResolvedValue(mockPark);
     (prisma.parkReview.findUnique as any).mockResolvedValue(mockExistingReview);
 
-    const request = new NextRequest("http://localhost/api/parks/test-park/reviews", {
-      method: "POST",
-      body: JSON.stringify({
-        overallRating: 5,
-        terrainRating: 4,
-        facilitiesRating: 4,
-        difficultyRating: 3,
-        body: "Test review",
-      }),
-    });
+    const request = new NextRequest(
+      "http://localhost/api/parks/test-park/reviews",
+      {
+        method: "POST",
+        body: JSON.stringify({
+          overallRating: 5,
+          terrainRating: 4,
+          facilitiesRating: 4,
+          difficultyRating: 3,
+          body: "Test review",
+        }),
+      },
+    );
 
-    const response = await POST(request, { params: Promise.resolve({ slug: "test-park" }) });
+    const response = await POST(request, {
+      params: Promise.resolve({ slug: "test-park" }),
+    });
     const data = await response.json();
 
     expect(response.status).toBe(400);
@@ -177,18 +200,23 @@ describe("POST /api/parks/[slug]/reviews", () => {
     (prisma.parkReview.findUnique as any).mockResolvedValue(null);
     (prisma.parkReview.create as any).mockResolvedValue(mockCreatedReview);
 
-    const request = new NextRequest("http://localhost/api/parks/test-park/reviews", {
-      method: "POST",
-      body: JSON.stringify({
-        overallRating: 5,
-        terrainRating: 4,
-        facilitiesRating: 4,
-        difficultyRating: 3,
-        body: "Test review",
-      }),
-    });
+    const request = new NextRequest(
+      "http://localhost/api/parks/test-park/reviews",
+      {
+        method: "POST",
+        body: JSON.stringify({
+          overallRating: 5,
+          terrainRating: 4,
+          facilitiesRating: 4,
+          difficultyRating: 3,
+          body: "Test review",
+        }),
+      },
+    );
 
-    const response = await POST(request, { params: Promise.resolve({ slug: "test-park" }) });
+    const response = await POST(request, {
+      params: Promise.resolve({ slug: "test-park" }),
+    });
     const data = await response.json();
 
     expect(response.status).toBe(200);
@@ -257,16 +285,52 @@ describe("POST /api/parks/[slug]/reviews", () => {
     (prisma.park.findUnique as any).mockResolvedValue(mockPark);
     (prisma.parkReview.findUnique as any).mockResolvedValue(null);
 
-    const request = new NextRequest("http://localhost/api/parks/test-park/reviews", {
-      method: "POST",
-      body: JSON.stringify({
-        overallRating: 5,
-        // Missing other required ratings and body
-      }),
+    const request = new NextRequest(
+      "http://localhost/api/parks/test-park/reviews",
+      {
+        method: "POST",
+        body: JSON.stringify({
+          overallRating: 5,
+          // Missing other required ratings and body
+        }),
+      },
+    );
+
+    const response = await POST(request, {
+      params: Promise.resolve({ slug: "test-park" }),
     });
 
-    const response = await POST(request, { params: Promise.resolve({ slug: "test-park" }) });
+    expect(response.status).toBe(400);
+  });
+
+  it("should return 400 when a rating is out of the 1-5 range", async () => {
+    const mockPark = { id: "park-123", slug: "test-park" };
+
+    (auth as any).mockResolvedValue({ user: { id: "user-1" } });
+    (prisma.park.findUnique as any).mockResolvedValue(mockPark);
+    (prisma.parkReview.findUnique as any).mockResolvedValue(null);
+
+    const request = new NextRequest(
+      "http://localhost/api/parks/test-park/reviews",
+      {
+        method: "POST",
+        body: JSON.stringify({
+          overallRating: 9,
+          terrainRating: 4,
+          facilitiesRating: 4,
+          difficultyRating: 3,
+          body: "Test review",
+        }),
+      },
+    );
+
+    const response = await POST(request, {
+      params: Promise.resolve({ slug: "test-park" }),
+    });
+    const data = await response.json();
 
     expect(response.status).toBe(400);
+    expect(data.error).toMatch(/between 1 and 5/i);
+    expect(prisma.parkReview.create).not.toHaveBeenCalled();
   });
 });

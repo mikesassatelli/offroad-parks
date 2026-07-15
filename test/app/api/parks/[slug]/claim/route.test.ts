@@ -130,7 +130,23 @@ describe("POST /api/parks/[slug]/claim", () => {
 
     expect(response.status).toBe(400);
     const data = await response.json();
-    expect(data.error).toBe("Name and email are required");
+    expect(data.error).toMatch(/email is required/i);
+  });
+
+  it("should return 400 for a malformed email", async () => {
+    (auth as any).mockResolvedValue({ user: { id: "user-1" } });
+    (prisma.park.findUnique as any).mockResolvedValue(mockPark);
+    (prisma.parkClaim.findUnique as any).mockResolvedValue(null);
+
+    const response = await POST(
+      makeRequest({ claimantName: "Jane", claimantEmail: "not-an-email" }),
+      { params: Promise.resolve({ slug: "test-park" }) },
+    );
+
+    expect(response.status).toBe(400);
+    const data = await response.json();
+    expect(data.error).toMatch(/valid email/i);
+    expect(prisma.parkClaim.create).not.toHaveBeenCalled();
   });
 
   it("should return 201 with claim on successful submission", async () => {
@@ -152,7 +168,7 @@ describe("POST /api/parks/[slug]/claim", () => {
         businessName: "Desert Riders",
         message: "I am the owner",
       }),
-      { params: Promise.resolve({ slug: "test-park" }) }
+      { params: Promise.resolve({ slug: "test-park" }) },
     );
 
     expect(response.status).toBe(201);
@@ -167,11 +183,14 @@ describe("POST /api/parks/[slug]/claim", () => {
     (prisma.park.findUnique as any).mockResolvedValue(mockPark);
     (prisma.parkClaim.findUnique as any).mockResolvedValue(null);
 
-    const request = new NextRequest("http://localhost/api/parks/test-park/claim", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: "not-json",
-    });
+    const request = new NextRequest(
+      "http://localhost/api/parks/test-park/claim",
+      {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: "not-json",
+      },
+    );
 
     const response = await POST(request, {
       params: Promise.resolve({ slug: "test-park" }),
