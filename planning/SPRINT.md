@@ -4,10 +4,9 @@
 **Release readiness — soft consumer launch (E22).** The app is feature-complete for a free rider launch; this sprint closes the legal/SEO/hardening gaps that block opening to the public, and expands login. No billing — paid operator features stay deferred until free pilots are signed. Target: the site is safe and legal to point real traffic at, with SEO turned on.
 
 ## In Progress
-*(none)*
+- [ ] OP-98 — Rate limiting on public POST endpoints
 
 ## Up Next
-- [ ] OP-98 — Rate limiting on public POST endpoints
 - [ ] OP-99 — Security headers & CSP in `next.config.ts`
 - [ ] OP-100 — Production error monitoring (Sentry)
 
@@ -22,9 +21,10 @@
 - [x] ~~OP-97~~ Email magic-link login — PR #146. Auth.js "resend" provider through the OP-96 sender; `LoginDialog` (Google + email). Verified end-to-end.
 
 ## Blocked
-*(none)*
+- **OP-103 — Provision domain + Resend sending setup.** Blocked on **not having a registered domain yet.** OP-96/OP-97 email is fully built and works in dev via the console fallback, but **production sends no email (magic-link login included) until a domain is acquired, verified in Resend, and `RESEND_API_KEY` / `EMAIL_FROM` / `NEXT_PUBLIC_SITE_URL` are set.** ⚠️ **Must return to this before public launch.** See OP-103 in BACKLOG.md for the full checklist.
 
 ## Notes / Decisions
+- ⚠️ **Deferred external setup (no domain yet):** we do not have a registered domain, so the production email/DNS wiring (OP-103) can't be done. The email + magic-link code ships now behind the dev-console fallback; it is inert in prod until the domain + Resend verification + env keys are in place. This also gates the Google OAuth production consent screen (needs the live privacy-policy URL). Tracked as OP-103 (blocked).
 - Release path chosen: **A — soft consumer launch** (free rider app + SEO flywheel + free pilot operators), not the fully-monetized path. Billing (E14), waivers (E15), ticketing (E16) remain deferred. Rationale: code is ready for A now; don't let Stripe block the SEO compounding.
 - OP-94 first: it's the cheapest high-impact blocker and gates the Google OAuth production consent screen.
 - OP-96 is deliberately a *shared* email sender, not per-feature — it unblocks magic-link login (OP-97), claim/welcome emails, and the already-planned E21 severe-weather alerts (OP-93).
