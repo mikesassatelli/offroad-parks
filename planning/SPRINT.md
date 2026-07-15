@@ -4,7 +4,7 @@
 **Release readiness — soft consumer launch (E22).** The app is feature-complete for a free rider launch; this sprint closes the legal/SEO/hardening gaps that block opening to the public, and expands login. No billing — paid operator features stay deferred until free pilots are signed. Target: the site is safe and legal to point real traffic at, with SEO turned on.
 
 ## In Progress
-- [ ] OP-98 — Rate limiting on public POST endpoints
+*(none)*
 
 ## Up Next
 - [ ] OP-99 — Security headers & CSP in `next.config.ts`
@@ -19,6 +19,7 @@
 - [x] ~~OP-95~~ SEO foundation — PR #146. `robots.ts`, dynamic `sitemap.ts`, `SITE_URL` helper, `metadataBase`. Verified 200 + sitemap unit test.
 - [x] ~~OP-96~~ Transactional email sender — PR #146. `sendEmail()` via Resend with dev-console fallback (no key needed locally) + shared templates.
 - [x] ~~OP-97~~ Email magic-link login — PR #146. Auth.js "resend" provider through the OP-96 sender; `LoginDialog` (Google + email). Verified end-to-end.
+- [x] ~~OP-98~~ Rate limiting on public POST endpoints — PR #146. Fixed-window limiter on reviews/conditions/claims, keyed per user; 429 + Retry-After. In-process store (per-instance) — Upstash upgrade tracked in the backlog note.
 
 ## Blocked
 - **OP-103 — Provision domain + Resend sending setup.** Blocked on **not having a registered domain yet.** OP-96/OP-97 email is fully built and works in dev via the console fallback, but **production sends no email (magic-link login included) until a domain is acquired, verified in Resend, and `RESEND_API_KEY` / `EMAIL_FROM` / `NEXT_PUBLIC_SITE_URL` are set.** ⚠️ **Must return to this before public launch.** See OP-103 in BACKLOG.md for the full checklist.
