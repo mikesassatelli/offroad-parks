@@ -1,16 +1,24 @@
 import { NextResponse } from "next/server";
+import { z } from "zod";
 import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
+import { checkRateLimit, rateLimited, RATE_LIMITS } from "@/lib/rate-limit";
+import { parseJsonBody } from "@/lib/api-helpers";
 
 export const runtime = "nodejs";
 
-interface ClaimRequestBody {
-  claimantName: string;
-  claimantEmail: string;
-  claimantPhone?: string;
-  businessName?: string;
-  message?: string;
-}
+const claimCreateSchema = z.object({
+  claimantName: z.string({ error: "Name is required" }).trim().min(1, "Name is required").max(200),
+  claimantEmail: z
+    .string({ error: "Email is required" })
+    .trim()
+    .min(1, "Email is required")
+    .max(320)
+    .email("A valid email is required"),
+  claimantPhone: z.string().trim().max(50).nullish(),
+  businessName: z.string().trim().max(200).nullish(),
+  message: z.string().trim().max(2000).nullish(),
+});
 
 type RouteParams = {
   params: Promise<{ slug: string }>;
@@ -23,6 +31,11 @@ export async function POST(request: Request, { params }: RouteParams) {
   if (!session?.user?.id) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
+
+  const limited = rateLimited(
+    checkRateLimit(`claims:${session.user.id}`, RATE_LIMITS.claims),
+  );
+  if (limited) return limited;
 
   const { slug } = await params;
 
@@ -62,21 +75,10 @@ export async function POST(request: Request, { params }: RouteParams) {
     );
   }
 
-  let body: ClaimRequestBody;
-  try {
-    body = await request.json();
-  } catch {
-    return NextResponse.json({ error: "Invalid request body" }, { status: 400 });
-  }
-
-  const { claimantName, claimantEmail, claimantPhone, businessName, message } = body;
-
-  if (!claimantName?.trim() || !claimantEmail?.trim()) {
-    return NextResponse.json(
-      { error: "Name and email are required" },
-      { status: 400 },
-    );
-  }
+  const parsed = await parseJsonBody(request, claimCreateSchema);
+  if ("response" in parsed) return parsed.response;
+  const { claimantName, claimantEmail, claimantPhone, businessName, message } =
+    parsed.data;
 
   const claim = await prisma.parkClaim.create({
     data: {

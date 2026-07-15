@@ -1,8 +1,11 @@
 import { NextResponse } from "next/server";
+import { z } from "zod";
 import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { CONDITION_STALE_AFTER_MS } from "@/lib/trail-conditions";
 import type { TrailConditionStatus } from "@/lib/trail-conditions";
+import { checkRateLimit, rateLimited, RATE_LIMITS } from "@/lib/rate-limit";
+import { parseJsonBody } from "@/lib/api-helpers";
 
 export const runtime = "nodejs";
 
@@ -18,6 +21,14 @@ const VALID_STATUSES: TrailConditionStatus[] = [
   "WET",
   "SNOW",
 ];
+
+const conditionCreateSchema = z.object({
+  status: z.enum(
+    VALID_STATUSES as [TrailConditionStatus, ...TrailConditionStatus[]],
+    { error: `status must be one of: ${VALID_STATUSES.join(", ")}` },
+  ),
+  note: z.string().trim().max(280).nullish(),
+});
 
 // GET /api/parks/[slug]/conditions
 // Returns PUBLISHED, non-stale condition reports for a park (newest first).
@@ -64,6 +75,11 @@ export async function POST(request: Request, { params }: RouteParams) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 
+  const limited = rateLimited(
+    checkRateLimit(`conditions:${session.user.id}`, RATE_LIMITS.conditions),
+  );
+  if (limited) return limited;
+
   const { slug } = await params;
 
   const park = await prisma.park.findUnique({ where: { slug } });
@@ -90,19 +106,9 @@ export async function POST(request: Request, { params }: RouteParams) {
 
   const isPrivilegedSubmitter = isAdmin || isOperatorOfPark;
 
-  let data: { status?: string; note?: string };
-  try {
-    data = await request.json();
-  } catch {
-    return NextResponse.json({ error: "Invalid JSON" }, { status: 400 });
-  }
-
-  if (!data.status || !VALID_STATUSES.includes(data.status as TrailConditionStatus)) {
-    return NextResponse.json(
-      { error: `status must be one of: ${VALID_STATUSES.join(", ")}` },
-      { status: 400 },
-    );
-  }
+  const parsed = await parseJsonBody(request, conditionCreateSchema);
+  if ("response" in parsed) return parsed.response;
+  const data = parsed.data;
 
   // Block if user already has a live (non-expired) condition for this park
   const staleThresholdForUser = new Date(Date.now() - CONDITION_STALE_AFTER_MS);

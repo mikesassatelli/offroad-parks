@@ -1,3 +1,43 @@
+# Sprint 7 · Week of 2026-07-15
+
+## Goal
+**Release readiness — soft consumer launch (E22).** The app is feature-complete for a free rider launch; this sprint closes the legal/SEO/hardening gaps that block opening to the public, and expands login. No billing — paid operator features stay deferred until free pilots are signed. Target: the site is safe and legal to point real traffic at, with SEO turned on.
+
+## In Progress
+*(none — all sprint stories landed)*
+
+## Up Next
+*(none — sprint complete; soft launch now gated only on the external setup below)*
+
+## Done This Sprint
+- [x] ~~OP-94~~ Legal pages: privacy, terms, cookie consent — PR #146. `/legal/*` + cookie banner; content is a template needing counsel review before launch.
+- [x] ~~OP-95~~ SEO foundation — PR #146. `robots.ts`, dynamic `sitemap.ts`, `SITE_URL` helper, `metadataBase`. Verified 200 + sitemap unit test.
+- [x] ~~OP-96~~ Transactional email sender — PR #146. `sendEmail()` via Resend with dev-console fallback (no key needed locally) + shared templates.
+- [x] ~~OP-97~~ Email magic-link login — PR #146. Auth.js "resend" provider through the OP-96 sender; `LoginDialog` (Google + email). Verified end-to-end.
+- [x] ~~OP-98~~ Rate limiting on public POST endpoints — PR #146. Fixed-window limiter on reviews/conditions/claims, keyed per user; 429 + Retry-After. In-process store (per-instance) — Upstash upgrade tracked in the backlog note.
+- [x] ~~OP-99~~ Security headers & CSP — PR #146. `headers()` on all routes (CSP + HSTS + frame/content-type/referrer/permissions). Verified in-browser: map tiles/markers load, unlisted host blocked, no violations.
+- [x] ~~OP-100~~ Error monitoring (Sentry) — PR #146. Wired via `src/instrumentation*.ts`, **inert until `NEXT_PUBLIC_SENTRY_DSN` is set**. Activation (create Sentry project + set DSN; source maps via withSentryConfig) tracked in the backlog note.
+- [x] ~~OP-101~~ Zod validation on public write endpoints — PR #146. Shared `parseJsonBody()` + schemas on reviews/conditions/claims; consistent 400s + typed bodies + added hardening. Rest of the routes continue under E9.
+- [x] ~~OP-102~~ README docs-drift cleanup — PR #146. All four roles documented; role-granting flow (seed migration / `/admin/users` / `/admin/pre-grants`) replaces the "manual DB edit" instructions; auth described as Google OR magic-link.
+
+**Sprint 7 complete — all planned E22 stories (OP-94–102) shipped.** Remaining work is the external setup below (chiefly acquiring a domain), not code.
+
+## Blocked
+- **OP-103 — Provision domain + Resend sending setup.** Blocked on **not having a registered domain yet.** OP-96/OP-97 email is fully built and works in dev via the console fallback, but **production sends no email (magic-link login included) until a domain is acquired, verified in Resend, and `RESEND_API_KEY` / `EMAIL_FROM` / `NEXT_PUBLIC_SITE_URL` are set.** ⚠️ **Must return to this before public launch.** See OP-103 in BACKLOG.md for the full checklist.
+
+## Notes / Decisions
+- ⚠️ **Deferred external setup (things to return to before/at launch):**
+  - **Domain + Resend (OP-103, blocked):** no registered domain yet, so production email/DNS can't be wired. Email + magic-link ship behind the dev-console fallback and are inert in prod until the domain + Resend verification + `RESEND_API_KEY`/`EMAIL_FROM`/`NEXT_PUBLIC_SITE_URL` are set. Also gates the Google OAuth production consent screen (needs the live privacy-policy URL).
+  - **Sentry (OP-100, wired inert):** error monitoring is coded but dormant until a Sentry project exists and `NEXT_PUBLIC_SENTRY_DSN` is set in Vercel env. Source-map upload (readable stack traces) needs `withSentryConfig` + `SENTRY_AUTH_TOKEN` as a follow-up.
+  - **Legal copy (OP-94):** placeholders in `src/lib/legal.ts` need real company/contact/jurisdiction values + counsel review.
+- Release path chosen: **A — soft consumer launch** (free rider app + SEO flywheel + free pilot operators), not the fully-monetized path. Billing (E14), waivers (E15), ticketing (E16) remain deferred. Rationale: code is ready for A now; don't let Stripe block the SEO compounding.
+- OP-94 first: it's the cheapest high-impact blocker and gates the Google OAuth production consent screen.
+- OP-96 is deliberately a *shared* email sender, not per-feature — it unblocks magic-link login (OP-97), claim/welcome emails, and the already-planned E21 severe-weather alerts (OP-93).
+- Audit re-verified against master @ 8f6e477: legal pages, robots/sitemap, rate limiting, security headers, and error monitoring are all still absent; login is still Google-only.
+- Login recommendation: add email magic-link only. Keep Google. Skip username/password (breach liability) and Apple (until/unless a native app ships).
+
+---
+
 # Sprint 6 · Week of 2026-05-11
 
 ## Goal

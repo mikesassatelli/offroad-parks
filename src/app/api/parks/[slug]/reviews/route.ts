@@ -1,8 +1,52 @@
 import { NextResponse } from "next/server";
+import { z } from "zod";
 import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { transformDbReview } from "@/lib/types";
-import type { DbReview } from "@/lib/types";
+import type {
+  DbReview,
+  VehicleType,
+  VisitCondition,
+  RecommendedDuration,
+} from "@/lib/types";
+import {
+  ALL_VEHICLE_TYPES,
+  ALL_VISIT_CONDITIONS,
+  ALL_RECOMMENDED_DURATIONS,
+} from "@/lib/constants";
+import { checkRateLimit, rateLimited, RATE_LIMITS } from "@/lib/rate-limit";
+import { parseJsonBody } from "@/lib/api-helpers";
+
+const ratingSchema = z
+  .number({ error: "All ratings are required" })
+  .int()
+  .min(1, "Ratings must be between 1 and 5")
+  .max(5, "Ratings must be between 1 and 5");
+
+const reviewCreateSchema = z.object({
+  overallRating: ratingSchema,
+  terrainRating: ratingSchema,
+  facilitiesRating: ratingSchema,
+  difficultyRating: ratingSchema,
+  body: z.string().trim().min(1, "Review body is required").max(5000),
+  title: z.string().trim().max(200).nullish(),
+  visitDate: z.string().nullish(),
+  vehicleType: z
+    .enum(ALL_VEHICLE_TYPES as [VehicleType, ...VehicleType[]])
+    .nullish(),
+  visitCondition: z
+    .enum(ALL_VISIT_CONDITIONS as [VisitCondition, ...VisitCondition[]])
+    .nullish(),
+  recommendedDuration: z
+    .enum(
+      ALL_RECOMMENDED_DURATIONS as [
+        RecommendedDuration,
+        ...RecommendedDuration[],
+      ],
+    )
+    .nullish(),
+  recommendedFor: z.string().trim().max(500).nullish(),
+});
 
 export const runtime = "nodejs";
 
@@ -92,6 +136,11 @@ export async function POST(request: Request, { params }: RouteParams) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 
+  const limited = rateLimited(
+    checkRateLimit(`reviews:${session.user.id}`, RATE_LIMITS.reviews),
+  );
+  if (limited) return limited;
+
   const { slug } = await params;
 
   // Find park by slug
@@ -120,33 +169,11 @@ export async function POST(request: Request, { params }: RouteParams) {
     );
   }
 
+  const parsed = await parseJsonBody(request, reviewCreateSchema);
+  if ("response" in parsed) return parsed.response;
+  const data = parsed.data;
+
   try {
-    const data = await request.json();
-
-    // Validate required fields
-    if (!data.overallRating || !data.terrainRating || !data.facilitiesRating || !data.difficultyRating) {
-      return NextResponse.json(
-        { error: "All ratings are required" },
-        { status: 400 }
-      );
-    }
-
-    if (!data.body || data.body.trim().length === 0) {
-      return NextResponse.json(
-        { error: "Review body is required" },
-        { status: 400 }
-      );
-    }
-
-    // Validate rating ranges
-    const ratings = [data.overallRating, data.terrainRating, data.facilitiesRating, data.difficultyRating];
-    if (ratings.some((r) => r < 1 || r > 5)) {
-      return NextResponse.json(
-        { error: "Ratings must be between 1 and 5" },
-        { status: 400 }
-      );
-    }
-
     const review = await prisma.parkReview.create({
       data: {
         parkId: park.id,

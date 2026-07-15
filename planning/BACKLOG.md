@@ -1,9 +1,28 @@
 # Offroad Parks Backlog
-<!-- Last updated: 2026-04-15 -->
+<!-- Last updated: 2026-07-15 -->
 <!-- Canonical backlog. See also: ROADMAP.md (strategy), SPRINT.md (sprint history). -->
 
 **Status values:** `backlog` · `in-progress` · `done` · `blocked`
 **Flags:** `needs-refinement` = not startable without a scoping conversation first
+
+---
+
+## E22 · Release Readiness — Soft Consumer Launch *(current focus)*
+
+**Context:** A July 2026 release-readiness audit found the app is feature-complete for a **free consumer launch** (discovery, reviews, trail conditions, weather, routes, operator portal all shipped), but is missing the legal/compliance, SEO, and production-hardening basics required to open to the public — plus a Google-only login surface. This epic is the **soft consumer launch (path A)** from ROADMAP.md: ship the free rider app, turn on SEO to start the organic flywheel, expand login, and harden for production. **No billing** — paid operator features (E14/E15/E16) stay deferred until pilot operators are hand-signed for free. Once these ship, the "consumer app good enough to show operators" milestone is met.
+
+| Key | Title | Status | Type | Notes |
+|-----|-------|--------|------|-------|
+| OP-94 | Legal Pages: Privacy, Terms, Cookie Consent | done | feature | 🔴 Blocker. `/legal/privacy` + `/legal/terms` (shared layout) + privacy-preserving cookie-consent banner. Content is a template (`src/lib/legal.ts` placeholders) needing counsel review + real company/contact before launch. PR #146. |
+| OP-95 | SEO Foundation: robots + sitemap | done | feature | 🔴 Blocker. Dynamic `src/app/sitemap.ts` (APPROVED parks + static routes), `src/app/robots.ts`, `SITE_URL` helper, `metadataBase`. Verified 200. PR #146. |
+| OP-96 | Transactional Email Sender | done | feature | 🔴 Prerequisite. `src/lib/email/send.ts` `sendEmail()` via Resend with a dev fallback (logs when `RESEND_API_KEY` unset — no key needed locally/CI) + shared HTML templates. Production still needs `RESEND_API_KEY` + `EMAIL_FROM` and Resend domain verification (DNS). PR #146. |
+| OP-97 | Email Magic-Link Login Provider | done | feature | 🟠 Auth.js "resend" email provider added alongside Google; `sendVerificationRequest` routes through OP-96 sender. `LoginDialog` (Google + email) replaces the direct `signIn("google")` in AppHeader. Verified end-to-end (302 + dev-fallback log). PR #146. |
+| OP-98 | Rate Limiting on Public POST Endpoints | done | feature | 🔴 `src/lib/rate-limit.ts` fixed-window limiter applied to public POSTs — reviews (5/h), conditions (10/h), claims (5/day), keyed per user id; 429 + Retry-After. In-process store (per-instance) — adequate for soft launch; swap to a shared store (Upstash) for strict global limits without changing call sites. Unit + reviews-route integration tests. PR #146. |
+| OP-99 | Security Headers & CSP | done | feature | 🟠 `next.config.ts` `headers()` on all routes: CSP scoped to real client resources (OSM tiles, unpkg Leaflet icons, Mapbox, blob images, Vercel Analytics/preview), HSTS, X-Frame-Options DENY, X-Content-Type-Options, Referrer-Policy, Permissions-Policy (geolocation=self for Parks Near Me). Verified in-browser: allowed hosts load, unlisted host blocked, no violations. `'unsafe-inline'` scripts (no nonce middleware yet) — nonce-based CSP is a future hardening. PR #146. |
+| OP-100 | Production Error Monitoring | done | feature | 🟠 `@sentry/nextjs` wired via `src/instrumentation*.ts`, **inert until `NEXT_PUBLIC_SENTRY_DSN` is set**. ⚠️ **Return-to (needs a Sentry project):** create the project, set `NEXT_PUBLIC_SENTRY_DSN` in Vercel env to activate; add `withSentryConfig` + `SENTRY_AUTH_TOKEN`/org/project for readable stack traces (source-map upload). PR #146. |
+| OP-101 | Input Validation Backfill (Zod) | done | refactor | 🟢 Shared `parseJsonBody()` helper (`api-helpers.ts`) + Zod schemas on the public POSTs (reviews, conditions, claims) — consistent `{ error, issues }` 400s + typed bodies + added hardening (rating range, email format, enum fields, length caps). Remaining mutating routes continue under E9 tech-debt. PR #146. |
+| OP-102 | Docs Drift Cleanup | done | chore | 🟢 README updated: all four roles (USER/OPERATOR/ADMIN/SUPER_ADMIN); role-granting via bootstrap seed migration + `/admin/users` + `/admin/pre-grants` (manual DB edit now only a bootstrap fallback); auth is Google OAuth *or* email magic-link. PR #146. |
+| OP-103 | Provision Domain + Resend Sending Setup | blocked | infra | 🔴 **Blocked: no registered domain yet.** OP-96/OP-97 email works in dev via the console fallback, but **prod sends nothing until this lands.** When a domain is acquired: (1) register it + point DNS; (2) verify a sending domain/subdomain in Resend (SPF/DKIM/DMARC records — has propagation lead time); (3) set `RESEND_API_KEY` + `EMAIL_FROM` (e.g. `noreply@mail.<domain>`) in Vercel prod/preview env; (4) set `NEXT_PUBLIC_SITE_URL` to the real domain; (5) update Google OAuth authorized redirect URIs + move the consent screen to production (needs the live privacy-policy URL from OP-94). **Magic-link login and all transactional email are non-functional in production until then.** Revisit once a domain is chosen. |
 
 ---
 

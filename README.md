@@ -1,6 +1,7 @@
 # Offroad Parks
 
 A modern web application for discovering and exploring offroad parks and UTV trails across the United States. Built with Next.js 16, TypeScript, Prisma, and PostgreSQL.
+
 <!-- retrigger build -->
 
 ## Features
@@ -9,7 +10,7 @@ A modern web application for discovering and exploring offroad parks and UTV tra
 - **Interactive Map**: Visualize parks on an interactive map using Leaflet
 - **Advanced Filtering**: Filter parks by state, terrain type, amenities, and more
 - **Route Planning**: Build custom routes connecting multiple parks
-- **User Authentication**: Sign in with Google OAuth to access personalized features
+- **User Authentication**: Sign in with Google OAuth or a passwordless email magic-link to access personalized features
 - **Favorites**: Save and manage your favorite parks
 - **Park Submissions**: Users can submit new parks for admin approval
 - **Admin Dashboard**: Comprehensive admin panel for managing parks, users, and submissions
@@ -86,6 +87,24 @@ NEXTAUTH_URL="http://localhost:3000"
 # Google OAuth
 GOOGLE_CLIENT_ID="your-google-client-id"
 GOOGLE_CLIENT_SECRET="your-google-client-secret"
+
+# Public site URL — canonical base for SEO metadata, sitemap, and robots.
+# Set to the production domain in prod (no trailing slash). Falls back to
+# VERCEL_PROJECT_PRODUCTION_URL, then http://localhost:3000, if unset.
+NEXT_PUBLIC_SITE_URL="http://localhost:3000"
+
+# Transactional email (Resend). Optional in local dev: if RESEND_API_KEY is
+# unset, emails (including magic-link sign-in) are logged to the server
+# console instead of being sent — so you can copy the sign-in link from the
+# terminal. Set both in production.
+RESEND_API_KEY="re_your_resend_api_key"
+EMAIL_FROM="Offroad Parks <noreply@yourdomain.com>"
+
+# Error monitoring (Sentry). Optional and inert until set: error tracking only
+# activates when NEXT_PUBLIC_SENTRY_DSN is present. DSNs are write-only ingest
+# keys and safe to expose to the client. Readable stack traces (source-map
+# upload) additionally need withSentryConfig + SENTRY_AUTH_TOKEN — a follow-up.
+NEXT_PUBLIC_SENTRY_DSN=""
 ```
 
 #### Getting credentials:
@@ -209,18 +228,23 @@ The application uses the following main models:
 
 ## User Roles
 
-- **USER**: Default role with access to browse parks, create favorites, and submit parks
-- **ADMIN**: Full access to admin dashboard for managing parks, users, and submissions
+The `UserRole` enum has four levels:
 
-## Making Your First Admin User
+- **USER**: Default role — browse parks, create favorites, submit parks, write reviews, report trail conditions.
+- **OPERATOR**: A user linked to an operator account (via `OperatorUser`) who can manage the park(s) they operate. Granted when a park claim is approved, or via a pre-grant (below).
+- **ADMIN**: Full access to the admin dashboard — manage parks, users, submissions, claims, and the AI research pipeline.
+- **SUPER_ADMIN**: Everything ADMIN can do, plus role administration (promoting/demoting users) and managing pre-grants.
 
-After signing in for the first time, you'll need to manually set your user role to ADMIN in the database:
+## Granting Roles
 
-1. Run `npm run db:studio` to open Prisma Studio
-2. Navigate to the `User` table
-3. Find your user account
-4. Change the `role` field from `USER` to `ADMIN`
-5. Save and refresh the application
+**Bootstrap SUPER_ADMIN.** A seed migration (`prisma/migrations/*_seed_super_admin`) promotes a single bootstrap email to `SUPER_ADMIN` the first time that user signs in — it's a no-op until then. Update that email if you're standing up your own instance.
+
+**Ongoing role management (preferred).** Once a `SUPER_ADMIN` exists, roles are managed in-app — no manual DB edits:
+
+- **Promote/demote existing users:** `/admin/users` (backed by `PATCH /api/admin/users/[id]/role`, guarded to `SUPER_ADMIN`).
+- **Pre-grant a role before first sign-in:** `/admin/pre-grants` lets a `SUPER_ADMIN` declare the role (and optional operator/park membership) an email should receive. It's applied automatically on that user's first sign-in via the NextAuth `createUser` event — handy for onboarding operators and beta testers without the full claim flow.
+
+**Manual fallback.** You can still set a role directly in the database (`npm run db:studio` → `User` table → edit `role`) — useful only for the very first bootstrap if the seed email doesn't apply to you.
 
 ## Development Notes
 

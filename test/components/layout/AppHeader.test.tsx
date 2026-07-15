@@ -1,6 +1,6 @@
 import { fireEvent, render, screen } from "@testing-library/react";
 import { AppHeader } from "@/components/layout/AppHeader";
-import { signIn, signOut } from "next-auth/react";
+import { signOut } from "next-auth/react";
 import { vi } from "vitest";
 
 // Mock next-auth
@@ -30,6 +30,12 @@ vi.mock("@/components/layout/UserMenu", () => ({
       <button onClick={onSignOut}>Sign Out</button>
     </div>
   ),
+}));
+
+// The sign-in UI (Google + email magic-link) is exercised in
+// LoginDialog.test.tsx; here we just assert the header renders it.
+vi.mock("@/components/auth/LoginDialog", () => ({
+  LoginDialog: () => <button>Sign In</button>,
 }));
 
 describe("AppHeader", () => {
@@ -65,15 +71,6 @@ describe("AppHeader", () => {
     render(<AppHeader user={null} />);
 
     expect(screen.getByText("Sign In")).toBeInTheDocument();
-  });
-
-  it("should call signIn when sign in button is clicked", () => {
-    render(<AppHeader user={null} />);
-
-    const signInButton = screen.getByText("Sign In");
-    fireEvent.click(signInButton);
-
-    expect(signIn).toHaveBeenCalledWith("google");
   });
 
   it("should show UserMenu when user is authenticated", () => {
