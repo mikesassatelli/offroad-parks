@@ -99,6 +99,12 @@ NEXT_PUBLIC_SITE_URL="http://localhost:3000"
 # terminal. Set both in production.
 RESEND_API_KEY="re_your_resend_api_key"
 EMAIL_FROM="Offroad Parks <noreply@yourdomain.com>"
+
+# Error monitoring (Sentry). Optional and inert until set: error tracking only
+# activates when NEXT_PUBLIC_SENTRY_DSN is present. DSNs are write-only ingest
+# keys and safe to expose to the client. Readable stack traces (source-map
+# upload) additionally need withSentryConfig + SENTRY_AUTH_TOKEN — a follow-up.
+NEXT_PUBLIC_SENTRY_DSN=""
 ```
 
 #### Getting credentials:
