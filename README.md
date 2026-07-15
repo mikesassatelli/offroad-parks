@@ -86,6 +86,11 @@ NEXTAUTH_URL="http://localhost:3000"
 # Google OAuth
 GOOGLE_CLIENT_ID="your-google-client-id"
 GOOGLE_CLIENT_SECRET="your-google-client-secret"
+
+# Public site URL — canonical base for SEO metadata, sitemap, and robots.
+# Set to the production domain in prod (no trailing slash). Falls back to
+# VERCEL_PROJECT_PRODUCTION_URL, then http://localhost:3000, if unset.
+NEXT_PUBLIC_SITE_URL="http://localhost:3000"
 ```
 
 #### Getting credentials:

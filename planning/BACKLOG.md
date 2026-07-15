@@ -1,9 +1,27 @@
 # Offroad Parks Backlog
-<!-- Last updated: 2026-04-15 -->
+<!-- Last updated: 2026-07-15 -->
 <!-- Canonical backlog. See also: ROADMAP.md (strategy), SPRINT.md (sprint history). -->
 
 **Status values:** `backlog` · `in-progress` · `done` · `blocked`
 **Flags:** `needs-refinement` = not startable without a scoping conversation first
+
+---
+
+## E22 · Release Readiness — Soft Consumer Launch *(current focus)*
+
+**Context:** A July 2026 release-readiness audit found the app is feature-complete for a **free consumer launch** (discovery, reviews, trail conditions, weather, routes, operator portal all shipped), but is missing the legal/compliance, SEO, and production-hardening basics required to open to the public — plus a Google-only login surface. This epic is the **soft consumer launch (path A)** from ROADMAP.md: ship the free rider app, turn on SEO to start the organic flywheel, expand login, and harden for production. **No billing** — paid operator features (E14/E15/E16) stay deferred until pilot operators are hand-signed for free. Once these ship, the "consumer app good enough to show operators" milestone is met.
+
+| Key | Title | Status | Type | Notes |
+|-----|-------|--------|------|-------|
+| OP-94 | Legal Pages: Privacy, Terms, Cookie Consent | backlog | feature | 🔴 Blocker. No legal pages exist (verified on master). `/legal/privacy` + `/legal/terms` routes; cookie-consent banner (privacy-preserving default, decline-non-essential). Unblocks Google OAuth production consent screen and future Stripe onboarding. Discloses PII collected (email, reviews, IP). Cheapest high-impact fix — do first. |
+| OP-95 | SEO Foundation: robots + sitemap | backlog | feature | 🔴 Blocker. No `robots.ts`/`sitemap.ts` on master. Dynamic `src/app/sitemap.ts` enumerating APPROVED parks + static pages; `src/app/robots.ts` allowing crawl + pointing at sitemap. The consumer strategy is SEO-driven organic traffic — this turns it on. |
+| OP-96 | Transactional Email Sender | backlog | feature | 🔴 Prerequisite (shared infra). No email sender wired. `sendEmail()` lib (recommend Resend, Vercel-native) + templates. Unblocks magic-link login (OP-97), claim-confirmation/welcome emails (roadmap assumes them), and the already-planned severe-weather alerts (OP-93 in E21). One shared sender, not per-feature. |
+| OP-97 | Email Magic-Link Login Provider | backlog | feature | 🟠 High. Login is Google-only (`src/lib/auth.ts`). Add next-auth Email provider for passwordless login — highest-leverage for the operator demographic (private-park / OHV owners skew away from Google). Keep Google; skip password/Apple for now (Apple only if a native app ships later). Depends on OP-96. |
+| OP-98 | Rate Limiting on Public POST Endpoints | backlog | feature | 🔴 Blocker. No rate limiting anywhere on master. Public authed POSTs (reviews, trail conditions, claims — gated by `auth()` only) are spam-open. Add per-user/IP limits (Upstash Ratelimit or Vercel-native). The AI-research endpoint is already admin-gated so token cost is contained; UGC spam is the real exposure. |
+| OP-99 | Security Headers & CSP | backlog | feature | 🟠 High. `next.config.ts` sets only image `remotePatterns`. Add a `headers()` block: CSP, HSTS, X-Frame-Options, X-Content-Type-Options, Referrer-Policy. Consider Vercel WAF/BotID on the public forms. |
+| OP-100 | Production Error Monitoring | backlog | feature | 🟠 High. No Sentry/Datadog in deps. Wire Sentry (Next 16 App Router SDK) so launch-day errors are visible. |
+| OP-101 | Input Validation Backfill (Zod) | backlog | refactor | 🟢 Medium. Zod used in only ~4/53 API route files; most handlers trust `req.json()` shape. Not an injection risk (Prisma parameterizes; no raw SQL) but an abuse/correctness surface. Backfill mutating routes, prioritizing the public POSTs from OP-98. Overlaps E9 tech-debt. |
+| OP-102 | Docs Drift Cleanup | backlog | chore | 🟢 Low. README "User Roles" lists only USER/ADMIN — stale since OPERATOR (OP-61) and SUPER_ADMIN + `UserPreGrant` pre-grant flow landed. Update the README roles + admin-elevation sections to match (manual Prisma-Studio edit is now a fallback, not the primary path). |
 
 ---
 

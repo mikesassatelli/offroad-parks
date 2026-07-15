@@ -1,3 +1,35 @@
+# Sprint 7 · Week of 2026-07-15
+
+## Goal
+**Release readiness — soft consumer launch (E22).** The app is feature-complete for a free rider launch; this sprint closes the legal/SEO/hardening gaps that block opening to the public, and expands login. No billing — paid operator features stay deferred until free pilots are signed. Target: the site is safe and legal to point real traffic at, with SEO turned on.
+
+## In Progress
+- [ ] OP-94 — Legal pages: privacy, terms, cookie consent *(starting first — unblocks Google OAuth prod + future Stripe)*
+- [ ] OP-95 — SEO foundation: `robots.ts` + dynamic `sitemap.ts`
+
+## Up Next
+- [ ] OP-96 — Transactional email sender (Resend) *(shared prerequisite for OP-97 + OP-93 + claim emails)*
+- [ ] OP-97 — Email magic-link login provider *(depends OP-96)*
+- [ ] OP-98 — Rate limiting on public POST endpoints
+- [ ] OP-99 — Security headers & CSP in `next.config.ts`
+- [ ] OP-100 — Production error monitoring (Sentry)
+
+## Backlog / stretch
+- [ ] OP-101 — Zod validation backfill on mutating routes
+- [ ] OP-102 — README docs-drift cleanup (roles / admin elevation)
+
+## Blocked
+*(none)*
+
+## Notes / Decisions
+- Release path chosen: **A — soft consumer launch** (free rider app + SEO flywheel + free pilot operators), not the fully-monetized path. Billing (E14), waivers (E15), ticketing (E16) remain deferred. Rationale: code is ready for A now; don't let Stripe block the SEO compounding.
+- OP-94 first: it's the cheapest high-impact blocker and gates the Google OAuth production consent screen.
+- OP-96 is deliberately a *shared* email sender, not per-feature — it unblocks magic-link login (OP-97), claim/welcome emails, and the already-planned E21 severe-weather alerts (OP-93).
+- Audit re-verified against master @ 8f6e477: legal pages, robots/sitemap, rate limiting, security headers, and error monitoring are all still absent; login is still Google-only.
+- Login recommendation: add email magic-link only. Keep Google. Skip username/password (breach liability) and Apple (until/unless a native app ships).
+
+---
+
 # Sprint 6 · Week of 2026-05-11
 
 ## Goal
