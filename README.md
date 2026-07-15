@@ -10,7 +10,7 @@ A modern web application for discovering and exploring offroad parks and UTV tra
 - **Interactive Map**: Visualize parks on an interactive map using Leaflet
 - **Advanced Filtering**: Filter parks by state, terrain type, amenities, and more
 - **Route Planning**: Build custom routes connecting multiple parks
-- **User Authentication**: Sign in with Google OAuth to access personalized features
+- **User Authentication**: Sign in with Google OAuth or a passwordless email magic-link to access personalized features
 - **Favorites**: Save and manage your favorite parks
 - **Park Submissions**: Users can submit new parks for admin approval
 - **Admin Dashboard**: Comprehensive admin panel for managing parks, users, and submissions
@@ -228,18 +228,23 @@ The application uses the following main models:
 
 ## User Roles
 
-- **USER**: Default role with access to browse parks, create favorites, and submit parks
-- **ADMIN**: Full access to admin dashboard for managing parks, users, and submissions
+The `UserRole` enum has four levels:
 
-## Making Your First Admin User
+- **USER**: Default role — browse parks, create favorites, submit parks, write reviews, report trail conditions.
+- **OPERATOR**: A user linked to an operator account (via `OperatorUser`) who can manage the park(s) they operate. Granted when a park claim is approved, or via a pre-grant (below).
+- **ADMIN**: Full access to the admin dashboard — manage parks, users, submissions, claims, and the AI research pipeline.
+- **SUPER_ADMIN**: Everything ADMIN can do, plus role administration (promoting/demoting users) and managing pre-grants.
 
-After signing in for the first time, you'll need to manually set your user role to ADMIN in the database:
+## Granting Roles
 
-1. Run `npm run db:studio` to open Prisma Studio
-2. Navigate to the `User` table
-3. Find your user account
-4. Change the `role` field from `USER` to `ADMIN`
-5. Save and refresh the application
+**Bootstrap SUPER_ADMIN.** A seed migration (`prisma/migrations/*_seed_super_admin`) promotes a single bootstrap email to `SUPER_ADMIN` the first time that user signs in — it's a no-op until then. Update that email if you're standing up your own instance.
+
+**Ongoing role management (preferred).** Once a `SUPER_ADMIN` exists, roles are managed in-app — no manual DB edits:
+
+- **Promote/demote existing users:** `/admin/users` (backed by `PATCH /api/admin/users/[id]/role`, guarded to `SUPER_ADMIN`).
+- **Pre-grant a role before first sign-in:** `/admin/pre-grants` lets a `SUPER_ADMIN` declare the role (and optional operator/park membership) an email should receive. It's applied automatically on that user's first sign-in via the NextAuth `createUser` event — handy for onboarding operators and beta testers without the full claim flow.
+
+**Manual fallback.** You can still set a role directly in the database (`npm run db:studio` → `User` table → edit `role`) — useful only for the very first bootstrap if the seed email doesn't apply to you.
 
 ## Development Notes
 
