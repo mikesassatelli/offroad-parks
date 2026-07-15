@@ -1,6 +1,7 @@
 # Offroad Parks
 
 A modern web application for discovering and exploring offroad parks and UTV trails across the United States. Built with Next.js 16, TypeScript, Prisma, and PostgreSQL.
+
 <!-- retrigger build -->
 
 ## Features
@@ -91,6 +92,13 @@ GOOGLE_CLIENT_SECRET="your-google-client-secret"
 # Set to the production domain in prod (no trailing slash). Falls back to
 # VERCEL_PROJECT_PRODUCTION_URL, then http://localhost:3000, if unset.
 NEXT_PUBLIC_SITE_URL="http://localhost:3000"
+
+# Transactional email (Resend). Optional in local dev: if RESEND_API_KEY is
+# unset, emails (including magic-link sign-in) are logged to the server
+# console instead of being sent — so you can copy the sign-in link from the
+# terminal. Set both in production.
+RESEND_API_KEY="re_your_resend_api_key"
+EMAIL_FROM="Offroad Parks <noreply@yourdomain.com>"
 ```
 
 #### Getting credentials:

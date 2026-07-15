@@ -1,11 +1,12 @@
 "use client";
 
 import { Button } from "@/components/ui/button";
-import { ArrowLeft, CircleUser, LogIn, MessageSquare, PlusCircle } from "lucide-react";
+import { ArrowLeft, CircleUser, MessageSquare, PlusCircle } from "lucide-react";
 import Link from "next/link";
 import { UserMenu } from "./UserMenu";
 import { ThemeToggle } from "@/components/ThemeToggle";
-import { signIn, signOut } from "next-auth/react";
+import { LoginDialog } from "@/components/auth/LoginDialog";
+import { signOut } from "next-auth/react";
 
 interface AppHeaderProps {
   user?: {
@@ -34,7 +35,10 @@ export function AppHeader({ user, showBackButton }: AppHeaderProps) {
             </Link>
           </Button>
         )}
-        <Link href="/" className="text-xl font-extrabold uppercase tracking-widest text-foreground hover:text-primary transition-colors">
+        <Link
+          href="/"
+          className="text-xl font-extrabold uppercase tracking-widest text-foreground hover:text-primary transition-colors"
+        >
           Offroad Parks
         </Link>
         <span className="ml-1 inline-flex items-center text-[10px] px-2 py-0.5 rounded-md bg-primary/15 text-primary border border-primary/25 font-bold uppercase tracking-wider">
@@ -71,15 +75,7 @@ export function AppHeader({ user, showBackButton }: AppHeaderProps) {
           {user ? (
             <UserMenu user={user} onSignOut={handleSignOut} />
           ) : (
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={() => signIn("google")}
-              className="gap-2"
-            >
-              <LogIn className="w-4 h-4" />
-              Sign In
-            </Button>
+            <LoginDialog />
           )}
         </div>
       </div>
