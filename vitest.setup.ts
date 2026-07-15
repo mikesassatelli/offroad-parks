@@ -1,5 +1,12 @@
 import "@testing-library/jest-dom";
 import { vi } from "vitest";
+import { __resetRateLimitStore } from "@/lib/rate-limit";
+
+// Reset the in-memory rate-limit store between tests so module-level counters
+// never leak across cases (OP-98). Harmless for files that never hit it.
+beforeEach(() => {
+  __resetRateLimitStore();
+});
 
 // Mock Next.js router
 vi.mock("next/navigation", () => ({

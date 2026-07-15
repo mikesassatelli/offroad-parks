@@ -196,6 +196,60 @@ describe("POST /api/parks/[slug]/reviews", () => {
     expect(data.review).toBeDefined();
   });
 
+  it("returns 429 once the per-user review rate limit is exceeded", async () => {
+    const mockPark = { id: "park-123", slug: "test-park" };
+    const mockCreatedReview = {
+      id: "review-rl",
+      parkId: "park-123",
+      userId: "rate-user",
+      overallRating: 5,
+      terrainRating: 4,
+      facilitiesRating: 4,
+      difficultyRating: 3,
+      title: null,
+      body: "Test review",
+      visitDate: null,
+      vehicleType: null,
+      visitCondition: null,
+      recommendedDuration: null,
+      recommendedFor: null,
+      status: "PENDING",
+      createdAt: new Date(),
+      updatedAt: new Date(),
+      user: { id: "rate-user", name: "Test User", image: null },
+      _count: { helpfulVotes: 0 },
+    };
+
+    (auth as any).mockResolvedValue({ user: { id: "rate-user" } });
+    (prisma.park.findUnique as any).mockResolvedValue(mockPark);
+    (prisma.parkReview.findUnique as any).mockResolvedValue(null);
+    (prisma.parkReview.create as any).mockResolvedValue(mockCreatedReview);
+
+    const makeRequest = () =>
+      new NextRequest("http://localhost/api/parks/test-park/reviews", {
+        method: "POST",
+        body: JSON.stringify({
+          overallRating: 5,
+          terrainRating: 4,
+          facilitiesRating: 4,
+          difficultyRating: 3,
+          body: "Test review",
+        }),
+      });
+
+    // RATE_LIMITS.reviews.limit === 5: first 5 allowed, 6th blocked.
+    const statuses: number[] = [];
+    for (let i = 0; i < 6; i++) {
+      const res = await POST(makeRequest(), {
+        params: Promise.resolve({ slug: "test-park" }),
+      });
+      statuses.push(res.status);
+    }
+
+    expect(statuses.slice(0, 5)).toEqual([200, 200, 200, 200, 200]);
+    expect(statuses[5]).toBe(429);
+  });
+
   it("should return 400 if required fields are missing", async () => {
     const mockPark = { id: "park-123", slug: "test-park" };
 

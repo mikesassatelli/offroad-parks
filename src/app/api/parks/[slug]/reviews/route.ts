@@ -3,6 +3,7 @@ import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { transformDbReview } from "@/lib/types";
 import type { DbReview } from "@/lib/types";
+import { checkRateLimit, rateLimited, RATE_LIMITS } from "@/lib/rate-limit";
 
 export const runtime = "nodejs";
 
@@ -91,6 +92,11 @@ export async function POST(request: Request, { params }: RouteParams) {
   if (!session?.user?.id) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
+
+  const limited = rateLimited(
+    checkRateLimit(`reviews:${session.user.id}`, RATE_LIMITS.reviews),
+  );
+  if (limited) return limited;
 
   const { slug } = await params;
 

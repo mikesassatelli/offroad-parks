@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
+import { checkRateLimit, rateLimited, RATE_LIMITS } from "@/lib/rate-limit";
 
 export const runtime = "nodejs";
 
@@ -23,6 +24,11 @@ export async function POST(request: Request, { params }: RouteParams) {
   if (!session?.user?.id) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
+
+  const limited = rateLimited(
+    checkRateLimit(`claims:${session.user.id}`, RATE_LIMITS.claims),
+  );
+  if (limited) return limited;
 
   const { slug } = await params;
 

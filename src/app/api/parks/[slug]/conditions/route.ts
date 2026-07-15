@@ -3,6 +3,7 @@ import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { CONDITION_STALE_AFTER_MS } from "@/lib/trail-conditions";
 import type { TrailConditionStatus } from "@/lib/trail-conditions";
+import { checkRateLimit, rateLimited, RATE_LIMITS } from "@/lib/rate-limit";
 
 export const runtime = "nodejs";
 
@@ -63,6 +64,11 @@ export async function POST(request: Request, { params }: RouteParams) {
   if (!session?.user?.id) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
+
+  const limited = rateLimited(
+    checkRateLimit(`conditions:${session.user.id}`, RATE_LIMITS.conditions),
+  );
+  if (limited) return limited;
 
   const { slug } = await params;
 
