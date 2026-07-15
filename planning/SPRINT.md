@@ -4,12 +4,9 @@
 **Release readiness — soft consumer launch (E22).** The app is feature-complete for a free rider launch; this sprint closes the legal/SEO/hardening gaps that block opening to the public, and expands login. No billing — paid operator features stay deferred until free pilots are signed. Target: the site is safe and legal to point real traffic at, with SEO turned on.
 
 ## In Progress
-- [ ] OP-94 — Legal pages: privacy, terms, cookie consent *(starting first — unblocks Google OAuth prod + future Stripe)*
-- [ ] OP-95 — SEO foundation: `robots.ts` + dynamic `sitemap.ts`
+*(none)*
 
 ## Up Next
-- [ ] OP-96 — Transactional email sender (Resend) *(shared prerequisite for OP-97 + OP-93 + claim emails)*
-- [ ] OP-97 — Email magic-link login provider *(depends OP-96)*
 - [ ] OP-98 — Rate limiting on public POST endpoints
 - [ ] OP-99 — Security headers & CSP in `next.config.ts`
 - [ ] OP-100 — Production error monitoring (Sentry)
@@ -17,6 +14,12 @@
 ## Backlog / stretch
 - [ ] OP-101 — Zod validation backfill on mutating routes
 - [ ] OP-102 — README docs-drift cleanup (roles / admin elevation)
+
+## Done This Sprint
+- [x] ~~OP-94~~ Legal pages: privacy, terms, cookie consent — PR #146. `/legal/*` + cookie banner; content is a template needing counsel review before launch.
+- [x] ~~OP-95~~ SEO foundation — PR #146. `robots.ts`, dynamic `sitemap.ts`, `SITE_URL` helper, `metadataBase`. Verified 200 + sitemap unit test.
+- [x] ~~OP-96~~ Transactional email sender — PR #146. `sendEmail()` via Resend with dev-console fallback (no key needed locally) + shared templates.
+- [x] ~~OP-97~~ Email magic-link login — PR #146. Auth.js "resend" provider through the OP-96 sender; `LoginDialog` (Google + email). Verified end-to-end.
 
 ## Blocked
 *(none)*
