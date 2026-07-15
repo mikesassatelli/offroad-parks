@@ -7,10 +7,6 @@
 *(none)*
 
 ## Up Next
-- [ ] OP-99 — Security headers & CSP in `next.config.ts`
-- [ ] OP-100 — Production error monitoring (Sentry)
-
-## Backlog / stretch
 - [ ] OP-101 — Zod validation backfill on mutating routes
 - [ ] OP-102 — README docs-drift cleanup (roles / admin elevation)
 
@@ -20,12 +16,17 @@
 - [x] ~~OP-96~~ Transactional email sender — PR #146. `sendEmail()` via Resend with dev-console fallback (no key needed locally) + shared templates.
 - [x] ~~OP-97~~ Email magic-link login — PR #146. Auth.js "resend" provider through the OP-96 sender; `LoginDialog` (Google + email). Verified end-to-end.
 - [x] ~~OP-98~~ Rate limiting on public POST endpoints — PR #146. Fixed-window limiter on reviews/conditions/claims, keyed per user; 429 + Retry-After. In-process store (per-instance) — Upstash upgrade tracked in the backlog note.
+- [x] ~~OP-99~~ Security headers & CSP — PR #146. `headers()` on all routes (CSP + HSTS + frame/content-type/referrer/permissions). Verified in-browser: map tiles/markers load, unlisted host blocked, no violations.
+- [x] ~~OP-100~~ Error monitoring (Sentry) — PR #146. Wired via `src/instrumentation*.ts`, **inert until `NEXT_PUBLIC_SENTRY_DSN` is set**. Activation (create Sentry project + set DSN; source maps via withSentryConfig) tracked in the backlog note.
 
 ## Blocked
 - **OP-103 — Provision domain + Resend sending setup.** Blocked on **not having a registered domain yet.** OP-96/OP-97 email is fully built and works in dev via the console fallback, but **production sends no email (magic-link login included) until a domain is acquired, verified in Resend, and `RESEND_API_KEY` / `EMAIL_FROM` / `NEXT_PUBLIC_SITE_URL` are set.** ⚠️ **Must return to this before public launch.** See OP-103 in BACKLOG.md for the full checklist.
 
 ## Notes / Decisions
-- ⚠️ **Deferred external setup (no domain yet):** we do not have a registered domain, so the production email/DNS wiring (OP-103) can't be done. The email + magic-link code ships now behind the dev-console fallback; it is inert in prod until the domain + Resend verification + env keys are in place. This also gates the Google OAuth production consent screen (needs the live privacy-policy URL). Tracked as OP-103 (blocked).
+- ⚠️ **Deferred external setup (things to return to before/at launch):**
+  - **Domain + Resend (OP-103, blocked):** no registered domain yet, so production email/DNS can't be wired. Email + magic-link ship behind the dev-console fallback and are inert in prod until the domain + Resend verification + `RESEND_API_KEY`/`EMAIL_FROM`/`NEXT_PUBLIC_SITE_URL` are set. Also gates the Google OAuth production consent screen (needs the live privacy-policy URL).
+  - **Sentry (OP-100, wired inert):** error monitoring is coded but dormant until a Sentry project exists and `NEXT_PUBLIC_SENTRY_DSN` is set in Vercel env. Source-map upload (readable stack traces) needs `withSentryConfig` + `SENTRY_AUTH_TOKEN` as a follow-up.
+  - **Legal copy (OP-94):** placeholders in `src/lib/legal.ts` need real company/contact/jurisdiction values + counsel review.
 - Release path chosen: **A — soft consumer launch** (free rider app + SEO flywheel + free pilot operators), not the fully-monetized path. Billing (E14), waivers (E15), ticketing (E16) remain deferred. Rationale: code is ready for A now; don't let Stripe block the SEO compounding.
 - OP-94 first: it's the cheapest high-impact blocker and gates the Google OAuth production consent screen.
 - OP-96 is deliberately a *shared* email sender, not per-feature — it unblocks magic-link login (OP-97), claim/welcome emails, and the already-planned E21 severe-weather alerts (OP-93).
