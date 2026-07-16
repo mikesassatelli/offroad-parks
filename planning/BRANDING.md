@@ -45,6 +45,25 @@ From the market + trademark landscape research:
 
 Full candidate list, rationale, and badge notes: see the Sprint 8 naming research (summarized here).
 
+### 3b. Round 2 — coined names with **confirmed-open `.com`** (2026-07-15)
+
+Because open exact-match `.com`s are the binding constraint, a second round generated coined compounds and verified availability via authoritative DNS (`dig` NXDOMAIN status). All below have an **open `.com`** but have **NOT yet had the preliminary trademark / handle pass** (only the §4 names have).
+
+| Name | `.com` | Meaning / badge read |
+|---|---|---|
+| **Ridgerove** | ✅ open | "ridge" + "rove" — roam the ridgelines; ridgeline-crest badge. Discipline-neutral. |
+| **Fellwild** | ✅ open | "fell" (upland moor — heritage geography) + "wild"; rugged, heritage. |
+| **Gritwild** | ✅ open | "grit" + "wild"; punchy dirt signal, same energy as Rutwild. |
+| **Rutvale** | ✅ open | "rut" + "vale" (valley); softer heritage cousin of Rutwild. |
+| **Duskwold** | ✅ open | "dusk" + "wold" (rolling upland); golden-hour, poetic/premium. |
+| **Roamwend** | ✅ open | "roam" + "wend" (to travel); pure wandering, fully coined. |
+| **Backvale** | ✅ open | "back(country)" + "vale"; backcountry-destination framing. |
+| **Ridgefare** | ✅ open | "ridge" + "fare" (wayfare); traveling the ridges. |
+
+Also open (secondary): terrawold, rutwood, roamwold, backwold, duskwend, vagaroam. Plus the Round-1 clean names **Rutwild** and **Rovadore** (already TM-screened).
+
+**Next filter for these:** preliminary trademark + Instagram/TikTok/YouTube handle checks on whichever the founder shortlists, then attorney clearance.
+
 ---
 
 ## 4. Availability matrix (preliminary)
