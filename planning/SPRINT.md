@@ -1,3 +1,29 @@
+# Sprint 8 · Week of 2026-07-15
+
+## Goal
+**Brand identity & merch foundation (E23).** "Offroad Parks" was a codename; before we can buy a domain or form an LLC we need a **true, ownable identity**. This sprint is research + decision, not app code: land on a fresh, trademarkable name and a vintage/heritage badge brand, plus a merch/apparel plan that spreads the name in the offroad community. Outputs feed the domain purchase, LLC, and (later) the app rebrand.
+
+## Done This Sprint (research)
+- [x] **Brand & merch landscape brief** — competitive/naming landscape (onX, Trails Offroad, Gaia, iOverlander, OHV directories), trademark-crowded terms + automaker/tire landmines to avoid, offroad merch culture, USPTO class primer, white-space analysis. In [BRANDING.md](BRANDING.md).
+- [x] **Naming round** — ~20 coined/evocative candidates scored on a 7-point lens; shortlist: Rovana, Rutwild, Kestro, Vantor, Rangeway (+ Roverth, Rovadore backups). In [BRANDING.md](BRANDING.md).
+- [x] **Domain sweep (whois)** — only `rutwild.com`, `roverth.com`, `rovadore.com` open among candidates; most exact-match `.com`s taken. `.com` availability is the binding constraint. In [BRANDING.md](BRANDING.md).
+- [x] **Merch & apparel plan** — "Trail Seal" vintage-badge system, v1 SKU line, the **Earn-a-Badge** growth loop (log a visit → collectible badge), GTM, and budget. In [BRANDING-merch-plan.md](BRANDING-merch-plan.md).
+- [ ] **Preliminary trademark + social-handle check** on the shortlist — in progress; feeds the final availability matrix + recommendation in BRANDING.md.
+
+## Up Next (decision + gated execution — E23)
+- [ ] OP-104 — **Brand name selection** (founder decision from the shortlist). Gates everything.
+- [ ] OP-105 — Formal trademark clearance (attorney; classes 9/42/25/41). 🔴 Blocks domain/LLC/merch.
+- [ ] OP-106 — Domain acquisition (also unblocks E22 OP-103) · OP-107 — LLC formation.
+- [ ] OP-108 — Visual identity (Trail Seal badge system) → OP-109 app rebrand.
+- [ ] OP-110 — Merch v1 · OP-111 — Earn-a-Badge (bridges E11) · OP-112 — merch GTM.
+
+## Notes / Decisions
+- Founder direction locked: **fresh, ownable name** (retire "Offroad Parks" as the public name) + **vintage/heritage badge** aesthetic. Rationale: descriptive names in this space are unprotectable and crowded; a coined name (Gaia/onX model) is defensible and badge-native.
+- ⚠️ **Hard gate:** no domain purchase, LLC, or merch spend until a trademark attorney clears the chosen name. Our USPTO/domain/handle checks are preliminary only.
+- Merch is framed as **CAC, not COGS** — stickers/patches are the acquisition funnel; Earn-a-Badge is the retention hinge tying merch to the app's visit-tracking/achievements (E11).
+
+---
+
 # Sprint 7 · Week of 2026-07-15
 
 ## Goal
