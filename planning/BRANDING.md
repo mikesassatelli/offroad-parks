@@ -131,6 +131,17 @@ Founder converged on the descriptive-but-brandable pattern (e.g. "[keyword] Atla
 
 **Leading candidates going into vetting:** **OHVCompass** and **OHVAtlas** (top), with OffroadBeacon / OHVAlmanac as alternates.
 
+**Vetting results (preliminary — same-space user is the key risk for descriptive names):**
+
+| Name | Same-space user | USPTO prelim (unverified) | Verdict |
+|---|---|---|---|
+| **OHVAlmanac** | ✅ none found; "Almanac" unused in offroad (→ most distinctive) | ✅ no outdoor/app owner; Old Farmer's Almanac is different class | ✅ **safest — pursue first** |
+| **OHVCompass** | ✅ none found | ⚠️ "Compass" generic/crowded in software (not offroad-mapping) | ✅ viable backup |
+| **OHVAtlas** | ⚠️ **Natural Atlas** = live OHV-trail mapping app claiming "Atlas"; DNR "OHV Atlas" generic | ⚠️ "Atlas" crowded; mapping niche occupied | ⚠️ caution — attorney must weigh Natural Atlas |
+| **OffroadBeacon** | ❌ **Beacon Offroad & Supply** — active offroad/overland biz, near-identical name | ⚠️ "Beacon" crowded in offroad products | ❌ **drop** |
+
+Also: OHVAreas = unprotectable generic (drop); OHVFinder = generic descriptive (deprioritize). IG/TikTok/YouTube handles could not be auto-verified — **verify manually in a browser** before deciding.
+
 ---
 
 ## 4. Availability matrix (preliminary)
@@ -151,15 +162,23 @@ Combining our own `.com` whois checks + the preliminary trademark/handle researc
 
 ---
 
-## 5. Recommendation
+## 5. Recommendation — two strategic paths
 
-**Primary: `Rutwild`.** It's the only candidate that is coined/ownable **and** has an open exact-match `.com` **and** shows no trademark or business conflict **and** likely has an open handle — while also reading unmistakably offroad ("rut" + "wild"). It stamps cleanly into a one-color heritage badge. It was independently the #2 creative pick, so it doesn't sacrifice quality for availability.
+The founder explored both ends of the spectrum. The choice is a genuine strategy fork:
 
-**Backup: `Rovadore`.** Essentially tied on availability (open .com, coined, no conflict). Slightly longer/less punchy and lives near the busy "Rove/Rover" search cluster — a minor discoverability nick, not a blocker.
+**Ownable brand ◄──────────────────────► Pure SEO keyword**
+`Rutwild` · `OHVAlmanac` · `OHVCompass` · `OHVAtlas` · `OHVAreas`
 
-**Consider only with attorney sign-off: `Roverth`** (open .com, but the "Rover" resemblance sits *inside our own vehicle vertical* — a real likelihood-of-confusion + SEO risk) and **`Rovana`** (would require buying the aftermarket .com and accepting a taken handle).
+### Path A — Distinctive / ownable (stronger trademark, build brand equity)
+**Lead: `Rutwild`** — coined, open `.com`, no trademark/business/handle conflict found, reads offroad ("rut"+"wild"), stamps cleanly as a one-color heritage badge. Backup `Rovadore`. **Pro:** a mark you can actually own and defend. **Con:** you build recognition from zero (no built-in search keyword).
 
-**Decision note:** the *name* is the founder's call (OP-104) and should also pass a gut check — say it at a trailhead, picture it on a tailgate sticker. The data says **Rutwild** is the cleanest, most ownable path; if it feels right, it's the recommendation.
+### Path B — Descriptive / SEO (clearer + search-friendly, weaker trademark)
+**Lead: `OHVAlmanac`** — the safest descriptive option: no same-space user found, "Almanac" is essentially unused in offroad (so it's the *most distinctive* of the weak descriptors), and it fits the vintage-heritage aesthetic (Old-Farmer's-Almanac register = a reference/guide to OHV areas). Open `.com`. Backup `OHVCompass` (viable; "compass" is on-theme + badge-native but generically crowded in software). **Avoid** `OHVAtlas` (Natural Atlas conflict) and `OffroadBeacon` (Beacon Offroad & Supply conflict). **Pro:** says what it is; helps comprehension/CTR. **Con:** descriptive marks are **weak and hard to enforce** — you'll share the lane with lookalikes, and keyword-in-domain is only a minor modern SEO factor.
+
+### The honest tradeoff
+Descriptive names win *early* clarity; distinctive names win *long-term* brand equity and legal defensibility (Gaia, onX, and Trailforks all coined or twisted a word rather than describing themselves). If SEO/clarity is the priority now, **OHVAlmanac** is the best-vetted descriptive pick. If a defensible brand matters more, **Rutwild** is the cleanest ownable pick.
+
+**Decision (OP-104) is the founder's** — and should pass a gut check (say it at a trailhead; picture it on a tailgate patch). Whichever path: **verify handles manually + get attorney clearance before any spend.**
 
 ---
 
