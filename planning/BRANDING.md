@@ -182,15 +182,33 @@ Descriptive names win *early* clarity; distinctive names win *long-term* brand e
 
 ---
 
-## 6. Decision & next steps (E23 — hard-gated)
+## 6. DECISION — `OHVAlmanac` *(chosen 2026-07-16, OP-104)*
 
-1. **OP-104 — Pick the name.** (Recommended: Rutwild.) Founder decision; gates everything.
-2. **OP-105 — Formal trademark clearance** by an attorney in classes 9/42/25/41 (+12/39) — **before any spend.** File intent-to-use.
-3. **OP-106 — Buy the domain** (exact `.com` + defensive TLDs) + lock social handles; set `NEXT_PUBLIC_SITE_URL` (also unblocks E22 OP-103). · **OP-107 — Form the LLC.**
-4. **OP-108 — Visual identity** ("Trail Seal" badge system) → **OP-109 — rebrand the app** (UI, metadata, SEO, emails, legal, README).
-5. **OP-110 — Merch v1** → **OP-111 — Earn-a-Badge** (bridges E11 gamification) → **OP-112 — merch GTM/seeding.**
+**Selected name: `OHVAlmanac`** ("OHV Almanac") — Path B (descriptive/SEO). The best-vetted descriptive option: no same-space user found, "Almanac" is unused in offroad (most distinctive of the descriptors), and it fits the vintage-heritage aesthetic — an *almanac* is a reference guide to places to ride. Accepted tradeoff: descriptive = a **weak, hard-to-enforce mark**; differentiation must come from brand execution + content, not legal exclusivity.
 
-**Manually confirm before committing:** the exact Instagram/TikTok/YouTube handles for the chosen name (our checks were unauthenticated), and re-run whois at purchase time (availability can change).
+**Availability confirmed 2026-07-16:**
+- **Domain:** `ohvalmanac.com` open — **and every checked TLD** (.co/.net/.org/.app/.io/.us) is open too.
+- **Handles:** Instagram `@ohvalmanac` and TikTok `@ohvalmanac` both return "not found" (available). *(Still verify YouTube/X/Facebook/Reddit and re-confirm all at reservation time.)*
+
+### 6a. Attorney trademark-clearance brief (OP-105 — do before any spend)
+Send an attorney: **Mark:** OHVALMANAC / "OHV Almanac" (standard-character word mark). **Goods/services + Nice classes:** 9 (downloadable app), 42 (SaaS discovery platform), 41 (online trail/park info & community), 25 (apparel/merch); consider 16 (stickers/printed guides), 35 (directory/listing), 39 (travel info). **Ask them to clear specifically:**
+- Descriptive-mark **registrability** — likely needs a strong showing or the **Supplemental Register** initially; strategy for acquired distinctiveness over time.
+- Any live **"Almanac"** marks in classes 9/42/41/25 (Old Farmer's Almanac is publishing — different class; confirm no outdoor/app owner).
+- **Common-law** offroad/outdoor use of "OHV Almanac" or close variants (full search beyond our preliminary web pass).
+- Freedom-to-operate for the apparel line (class 25) given the merch plan.
+
+### 6b. Domain + handle reservation checklist (OP-106)
+- [ ] Register **`ohvalmanac.com`** (primary) + defensive **.co/.net/.org/.app** (all open); optional .io/.us.
+- [ ] Lock **@ohvalmanac** on Instagram, TikTok, YouTube, X, Facebook, Reddit (IG + TikTok confirmed open; grab now to prevent squatting).
+- [ ] Set `NEXT_PUBLIC_SITE_URL=https://ohvalmanac.com` in Vercel env → this also **unblocks E22 OP-103** (production email/magic-link).
+- [ ] Update Google OAuth authorized origins/redirects to the real domain + move consent screen to production (needs the live privacy-policy URL).
+- [ ] Do all of the above **only after** OP-105 clearance.
+
+### 6c. App rebrand scope (OP-109 — after clearance + identity)
+Replace "Offroad Parks" → "OHV Almanac" across ~18 files (25 `src/` occurrences). Touch points: `src/lib/legal.ts` (siteName), `src/app/layout.tsx` metadata, `SiteFooter`/`AppHeader`/`LoginDialog` brand strings, `OffroadParksApp.tsx` (component + rename), `src/app/legal/*`, email templates, `package.json` name, README. Mechanical once the name is cleared and the badge identity (OP-108) exists.
+
+### 6d. Remaining sequence
+OP-105 clearance → OP-106 domain/handles + OP-107 LLC → OP-108 "Trail Seal" identity → OP-109 rebrand → OP-110 merch v1 → OP-111 Earn-a-Badge (bridges E11) → OP-112 GTM.
 
 ---
 

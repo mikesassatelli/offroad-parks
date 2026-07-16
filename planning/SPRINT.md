@@ -8,17 +8,17 @@
 - [x] **Naming round** — ~20 coined/evocative candidates scored on a 7-point lens; shortlist: Rovana, Rutwild, Kestro, Vantor, Rangeway (+ Roverth, Rovadore backups). In [BRANDING.md](BRANDING.md).
 - [x] **Domain sweep (whois)** — only `rutwild.com`, `roverth.com`, `rovadore.com` open among candidates; most exact-match `.com`s taken. `.com` availability is the binding constraint. In [BRANDING.md](BRANDING.md).
 - [x] **Merch & apparel plan** — "Trail Seal" vintage-badge system, v1 SKU line, the **Earn-a-Badge** growth loop (log a visit → collectible badge), GTM, and budget. In [BRANDING-merch-plan.md](BRANDING-merch-plan.md).
-- [ ] **Preliminary trademark + social-handle check** on the shortlist — in progress; feeds the final availability matrix + recommendation in BRANDING.md.
+- [x] **Preliminary trademark + social-handle checks** — ran across 5 naming rounds (distinctive → offroad-themed → descriptive/SEO). Dropped Vantor (Maxar), OHVAtlas (Natural Atlas), OffroadBeacon (Beacon Offroad). Matrix in BRANDING.md.
+- [x] **OP-104 — Name selected: `OHVAlmanac`** (descriptive path). Domain (all TLDs) + IG/TikTok handles confirmed open 2026-07-16. Clearance brief + reservation checklist + rebrand scope in BRANDING.md §6.
 
-## Up Next (decision + gated execution — E23)
-- [ ] OP-104 — **Brand name selection** (founder decision from the shortlist). Gates everything.
-- [ ] OP-105 — Formal trademark clearance (attorney; classes 9/42/25/41). 🔴 Blocks domain/LLC/merch.
-- [ ] OP-106 — Domain acquisition (also unblocks E22 OP-103) · OP-107 — LLC formation.
+## Up Next (gated execution — E23)
+- [ ] OP-105 — Formal trademark clearance (attorney; classes 9/42/41/25). 🔴 Blocks all spend. *(BRANDING.md §6a)*
+- [ ] OP-106 — Domain acquisition (`ohvalmanac.com`; also unblocks E22 OP-103) · OP-107 — LLC formation.
 - [ ] OP-108 — Visual identity (Trail Seal badge system) → OP-109 app rebrand.
 - [ ] OP-110 — Merch v1 · OP-111 — Earn-a-Badge (bridges E11) · OP-112 — merch GTM.
 
 ## Notes / Decisions
-- Founder direction locked: **fresh, ownable name** (retire "Offroad Parks" as the public name) + **vintage/heritage badge** aesthetic. Rationale: descriptive names in this space are unprotectable and crowded; a coined name (Gaia/onX model) is defensible and badge-native.
+- **Final decision: `OHVAlmanac`** + **vintage/heritage badge** aesthetic. The exploration started at "fresh coined/ownable" (Rutwild etc.) but the founder prioritized **SEO + descriptive-of-purpose** and chose the descriptive path — an *almanac of OHV areas*, which also fits the heritage aesthetic. Tradeoff explicitly accepted: descriptive marks are legally weak/hard to enforce; the moat is brand execution + content, not exclusivity. (Retire "Offroad Parks" as the public name.)
 - ⚠️ **Hard gate:** no domain purchase, LLC, or merch spend until a trademark attorney clears the chosen name. Our USPTO/domain/handle checks are preliminary only.
 - Merch is framed as **CAC, not COGS** — stickers/patches are the acquisition funnel; Earn-a-Badge is the retention hinge tying merch to the app's visit-tracking/achievements (E11).
 
