@@ -64,6 +64,35 @@ Also open (secondary): terrawold, rutwood, roamwold, backwold, duskwend, vagaroa
 
 **Next filter for these:** preliminary trademark + Instagram/TikTok/YouTube handle checks on whichever the founder shortlists, then attorney clearance.
 
+### 3c. Round 3 — **offroad-themed** names with confirmed-open `.com` (2026-07-15)
+
+Founder steer: prioritize **clear offroad theming** (words like trail / dirt / rig / ride), accepting the tradeoff — descriptive-leaning names give instant comprehension + SEO but are **weaker trademarks** and face more lookalikes (the onX Offroad / Trails Offroad / AllTrails model). To keep *some* ownability, these favor distinctive compounds over pure generics. All `.com`s confirmed open via `dig` (NXDOMAIN); **not yet** trademark/handle-screened.
+
+**"Rig" family** *(authentic, discipline-neutral — UTV/moto/4x4 all call it a "rig")*
+| Name | `.com` | Read |
+|---|---|---|
+| **Rigroam** | ✅ open | roam in your rig — discovery + offroad culture; the strongest theming+ownability balance |
+| **Rigborne** | ✅ open | rig-borne / carried by your rig |
+| **Rigkin** | ✅ open | the tribe of rig owners (community angle) |
+| **Rigwander** | ✅ open | wandering by rig |
+
+**"Dirt" family** *(universal, badge-friendly)*
+| Name | `.com` | Read |
+|---|---|---|
+| **Dirtborne** | ✅ open | born of / carried over dirt; evocative, premium badge |
+| **Dirthollow** | ✅ open | a "hollow" = backcountry valley — dirt + destination, vintage Americana |
+| **Dirtroam** | ✅ open | roam the dirt — clearest "discover places to ride" meaning |
+| **Dirtvale** / **Dirtwold** / **Dirtfell** | ✅ open | dirt + heritage geography (valley / upland) |
+| **Dirtkin** | ✅ open | the dirt tribe (community) |
+
+**"Trail" family** *(clearest theming, but "trail" is the most crowded/weakest root)*
+| Name | `.com` | Read |
+|---|---|---|
+| **Trailvale** | ✅ open | trail + valley; most pronounceable of the trail set |
+| **Trailfell** / **Trailwold** | ✅ open | trail + upland (heritage) |
+
+**Recommended to screen first:** Rigroam, Dirtborne, Dirthollow (best theming-vs-ownability balance), with Trailvale if an explicit "trail" is wanted.
+
 ---
 
 ## 4. Availability matrix (preliminary)
