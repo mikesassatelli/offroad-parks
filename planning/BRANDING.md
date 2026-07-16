@@ -117,6 +117,20 @@ Founder steer: optimize for **SEO / descriptive-of-purpose** (finding places to 
 
 **Recommended to screen first:** OHVAtlas + OffroadRadar (brandable-descriptive), and OHVFinder or OHVAreas (pure SEO) as the keyword play.
 
+### 3e. Round 5 — **[keyword] + [brandable descriptor]** pattern (2026-07-15)
+
+Founder converged on the descriptive-but-brandable pattern (e.g. "[keyword] Atlas/Hub/Compass"). Note: the literal `trailatlas.com`, `offroadatlas.com`, `trailhub.com` are **taken** (aftermarket-only). Open in the same pattern:
+
+| Name | `.com` | Why it's strong |
+|---|---|---|
+| **OHVCompass** | ✅ open | 🎯 Compass = the iconic heritage-badge motif **and** literally navigation/discovery **and** "OHV" category SEO. Brand + SEO + badge fully aligned. |
+| **OHVAtlas** | ✅ open | Atlas = map/directory; brandable-descriptive anchor; discipline-neutral. |
+| **OffroadBeacon** | ✅ open | Beacon = a guiding light to discovery; evocative; familiar "offroad" keyword. |
+| **OHVAlmanac** | ✅ open | Almanac = vintage reference/guide (heritage aesthetic fit). |
+| **OHVHub / OHVBeacon / OHVRegister / OffroadRegister / OffroadGrid / ORVAtlas** | ✅ open | Same pattern, secondary. |
+
+**Leading candidates going into vetting:** **OHVCompass** and **OHVAtlas** (top), with OffroadBeacon / OHVAlmanac as alternates.
+
 ---
 
 ## 4. Availability matrix (preliminary)
