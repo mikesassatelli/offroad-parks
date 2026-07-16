@@ -93,6 +93,30 @@ Founder steer: prioritize **clear offroad theming** (words like trail / dirt / r
 
 **Recommended to screen first:** Rigroam, Dirtborne, Dirthollow (best theming-vs-ownability balance), with Trailvale if an explicit "trail" is wanted.
 
+### 3d. Round 4 — **descriptive / SEO** names with confirmed-open `.com` (2026-07-15)
+
+Founder steer: optimize for **SEO / descriptive-of-purpose** (finding places to ride offroad). Tradeoff, stated once: keyword-in-domain is only a *minor* modern Google factor (content + sitemap matter more), and descriptive names are **weak trademarks** you can't police — but they aid comprehension, click-through, and word-of-mouth. `.com`s confirmed open via `dig`; not yet TM/handle-screened. **Note:** "OHV" (Off-Highway Vehicle) is the official, discipline-neutral category term agencies + searchers use.
+
+**Best brand ↔ SEO balance (recommended):**
+| Name | `.com` | Why |
+|---|---|---|
+| **OHVAtlas** | ✅ open | "Atlas" reads as a real *brand* + says map/directory; "OHV" nails the category & search term. Badge-friendly (atlas/compass). Discipline-neutral. Best balance. |
+| **OffroadRadar** | ✅ open | "Offroad" (broad, high-volume) + "Radar" (discovery, brandable). Reads as a brand, still descriptive. |
+| **OHVFinder** | ✅ open | Clearest statement of purpose (*find* OHV areas); strong SEO, more generic as a brand. |
+
+**Purer SEO / exact-keyword (more generic, weaker brand):**
+| Name | `.com` | Why |
+|---|---|---|
+| **OHVAreas** | ✅ open | Exact phrase agencies + searchers use ("OHV areas near me"). SEO-gold, generic brand. |
+| **OffroadAreas** | ✅ open | Broad + descriptive. |
+| **OHVSpots / OHVHub / OHVBase / OHVZone / OHVDirectory** | ✅ open | OHV + generic suffix. |
+| **RideAreas / RidingAreas / DirtAreas** | ✅ open | Activity + areas. |
+| **ORVAreas / ORVParks / ORVTrails / ORVMap** | ✅ open | "ORV" variant (used in some states, e.g. MI). |
+| **MotoParks / MotoSpots / ATVAreas / SxSParks** | ✅ open | Discipline-specific (narrows the audience — less ideal for a multi-discipline platform). |
+| **RideParksUSA / OffroadParksUSA** | ✅ open | Geo-qualified nods to the original "Offroad Parks" codename. |
+
+**Recommended to screen first:** OHVAtlas + OffroadRadar (brandable-descriptive), and OHVFinder or OHVAreas (pure SEO) as the keyword play.
+
 ---
 
 ## 4. Availability matrix (preliminary)
