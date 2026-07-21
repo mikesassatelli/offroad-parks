@@ -1,0 +1,20 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" role="img" aria-label="Offroad Parks">
+  <!-- Solid rounded background in the brand burnt-orange accent.
+       Full-bleed fill keeps the glyph legible when masked to a circle/squircle. -->
+  <rect width="512" height="512" rx="112" fill="#c1502b"/>
+  <!-- Mountain range + winding trail, in warm cream. Kept inside the maskable
+       safe zone (central ~80%) with simple, high-contrast shapes. -->
+  <g fill="none" stroke="#f7f3ec" stroke-linejoin="round" stroke-linecap="round">
+    <!-- Back peak -->
+    <path d="M150 356 L246 196 L322 320" stroke-width="26"/>
+    <!-- Front peak -->
+    <path d="M232 356 L316 224 L400 356" stroke-width="26"/>
+  </g>
+  <!-- Snow/rock cap accents -->
+  <path d="M246 196 L216 246 L276 246 Z" fill="#f7f3ec"/>
+  <path d="M316 224 L292 262 L340 262 Z" fill="#f7f3ec"/>
+  <!-- Winding trail across the base -->
+  <path d="M132 400 C196 372 236 428 300 400 C346 380 372 400 396 388"
+        fill="none" stroke="#f7f3ec" stroke-width="20"
+        stroke-linecap="round" stroke-dasharray="4 34"/>
+</svg>
