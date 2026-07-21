@@ -55,6 +55,31 @@ describe("useFilteredParks", () => {
     },
   ];
 
+  it("should seed panel state + sort from initialState (deep-linked URL)", () => {
+    const { result } = renderHook(() =>
+      useFilteredParks({
+        parks: mockParks,
+        initialState: {
+          selectedState: "California",
+          selectedTerrains: ["sand"],
+          minTrailMiles: 20,
+          permitRequired: "yes",
+          sortOption: "rating",
+        },
+      }),
+    );
+
+    expect(result.current.selectedState).toBe("California");
+    expect(result.current.selectedTerrains).toEqual(["sand"]);
+    expect(result.current.minTrailMiles).toBe(20);
+    expect(result.current.permitRequired).toBe("yes");
+    expect(result.current.sortOption).toBe("rating");
+    // And the seeded filters actually narrow the list on first render.
+    expect(
+      result.current.filteredParks.every((p) => p.address.state === "California"),
+    ).toBe(true);
+  });
+
   it("should initialize with all parks sorted by name", () => {
     const { result } = renderHook(() => useFilteredParks({ parks: mockParks }));
 

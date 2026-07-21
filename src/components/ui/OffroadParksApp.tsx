@@ -11,7 +11,11 @@ import { useSearchPreferences } from "@/hooks/useSearchPreferences";
 import { useParkList, useParkMarkers } from "@/hooks/useServerParks";
 import { haversineDistance } from "@/lib/geo";
 import { FILTER_QUERY_KEYS } from "@/lib/search-preferences";
-import { buildParkQueryString } from "@/lib/park-filters";
+import {
+  buildParkQueryString,
+  parkFilterParamsToState,
+  parseParkFilterParams,
+} from "@/lib/park-filters";
 import type { ParkFacets, ParkPage } from "@/lib/park-query";
 import { AppHeader } from "@/components/layout/AppHeader";
 import { SearchHeader } from "@/components/layout/SearchHeader";
@@ -55,14 +59,29 @@ function OffroadParksAppInner({
   const [activeView, setActiveView] = useState<"list" | "map">(
     viewParam === "map" || routeIdParam ? "map" : "list",
   );
-  const [userCoords, setUserCoords] = useState<{ lat: number; lng: number } | null>(null);
+
+  // Parse the URL filter params ONCE for the initial render (lazy initializer =
+  // mount-only). This seeds both the Filters panel (via useFilteredParks) and
+  // the location state so the client's mount filter set matches the
+  // server-rendered first page for deep-linked / shared filtered URLs. Later
+  // filter changes flow through state, not the URL.
+  const [initialUrlParams] = useState(() =>
+    parseParkFilterParams(new URLSearchParams(searchParams?.toString() ?? "")),
+  );
+
+  const [userCoords, setUserCoords] = useState<{ lat: number; lng: number } | null>(
+    initialUrlParams.userLat != null && initialUrlParams.userLng != null
+      ? { lat: initialUrlParams.userLat, lng: initialUrlParams.userLng }
+      : null,
+  );
   const [locationLoading, setLocationLoading] = useState(false);
 
   // The filter/sort STATE (and its setters, saved-default helpers) still live
   // in useFilteredParks so behaviour and tests are preserved. Its client-side
   // `filteredParks` output is no longer used for rendering — filtering + sorting
   // now happen server-side. We pass an empty list and source the panel facets
-  // (states + slider maxes) from the server instead.
+  // (states + slider maxes) from the server instead. Initial state is seeded
+  // from the URL so shared filtered links render consistently.
   const {
     searchQuery,
     setSearchQuery,
@@ -97,7 +116,11 @@ function OffroadParksAppInner({
     clearAllFilters,
     getCurrentFilters,
     applyFilters,
-  } = useFilteredParks({ parks: [], userCoords });
+  } = useFilteredParks({
+    parks: [],
+    userCoords,
+    initialState: parkFilterParamsToState(initialUrlParams),
+  });
 
   // Serialised filter query — the single key that drives both server endpoints.
   const queryString = useMemo(

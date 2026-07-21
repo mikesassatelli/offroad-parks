@@ -56,12 +56,17 @@ describe("Homepage", () => {
     maxAcres: 2000,
   };
 
+  // Helper: Next 16 passes searchParams as an async prop.
+  const props = (
+    sp: Record<string, string | string[] | undefined> = {},
+  ) => ({ searchParams: Promise.resolve(sp) });
+
   it("renders the app with the server-rendered first page", async () => {
     vi.mocked(getParkPage).mockResolvedValue(page);
     vi.mocked(getParkMarkers).mockResolvedValue(markers);
     vi.mocked(getParkFacets).mockResolvedValue(facets);
 
-    const component = await Page();
+    const component = await Page(props());
     render(component);
 
     expect(screen.getByTestId("utv-parks-app")).toBeInTheDocument();
@@ -76,7 +81,7 @@ describe("Homepage", () => {
     vi.mocked(getParkMarkers).mockResolvedValue(markers);
     vi.mocked(getParkFacets).mockResolvedValue(facets);
 
-    await Page();
+    await Page(props());
 
     expect(getParkPage).toHaveBeenCalledWith(
       expect.objectContaining({ sort: "name", q: "", terrains: [] }),
@@ -86,6 +91,37 @@ describe("Homepage", () => {
       expect.objectContaining({ sort: "name" }),
     );
     expect(getParkFacets).toHaveBeenCalled();
+  });
+
+  it("server-renders a FILTERED first page + markers from URL searchParams", async () => {
+    vi.mocked(getParkPage).mockResolvedValue(page);
+    vi.mocked(getParkMarkers).mockResolvedValue(markers);
+    vi.mocked(getParkFacets).mockResolvedValue(facets);
+
+    // Deep link: /?state=Arkansas
+    await Page(props({ state: "Arkansas" }));
+
+    expect(getParkPage).toHaveBeenCalledWith(
+      expect.objectContaining({ state: "Arkansas" }),
+      0,
+    );
+    expect(getParkMarkers).toHaveBeenCalledWith(
+      expect.objectContaining({ state: "Arkansas" }),
+    );
+  });
+
+  it("handles repeated multi-select params (array searchParams values)", async () => {
+    vi.mocked(getParkPage).mockResolvedValue(page);
+    vi.mocked(getParkMarkers).mockResolvedValue(markers);
+    vi.mocked(getParkFacets).mockResolvedValue(facets);
+
+    // /?terrain=sand&terrain=rocks&sort=rating
+    await Page(props({ terrain: ["sand", "rocks"], sort: "rating" }));
+
+    expect(getParkPage).toHaveBeenCalledWith(
+      expect.objectContaining({ terrains: ["sand", "rocks"], sort: "rating" }),
+      0,
+    );
   });
 
   it("renders with an empty first page", async () => {
@@ -102,7 +138,7 @@ describe("Homepage", () => {
       maxAcres: 10000,
     });
 
-    const component = await Page();
+    const component = await Page(props());
     render(component);
 
     expect(screen.getByTestId("utv-parks-app")).toBeInTheDocument();

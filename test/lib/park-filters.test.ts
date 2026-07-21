@@ -3,7 +3,9 @@ import {
   buildParkQueryString,
   buildParkWhere,
   isDistanceSort,
+  parkFilterParamsToState,
   parseParkFilterParams,
+  searchParamsToURLSearchParams,
   PARK_PAGE_SIZE,
   type ParkFilterParams,
 } from "@/lib/park-filters";
@@ -258,6 +260,60 @@ describe("buildParkQueryString", () => {
     });
     expect(qs.get("lat")).toBe("39.7");
     expect(qs.get("lng")).toBe("-104.9");
+  });
+});
+
+describe("searchParamsToURLSearchParams", () => {
+  it("converts scalar values", () => {
+    const params = searchParamsToURLSearchParams({ state: "Arkansas", sort: "rating" });
+    expect(params.get("state")).toBe("Arkansas");
+    expect(params.get("sort")).toBe("rating");
+  });
+
+  it("appends array (repeated) values", () => {
+    const params = searchParamsToURLSearchParams({ terrain: ["sand", "rocks"] });
+    expect(params.getAll("terrain")).toEqual(["sand", "rocks"]);
+  });
+
+  it("skips undefined values", () => {
+    const params = searchParamsToURLSearchParams({ state: undefined, sort: "name" });
+    expect(params.has("state")).toBe(false);
+    expect(params.get("sort")).toBe("name");
+  });
+
+  it("round-trips a filtered URL record through parseParkFilterParams", () => {
+    const record = { state: "Arkansas", terrain: ["sand", "rocks"], sort: "rating" };
+    const parsed = parseParkFilterParams(searchParamsToURLSearchParams(record));
+    expect(parsed).toMatchObject({
+      state: "Arkansas",
+      terrains: ["sand", "rocks"],
+      sort: "rating",
+    });
+  });
+});
+
+describe("parkFilterParamsToState", () => {
+  it("maps parsed params onto the client Filters-panel state shape", () => {
+    const params = parseParkFilterParams(
+      new URLSearchParams("q=dunes&state=Arkansas&terrain=sand&minTrailMiles=25&permit=yes&sort=rating"),
+    );
+    expect(parkFilterParamsToState(params)).toEqual({
+      searchQuery: "dunes",
+      selectedState: "Arkansas",
+      selectedTerrains: ["sand"],
+      selectedAmenities: [],
+      selectedCamping: [],
+      selectedVehicleTypes: [],
+      minTrailMiles: 25,
+      minAcres: 0,
+      minRating: "",
+      selectedOwnership: "",
+      permitRequired: "yes",
+      membershipRequired: "",
+      flagsRequired: "",
+      sparkArrestorRequired: "",
+      sortOption: "rating",
+    });
   });
 });
 

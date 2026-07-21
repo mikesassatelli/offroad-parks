@@ -119,6 +119,72 @@ export function parseParkFilterParams(
   };
 }
 
+/**
+ * The client Filters-panel state shape (as managed by `useFilteredParks`).
+ * Kept here so URL params can be mapped onto the initial hook state in exactly
+ * one place, keeping the server-rendered page and the client's mount state in
+ * sync for deep-linked / shared filtered URLs.
+ */
+export interface ParkFilterState {
+  searchQuery: string;
+  selectedState?: string;
+  selectedTerrains: string[];
+  selectedAmenities: string[];
+  selectedCamping: string[];
+  selectedVehicleTypes: string[];
+  minTrailMiles: number;
+  minAcres: number;
+  minRating: string;
+  selectedOwnership: string;
+  permitRequired: TriState;
+  membershipRequired: TriState;
+  flagsRequired: TriState;
+  sparkArrestorRequired: TriState;
+  sortOption: SortOption;
+}
+
+/** Map parsed filter params onto the client Filters-panel state shape. */
+export function parkFilterParamsToState(p: ParkFilterParams): ParkFilterState {
+  return {
+    searchQuery: p.q,
+    selectedState: p.state,
+    selectedTerrains: p.terrains,
+    selectedAmenities: p.amenities,
+    selectedCamping: p.camping,
+    selectedVehicleTypes: p.vehicleTypes,
+    minTrailMiles: p.minTrailMiles,
+    minAcres: p.minAcres,
+    minRating: p.minRating,
+    selectedOwnership: p.ownership,
+    permitRequired: p.permitRequired,
+    membershipRequired: p.membershipRequired,
+    flagsRequired: p.flagsRequired,
+    sparkArrestorRequired: p.sparkArrestorRequired,
+    sortOption: p.sort,
+  };
+}
+
+/**
+ * Convert a Next.js App Router `searchParams` record (string | string[] |
+ * undefined values) into a `URLSearchParams` so it can be fed to
+ * {@link parseParkFilterParams}. Array values (repeated query keys) are
+ * appended so multi-selects round-trip correctly.
+ */
+export function searchParamsToURLSearchParams(
+  record: Record<string, string | string[] | undefined>,
+): URLSearchParams {
+  const params = new URLSearchParams();
+  for (const [key, value] of Object.entries(record)) {
+    if (value === undefined) continue;
+    if (Array.isArray(value)) {
+      for (const v of value) params.append(key, v);
+    } else {
+      params.append(key, value);
+    }
+  }
+  return params;
+}
+
 /** Client-side Filters-panel state shape used to build a request query. */
 export interface ParkQueryInput {
   searchQuery?: string;
