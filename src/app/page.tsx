@@ -1,84 +1,39 @@
 import UtvParksApp from "@/components/ui/OffroadParksApp";
-import { prisma } from "@/lib/prisma";
-import { resolveParkHeroImage } from "@/lib/park-hero";
-import { transformDbPark } from "@/lib/types";
-import { getBatchRainProbabilities } from "@/lib/weather";
+import {
+  parseParkFilterParams,
+  searchParamsToURLSearchParams,
+} from "@/lib/park-filters";
+import { getParkFacets, getParkMarkers, getParkPage } from "@/lib/park-query";
 
 // Force dynamic rendering to always show fresh data
 export const dynamic = "force-dynamic";
 
-export default async function Page() {
-  // Fetch parks from database
-  const dbParks = await prisma.park.findMany({
-    where: {
-      status: "APPROVED",
-    },
-    include: {
-      terrain: true,
-      amenities: true,
-      camping: true,
-      vehicleTypes: true,
-      address: true,
-      photos: {
-        where: {
-          status: "APPROVED",
-        },
-        take: 1,
-        orderBy: {
-          createdAt: "desc",
-        },
-        select: {
-          id: true,
-          url: true,
-          status: true,
-        },
-      },
-      heroPhoto: {
-        select: {
-          id: true,
-          url: true,
-          status: true,
-        },
-      },
-      // Latest published trail condition — drives the condition badge on
-      // the card. Without this, `park.latestCondition` is undefined on the
-      // home grid and the badge never renders (bug pre-dated OP-90).
-      trailConditions: {
-        where: { reportStatus: "PUBLISHED" },
-        orderBy: { createdAt: "desc" },
-        take: 1,
-        select: {
-          id: true,
-          status: true,
-          reportStatus: true,
-          createdAt: true,
-        },
-      },
-    },
-    orderBy: {
-      name: "asc",
-    },
-  });
+interface PageProps {
+  // Next.js 16 App Router: searchParams is an async prop.
+  searchParams?: Promise<Record<string, string | string[] | undefined>>;
+}
 
-  // OP-55: batched fetch of today's rain probability for each park. Uses
-  // the same forecast cache as OP-53 (6h TTL), so warm requests are
-  // basically free. Per-park 2s timeout + concurrency cap bound the
-  // first-render cost; parks that don't respond in time simply omit the
-  // badge until the next render.
-  const rainByParkId = await getBatchRainProbabilities(
-    dbParks.map((p) => ({
-      parkId: p.id,
-      latitude: p.latitude ?? p.address?.latitude ?? null,
-      longitude: p.longitude ?? p.address?.longitude ?? null,
-    })),
+export default async function Page({ searchParams }: PageProps) {
+  // Parse the real request query string so deep-linked / shared filtered URLs
+  // (e.g. `/?state=Arkansas`) server-render the correctly filtered first page
+  // and marker set. The client seeds its Filters panel from the same URL, so
+  // the mount state matches what was rendered here (no filtered/unfiltered
+  // flicker). Saved-preference-only filters (not in the URL) are applied on the
+  // client after mount, which triggers a page-0 refetch.
+  const resolved = (await searchParams) ?? {};
+  const params = parseParkFilterParams(searchParamsToURLSearchParams(resolved));
+
+  const [initialPage, initialMarkers, facets] = await Promise.all([
+    getParkPage(params, 0),
+    getParkMarkers(params),
+    getParkFacets(),
+  ]);
+
+  return (
+    <UtvParksApp
+      initialData={initialPage}
+      initialMarkers={initialMarkers}
+      facets={facets}
+    />
   );
-
-  // Transform to client format with hero images (respects operator selection)
-  const parks = dbParks.map((park) => ({
-    ...transformDbPark(park),
-    heroImage: resolveParkHeroImage(park),
-    todaysRainChance: rainByParkId.get(park.id) ?? null,
-  }));
-
-  return <UtvParksApp parks={parks} />;
 }

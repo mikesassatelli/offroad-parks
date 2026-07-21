@@ -1,24 +1,25 @@
 import { render, screen } from "@testing-library/react";
 import Page from "@/app/page";
-import { prisma } from "@/lib/prisma";
+import { getParkFacets, getParkMarkers, getParkPage } from "@/lib/park-query";
 import { vi } from "vitest";
+import type { ParkPage, ParkFacets } from "@/lib/park-query";
+import type { Park } from "@/lib/types";
 
-// Mock Prisma
-vi.mock("@/lib/prisma", () => ({
-  prisma: {
-    park: {
-      findMany: vi.fn(),
-    },
-  },
+// Mock the server query module — the page just wires it into the client app.
+vi.mock("@/lib/park-query", () => ({
+  getParkPage: vi.fn(),
+  getParkMarkers: vi.fn(),
+  getParkFacets: vi.fn(),
 }));
 
-// Mock the main app component
+// Mock the main app component so we can assert the props the page passes.
 vi.mock("@/components/ui/OffroadParksApp", () => ({
-  default: ({ parks }: any) => (
+  default: ({ initialData, initialMarkers, facets }: any) => (
     <div data-testid="utv-parks-app">
-      <h1>UTV Parks App</h1>
-      <div data-testid="parks-count">{parks.length} parks</div>
-      {parks.map((park: any) => (
+      <div data-testid="parks-count">{initialData.parks.length} parks</div>
+      <div data-testid="markers-count">{initialMarkers.length} markers</div>
+      <div data-testid="states-count">{facets.states.length} states</div>
+      {initialData.parks.map((park: Park) => (
         <div key={park.id} data-testid="park-item">
           {park.name}
         </div>
@@ -27,246 +28,120 @@ vi.mock("@/components/ui/OffroadParksApp", () => ({
   ),
 }));
 
+const makePark = (id: string, name: string): Park => ({
+  id,
+  name,
+  terrain: [],
+  amenities: [],
+  camping: [],
+  vehicleTypes: [],
+  address: { state: "California" },
+});
+
 describe("Homepage", () => {
   beforeEach(() => {
     vi.clearAllMocks();
   });
 
-  it("should render the app with parks data", async () => {
-    const mockDbParks = [
-      {
-        id: "park-1",
-        slug: "test-park-1",
-        name: "Test Park 1",
-        state: "California",
-        city: "Los Angeles",
-        latitude: 34.0522,
-        longitude: -118.2437,
-        dayPassUSD: 25,
-        milesOfTrails: 50,
-        acres: 1000,website: "https://testpark1.com",
-        phone: "5551234567",
-        notes: "Great park",
-        status: "APPROVED",
-        createdAt: new Date(),
-        updatedAt: new Date(),
-        createdBy: "user-1",
-        terrain: [{ id: "1", name: "sand", parkId: "park-1" }],
-        difficulty: [{ id: "1", level: "moderate", parkId: "park-1" }],
-        amenities: [{ id: "1", name: "camping", parkId: "park-1" }],
-        
-      camping: [],vehicleTypes: [],
-        photos: [{ url: "https://example.com/photo1.jpg" }],
-      },
-      {
-        id: "park-2",
-        slug: "test-park-2",
-        name: "Test Park 2",
-        state: "Arizona",
-        city: null,
-        latitude: 33.4484,
-        longitude: -112.074,
-        dayPassUSD: null,
-        milesOfTrails: null,
-        acres: null,website: null,
-        phone: null,
-        notes: null,
-        status: "APPROVED",
-        createdAt: new Date(),
-        updatedAt: new Date(),
-        createdBy: "user-1",
-        terrain: [{ id: "2", name: "rocks", parkId: "park-2" }],
-        difficulty: [],
-        amenities: [],
-        
-      camping: [],vehicleTypes: [],
-        photos: [],
-      },
-    ];
+  const page: ParkPage = {
+    parks: [makePark("test-park-1", "Test Park 1"), makePark("test-park-2", "Test Park 2")],
+    hasMore: true,
+    nextPage: 1,
+    total: 30,
+  };
+  const markers: Park[] = [makePark("test-park-1", "Test Park 1")];
+  const facets: ParkFacets = {
+    states: ["California", "Colorado"],
+    maxTrailMiles: 100,
+    maxAcres: 2000,
+  };
 
-    vi.mocked(prisma.park.findMany).mockResolvedValue(mockDbParks as any);
+  // Helper: Next 16 passes searchParams as an async prop.
+  const props = (
+    sp: Record<string, string | string[] | undefined> = {},
+  ) => ({ searchParams: Promise.resolve(sp) });
 
-    const component = await Page();
+  it("renders the app with the server-rendered first page", async () => {
+    vi.mocked(getParkPage).mockResolvedValue(page);
+    vi.mocked(getParkMarkers).mockResolvedValue(markers);
+    vi.mocked(getParkFacets).mockResolvedValue(facets);
+
+    const component = await Page(props());
     render(component);
 
     expect(screen.getByTestId("utv-parks-app")).toBeInTheDocument();
     expect(screen.getByText("2 parks")).toBeInTheDocument();
+    expect(screen.getByText("1 markers")).toBeInTheDocument();
+    expect(screen.getByText("2 states")).toBeInTheDocument();
+    expect(screen.getByText("Test Park 1")).toBeInTheDocument();
   });
 
-  it("should only fetch approved parks", async () => {
-    vi.mocked(prisma.park.findMany).mockResolvedValue([]);
+  it("fetches page 0 with default (unfiltered, name-sorted) params", async () => {
+    vi.mocked(getParkPage).mockResolvedValue(page);
+    vi.mocked(getParkMarkers).mockResolvedValue(markers);
+    vi.mocked(getParkFacets).mockResolvedValue(facets);
 
-    await Page();
+    await Page(props());
 
-    expect(prisma.park.findMany).toHaveBeenCalledWith(
-      expect.objectContaining({
-        where: { status: "APPROVED" },
-      }),
+    expect(getParkPage).toHaveBeenCalledWith(
+      expect.objectContaining({ sort: "name", q: "", terrains: [] }),
+      0,
+    );
+    expect(getParkMarkers).toHaveBeenCalledWith(
+      expect.objectContaining({ sort: "name" }),
+    );
+    expect(getParkFacets).toHaveBeenCalled();
+  });
+
+  it("server-renders a FILTERED first page + markers from URL searchParams", async () => {
+    vi.mocked(getParkPage).mockResolvedValue(page);
+    vi.mocked(getParkMarkers).mockResolvedValue(markers);
+    vi.mocked(getParkFacets).mockResolvedValue(facets);
+
+    // Deep link: /?state=Arkansas
+    await Page(props({ state: "Arkansas" }));
+
+    expect(getParkPage).toHaveBeenCalledWith(
+      expect.objectContaining({ state: "Arkansas" }),
+      0,
+    );
+    expect(getParkMarkers).toHaveBeenCalledWith(
+      expect.objectContaining({ state: "Arkansas" }),
     );
   });
 
-  it("should include terrain, amenities, camping, vehicleTypes, and address", async () => {
-    vi.mocked(prisma.park.findMany).mockResolvedValue([]);
+  it("handles repeated multi-select params (array searchParams values)", async () => {
+    vi.mocked(getParkPage).mockResolvedValue(page);
+    vi.mocked(getParkMarkers).mockResolvedValue(markers);
+    vi.mocked(getParkFacets).mockResolvedValue(facets);
 
-    await Page();
+    // /?terrain=sand&terrain=rocks&sort=rating
+    await Page(props({ terrain: ["sand", "rocks"], sort: "rating" }));
 
-    expect(prisma.park.findMany).toHaveBeenCalledWith(
-      expect.objectContaining({
-        include: expect.objectContaining({
-          terrain: true,
-          amenities: true,
-          camping: true,
-          vehicleTypes: true,
-          address: true,
-        }),
-      }),
+    expect(getParkPage).toHaveBeenCalledWith(
+      expect.objectContaining({ terrains: ["sand", "rocks"], sort: "rating" }),
+      0,
     );
   });
 
-  it("should fetch approved photos", async () => {
-    vi.mocked(prisma.park.findMany).mockResolvedValue([]);
+  it("renders with an empty first page", async () => {
+    vi.mocked(getParkPage).mockResolvedValue({
+      parks: [],
+      hasMore: false,
+      nextPage: null,
+      total: 0,
+    });
+    vi.mocked(getParkMarkers).mockResolvedValue([]);
+    vi.mocked(getParkFacets).mockResolvedValue({
+      states: [],
+      maxTrailMiles: 500,
+      maxAcres: 10000,
+    });
 
-    await Page();
-
-    expect(prisma.park.findMany).toHaveBeenCalledWith(
-      expect.objectContaining({
-        include: expect.objectContaining({
-          photos: expect.objectContaining({
-            where: { status: "APPROVED" },
-            take: 1,
-          }),
-        }),
-      }),
-    );
-  });
-
-  it("should order parks by name", async () => {
-    vi.mocked(prisma.park.findMany).mockResolvedValue([]);
-
-    await Page();
-
-    expect(prisma.park.findMany).toHaveBeenCalledWith(
-      expect.objectContaining({
-        orderBy: { name: "asc" },
-      }),
-    );
-  });
-
-  it("should handle parks with hero images", async () => {
-    const mockDbParks = [
-      {
-        id: "park-1",
-        slug: "test-park",
-        name: "Test Park",
-        state: "California",
-        city: "LA",
-        latitude: 34,
-        longitude: -118,
-        dayPassUSD: 25,
-        milesOfTrails: 50,
-        acres: 1000,website: null,
-        phone: null,
-        notes: null,
-        status: "APPROVED",
-        createdAt: new Date(),
-        updatedAt: new Date(),
-        createdBy: "user-1",
-        terrain: [],
-        difficulty: [],
-        amenities: [],
-        
-      camping: [],vehicleTypes: [],
-        photos: [{ url: "https://example.com/hero.jpg" }],
-      },
-    ];
-
-    vi.mocked(prisma.park.findMany).mockResolvedValue(mockDbParks as any);
-
-    const component = await Page();
-    render(component);
-
-    expect(screen.getByText("Test Park")).toBeInTheDocument();
-  });
-
-  it("should handle parks without hero images", async () => {
-    const mockDbParks = [
-      {
-        id: "park-1",
-        slug: "test-park",
-        name: "Test Park No Photo",
-        state: "Texas",
-        city: null,
-        latitude: 30,
-        longitude: -98,
-        dayPassUSD: null,
-        milesOfTrails: null,
-        acres: null,website: null,
-        phone: null,
-        notes: null,
-        status: "APPROVED",
-        createdAt: new Date(),
-        updatedAt: new Date(),
-        createdBy: "user-1",
-        terrain: [],
-        difficulty: [],
-        amenities: [],
-        
-      camping: [],vehicleTypes: [],
-        photos: [],
-      },
-    ];
-
-    vi.mocked(prisma.park.findMany).mockResolvedValue(mockDbParks as any);
-
-    const component = await Page();
-    render(component);
-
-    expect(screen.getByText("Test Park No Photo")).toBeInTheDocument();
-  });
-
-  it("should render with empty parks array", async () => {
-    vi.mocked(prisma.park.findMany).mockResolvedValue([]);
-
-    const component = await Page();
+    const component = await Page(props());
     render(component);
 
     expect(screen.getByTestId("utv-parks-app")).toBeInTheDocument();
     expect(screen.getByText("0 parks")).toBeInTheDocument();
-  });
-
-  it("should transform database parks to client format", async () => {
-    const mockDbParks = [
-      {
-        id: "park-1",
-        slug: "test-park",
-        name: "Test Park",
-        state: "California",
-        city: "LA",
-        latitude: 34.0522,
-        longitude: -118.2437,
-        dayPassUSD: 25,
-        milesOfTrails: 50,
-        acres: 1000,website: "https://test.com",
-        phone: "5551234567",
-        notes: "Test notes",
-        status: "APPROVED",
-        createdAt: new Date(),
-        updatedAt: new Date(),
-        createdBy: "user-1",
-        terrain: [{ id: "1", name: "sand", parkId: "park-1" }],
-        difficulty: [{ id: "1", level: "moderate", parkId: "park-1" }],
-        amenities: [{ id: "1", name: "camping", parkId: "park-1" }],
-        
-      camping: [],vehicleTypes: [],
-        photos: [{ url: "https://example.com/photo.jpg" }],
-      },
-    ];
-
-    vi.mocked(prisma.park.findMany).mockResolvedValue(mockDbParks as any);
-
-    const component = await Page();
-    render(component);
-
-    expect(screen.getByText("Test Park")).toBeInTheDocument();
   });
 });

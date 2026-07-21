@@ -1,273 +1,125 @@
 import { GET } from "@/app/api/parks/route";
-import { prisma } from "@/lib/prisma";
+import { getParkPage } from "@/lib/park-query";
 import { vi } from "vitest";
+import type { ParkPage } from "@/lib/park-query";
 
-// Mock Prisma
-vi.mock("@/lib/prisma", () => ({
-  prisma: {
-    park: {
-      findMany: vi.fn(),
-    },
-  },
+// The route delegates the actual query to getParkPage; here we assert it
+// parses the request query string correctly and shapes the response.
+vi.mock("@/lib/park-query", () => ({
+  getParkPage: vi.fn(),
 }));
+
+const emptyPage: ParkPage = {
+  parks: [],
+  hasMore: false,
+  nextPage: null,
+  total: 0,
+};
+
+function req(query = ""): Request {
+  return new Request(`http://localhost/api/parks${query}`);
+}
 
 describe("GET /api/parks", () => {
   beforeEach(() => {
     vi.clearAllMocks();
+    vi.mocked(getParkPage).mockResolvedValue(emptyPage);
   });
 
-  it("should return all approved parks", async () => {
-    // Arrange
-    const mockParks = [
-      {
-        id: "1",
-        name: "Test Park 1",
-        slug: "test-park-1",
-        latitude: 34.0522,
-        longitude: -118.2437,
-        website: "https://test1.com",
-        phone: "5551234567",
-        dayPassUSD: 25,
-        milesOfTrails: 50,
-        acres: 1000,
-        notes: "Great park",
-        status: "APPROVED",
-        terrain: [{ terrain: "sand" as const }],
-        amenities: [{ amenity: "restrooms" as const }],
-        camping: [],
-        vehicleTypes: [],
-        address: {
-          city: "Test City",
-          state: "CA",
-        },
-      },
-      {
-        id: "2",
-        name: "Test Park 2",
-        slug: "test-park-2",
-        latitude: null,
-        longitude: null,
-        website: null,
-        phone: null,
-        dayPassUSD: null,
-        milesOfTrails: null,
-        acres: null,
-        notes: null,
-        status: "APPROVED",
-        terrain: [],
-        amenities: [],
-        camping: [],
-        vehicleTypes: [],
-        address: {
-          city: null,
-          state: "TX",
-        },
-      },
-    ];
+  it("returns the paginated page shape", async () => {
+    const page: ParkPage = {
+      parks: [{ id: "p1", name: "Park 1", terrain: [], amenities: [], camping: [], vehicleTypes: [], address: { state: "CA" } }],
+      hasMore: true,
+      nextPage: 1,
+      total: 30,
+    };
+    vi.mocked(getParkPage).mockResolvedValue(page);
 
-    vi.mocked(prisma.park.findMany).mockResolvedValue(mockParks as any);
-
-    // Act
-    const response = await GET();
+    const response = await GET(req());
     const data = await response.json();
 
-    // Assert
     expect(response.status).toBe(200);
-    expect(Array.isArray(data)).toBe(true);
-    expect(data).toHaveLength(2);
+    expect(data).toEqual(page);
+  });
 
-    // Verify first park transformation
-    expect(data[0]).toMatchObject({
-      id: "test-park-1", // slug used as id
-      name: "Test Park 1",
-      coords: { lat: 34.0522, lng: -118.2437 },
-      website: "https://test1.com",
-      phone: "5551234567",
-      dayPassUSD: 25,
-      milesOfTrails: 50,
-      acres: 1000,
-      notes: "Great park",
-      terrain: ["sand"],
-      amenities: ["restrooms"],
-      camping: [],
-      vehicleTypes: [],
-      address: {
-        city: "Test City",
-        state: "CA",
-      },
-    });
-
-    // Verify second park (with null values)
-    expect(data[1]).toMatchObject({
-      id: "test-park-2",
-      name: "Test Park 2",
-      terrain: [],
-      amenities: [],
-      camping: [],
-      vehicleTypes: [],
-      address: {
-        state: "TX",
-      },
-    });
-
-    // Verify Prisma was called with correct filter
-    expect(prisma.park.findMany).toHaveBeenCalledWith(
-      expect.objectContaining({
-        where: { status: "APPROVED" },
-        include: expect.objectContaining({
-          terrain: true,
-          amenities: true,
-          camping: true,
-          vehicleTypes: true,
-          address: true,
-          trailConditions: expect.objectContaining({
-            where: expect.objectContaining({ reportStatus: "PUBLISHED" }),
-          }),
-        }),
-        orderBy: { name: "asc" },
-      }),
+  it("defaults to page 0 with the default page size", async () => {
+    await GET(req());
+    expect(getParkPage).toHaveBeenCalledWith(
+      expect.objectContaining({ sort: "name" }),
+      0,
+      24,
     );
   });
 
-  it("should return empty array when no parks exist", async () => {
-    // Arrange
-    vi.mocked(prisma.park.findMany).mockResolvedValue([]);
-
-    // Act
-    const response = await GET();
-    const data = await response.json();
-
-    // Assert
-    expect(response.status).toBe(200);
-    expect(Array.isArray(data)).toBe(true);
-    expect(data).toHaveLength(0);
+  it("parses the requested page number", async () => {
+    await GET(req("?page=3"));
+    expect(getParkPage).toHaveBeenCalledWith(expect.anything(), 3, 24);
   });
 
-  it("should only return APPROVED parks", async () => {
-    // Arrange
-    const mockParks = [
-      {
-        id: "1",
-        name: "Approved Park",
-        slug: "approved-park",
-        latitude: null,
-        longitude: null,
-        website: null,
-        phone: null,
-        dayPassUSD: null,
-        milesOfTrails: null,
-        acres: null,
-        notes: null,
-        status: "APPROVED",
-        terrain: [],
-        amenities: [],
-        camping: [],
-        vehicleTypes: [],
-        address: {
-          city: null,
-          state: "CA",
-        },
-      },
-    ];
+  it("clamps invalid/negative pages to 0", async () => {
+    await GET(req("?page=-4"));
+    expect(getParkPage).toHaveBeenCalledWith(expect.anything(), 0, 24);
+  });
 
-    vi.mocked(prisma.park.findMany).mockResolvedValue(mockParks as any);
+  it("caps pageSize at 100", async () => {
+    await GET(req("?pageSize=500"));
+    expect(getParkPage).toHaveBeenCalledWith(expect.anything(), 0, 100);
+  });
 
-    // Act
-    await GET();
+  it("forwards all filter params to getParkPage", async () => {
+    await GET(
+      req(
+        "?q=sand&state=California&terrain=sand&terrain=rocks&amenity=fuel&camping=tent&vehicleType=atv&minTrailMiles=25&minAcres=500&minRating=4&ownership=public&permit=yes&membership=no&flags=yes&sparkArrestor=no&sort=rating",
+      ),
+    );
 
-    // Assert - should filter by APPROVED status
-    expect(prisma.park.findMany).toHaveBeenCalledWith(
+    expect(getParkPage).toHaveBeenCalledWith(
       expect.objectContaining({
-        where: {
-          status: "APPROVED",
-        },
+        q: "sand",
+        state: "California",
+        terrains: ["sand", "rocks"],
+        amenities: ["fuel"],
+        camping: ["tent"],
+        vehicleTypes: ["atv"],
+        minTrailMiles: 25,
+        minAcres: 500,
+        minRating: "4",
+        ownership: "public",
+        permitRequired: "yes",
+        membershipRequired: "no",
+        flagsRequired: "yes",
+        sparkArrestorRequired: "no",
+        sort: "rating",
       }),
+      0,
+      24,
     );
   });
 
-  it("should handle database errors gracefully", async () => {
-    // Arrange
-    const dbError = new Error("Database connection failed");
-    vi.mocked(prisma.park.findMany).mockRejectedValue(dbError);
+  it("passes user coordinates through for distance sort", async () => {
+    await GET(req("?sort=distance-nearest&lat=39.7&lng=-104.9"));
+    expect(getParkPage).toHaveBeenCalledWith(
+      expect.objectContaining({
+        sort: "distance-nearest",
+        userLat: 39.7,
+        userLng: -104.9,
+      }),
+      0,
+      24,
+    );
+  });
 
-    // Mock console.error to avoid noise in test output
-    const consoleErrorSpy = vi
-      .spyOn(console, "error")
-      .mockImplementation(() => {});
+  it("handles query errors gracefully", async () => {
+    const err = new Error("boom");
+    vi.mocked(getParkPage).mockRejectedValue(err);
+    const consoleSpy = vi.spyOn(console, "error").mockImplementation(() => {});
 
-    // Act
-    const response = await GET();
+    const response = await GET(req());
     const data = await response.json();
 
-    // Assert
     expect(response.status).toBe(500);
     expect(data).toEqual({ error: "Failed to fetch parks" });
-    expect(consoleErrorSpy).toHaveBeenCalledWith(
-      "Error fetching parks:",
-      dbError,
-    );
-
-    // Cleanup
-    consoleErrorSpy.mockRestore();
-  });
-
-  it("should transform parks with multiple terrain types", async () => {
-    // Arrange
-    const mockPark = {
-      id: "1",
-      name: "Multi-Terrain Park",
-      slug: "multi-terrain-park",
-      latitude: null,
-      longitude: null,
-      website: null,
-      phone: null,
-      dayPassUSD: null,
-      milesOfTrails: null,
-      acres: null,
-      notes: null,
-      status: "APPROVED",
-      terrain: [
-        { terrain: "sand" as const },
-        { terrain: "rocks" as const },
-        { terrain: "mud" as const },
-      ],
-      amenities: [
-        { amenity: "restrooms" as const },
-        { amenity: "fuel" as const },
-      ],
-      camping: [],
-      vehicleTypes: [],
-      address: {
-        city: "Test",
-        state: "CA",
-      },
-    };
-
-    vi.mocked(prisma.park.findMany).mockResolvedValue([mockPark] as any);
-
-    // Act
-    const response = await GET();
-    const data = await response.json();
-
-    // Assert
-    expect(data[0].terrain).toEqual(["sand", "rocks", "mud"]);
-    expect(data[0].amenities).toEqual(["restrooms", "fuel"]);
-  });
-
-  it("should order parks by name ascending", async () => {
-    // Arrange
-    vi.mocked(prisma.park.findMany).mockResolvedValue([]);
-
-    // Act
-    await GET();
-
-    // Assert
-    expect(prisma.park.findMany).toHaveBeenCalledWith(
-      expect.objectContaining({
-        orderBy: {
-          name: "asc",
-        },
-      }),
-    );
+    expect(consoleSpy).toHaveBeenCalledWith("Error fetching parks:", err);
+    consoleSpy.mockRestore();
   });
 });

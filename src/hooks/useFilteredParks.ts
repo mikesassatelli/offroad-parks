@@ -10,27 +10,48 @@ export interface UserCoords {
   lng: number;
 }
 
+/** Optional initial Filters-panel state — used to seed the panel from URL
+ *  query params so deep-linked / shared filtered URLs render consistently. */
+export interface InitialFilterState {
+  searchQuery?: string;
+  selectedState?: string;
+  selectedTerrains?: string[];
+  selectedAmenities?: string[];
+  selectedCamping?: string[];
+  selectedVehicleTypes?: string[];
+  minTrailMiles?: number;
+  minAcres?: number;
+  minRating?: string;
+  selectedOwnership?: string;
+  permitRequired?: string;
+  membershipRequired?: string;
+  flagsRequired?: string;
+  sparkArrestorRequired?: string;
+  sortOption?: SortOption;
+}
+
 interface UseFilteredParksProps {
   parks: Park[];
   userCoords?: UserCoords | null;
+  initialState?: InitialFilterState;
 }
 
-export function useFilteredParks({ parks, userCoords }: UseFilteredParksProps) {
-  const [searchQuery, setSearchQuery] = useState("");
-  const [selectedState, setSelectedState] = useState<string | undefined>();
-  const [selectedTerrains, setSelectedTerrains] = useState<string[]>([]);
-  const [selectedAmenities, setSelectedAmenities] = useState<string[]>([]);
-  const [selectedCamping, setSelectedCamping] = useState<string[]>([]);
-  const [selectedVehicleTypes, setSelectedVehicleTypes] = useState<string[]>([]);
-  const [minTrailMiles, setMinTrailMiles] = useState<number>(0);
-  const [minAcres, setMinAcres] = useState<number>(0);
-  const [minRating, setMinRating] = useState<string>("");
-  const [selectedOwnership, setSelectedOwnership] = useState<string>("");
-  const [permitRequired, setPermitRequired] = useState<string>("");
-  const [membershipRequired, setMembershipRequired] = useState<string>("");
-  const [flagsRequired, setFlagsRequired] = useState<string>("");
-  const [sparkArrestorRequired, setSparkArrestorRequired] = useState<string>("");
-  const [sortOption, setSortOption] = useState<SortOption>("name");
+export function useFilteredParks({ parks, userCoords, initialState }: UseFilteredParksProps) {
+  const [searchQuery, setSearchQuery] = useState(initialState?.searchQuery ?? "");
+  const [selectedState, setSelectedState] = useState<string | undefined>(initialState?.selectedState);
+  const [selectedTerrains, setSelectedTerrains] = useState<string[]>(initialState?.selectedTerrains ?? []);
+  const [selectedAmenities, setSelectedAmenities] = useState<string[]>(initialState?.selectedAmenities ?? []);
+  const [selectedCamping, setSelectedCamping] = useState<string[]>(initialState?.selectedCamping ?? []);
+  const [selectedVehicleTypes, setSelectedVehicleTypes] = useState<string[]>(initialState?.selectedVehicleTypes ?? []);
+  const [minTrailMiles, setMinTrailMiles] = useState<number>(initialState?.minTrailMiles ?? 0);
+  const [minAcres, setMinAcres] = useState<number>(initialState?.minAcres ?? 0);
+  const [minRating, setMinRating] = useState<string>(initialState?.minRating ?? "");
+  const [selectedOwnership, setSelectedOwnership] = useState<string>(initialState?.selectedOwnership ?? "");
+  const [permitRequired, setPermitRequired] = useState<string>(initialState?.permitRequired ?? "");
+  const [membershipRequired, setMembershipRequired] = useState<string>(initialState?.membershipRequired ?? "");
+  const [flagsRequired, setFlagsRequired] = useState<string>(initialState?.flagsRequired ?? "");
+  const [sparkArrestorRequired, setSparkArrestorRequired] = useState<string>(initialState?.sparkArrestorRequired ?? "");
+  const [sortOption, setSortOption] = useState<SortOption>(initialState?.sortOption ?? "name");
 
   const availableStates = useMemo(
     () => Array.from(new Set(parks.map((park) => park.address.state))).sort(),
