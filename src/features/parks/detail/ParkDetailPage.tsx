@@ -156,10 +156,10 @@ function ParkDetailPageInner({
 
       {/* Park Title Section */}
       <div className="bg-card border-b border-border">
-        <div className="max-w-7xl mx-auto px-6 py-6">
-          <div className="flex items-start justify-between gap-4">
-            <div>
-              <h1 className="text-3xl font-bold tracking-tight text-foreground">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 py-4 sm:py-6">
+          <div className="flex flex-wrap items-start justify-between gap-4">
+            <div className="min-w-0">
+              <h1 className="text-2xl sm:text-3xl font-bold tracking-tight text-foreground break-words">
                 {park.name}
               </h1>
               <div className="flex items-center gap-2 text-muted-foreground mt-2">
@@ -213,7 +213,7 @@ function ParkDetailPageInner({
         </div>
       </div>
 
-      <main className="max-w-7xl mx-auto px-6 py-8">
+      <main className="max-w-7xl mx-auto px-4 sm:px-6 py-6 sm:py-8">
         {/* OP-54: NWS severe-weather alerts. Renders above operator alerts
             because weather can be life-safety; operator messaging is
             generally informational. Self-hides when no Severe+ alert. */}
@@ -332,7 +332,7 @@ function ParkDetailPageInner({
                             </div>
                             <div className="bg-muted/50 p-4 rounded-lg space-y-3">
                               {/* Ratings */}
-                              <div className="grid grid-cols-4 gap-2 text-xs">
+                              <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 text-xs">
                                 <div>
                                   <span className="text-muted-foreground">Overall</span>
                                   <StarRating rating={userReview.overallRating} size="sm" />
