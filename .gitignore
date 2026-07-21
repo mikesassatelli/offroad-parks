@@ -47,3 +47,8 @@ next-env.d.ts
 CLAUDE.md
 
 /src/generated/prisma
+
+# Secrets — env files without leading dot (e.g. from `vercel env pull`)
+env.production
+env.*.local
+env.local

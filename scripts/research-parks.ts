@@ -27,10 +27,17 @@ async function main() {
       ? parseInt(process.argv[limitIdx + 1], 10)
       : undefined;
 
+  // --only "<substr>": research just parks whose name contains this (case-insensitive),
+  // regardless of researchStatus. For targeted (re-)research of a single park.
+  const onlyIdx = process.argv.indexOf("--only");
+  const only = onlyIdx !== -1 ? process.argv[onlyIdx + 1] : undefined;
+
   const parks = await prisma.park.findMany({
     where: {
       address: { state: canonicalState },
-      researchStatus: { in: ["NEEDS_RESEARCH", "IN_PROGRESS"] },
+      ...(only
+        ? { name: { contains: only, mode: "insensitive" } }
+        : { researchStatus: { in: ["NEEDS_RESEARCH", "IN_PROGRESS"] } }),
     },
     select: { id: true, name: true },
     orderBy: { name: "asc" },

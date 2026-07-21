@@ -39,6 +39,7 @@ const PROMOTE = [
   "Carter Off Road Park",
   "RATS ATV & Off-Road Park",
   "Renegade Ranch",
+  "Mulberry Mountain Lodging & Events",
 ];
 
 // Park scalar fields copied verbatim (id/slug/timestamps/relations handled separately).
