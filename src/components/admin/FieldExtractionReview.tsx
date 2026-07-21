@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
-import { CheckCircle, XCircle, ExternalLink, CheckCheck, XOctagon } from "lucide-react";
+import { CheckCircle, XCircle, ExternalLink, CheckCheck, XOctagon, Pencil, Check, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import type { FieldExtractionSummary } from "@/lib/types";
 import { FIELD_DISPLAY_NAMES } from "@/lib/ai/field-display-names";
@@ -15,6 +15,9 @@ export function FieldExtractionReview({ extractions }: Props) {
   const router = useRouter();
   const [processingId, setProcessingId] = useState<string | null>(null);
   const [processingBulk, setProcessingBulk] = useState<string | null>(null);
+  const [editingId, setEditingId] = useState<string | null>(null);
+  const [editValue, setEditValue] = useState<string>("");
+  const [editError, setEditError] = useState<string | null>(null);
 
   // Group extractions by park
   const grouped = new Map<string, FieldExtractionSummary[]>();
@@ -57,13 +60,16 @@ export function FieldExtractionReview({ extractions }: Props) {
     }
   };
 
-  const handleApprove = async (id: string) => {
+  const handleApprove = async (id: string, editedValue?: string) => {
     setProcessingId(id);
     try {
       const response = await fetch(`/api/admin/ai-research/extractions/${id}/approve`, {
         method: "POST",
+        headers: editedValue !== undefined ? { "Content-Type": "application/json" } : undefined,
+        body: editedValue !== undefined ? JSON.stringify({ editedValue }) : undefined,
       });
       if (response.ok) {
+        setEditingId(null);
         router.refresh();
       } else {
         const data = await response.json();
@@ -72,6 +78,24 @@ export function FieldExtractionReview({ extractions }: Props) {
     } finally {
       setProcessingId(null);
     }
+  };
+
+  const startEdit = (extraction: FieldExtractionSummary) => {
+    setEditError(null);
+    // Prefill the editor with the human-readable form of the extracted value.
+    setEditValue(extraction.extractedValue ? formatValue(extraction.extractedValue) : "");
+    setEditingId(extraction.id);
+  };
+
+  const saveEdit = (extraction: FieldExtractionSummary) => {
+    // Re-encode the edited text back into the JSON shape the API expects,
+    // preserving the field's underlying type (array / boolean / number / string).
+    const encoded = encodeValue(extraction.fieldName, editValue, extraction.extractedValue);
+    if (encoded === null) {
+      setEditError("Could not parse that value. For list fields use comma-separated values.");
+      return;
+    }
+    handleApprove(extraction.id, encoded);
   };
 
   const handleReject = async (id: string) => {
@@ -150,6 +174,48 @@ export function FieldExtractionReview({ extractions }: Props) {
                         </p>
                       </div>
                     </div>
+                    {editingId === extraction.id && (
+                      <div className="mt-3 rounded-md border border-border bg-muted/40 p-3">
+                        <label className="block text-xs text-muted-foreground mb-1">
+                          {isArrayField(extraction.fieldName)
+                            ? "Edit values (comma-separated), then approve"
+                            : "Edit value, then approve"}
+                        </label>
+                        <textarea
+                          value={editValue}
+                          onChange={(e) => setEditValue(e.target.value)}
+                          rows={isArrayField(extraction.fieldName) ? 2 : 1}
+                          className="w-full rounded-md border border-input bg-background text-foreground px-2 py-1 text-sm font-mono focus:border-ring focus:ring-1 focus:ring-ring"
+                        />
+                        {editError && (
+                          <p className="mt-1 text-xs text-red-600 dark:text-red-400">{editError}</p>
+                        )}
+                        <div className="mt-2 flex items-center gap-2">
+                          <Button
+                            size="sm"
+                            onClick={() => saveEdit(extraction)}
+                            disabled={processingId !== null}
+                            className="text-green-700 dark:text-green-400"
+                            variant="outline"
+                          >
+                            <Check className="w-4 h-4 mr-1" />
+                            Approve with edit
+                          </Button>
+                          <Button
+                            size="sm"
+                            variant="ghost"
+                            onClick={() => {
+                              setEditingId(null);
+                              setEditError(null);
+                            }}
+                            disabled={processingId !== null}
+                          >
+                            <X className="w-4 h-4 mr-1" />
+                            Cancel
+                          </Button>
+                        </div>
+                      </div>
+                    )}
                     {extraction.sourceUrl && (
                       <div className="mt-2">
                         <a
@@ -168,8 +234,19 @@ export function FieldExtractionReview({ extractions }: Props) {
                     <Button
                       variant="ghost"
                       size="icon-sm"
+                      onClick={() => (editingId === extraction.id ? setEditingId(null) : startEdit(extraction))}
+                      disabled={processingId !== null}
+                      title="Edit value before approving"
+                      className="text-muted-foreground hover:text-primary hover:bg-primary/10"
+                    >
+                      <Pencil className="w-4 h-4" />
+                    </Button>
+                    <Button
+                      variant="ghost"
+                      size="icon-sm"
                       onClick={() => handleApprove(extraction.id)}
                       disabled={processingId !== null}
+                      title="Approve — apply this value to the live park"
                       className="text-green-600 dark:text-green-400 hover:text-green-700 dark:hover:text-green-300 hover:bg-green-50 dark:hover:bg-green-900/20"
                     >
                       <CheckCircle className="w-5 h-5" />
@@ -179,6 +256,7 @@ export function FieldExtractionReview({ extractions }: Props) {
                       size="icon-sm"
                       onClick={() => handleReject(extraction.id)}
                       disabled={processingId !== null}
+                      title="Deny — discard this proposed change"
                       className="text-red-600 dark:text-red-400 hover:text-red-700 dark:hover:text-red-300 hover:bg-red-50 dark:hover:bg-red-900/20"
                     >
                       <XCircle className="w-5 h-5" />
@@ -227,4 +305,52 @@ function formatValue(jsonStr: string): string {
   } catch {
     return jsonStr;
   }
+}
+
+/**
+ * Re-encode admin-edited display text back into the JSON shape the approve API
+ * expects, inferring the target type from the field and the original value.
+ * Returns null if the input can't be coerced sensibly.
+ */
+function encodeValue(
+  fieldName: string,
+  text: string,
+  originalJson: string | null
+): string | null {
+  const trimmed = text.trim();
+
+  if (isArrayField(fieldName)) {
+    const items = trimmed
+      .split(",")
+      .map((s) => s.trim())
+      .filter((s) => s.length > 0);
+    return JSON.stringify(items);
+  }
+
+  // Infer scalar type from the original extracted value when available.
+  let originalType: "boolean" | "number" | "string" = "string";
+  if (originalJson) {
+    try {
+      const parsed = JSON.parse(originalJson);
+      if (typeof parsed === "boolean") originalType = "boolean";
+      else if (typeof parsed === "number") originalType = "number";
+    } catch {
+      // fall back to string
+    }
+  }
+
+  if (originalType === "boolean") {
+    const lower = trimmed.toLowerCase();
+    if (["yes", "true", "1"].includes(lower)) return JSON.stringify(true);
+    if (["no", "false", "0"].includes(lower)) return JSON.stringify(false);
+    return null;
+  }
+
+  if (originalType === "number") {
+    const num = Number(trimmed);
+    if (Number.isNaN(num)) return null;
+    return JSON.stringify(num);
+  }
+
+  return JSON.stringify(trimmed);
 }
