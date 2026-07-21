@@ -211,7 +211,7 @@ export function SearchFiltersPanel({
     (sparkArrestorRequired ? 1 : 0);
 
   return (
-    <div className="md:col-span-1 bg-card p-4 rounded-lg shadow-sm border divide-y divide-border/60">
+    <div className="w-full bg-card p-4 rounded-lg shadow-sm border divide-y divide-border/60">
       {/* Header */}
       <div className="flex items-center justify-between pb-3">
         <h2 className="text-sm font-bold uppercase tracking-widest text-foreground">
