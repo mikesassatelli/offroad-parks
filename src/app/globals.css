@@ -127,6 +127,25 @@
   }
 }
 
+/*
+ * Leaflet's own CSS puts .leaflet-pane at z-index 400 and
+ * .leaflet-top/.leaflet-bottom/.leaflet-control at z-index 1000, but
+ * .leaflet-container does not establish its own stacking context. That lets
+ * Leaflet's internal z-indexes compete directly with (and beat) app overlays
+ * such as Radix dialogs/sheets/dropdowns, which use z-50, in the root
+ * stacking context — e.g. on mobile the map can render on top of the login
+ * dialog, the filters sheet, and the header dropdown menu.
+ *
+ * Trap Leaflet's internal stacking inside its own container so its
+ * panes/controls only ever compete with each other, never with
+ * body-portaled app overlays.
+ */
+.leaflet-container {
+  position: relative;
+  z-index: 0;
+  isolation: isolate;
+}
+
 /* Collapsible animations */
 @keyframes collapse {
   from {
