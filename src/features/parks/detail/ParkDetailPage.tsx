@@ -227,9 +227,12 @@ function ParkDetailPageInner({
             <ParkAlertsBanner alerts={alerts} />
           </div>
         )}
-        <div className="grid lg:grid-cols-3 gap-6">
-          {/* Main Content with Tabs */}
-          <div className="lg:col-span-2">
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+          {/* Main Content with Tabs. `min-w-0` lets this grid column shrink
+              below its content's intrinsic width on mobile — without it the
+              column grows to the widest child (e.g. the tab bar / cards) and
+              pushes the whole page past the viewport. */}
+          <div className="lg:col-span-2 min-w-0">
             <Tabs defaultValue="overview">
               <TabsList className="w-full justify-start mb-6">
                 <TabsTrigger value="overview">Overview</TabsTrigger>
@@ -435,7 +438,7 @@ function ParkDetailPageInner({
           </div>
 
           {/* Sidebar */}
-          <div className="lg:col-span-1">
+          <div className="lg:col-span-1 min-w-0">
             <div className="sticky top-20 space-y-6">
               {/* Sidebar header image. Source priority mirrors the park
                   card (OP-90 + operator hero selection):
