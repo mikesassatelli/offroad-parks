@@ -9,17 +9,17 @@ import { Loader2 } from "lucide-react";
  */
 const MESSAGES = [
   "Firing up the engine…",
-  "Airing down the tires…",
-  "Warming up the winch…",
-  "Scouting the trailhead…",
-  "Kicking up some dust…",
+  "Airing down…",
+  "Unspooling the winch…",
+  "Scouting ahead…",
+  "Kicking up dust…",
   "Locking the diffs…",
-  "Checking the trail map…",
-  "Fueling up for the ride…",
-  "Reading the mud…",
+  "Checking the map…",
+  "Fueling up…",
+  "Slinging mud…",
   "Chasing the ridgeline…",
-  "Loading up the gear…",
-  "Picking a line through the rocks…",
+  "Gearing up…",
+  "Picking a line…",
 ];
 
 export function LoadingMessage() {
