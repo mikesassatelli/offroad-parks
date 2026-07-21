@@ -1,17 +1,17 @@
 # Brand Identity — Naming & Availability
 <!-- Sprint 8 / E23. See also: BRANDING-merch-plan.md (merch & apparel), BACKLOG.md E23, SPRINT.md Sprint 8. -->
-<!-- Last updated: 2026-07-15 -->
+<!-- Last updated: 2026-07-16 -->
+<!-- DECISION: name = OHVCompass (see §6). Sections 1–5 preserve the research/exploration history. -->
 
 > ⚠️ **Legal caveat (read first).** Everything below is **preliminary orientation, not legal clearance.** Trademark findings come from secondary databases (Trademarkia/Justia/uspto.report) — the live USPTO system could not be queried directly — and social-handle checks were unauthenticated. "No conflict found" does **not** mean a name is free. **Before buying a domain, forming the LLC, or printing any merch, commission a formal trademark clearance search + opinion from a licensed attorney** covering Nice classes **9** (software), **42** (SaaS), **41** (online info/community), **25** (apparel), and **12/39** if we brand vehicles/trailers.
 
 ---
 
-## 1. Direction (locked with founder)
+## 1. Direction
 
-- **Retire "Offroad Parks" as the public name** — it was always a working codename. We want a **fresh, coined, ownable** brand.
+- **Retire "Offroad Parks" as the public name** — it was always a working codename.
 - **Aesthetic: vintage / heritage badge** — national-park-poster / WPA, crest & roundel, topo + compass motifs, earthy palette. (Drives the merch system — see [BRANDING-merch-plan.md](BRANDING-merch-plan.md).)
-
-**Why coined, not descriptive:** the "Offroad / Trail / Overland / 4x4 + X" naming space is saturated *and* legally weak (descriptive marks are hard to register and impossible to police — you'd be one "Trail-something" among dozens). The defensible, badge-native path is a coined/arbitrary word (the **Gaia / onX** model).
+- **Naming: the exploration weighed two paths** — *distinctive/coined* (stronger, ownable; the Gaia/onX model) vs *descriptive/SEO* (clearer, weaker mark). The founder prioritized descriptive/discovery and **chose `OHVCompass`** (§6). Sections below preserve the full exploration so the reasoning (and the rejected options + their conflicts) stays on record.
 
 ---
 
@@ -182,33 +182,35 @@ Descriptive names win *early* clarity; distinctive names win *long-term* brand e
 
 ---
 
-## 6. DECISION — `OHVAlmanac` *(chosen 2026-07-16, OP-104)*
+## 6. DECISION — `OHVCompass` *(chosen 2026-07-16, OP-104 — supersedes the earlier OHVAlmanac pick)*
 
-**Selected name: `OHVAlmanac`** ("OHV Almanac") — Path B (descriptive/SEO). The best-vetted descriptive option: no same-space user found, "Almanac" is unused in offroad (most distinctive of the descriptors), and it fits the vintage-heritage aesthetic — an *almanac* is a reference guide to places to ride. Accepted tradeoff: descriptive = a **weak, hard-to-enforce mark**; differentiation must come from brand execution + content, not legal exclusivity.
+**Selected name: `OHVCompass`** ("OHV Compass") — Path B (descriptive/discovery). Captures the founder's "scout / find your way / your next adventure" concept literally (a compass is the tool you explore with), is the **most badge-native** option (a compass rose is the core heritage-badge motif), and — unlike the evocative-descriptive names that kept hitting automaker landmines (Scout→Scout Motors, Recon→Honda Recon ATV, Atlas→Natural Atlas) — its only same-space vehicle collision is **Jeep Compass**, an *on-road* SUV, and "compass" is a diluted dictionary word. Accepted tradeoff: descriptive = a **weak, hard-to-enforce mark** (differentiation via brand + content, not legal exclusivity); expect a possible disclaimer or Supplemental Register outcome.
+
+*(History: OHVAlmanac was picked first, then reconsidered on outside input; OHVScout and OHVRecon were dropped on trademark conflicts — see §3f/§3g. OHVCompass and OHVAlmanac are the same "weak descriptive" tier; Compass won on concept + badge fit.)*
 
 **Availability confirmed 2026-07-16:**
-- **Domain:** `ohvalmanac.com` open — **and every checked TLD** (.co/.net/.org/.app/.io/.us) is open too.
-- **Handles:** Instagram `@ohvalmanac` and TikTok `@ohvalmanac` both return "not found" (available). *(Still verify YouTube/X/Facebook/Reddit and re-confirm all at reservation time.)*
+- **Domain:** `ohvcompass.com` open — **and every checked TLD** (.co/.net/.org/.app/.io/.us) is open too.
+- **Handles:** Instagram `@ohvcompass` and TikTok `@ohvcompass` both return "not found" (available). *(Still verify YouTube/X/Facebook/Reddit and re-confirm all at reservation time.)*
 
 ### 6a. Attorney trademark-clearance brief (OP-105 — do before any spend)
-Send an attorney: **Mark:** OHVALMANAC / "OHV Almanac" (standard-character word mark). **Goods/services + Nice classes:** 9 (downloadable app), 42 (SaaS discovery platform), 41 (online trail/park info & community), 25 (apparel/merch); consider 16 (stickers/printed guides), 35 (directory/listing), 39 (travel info). **Ask them to clear specifically:**
-- Descriptive-mark **registrability** — likely needs a strong showing or the **Supplemental Register** initially; strategy for acquired distinctiveness over time.
-- Any live **"Almanac"** marks in classes 9/42/41/25 (Old Farmer's Almanac is publishing — different class; confirm no outdoor/app owner).
-- **Common-law** offroad/outdoor use of "OHV Almanac" or close variants (full search beyond our preliminary web pass).
-- Freedom-to-operate for the apparel line (class 25) given the merch plan.
+Send an attorney: **Mark:** OHVCOMPASS / "OHV Compass" (standard-character word mark). **Goods/services + Nice classes:** 9 (downloadable app), 42 (SaaS discovery platform), 41 (online trail/park info & community), 25 (apparel/merch); consider 16 (stickers/printed guides), 35 (directory/listing), 39 (travel info). **Ask them to clear specifically:**
+- **Descriptiveness/registrability** — "compass" is suggestive-to-descriptive for a *navigation* product; expect a possible disclaimer or **Supplemental Register** start; plan for acquired distinctiveness. This is the primary risk.
+- **Jeep/FCA "Compass"** (Stellantis, Class 12 SUV) — assess likelihood-of-confusion for our app/SaaS/apparel; likely defensible given on-road goods + dilution, but confirm their class coverage (esp. any Class 9/25/42 filings).
+- **Crowded "Compass" field** — Compass, Inc. (real estate, Reg. 6041375, Class 9 software), plus many software "Compass" marks; and **Van Compass** (offroad suspension) as an offroad-adjacent user. Clear FTO in 9/42/25.
+- **Common-law** offroad/outdoor use of "OHV Compass" or close variants.
 
 ### 6b. Domain + handle reservation checklist (OP-106)
-- [ ] Register **`ohvalmanac.com`** (primary) + defensive **.co/.net/.org/.app** (all open); optional .io/.us.
-- [ ] Lock **@ohvalmanac** on Instagram, TikTok, YouTube, X, Facebook, Reddit (IG + TikTok confirmed open; grab now to prevent squatting).
-- [ ] Set `NEXT_PUBLIC_SITE_URL=https://ohvalmanac.com` in Vercel env → this also **unblocks E22 OP-103** (production email/magic-link).
+- [ ] Register **`ohvcompass.com`** (primary) + defensive **.co/.net/.org/.app** (all open); optional .io/.us.
+- [ ] Lock **@ohvcompass** on Instagram, TikTok, YouTube, X, Facebook, Reddit (IG + TikTok confirmed open; grab now to prevent squatting).
+- [ ] Set `NEXT_PUBLIC_SITE_URL=https://ohvcompass.com` in Vercel env → this also **unblocks E22 OP-103** (production email/magic-link).
 - [ ] Update Google OAuth authorized origins/redirects to the real domain + move consent screen to production (needs the live privacy-policy URL).
 - [ ] Do all of the above **only after** OP-105 clearance.
 
 ### 6c. App rebrand scope (OP-109 — after clearance + identity)
-Replace "Offroad Parks" → "OHV Almanac" across ~18 files (25 `src/` occurrences). Touch points: `src/lib/legal.ts` (siteName), `src/app/layout.tsx` metadata, `SiteFooter`/`AppHeader`/`LoginDialog` brand strings, `OffroadParksApp.tsx` (component + rename), `src/app/legal/*`, email templates, `package.json` name, README. Mechanical once the name is cleared and the badge identity (OP-108) exists.
+Replace "Offroad Parks" → "OHV Compass" across ~18 files (25 `src/` occurrences). Touch points: `src/lib/legal.ts` (siteName), `src/app/layout.tsx` metadata, `SiteFooter`/`AppHeader`/`LoginDialog` brand strings, `OffroadParksApp.tsx` (component + rename), `src/app/legal/*`, email templates, `package.json` name, README. Mechanical once the name is cleared and the badge identity (OP-108) exists.
 
 ### 6d. Remaining sequence
-OP-105 clearance → OP-106 domain/handles + OP-107 LLC → OP-108 "Trail Seal" identity → OP-109 rebrand → OP-110 merch v1 → OP-111 Earn-a-Badge (bridges E11) → OP-112 GTM.
+OP-105 clearance → OP-106 domain/handles + OP-107 LLC → OP-108 "Trail Seal" identity (compass-rose crest) → OP-109 rebrand → OP-110 merch v1 → OP-111 Earn-a-Badge (bridges E11) → OP-112 GTM.
 
 ---
 
