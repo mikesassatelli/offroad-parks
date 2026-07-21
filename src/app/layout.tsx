@@ -6,11 +6,26 @@ import { SiteFooter } from "@/components/layout/SiteFooter";
 import { SITE_URL } from "@/lib/site";
 import type { Metadata } from "next";
 
+const SITE_TITLE = "Offroad Parks";
+const SITE_DESCRIPTION =
+  "Find UTV‑friendly parks and trails by state, terrain, and amenities.";
+
 export const metadata: Metadata = {
   metadataBase: new URL(SITE_URL),
-  title: "Offroad Parks",
-  description:
-    "Find UTV‑friendly parks and trails by state, terrain, and amenities.",
+  title: SITE_TITLE,
+  description: SITE_DESCRIPTION,
+  openGraph: {
+    type: "website",
+    siteName: SITE_TITLE,
+    title: SITE_TITLE,
+    description: SITE_DESCRIPTION,
+    url: SITE_URL,
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: SITE_TITLE,
+    description: SITE_DESCRIPTION,
+  },
 };
 
 export default function RootLayout({
