@@ -144,6 +144,23 @@ describe("ParkContactSidebar", () => {
     expect(screen.queryByText("Official Website")).not.toBeInTheDocument();
   });
 
+  it("renders nothing when a park has no contact info at all", () => {
+    const emptyPark: Park = {
+      id: "empty",
+      name: "Empty Park",
+      address: { state: "Texas" },
+      terrain: [],
+      amenities: [],
+      camping: [],
+      vehicleTypes: [],
+    };
+
+    const { container } = render(<ParkContactSidebar park={emptyPark} />);
+
+    expect(screen.queryByText("Contact & Links")).not.toBeInTheDocument();
+    expect(container).toBeEmptyDOMElement();
+  });
+
   it("should display email link when contactEmail provided", () => {
     const park = { ...basePark, contactEmail: "info@testpark.com" };
     render(<ParkContactSidebar park={park} />);

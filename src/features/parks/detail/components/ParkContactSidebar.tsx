@@ -26,6 +26,16 @@ export function ParkContactSidebar({ park }: ParkContactSidebarProps) {
   const fullAddress = formatAddress(park.address);
   const hasStreetAddress = park.address.streetAddress || park.address.zipCode;
 
+  // Nothing actionable to show → hide the card entirely rather than render a
+  // "Contact & Links" header with only the generic disclaimer beneath it.
+  const hasAnyContact =
+    park.website ||
+    park.phone ||
+    park.contactEmail ||
+    (hasStreetAddress && fullAddress) ||
+    park.coords;
+  if (!hasAnyContact) return null;
+
   return (
     <Card>
       <CardHeader>

@@ -90,23 +90,24 @@ describe("ParkAttributesCards", () => {
     expect(screen.getByText("Picnic Table")).toBeInTheDocument();
   });
 
-  it("should handle empty terrain array", () => {
+  it("hides the Terrain card when terrain is empty", () => {
     const parkNoTerrain = { ...mockPark, terrain: [] };
     render(<ParkAttributesCards park={parkNoTerrain} />);
 
-    expect(screen.getByText("Terrain Types")).toBeInTheDocument();
-    expect(screen.queryByText("Sand")).not.toBeInTheDocument();
+    expect(screen.queryByText("Terrain Types")).not.toBeInTheDocument();
+    // Amenities still has data, so its card remains.
+    expect(screen.getByText("Amenities")).toBeInTheDocument();
   });
 
-  it("should handle empty amenities array", () => {
+  it("hides the Amenities card when amenities is empty", () => {
     const parkNoAmenities = { ...mockPark, amenities: [] };
     render(<ParkAttributesCards park={parkNoAmenities} />);
 
-    expect(screen.getByText("Amenities")).toBeInTheDocument();
-    expect(screen.queryByText("Restrooms")).not.toBeInTheDocument();
+    expect(screen.queryByText("Amenities")).not.toBeInTheDocument();
+    expect(screen.getByText("Terrain Types")).toBeInTheDocument();
   });
 
-  it("should handle park with all empty arrays", () => {
+  it("renders nothing when a park has no terrain, amenities, or vehicle types", () => {
     const minimalPark: Park = {
       id: "minimal",
       name: "Minimal Park",
@@ -118,10 +119,11 @@ describe("ParkAttributesCards", () => {
       vehicleTypes: [],
     };
 
-    render(<ParkAttributesCards park={minimalPark} />);
+    const { container } = render(<ParkAttributesCards park={minimalPark} />);
 
-    expect(screen.getByText("Terrain Types")).toBeInTheDocument();
-    expect(screen.getByText("Amenities")).toBeInTheDocument();
+    expect(screen.queryByText("Terrain Types")).not.toBeInTheDocument();
+    expect(screen.queryByText("Amenities")).not.toBeInTheDocument();
+    expect(container).toBeEmptyDOMElement();
   });
 
   it("should render single item in each category with formatted labels", () => {
