@@ -10,8 +10,24 @@ import {
   SheetTitle,
   SheetTrigger,
 } from "@/components/ui/sheet";
-import { ArrowLeft, CircleUser, MessageSquare, Menu, PlusCircle } from "lucide-react";
+import {
+  ArrowLeft,
+  Building2,
+  ChevronDown,
+  CircleUser,
+  Info,
+  Mail,
+  MessageSquare,
+  Menu,
+  PlusCircle,
+} from "lucide-react";
 import Link from "next/link";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 import { UserMenu } from "./UserMenu";
 import { ThemeToggle } from "@/components/ThemeToggle";
 import { LoginDialog } from "@/components/auth/LoginDialog";
@@ -90,6 +106,35 @@ export function AppHeader({ user, showBackButton }: AppHeaderProps) {
               </Link>
             </Button>
           )}
+
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <Button variant="ghost" size="sm" className="gap-1">
+                More
+                <ChevronDown className="w-4 h-4" />
+              </Button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="end">
+              <DropdownMenuItem asChild>
+                <Link href="/for-operators" className="flex items-center gap-2">
+                  <Building2 className="w-4 h-4" />
+                  For Operators
+                </Link>
+              </DropdownMenuItem>
+              <DropdownMenuItem asChild>
+                <Link href="/about" className="flex items-center gap-2">
+                  <Info className="w-4 h-4" />
+                  About
+                </Link>
+              </DropdownMenuItem>
+              <DropdownMenuItem asChild>
+                <Link href="/contact" className="flex items-center gap-2">
+                  <Mail className="w-4 h-4" />
+                  Contact
+                </Link>
+              </DropdownMenuItem>
+            </DropdownMenuContent>
+          </DropdownMenu>
         </nav>
 
         {/* Right-side controls: theme + auth stay visible at every size. On
@@ -143,6 +188,35 @@ export function AppHeader({ user, showBackButton }: AppHeaderProps) {
                     </Button>
                   </SheetClose>
                 )}
+
+                <div className="my-1 border-t border-border" />
+
+                <SheetClose asChild>
+                  <Button asChild variant="ghost" className="justify-start">
+                    <Link href="/for-operators" className="flex items-center gap-2">
+                      <Building2 className="w-4 h-4" />
+                      For Operators
+                    </Link>
+                  </Button>
+                </SheetClose>
+
+                <SheetClose asChild>
+                  <Button asChild variant="ghost" className="justify-start">
+                    <Link href="/about" className="flex items-center gap-2">
+                      <Info className="w-4 h-4" />
+                      About
+                    </Link>
+                  </Button>
+                </SheetClose>
+
+                <SheetClose asChild>
+                  <Button asChild variant="ghost" className="justify-start">
+                    <Link href="/contact" className="flex items-center gap-2">
+                      <Mail className="w-4 h-4" />
+                      Contact
+                    </Link>
+                  </Button>
+                </SheetClose>
               </nav>
             </SheetContent>
           </Sheet>
