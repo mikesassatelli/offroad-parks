@@ -93,7 +93,7 @@ async function main() {
 
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const parkData: any = {};
-    for (const f of PARK_SCALARS) parkData[f] = (src as any)[f];
+    for (const f of PARK_SCALARS) parkData[f] = src[f as keyof typeof src];
     parkData.status = "APPROVED";
     parkData.researchStatus = src.researchStatus;
 
@@ -116,7 +116,8 @@ async function main() {
       if (src.address) {
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
         const addr: any = { parkId: park.id };
-        for (const f of ADDRESS_SCALARS) addr[f] = (src.address as any)[f];
+        const srcAddr = src.address;
+        for (const f of ADDRESS_SCALARS) addr[f] = srcAddr[f as keyof typeof srcAddr];
         addr.state = src.address.state; // required
         await tx.address.create({ data: addr });
       }
