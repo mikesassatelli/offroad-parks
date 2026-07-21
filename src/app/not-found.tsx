@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { Compass, MapPinned } from "lucide-react";
+import { MapPinned } from "lucide-react";
 import { AppHeader } from "@/components/layout/AppHeader";
 import { BrokenTruck } from "@/components/BrokenTruck";
 import { Button } from "@/components/ui/button";
@@ -29,14 +29,8 @@ export default function NotFound() {
             get you back on solid ground.
           </p>
 
-          <div className="mt-8 flex flex-col sm:flex-row items-center justify-center gap-3 w-full sm:w-auto">
+          <div className="mt-8 flex justify-center">
             <Button asChild size="lg" className="w-full sm:w-auto">
-              <Link href="/">
-                <Compass className="w-4 h-4" />
-                Back to base camp
-              </Link>
-            </Button>
-            <Button asChild variant="outline" size="lg" className="w-full sm:w-auto">
               <Link href="/">
                 <MapPinned className="w-4 h-4" />
                 Browse parks
