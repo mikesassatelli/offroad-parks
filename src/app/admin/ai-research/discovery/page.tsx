@@ -47,9 +47,10 @@ export default async function ParkDiscoveryPage({
   return (
     <div className="space-y-6">
       <div>
-        <h1 className="text-2xl font-bold text-foreground">Park Discovery</h1>
+        <h2 className="text-xl font-semibold text-foreground">Discover New Parks</h2>
         <p className="text-sm text-muted-foreground mt-1">
-          Review AI-discovered park candidates and seed them into the database.
+          Job 1 of 3. Search a state to find parks not yet in the database, then accept the good
+          candidates to seed them. Once seeded, switch to the Research tab to enrich their data.
         </p>
       </div>
 
