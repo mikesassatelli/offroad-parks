@@ -34,8 +34,14 @@ export interface CardWeather {
    * Severe/Extreme NWS alert summary for the card badge, or null when there
    * are no life-safety-grade alerts. Minor/Moderate advisories are omitted —
    * they stay on the detail page (matches the detail banner's Severe+ gate).
+   * `event` is the NWS event name of the top alert (e.g. "Extreme Heat
+   * Warning"), shown as the badge label.
    */
-  severeWeather: { severity: "Severe" | "Extreme"; count: number } | null;
+  severeWeather: {
+    severity: "Severe" | "Extreme";
+    event: string;
+    count: number;
+  } | null;
 }
 
 const EMPTY_CARD_WEATHER: CardWeather = { rainChance: null, severeWeather: null };
@@ -49,10 +55,14 @@ const SEVERE_CARD_SEVERITIES: ReadonlySet<AlertSeverity> = new Set([
 function summarizeSevere(alerts: WeatherAlert[]): CardWeather["severeWeather"] {
   const severe = alerts.filter((a) => SEVERE_CARD_SEVERITIES.has(a.severity));
   if (severe.length === 0) return null;
-  const severity = severe.some((a) => a.severity === "Extreme")
-    ? "Extreme"
-    : "Severe";
-  return { severity, count: severe.length };
+  // Prefer an Extreme alert's title (and severity) over a Severe one so the
+  // badge names the most serious active alert, e.g. "Extreme Heat Warning".
+  const top = severe.find((a) => a.severity === "Extreme") ?? severe[0];
+  return {
+    severity: top.severity as "Severe" | "Extreme",
+    event: top.event,
+    count: severe.length,
+  };
 }
 
 /**

@@ -43,20 +43,42 @@ describe("ParkAlertBadges", () => {
     expect(screen.getByTestId("closure-badge")).toHaveTextContent("Limited");
   });
 
-  it("shows a weather badge with a count when >1 severe alert", () => {
+  it("shows the alert title, with a +N suffix when >1 severe alert", () => {
     render(
       <ParkAlertBadges
         summary={summary({
-          severeWeather: { severity: "Extreme", count: 3 },
+          severeWeather: {
+            severity: "Extreme",
+            event: "Extreme Heat Warning",
+            count: 3,
+          },
         })}
       />,
     );
     const badge = screen.getByTestId("weather-badge");
-    expect(badge).toHaveTextContent("Weather ×3");
+    expect(badge).toHaveTextContent("Extreme Heat Warning");
+    expect(badge).toHaveTextContent("+2");
     expect(badge).toHaveAttribute(
       "aria-label",
-      "3 active extreme weather alerts",
+      "Extreme Heat Warning — 3 active extreme weather alerts",
     );
+  });
+
+  it("shows just the title (no suffix) for a single alert", () => {
+    render(
+      <ParkAlertBadges
+        summary={summary({
+          severeWeather: {
+            severity: "Severe",
+            event: "Severe Thunderstorm Warning",
+            count: 1,
+          },
+        })}
+      />,
+    );
+    const badge = screen.getByTestId("weather-badge");
+    expect(badge).toHaveTextContent("Severe Thunderstorm Warning");
+    expect(badge.textContent).not.toContain("+");
   });
 
   it("renders both badges together, closure first", () => {
@@ -64,7 +86,11 @@ describe("ParkAlertBadges", () => {
       <ParkAlertBadges
         summary={summary({
           officialClosure: { severity: "DANGER", count: 1 },
-          severeWeather: { severity: "Severe", count: 1 },
+          severeWeather: {
+            severity: "Severe",
+            event: "Severe Thunderstorm Warning",
+            count: 1,
+          },
         })}
       />,
     );

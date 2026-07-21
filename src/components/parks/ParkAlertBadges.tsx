@@ -52,18 +52,21 @@ function WeatherBadge({
   const classes = extreme
     ? "bg-orange-600 text-white ring-orange-700/50"
     : "bg-amber-100 text-amber-900 ring-amber-300/60 dark:bg-amber-900/70 dark:text-amber-100 dark:ring-amber-700/60";
-  const aria = `${weather.count} active ${
-    extreme ? "extreme" : "severe"
-  } weather ${weather.count === 1 ? "alert" : "alerts"}`;
+  const more = weather.count - 1;
+  const aria =
+    `${weather.event} — ${weather.count} active ${
+      extreme ? "extreme" : "severe"
+    } weather ${weather.count === 1 ? "alert" : "alerts"}`;
   return (
     <div
       data-testid="weather-badge"
-      className={`inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-xs font-medium shadow-sm ring-1 ${classes}`}
+      className={`inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-xs font-medium shadow-sm ring-1 max-w-[12rem] ${classes}`}
       aria-label={aria}
       title={aria}
     >
-      <CloudLightning className="w-3 h-3" aria-hidden="true" />
-      <span>Weather{weather.count > 1 ? ` ×${weather.count}` : ""}</span>
+      <CloudLightning className="w-3 h-3 shrink-0" aria-hidden="true" />
+      <span className="truncate">{weather.event}</span>
+      {more > 0 && <span className="shrink-0 opacity-80">+{more}</span>}
     </div>
   );
 }

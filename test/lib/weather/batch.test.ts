@@ -29,10 +29,11 @@ function forecastWithRain(probability: number | null) {
 function alert(
   severity: WeatherAlert["severity"],
   id: string = severity,
+  event = "Test Warning",
 ): WeatherAlert {
   return {
     id,
-    event: "Test Warning",
+    event,
     severity,
     headline: null,
     description: "",
@@ -66,9 +67,9 @@ describe("getBatchParkCardWeather", () => {
   it("summarizes only Severe/Extreme alerts, ignoring Minor/Moderate", async () => {
     mockGetForecast.mockResolvedValue(forecastWithRain(10));
     mockGetActiveAlerts.mockResolvedValueOnce([
-      alert("Minor", "a"),
-      alert("Severe", "b"),
-      alert("Moderate", "c"),
+      alert("Minor", "a", "Frost Advisory"),
+      alert("Severe", "b", "Severe Thunderstorm Warning"),
+      alert("Moderate", "c", "Wind Advisory"),
     ]);
 
     const result = await getBatchParkCardWeather([
@@ -77,15 +78,19 @@ describe("getBatchParkCardWeather", () => {
 
     expect(result.get("p1")).toEqual({
       rainChance: 10,
-      severeWeather: { severity: "Severe", count: 1 },
+      severeWeather: {
+        severity: "Severe",
+        event: "Severe Thunderstorm Warning",
+        count: 1,
+      },
     });
   });
 
-  it("reports Extreme when any severe-plus alert is Extreme, counting all severe-plus", async () => {
+  it("reports the Extreme alert's title/severity, counting all severe-plus", async () => {
     mockGetForecast.mockResolvedValue(forecastWithRain(null));
     mockGetActiveAlerts.mockResolvedValueOnce([
-      alert("Severe", "a"),
-      alert("Extreme", "b"),
+      alert("Severe", "a", "Severe Thunderstorm Warning"),
+      alert("Extreme", "b", "Extreme Heat Warning"),
     ]);
 
     const result = await getBatchParkCardWeather([
@@ -94,7 +99,11 @@ describe("getBatchParkCardWeather", () => {
 
     expect(result.get("p1")).toEqual({
       rainChance: null,
-      severeWeather: { severity: "Extreme", count: 2 },
+      severeWeather: {
+        severity: "Extreme",
+        event: "Extreme Heat Warning",
+        count: 2,
+      },
     });
   });
 
@@ -123,7 +132,9 @@ describe("getBatchParkCardWeather", () => {
 
   it("degrades a rejected forecast to null rain but still returns alerts", async () => {
     mockGetForecast.mockRejectedValueOnce(new Error("nws 500"));
-    mockGetActiveAlerts.mockResolvedValueOnce([alert("Extreme")]);
+    mockGetActiveAlerts.mockResolvedValueOnce([
+      alert("Extreme", "x", "Extreme Heat Warning"),
+    ]);
 
     const result = await getBatchParkCardWeather([
       { parkId: "p1", latitude: 39, longitude: -104 },
@@ -131,7 +142,11 @@ describe("getBatchParkCardWeather", () => {
 
     expect(result.get("p1")).toEqual({
       rainChance: null,
-      severeWeather: { severity: "Extreme", count: 1 },
+      severeWeather: {
+        severity: "Extreme",
+        event: "Extreme Heat Warning",
+        count: 1,
+      },
     });
   });
 

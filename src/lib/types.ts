@@ -257,9 +257,11 @@ export type ParkCardAlertSummary = {
     severity: "DANGER" | "WARNING";
     count: number;
   } | null;
-  /** Active Severe/Extreme NWS weather alert, if any. */
+  /** Active Severe/Extreme NWS weather alert, if any. `event` is the NWS
+   *  event name of the top alert (e.g. "Extreme Heat Warning"). */
   severeWeather: {
     severity: "Severe" | "Extreme";
+    event: string;
     count: number;
   } | null;
 };

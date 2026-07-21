@@ -10,41 +10,45 @@ interface ParkAttributesCardsProps {
 export function ParkAttributesCards({ park }: ParkAttributesCardsProps) {
   return (
     <>
-      {/* Terrain Card */}
-      <Card>
-        <CardHeader>
-          <CardTitle>Terrain Types</CardTitle>
-        </CardHeader>
-        <CardContent>
-          <div className="flex flex-wrap gap-2">
-            {park.terrain.map((terrain) => (
-              <Badge
-                key={terrain}
-                variant="outline"
-                className="text-sm"
-              >
-                {formatTerrain(terrain as Terrain)}
-              </Badge>
-            ))}
-          </div>
-        </CardContent>
-      </Card>
+      {/* Terrain Card — hidden when the park has no terrain data */}
+      {park.terrain.length > 0 && (
+        <Card>
+          <CardHeader>
+            <CardTitle>Terrain Types</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="flex flex-wrap gap-2">
+              {park.terrain.map((terrain) => (
+                <Badge
+                  key={terrain}
+                  variant="outline"
+                  className="text-sm"
+                >
+                  {formatTerrain(terrain as Terrain)}
+                </Badge>
+              ))}
+            </div>
+          </CardContent>
+        </Card>
+      )}
 
-      {/* Amenities Card */}
-      <Card>
-        <CardHeader>
-          <CardTitle>Amenities</CardTitle>
-        </CardHeader>
-        <CardContent>
-          <div className="flex flex-wrap gap-2">
-            {park.amenities.map((amenity) => (
-              <Badge key={amenity} className="text-sm">
-                {formatAmenity(amenity as Amenity)}
-              </Badge>
-            ))}
-          </div>
-        </CardContent>
-      </Card>
+      {/* Amenities Card — hidden when the park has no amenities */}
+      {park.amenities.length > 0 && (
+        <Card>
+          <CardHeader>
+            <CardTitle>Amenities</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="flex flex-wrap gap-2">
+              {park.amenities.map((amenity) => (
+                <Badge key={amenity} className="text-sm">
+                  {formatAmenity(amenity as Amenity)}
+                </Badge>
+              ))}
+            </div>
+          </CardContent>
+        </Card>
+      )}
 
       {/* Vehicle Types Card */}
       {park.vehicleTypes.length > 0 && (
