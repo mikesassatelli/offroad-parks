@@ -218,3 +218,21 @@ OP-105 clearance → OP-106 domain/handles + OP-107 LLC → OP-108 "Trail Seal" 
 - Vantor conflict: SpaceNews (Maxar→Vantor rebrand), uspto.report/Justia VANTOR filings.
 - Merch culture & aesthetics: Bantha Overland (sticker culture), Overland Bound (numbered member badge), The Landmark Project (heritage badge apparel), Overland Expo (event seeding).
 - Domain checks: local `whois` (2026-07-15). Handle checks: unauthenticated page fetches (low-moderate reliability).
+
+### 3f. Round 6 — **discovery / adventure** concept (2026-07-16)
+
+After OHV Scout was dropped (§ below), founder wanted to keep the "scout / find your next adventure" *concept* (wife's tagline "Scout your next adventure") with a conflict-free name. Avoided discovery words that are vehicle models (Ranger, Pathfinder, Pioneer/Honda-UTV, Trailblazer, Discovery, Outlander/Can-Am-ATV, Frontier). "OHV + discovery-word" `.com`s (confirmed open via `dig`):
+
+| Name | Concept / badge | Tagline direction |
+|---|---|---|
+| **OHVWaypoint** | navigation marker/destination; GPS-native; strong badge | "Chart your next waypoint" |
+| **OHVCompass** | wayfinding; **already vetted clean**; compass-rose badge | "Find your bearing" |
+| **OHVRecon** | recon = *to scout ahead* (closest synonym to Scout); rugged | "Recon your next ride" — check TrailRecon YouTuber proximity |
+| **OHVLodestar** | guiding star; poetic heritage; star badge; most distinctive | "Follow your lodestar" |
+| **OHVWayfinder** | "find the way" — the scouting idea plainly | "Find your way out" |
+| **OHVQuest / OHVVenture / OHVForay / OHVRamble / OHVRoam / OHVWander** | adventure/roam words | "Your next quest/venture" |
+| _caution:_ OHVBeacon (Beacon Offroad), OHVBasecamp (Basecamp SaaS) | — | conflict risk |
+
+**Also dropped: `OHVScout`** — availability was clean (domain + IG/TikTok open) but **serious trademark conflict**: Scout Motors (VW-backed off-road-vehicle brand) is extending into apparel (Class 25 filing + "Scout Supply" store), a connected off-road app (Class 9/42), and retail — overlapping all three of our lines; "OHV" is descriptive so the mark collapses to "Scout." Plus onX uses "Scout." in its tagline and Scouting America is litigating. Not pursuable.
+
+**Leading discovery-concept picks:** OHVWaypoint, OHVRecon, OHVLodestar (+ OHVCompass already clean).
