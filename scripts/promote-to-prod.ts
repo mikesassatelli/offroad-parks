@@ -61,11 +61,11 @@ function generateSlug(name: string): string {
 
 async function main() {
   const commit = process.argv.includes("--commit");
-  const prodUrl = process.env.PROD_POSTGRES_PRISMA_URL;
+  const prodUrl = process.env.PROD_POSTGRES_URL ?? process.env.PROD_POSTGRES_PRISMA_URL;
   if (!prodUrl) {
     console.error(
-      "\n✋ PROD_POSTGRES_PRISMA_URL is not set. Add it to .env.local, e.g.\n" +
-      "   PROD_POSTGRES_PRISMA_URL=postgresql://…prod pooled URL…\n" +
+      "\n✋ PROD_POSTGRES_URL is not set. Add it to .env / .env.local, e.g.\n" +
+      "   PROD_POSTGRES_URL=postgresql://…prod pooled URL…\n" +
       "Refusing to run without an explicit prod target.\n",
     );
     process.exit(1);
