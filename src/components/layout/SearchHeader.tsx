@@ -21,6 +21,8 @@ interface SearchHeaderProps {
   locationLoading?: boolean;
   onUseMyLocation?: () => void;
   onClearLocation?: () => void;
+  /** Opens the filters sheet (mobile only — the sidebar is inline on desktop). */
+  onOpenFilters?: () => void;
 }
 
 export function SearchHeader({
@@ -32,14 +34,15 @@ export function SearchHeader({
   locationLoading = false,
   onUseMyLocation,
   onClearLocation,
+  onOpenFilters,
 }: SearchHeaderProps) {
   const handleSortChange = (value: string) => {
     onSortChange(value as SortOption);
   };
 
   return (
-    <div className="max-w-7xl mx-auto px-6 py-4">
-      <div className="bg-card p-3 rounded-lg shadow-sm border flex items-center gap-4">
+    <div className="max-w-7xl 2xl:max-w-[1800px] 3xl:max-w-[2400px] mx-auto px-6 py-4">
+      <div className="bg-card p-3 rounded-lg shadow-sm border flex items-center gap-2 sm:gap-4">
         <div className="relative flex-1">
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
           <Input
@@ -76,9 +79,21 @@ export function SearchHeader({
               </span>
             </Button>
           )}
-          <Filter className="w-4 h-4 text-muted-foreground" />
+          {/* Mobile filters trigger — the sidebar is inline on desktop, so this
+              only appears below lg. Opens the shared filters sheet. */}
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={onOpenFilters}
+            className="flex h-9 items-center gap-1.5 text-xs lg:hidden"
+            aria-label="Open filters"
+            title="Filters"
+          >
+            <Filter className="w-3.5 h-3.5" />
+            <span className="hidden sm:inline">Filters</span>
+          </Button>
           <Select onValueChange={handleSortChange} value={sortOption}>
-            <SelectTrigger className="w-40">
+            <SelectTrigger className="w-32 sm:w-40">
               <SelectValue placeholder="Sort" />
             </SelectTrigger>
             <SelectContent>
