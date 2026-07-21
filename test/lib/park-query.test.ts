@@ -6,7 +6,7 @@ import {
   toMarkerPark,
 } from "@/lib/park-query";
 import { prisma } from "@/lib/prisma";
-import { getBatchRainProbabilities } from "@/lib/weather";
+import { getBatchParkCardWeather } from "@/lib/weather";
 import type { ParkFilterParams } from "@/lib/park-filters";
 
 vi.mock("@/lib/prisma", () => ({
@@ -16,6 +16,9 @@ vi.mock("@/lib/prisma", () => ({
       count: vi.fn(),
       aggregate: vi.fn(),
     },
+    parkAlert: {
+      findMany: vi.fn(),
+    },
     address: {
       findMany: vi.fn(),
     },
@@ -23,7 +26,7 @@ vi.mock("@/lib/prisma", () => ({
 }));
 
 vi.mock("@/lib/weather", () => ({
-  getBatchRainProbabilities: vi.fn(),
+  getBatchParkCardWeather: vi.fn(),
 }));
 
 const params: ParkFilterParams = {
@@ -65,7 +68,8 @@ function dbPark(id: string, name: string, extra: Record<string, unknown> = {}) {
 describe("getParkPage (offset pagination)", () => {
   beforeEach(() => {
     vi.clearAllMocks();
-    vi.mocked(getBatchRainProbabilities).mockResolvedValue(new Map());
+    vi.mocked(getBatchParkCardWeather).mockResolvedValue(new Map());
+    vi.mocked(prisma.parkAlert.findMany).mockResolvedValue([] as never);
   });
 
   it("returns a decorated page with pagination metadata", async () => {
@@ -112,7 +116,8 @@ describe("getParkPage (offset pagination)", () => {
 describe("getParkPage (distance sort)", () => {
   beforeEach(() => {
     vi.clearAllMocks();
-    vi.mocked(getBatchRainProbabilities).mockResolvedValue(new Map());
+    vi.mocked(getBatchParkCardWeather).mockResolvedValue(new Map());
+    vi.mocked(prisma.parkAlert.findMany).mockResolvedValue([] as never);
   });
 
   it("orders by great-circle distance and paginates in JS", async () => {

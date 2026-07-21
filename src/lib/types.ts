@@ -239,8 +239,29 @@ export type Park = {
   // parks-list server page via NWS forecast. Null when no forecast is
   // available (no coords / outside coverage / fetch timeout).
   todaysRainChance?: number | null;
+  // Compact alert summary rendered as badges on the card. Populated by the
+  // list decoration step, not transformDbPark. Official closures come from
+  // active OFFICIAL_CLOSURE ParkAlerts; severeWeather from live NWS alerts.
+  alertSummary?: ParkCardAlertSummary | null;
   // Operator
   hasOperator?: boolean;
+};
+
+/** Compact alert state shown as pills on a park card. */
+export type ParkCardAlertSummary = {
+  /**
+   * Active official agency closure, if any (e.g. Iowa DNR OHV scraper).
+   * `severity` is DANGER for a full closure, WARNING for limited use.
+   */
+  officialClosure: {
+    severity: "DANGER" | "WARNING";
+    count: number;
+  } | null;
+  /** Active Severe/Extreme NWS weather alert, if any. */
+  severeWeather: {
+    severity: "Severe" | "Extreme";
+    count: number;
+  } | null;
 };
 
 // Database review type - matches Prisma ParkReview model with includes

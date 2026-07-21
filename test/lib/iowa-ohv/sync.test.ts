@@ -125,6 +125,7 @@ describe("syncIowaOhvAlerts", () => {
           parkId: "p-rathbun",
           userId: "bot-user",
           severity: "DANGER",
+          category: "OFFICIAL_CLOSURE",
           isActive: true,
         }),
       })

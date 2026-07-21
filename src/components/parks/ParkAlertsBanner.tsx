@@ -4,11 +4,13 @@ import { useEffect, useState } from "react";
 import {
   AlertOctagon,
   AlertTriangle,
+  Ban,
   CheckCircle2,
   Info,
   X,
 } from "lucide-react";
-import type { ParkAlertSeverity } from "@prisma/client";
+import type { ParkAlertCategory, ParkAlertSeverity } from "@prisma/client";
+import { PARK_ALERT_CATEGORY_LABEL } from "@/lib/park-alerts";
 
 const SEVERITY_CLASSES: Record<
   ParkAlertSeverity,
@@ -52,7 +54,15 @@ export interface ParkAlertDisplay {
   title: string;
   body: string | null;
   severity: ParkAlertSeverity;
+  category: ParkAlertCategory;
   createdAt: string | Date;
+}
+
+/** Official agency closures get a dedicated "no-entry" icon so they read
+ *  differently from a park's own operator notices, regardless of severity. */
+function iconFor(alert: ParkAlertDisplay): typeof Info {
+  if (alert.category === "OFFICIAL_CLOSURE") return Ban;
+  return SEVERITY_ICON[alert.severity];
 }
 
 export const ALERT_DISMISS_KEY_PREFIX = "park-alert-dismissed:";
@@ -118,7 +128,8 @@ export function ParkAlertsBanner({ alerts }: ParkAlertsBannerProps) {
     <div className="space-y-2" role="region" aria-label="Park alerts">
       {visible.map((alert) => {
         const classes = SEVERITY_CLASSES[alert.severity];
-        const Icon = SEVERITY_ICON[alert.severity];
+        const Icon = iconFor(alert);
+        const isOfficial = alert.category === "OFFICIAL_CLOSURE";
         return (
           <div
             key={alert.id}
@@ -128,7 +139,14 @@ export function ParkAlertsBanner({ alerts }: ParkAlertsBannerProps) {
           >
             <Icon className={`w-5 h-5 flex-shrink-0 mt-0.5 ${classes.icon}`} aria-hidden="true" />
             <div className="flex-1 min-w-0">
-              <p className={`text-sm font-semibold ${classes.title}`}>{alert.title}</p>
+              <div className="flex items-center flex-wrap gap-2">
+                <p className={`text-sm font-semibold ${classes.title}`}>{alert.title}</p>
+                {isOfficial && (
+                  <span className="text-[10px] uppercase tracking-wide font-medium rounded px-1.5 py-0.5 bg-red-200 text-red-900 dark:bg-red-900 dark:text-red-100">
+                    {PARK_ALERT_CATEGORY_LABEL.OFFICIAL_CLOSURE}
+                  </span>
+                )}
+              </div>
               {alert.body && (
                 <p className="text-sm mt-1 whitespace-pre-wrap">{alert.body}</p>
               )}

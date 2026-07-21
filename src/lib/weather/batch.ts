@@ -1,13 +1,17 @@
 /**
- * Batch helpers for OP-55 — page-grid rain badges fetched per visible card.
+ * Batch helpers for the park-grid cards (OP-55 rain badge + severe-weather
+ * badge).
  *
- * NWS does not expose a multi-point endpoint, so the parks-list page fans
- * out one `getForecast` call per park. To keep first-render latency
- * bounded we cap concurrency *and* apply a per-park timeout — late
- * responses return null and the badge simply doesn't render. Subsequent
- * page loads hit the 6h forecast cache and resolve immediately.
+ * NWS does not expose a multi-point endpoint, so the parks-list page fans out
+ * per park. Each worker fetches the forecast (for today's rain) AND the active
+ * alerts (for the severe-weather badge) *in parallel*, so adding the weather
+ * badge does not add a second fan-out pass. To keep first-render latency
+ * bounded we cap concurrency and apply a per-park timeout — late responses
+ * return empty and the badges simply don't render. Subsequent page loads hit
+ * the NWS fetch cache (6h forecast / 10min alerts) and resolve immediately.
  */
-import { getForecast } from "./nws-client";
+import { getActiveAlerts, getForecast } from "./nws-client";
+import type { AlertSeverity, WeatherAlert } from "./types";
 
 interface BatchInput {
   parkId: string;
@@ -22,19 +26,48 @@ interface BatchOptions {
   timeoutMs?: number;
 }
 
+/** Compact per-card weather summary. */
+export interface CardWeather {
+  /** Today's max precipitation probability (0–100), or null. */
+  rainChance: number | null;
+  /**
+   * Severe/Extreme NWS alert summary for the card badge, or null when there
+   * are no life-safety-grade alerts. Minor/Moderate advisories are omitted —
+   * they stay on the detail page (matches the detail banner's Severe+ gate).
+   */
+  severeWeather: { severity: "Severe" | "Extreme"; count: number } | null;
+}
+
+const EMPTY_CARD_WEATHER: CardWeather = { rainChance: null, severeWeather: null };
+
+/** Alert severities prominent enough to earn a badge on the card. */
+const SEVERE_CARD_SEVERITIES: ReadonlySet<AlertSeverity> = new Set([
+  "Severe",
+  "Extreme",
+]);
+
+function summarizeSevere(alerts: WeatherAlert[]): CardWeather["severeWeather"] {
+  const severe = alerts.filter((a) => SEVERE_CARD_SEVERITIES.has(a.severity));
+  if (severe.length === 0) return null;
+  const severity = severe.some((a) => a.severity === "Extreme")
+    ? "Extreme"
+    : "Severe";
+  return { severity, count: severe.length };
+}
+
 /**
- * Fetch today's max precipitation probability for each park. Returns a
- * Map<parkId, probability | null>. Parks without coords, parks whose call
- * exceeded the per-park timeout, and parks outside NWS coverage all map
- * to null (the consuming UI hides the badge in that case).
+ * Fetch today's rain probability + any Severe/Extreme weather alert for each
+ * park. Returns a Map<parkId, CardWeather>. Parks without coords, parks whose
+ * calls exceeded the per-park timeout, and parks outside NWS coverage all map
+ * to an empty summary (the consuming UI hides both badges in that case).
  */
-export async function getBatchRainProbabilities(
+export async function getBatchParkCardWeather(
   parks: readonly BatchInput[],
   opts: BatchOptions = {},
-): Promise<Map<string, number | null>> {
+): Promise<Map<string, CardWeather>> {
   const concurrency = opts.concurrency ?? 12;
   const timeoutMs = opts.timeoutMs ?? 2000;
-  const results = new Map<string, number | null>();
+  const results = new Map<string, CardWeather>();
   let cursor = 0;
 
   async function worker(): Promise<void> {
@@ -42,14 +75,21 @@ export async function getBatchRainProbabilities(
       const i = cursor++;
       const park = parks[i];
       if (park.latitude == null || park.longitude == null) {
-        results.set(park.parkId, null);
+        results.set(park.parkId, { ...EMPTY_CARD_WEATHER });
         continue;
       }
-      const fetched = getForecast(park.parkId, park.latitude, park.longitude)
-        .then((f) => f[0]?.precipProbability ?? null)
-        .catch(() => null);
-      const timed = new Promise<null>((resolve) =>
-        setTimeout(() => resolve(null), timeoutMs),
+      const lat = park.latitude;
+      const lng = park.longitude;
+      const fetched: Promise<CardWeather> = Promise.all([
+        getForecast(park.parkId, lat, lng)
+          .then((f) => f[0]?.precipProbability ?? null)
+          .catch(() => null),
+        getActiveAlerts(park.parkId, lat, lng)
+          .then(summarizeSevere)
+          .catch(() => null),
+      ]).then(([rainChance, severeWeather]) => ({ rainChance, severeWeather }));
+      const timed = new Promise<CardWeather>((resolve) =>
+        setTimeout(() => resolve({ ...EMPTY_CARD_WEATHER }), timeoutMs),
       );
       const value = await Promise.race([fetched, timed]);
       results.set(park.parkId, value);

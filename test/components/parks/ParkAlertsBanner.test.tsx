@@ -43,6 +43,7 @@ function makeAlert(overrides: Partial<ParkAlertDisplay> = {}): ParkAlertDisplay 
     title: "Main gate closed",
     body: "Use the north gate instead.",
     severity: "WARNING",
+    category: "OPERATOR",
     createdAt: new Date().toISOString(),
     ...overrides,
   };
@@ -117,5 +118,28 @@ describe("ParkAlertsBanner", () => {
     );
     expect(screen.getByText("Alert A")).toBeInTheDocument();
     expect(screen.getByText("Alert B")).toBeInTheDocument();
+  });
+
+  it("shows an 'Official closure' chip only for OFFICIAL_CLOSURE alerts", () => {
+    render(
+      <ParkAlertsBanner
+        alerts={[
+          makeAlert({
+            id: "closure",
+            title: "Park Closed",
+            severity: "DANGER",
+            category: "OFFICIAL_CLOSURE",
+          }),
+          makeAlert({
+            id: "operator",
+            title: "Trail work Saturday",
+            category: "OPERATOR",
+          }),
+        ]}
+      />
+    );
+    expect(screen.getByText("Official closure")).toBeInTheDocument();
+    // Only one chip — the operator alert must not get one.
+    expect(screen.getAllByText("Official closure")).toHaveLength(1);
   });
 });

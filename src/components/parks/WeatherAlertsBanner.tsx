@@ -18,7 +18,13 @@ import {
   DialogTrigger,
 } from "@/components/ui/dialog";
 import type { AlertSeverity, WeatherAlert } from "@/lib/weather/types";
-import { AlertOctagon, AlertTriangle, ExternalLink, Info } from "lucide-react";
+import {
+  Cloud,
+  CloudDrizzle,
+  CloudLightning,
+  CloudRain,
+  ExternalLink,
+} from "lucide-react";
 import { useState } from "react";
 
 // Severity sort order — Extreme first, Unknown last.
@@ -68,12 +74,14 @@ const SEVERITY_CLASSES: Record<
   },
 };
 
-const SEVERITY_ICON: Record<AlertSeverity, typeof Info> = {
-  Extreme: AlertOctagon,
-  Severe: AlertOctagon,
-  Moderate: AlertTriangle,
-  Minor: Info,
-  Unknown: Info,
+// Weather-specific icons give NWS alerts their own visual identity, distinct
+// from the alert-triangle/octagon family used by operator + closure banners.
+const SEVERITY_ICON: Record<AlertSeverity, typeof Cloud> = {
+  Extreme: CloudLightning,
+  Severe: CloudLightning,
+  Moderate: CloudRain,
+  Minor: CloudDrizzle,
+  Unknown: Cloud,
 };
 
 interface WeatherAlertsBannerProps {

@@ -7,8 +7,13 @@
  */
 import { prisma } from "@/lib/prisma";
 import { resolveParkHeroImage } from "@/lib/park-hero";
-import { transformDbPark, type DbPark, type Park } from "@/lib/types";
-import { getBatchRainProbabilities } from "@/lib/weather";
+import {
+  transformDbPark,
+  type DbPark,
+  type Park,
+  type ParkCardAlertSummary,
+} from "@/lib/types";
+import { getBatchParkCardWeather } from "@/lib/weather";
 import { haversineDistance } from "@/lib/geo";
 import {
   buildParkOrderBy,
@@ -50,9 +55,50 @@ export interface ParkPage {
   total: number;
 }
 
-/** Shape hero image + today's rain onto a page of raw Prisma parks. The
- *  expensive weather fan-out is bounded to just this page. */
-async function decorateParks(dbParks: unknown[]): Promise<Park[]> {
+/**
+ * Active official-closure alerts for a set of park DB ids, aggregated per park
+ * into the card badge shape. One indexed query for the whole page — cheap
+ * relative to the weather fan-out. Uses the same active predicate as the detail
+ * page (isActive + not-expired + already-started).
+ */
+async function getBatchOfficialClosures(
+  parkDbIds: string[],
+): Promise<Map<string, ParkCardAlertSummary["officialClosure"]>> {
+  const out = new Map<string, ParkCardAlertSummary["officialClosure"]>();
+  if (parkDbIds.length === 0) return out;
+
+  const now = new Date();
+  const rows = await prisma.parkAlert.findMany({
+    where: {
+      parkId: { in: parkDbIds },
+      category: "OFFICIAL_CLOSURE",
+      isActive: true,
+      OR: [{ expiresAt: null }, { expiresAt: { gt: now } }],
+      AND: [{ OR: [{ startsAt: null }, { startsAt: { lte: now } }] }],
+    },
+    select: { parkId: true, severity: true },
+  });
+
+  for (const r of rows) {
+    // DANGER (full closure) outranks WARNING (limited use) for the badge.
+    const severity: "DANGER" | "WARNING" =
+      r.severity === "DANGER" ? "DANGER" : "WARNING";
+    const prev = out.get(r.parkId);
+    out.set(r.parkId, {
+      severity:
+        prev?.severity === "DANGER" || severity === "DANGER"
+          ? "DANGER"
+          : "WARNING",
+      count: (prev?.count ?? 0) + 1,
+    });
+  }
+  return out;
+}
+
+/** Shape hero image + today's rain + alert badges onto a page of raw Prisma
+ *  parks. The expensive weather fan-out is bounded to just this page; the
+ *  closure lookup is a single indexed query. */
+export async function decorateParks(dbParks: unknown[]): Promise<Park[]> {
   const rows = dbParks as Array<
     DbPark & {
       latitude: number | null;
@@ -61,19 +107,29 @@ async function decorateParks(dbParks: unknown[]): Promise<Park[]> {
     }
   >;
 
-  const rainByParkId = await getBatchRainProbabilities(
-    rows.map((p) => ({
-      parkId: p.id,
-      latitude: p.latitude ?? p.address?.latitude ?? null,
-      longitude: p.longitude ?? p.address?.longitude ?? null,
-    })),
-  );
+  const [cardWeather, closures] = await Promise.all([
+    getBatchParkCardWeather(
+      rows.map((p) => ({
+        parkId: p.id,
+        latitude: p.latitude ?? p.address?.latitude ?? null,
+        longitude: p.longitude ?? p.address?.longitude ?? null,
+      })),
+    ),
+    getBatchOfficialClosures(rows.map((p) => p.id)),
+  ]);
 
-  return rows.map((park) => ({
-    ...transformDbPark(park),
-    heroImage: resolveParkHeroImage(park as never),
-    todaysRainChance: rainByParkId.get(park.id) ?? null,
-  }));
+  return rows.map((park) => {
+    const weather = cardWeather.get(park.id);
+    return {
+      ...transformDbPark(park),
+      heroImage: resolveParkHeroImage(park as never),
+      todaysRainChance: weather?.rainChance ?? null,
+      alertSummary: {
+        officialClosure: closures.get(park.id) ?? null,
+        severeWeather: weather?.severeWeather ?? null,
+      },
+    };
+  });
 }
 
 /**
