@@ -2,11 +2,14 @@ import { prisma } from "@/lib/prisma";
 import { getDomainAccuracyStats } from "@/lib/ai/feedback-loop";
 import Link from "next/link";
 import {
-  BrainCircuit,
   DollarSign,
   FileSearch,
-  AlertCircle,
   BarChart3,
+  Search,
+  FlaskConical,
+  ClipboardCheck,
+  ArrowRight,
+  BrainCircuit,
 } from "lucide-react";
 
 export default async function AIResearchPage() {
@@ -17,6 +20,7 @@ export default async function AIResearchPage() {
     researched,
     maintenance,
     pendingReviewCount,
+    pendingCandidates,
     totalSessions,
     costResult,
     recentSessions,
@@ -28,6 +32,7 @@ export default async function AIResearchPage() {
     prisma.park.count({ where: { researchStatus: "RESEARCHED" } }),
     prisma.park.count({ where: { researchStatus: "MAINTENANCE" } }),
     prisma.fieldExtraction.count({ where: { status: "PENDING_REVIEW" } }),
+    prisma.parkCandidate.count({ where: { status: "PENDING" } }),
     prisma.researchSession.count(),
     prisma.researchSession.aggregate({ _sum: { estimatedCostUSD: true } }),
     prisma.researchSession.findMany({
@@ -42,49 +47,41 @@ export default async function AIResearchPage() {
 
   return (
     <div className="space-y-6">
-      <div className="flex items-center justify-between">
-        <h1 className="text-2xl font-bold text-foreground">AI Research</h1>
-        {pendingReviewCount > 0 && (
-          <Link
-            href="/admin/ai-research/pending"
-            className="inline-flex items-center gap-2 rounded-lg bg-yellow-50 dark:bg-yellow-900/20 px-4 py-2 text-sm font-medium text-yellow-800 dark:text-yellow-300 border border-yellow-200 dark:border-yellow-900/40 hover:bg-yellow-100 dark:hover:bg-yellow-900/30 transition-colors"
-          >
-            <AlertCircle className="w-4 h-4" />
-            {pendingReviewCount} pending review{pendingReviewCount !== 1 ? "s" : ""}
-          </Link>
-        )}
+      {/* Three jobs */}
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+        <JobCard
+          href="/admin/ai-research/discovery"
+          icon={<Search className="w-5 h-5" />}
+          title="Discover"
+          description="Find parks not yet in the database and seed the good ones."
+          metricLabel="candidates awaiting review"
+          metricValue={pendingCandidates}
+        />
+        <JobCard
+          href="/admin/ai-research/research"
+          icon={<FlaskConical className="w-5 h-5" />}
+          title="Research"
+          description="Run AI on existing parks to gather more and better data. Research continuously — proposed edits accumulate per park."
+          metricLabel="parks still need research"
+          metricValue={needsResearch}
+        />
+        <JobCard
+          href="/admin/ai-research/review"
+          icon={<ClipboardCheck className="w-5 h-5" />}
+          title="Review"
+          description="Approve, edit, or deny the AI's proposed field changes. Nothing goes live until you approve it."
+          metricLabel="proposed changes pending"
+          metricValue={pendingReviewCount}
+          highlight={pendingReviewCount > 0}
+        />
       </div>
 
-      {/* Stats Grid */}
+      {/* Supporting stats */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-        <div className="rounded-lg border border-border bg-card p-6">
-          <div className="flex items-center gap-2 text-sm text-muted-foreground">
-            <BrainCircuit className="w-4 h-4" />
-            Total Parks
-          </div>
-          <p className="mt-2 text-2xl font-bold text-foreground">{totalParks}</p>
-        </div>
-        <div className="rounded-lg border border-border bg-card p-6">
-          <div className="flex items-center gap-2 text-sm text-muted-foreground">
-            <AlertCircle className="w-4 h-4" />
-            Pending Reviews
-          </div>
-          <p className="mt-2 text-2xl font-bold text-yellow-600 dark:text-yellow-400">{pendingReviewCount}</p>
-        </div>
-        <div className="rounded-lg border border-border bg-card p-6">
-          <div className="flex items-center gap-2 text-sm text-muted-foreground">
-            <FileSearch className="w-4 h-4" />
-            Research Sessions
-          </div>
-          <p className="mt-2 text-2xl font-bold text-foreground">{totalSessions}</p>
-        </div>
-        <div className="rounded-lg border border-border bg-card p-6">
-          <div className="flex items-center gap-2 text-sm text-muted-foreground">
-            <DollarSign className="w-4 h-4" />
-            Total Cost
-          </div>
-          <p className="mt-2 text-2xl font-bold text-foreground">${totalCost.toFixed(2)}</p>
-        </div>
+        <StatCard icon={<BrainCircuit className="w-4 h-4" />} label="Total Parks" value={totalParks} />
+        <StatCard icon={<FileSearch className="w-4 h-4" />} label="Research Sessions" value={totalSessions} />
+        <StatCard icon={<DollarSign className="w-4 h-4" />} label="Total Cost" value={`$${totalCost.toFixed(2)}`} />
+        <StatCard icon={<ClipboardCheck className="w-4 h-4" />} label="Pending Reviews" value={pendingReviewCount} />
       </div>
 
       {/* Research Status Breakdown */}
@@ -181,7 +178,7 @@ export default async function AIResearchPage() {
                 {recentSessions.map((session) => (
                   <tr key={session.id} className="hover:bg-accent/50 transition-colors">
                     <td className="px-4 py-3 text-sm font-medium text-foreground">
-                      <Link href={`/parks/${session.park.slug}`} className="hover:text-primary">
+                      <Link href={`/admin/ai-research/research/${session.parkId}`} className="hover:text-primary">
                         {session.park.name}
                       </Link>
                     </td>
@@ -207,6 +204,60 @@ export default async function AIResearchPage() {
           </div>
         )}
       </div>
+    </div>
+  );
+}
+
+function JobCard({
+  href,
+  icon,
+  title,
+  description,
+  metricLabel,
+  metricValue,
+  highlight,
+}: {
+  href: string;
+  icon: React.ReactNode;
+  title: string;
+  description: string;
+  metricLabel: string;
+  metricValue: number;
+  highlight?: boolean;
+}) {
+  return (
+    <Link
+      href={href}
+      className={`group flex flex-col rounded-lg border bg-card p-6 transition-colors hover:border-primary/60 hover:bg-accent/30 ${
+        highlight ? "border-yellow-300 dark:border-yellow-900/50" : "border-border"
+      }`}
+    >
+      <div className="flex items-center justify-between">
+        <div className="flex items-center gap-2 text-primary">
+          {icon}
+          <span className="text-base font-semibold text-foreground">{title}</span>
+        </div>
+        <ArrowRight className="w-4 h-4 text-muted-foreground group-hover:text-primary transition-colors" />
+      </div>
+      <p className="mt-2 text-sm text-muted-foreground flex-1">{description}</p>
+      <p className="mt-4 text-sm">
+        <span className={`text-2xl font-bold ${highlight ? "text-yellow-600 dark:text-yellow-400" : "text-foreground"}`}>
+          {metricValue}
+        </span>{" "}
+        <span className="text-muted-foreground">{metricLabel}</span>
+      </p>
+    </Link>
+  );
+}
+
+function StatCard({ icon, label, value }: { icon: React.ReactNode; label: string; value: string | number }) {
+  return (
+    <div className="rounded-lg border border-border bg-card p-6">
+      <div className="flex items-center gap-2 text-sm text-muted-foreground">
+        {icon}
+        {label}
+      </div>
+      <p className="mt-2 text-2xl font-bold text-foreground">{value}</p>
     </div>
   );
 }

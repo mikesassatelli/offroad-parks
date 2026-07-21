@@ -156,10 +156,10 @@ function ParkDetailPageInner({
 
       {/* Park Title Section */}
       <div className="bg-card border-b border-border">
-        <div className="max-w-7xl mx-auto px-6 py-6">
-          <div className="flex items-start justify-between gap-4">
-            <div>
-              <h1 className="text-3xl font-bold tracking-tight text-foreground">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 py-4 sm:py-6">
+          <div className="flex flex-wrap items-start justify-between gap-4">
+            <div className="min-w-0">
+              <h1 className="text-2xl sm:text-3xl font-bold tracking-tight text-foreground break-words">
                 {park.name}
               </h1>
               <div className="flex items-center gap-2 text-muted-foreground mt-2">
@@ -213,7 +213,7 @@ function ParkDetailPageInner({
         </div>
       </div>
 
-      <main className="max-w-7xl mx-auto px-6 py-8">
+      <main className="max-w-7xl mx-auto px-4 sm:px-6 py-6 sm:py-8">
         {/* OP-54: NWS severe-weather alerts. Renders above operator alerts
             because weather can be life-safety; operator messaging is
             generally informational. Self-hides when no Severe+ alert. */}
@@ -227,9 +227,12 @@ function ParkDetailPageInner({
             <ParkAlertsBanner alerts={alerts} />
           </div>
         )}
-        <div className="grid lg:grid-cols-3 gap-6">
-          {/* Main Content with Tabs */}
-          <div className="lg:col-span-2">
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+          {/* Main Content with Tabs. `min-w-0` lets this grid column shrink
+              below its content's intrinsic width on mobile — without it the
+              column grows to the widest child (e.g. the tab bar / cards) and
+              pushes the whole page past the viewport. */}
+          <div className="lg:col-span-2 min-w-0">
             <Tabs defaultValue="overview">
               <TabsList className="w-full justify-start mb-6">
                 <TabsTrigger value="overview">Overview</TabsTrigger>
@@ -332,7 +335,7 @@ function ParkDetailPageInner({
                             </div>
                             <div className="bg-muted/50 p-4 rounded-lg space-y-3">
                               {/* Ratings */}
-                              <div className="grid grid-cols-4 gap-2 text-xs">
+                              <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 text-xs">
                                 <div>
                                   <span className="text-muted-foreground">Overall</span>
                                   <StarRating rating={userReview.overallRating} size="sm" />
@@ -435,7 +438,7 @@ function ParkDetailPageInner({
           </div>
 
           {/* Sidebar */}
-          <div className="lg:col-span-1">
+          <div className="lg:col-span-1 min-w-0">
             <div className="sticky top-20 space-y-6">
               {/* Sidebar header image. Source priority mirrors the park
                   card (OP-90 + operator hero selection):
