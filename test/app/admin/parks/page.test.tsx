@@ -8,6 +8,8 @@ vi.mock("@/lib/prisma", () => ({
   prisma: {
     park: {
       findMany: vi.fn(),
+      count: vi.fn(),
+      groupBy: vi.fn(),
     },
   },
 }));
@@ -60,6 +62,11 @@ describe("AdminParksPage", () => {
 
   beforeEach(() => {
     vi.clearAllMocks();
+    vi.mocked(prisma.park.count).mockResolvedValue(2);
+    vi.mocked(prisma.park.groupBy).mockResolvedValue([
+      { status: "PENDING", _count: { _all: 1 } },
+      { status: "APPROVED", _count: { _all: 1 } },
+    ] as any);
   });
 
   it("should render page title", async () => {
@@ -113,6 +120,8 @@ describe("AdminParksPage", () => {
         },
       },
       orderBy: [{ status: "asc" }, { createdAt: "desc" }],
+      skip: 0,
+      take: 25,
     });
   });
 
@@ -258,5 +267,149 @@ describe("AdminParksPage", () => {
         where: { status: "PENDING" }, // Uppercase
       }),
     );
+  });
+
+  describe("pagination", () => {
+    it("should request the correct skip/take for a given page", async () => {
+      vi.mocked(prisma.park.count).mockResolvedValue(60);
+      vi.mocked(prisma.park.findMany).mockResolvedValue([]);
+
+      await AdminParksPage({
+        searchParams: Promise.resolve({ page: "2" }),
+      });
+
+      expect(prisma.park.findMany).toHaveBeenCalledWith(
+        expect.objectContaining({ skip: 25, take: 25 }),
+      );
+    });
+
+    it("should clamp the requested page to the last valid page", async () => {
+      vi.mocked(prisma.park.count).mockResolvedValue(30); // 2 pages of 25
+      vi.mocked(prisma.park.findMany).mockResolvedValue([]);
+
+      await AdminParksPage({
+        searchParams: Promise.resolve({ page: "99" }),
+      });
+
+      // Page 2 is the last valid page (30 results / 25 per page)
+      expect(prisma.park.findMany).toHaveBeenCalledWith(
+        expect.objectContaining({ skip: 25, take: 25 }),
+      );
+    });
+
+    it("should clamp non-numeric or below-range page values to page 1", async () => {
+      vi.mocked(prisma.park.count).mockResolvedValue(10);
+      vi.mocked(prisma.park.findMany).mockResolvedValue([]);
+
+      await AdminParksPage({
+        searchParams: Promise.resolve({ page: "0" }),
+      });
+
+      expect(prisma.park.findMany).toHaveBeenCalledWith(
+        expect.objectContaining({ skip: 0, take: 25 }),
+      );
+    });
+
+    it("should render Page X of Y and both Prev/Next when in the middle", async () => {
+      vi.mocked(prisma.park.count).mockResolvedValue(75); // 3 pages
+      vi.mocked(prisma.park.findMany).mockResolvedValue(mockParks as any);
+
+      const component = await AdminParksPage({
+        searchParams: Promise.resolve({ page: "2" }),
+      });
+      render(component);
+
+      expect(screen.getByText("Page 2 of 3")).toBeInTheDocument();
+      expect(screen.getByRole("link", { name: "Previous" })).toHaveAttribute(
+        "href",
+        "/admin/parks?page=1",
+      );
+      expect(screen.getByRole("link", { name: "Next" })).toHaveAttribute(
+        "href",
+        "/admin/parks?page=3",
+      );
+    });
+
+    it("should not render a Previous link on the first page", async () => {
+      vi.mocked(prisma.park.count).mockResolvedValue(75);
+      vi.mocked(prisma.park.findMany).mockResolvedValue(mockParks as any);
+
+      const component = await AdminParksPage({
+        searchParams: Promise.resolve({}),
+      });
+      render(component);
+
+      expect(
+        screen.queryByRole("link", { name: "Previous" }),
+      ).not.toBeInTheDocument();
+      expect(screen.getByRole("link", { name: "Next" })).toBeInTheDocument();
+    });
+
+    it("should not render a Next link on the last page", async () => {
+      vi.mocked(prisma.park.count).mockResolvedValue(50); // 2 pages
+      vi.mocked(prisma.park.findMany).mockResolvedValue(mockParks as any);
+
+      const component = await AdminParksPage({
+        searchParams: Promise.resolve({ page: "2" }),
+      });
+      render(component);
+
+      expect(
+        screen.queryByRole("link", { name: "Next" }),
+      ).not.toBeInTheDocument();
+      expect(
+        screen.getByRole("link", { name: "Previous" }),
+      ).toBeInTheDocument();
+    });
+
+    it("should not render pagination controls when there are no results", async () => {
+      vi.mocked(prisma.park.count).mockResolvedValue(0);
+      vi.mocked(prisma.park.findMany).mockResolvedValue([]);
+
+      const component = await AdminParksPage({
+        searchParams: Promise.resolve({}),
+      });
+      render(component);
+
+      expect(screen.queryByText(/Page \d+ of \d+/)).not.toBeInTheDocument();
+    });
+
+    it("should preserve the status filter in pagination links", async () => {
+      vi.mocked(prisma.park.count).mockResolvedValue(75);
+      vi.mocked(prisma.park.findMany).mockResolvedValue(mockParks as any);
+
+      const component = await AdminParksPage({
+        searchParams: Promise.resolve({ status: "pending", page: "2" }),
+      });
+      render(component);
+
+      expect(screen.getByRole("link", { name: "Previous" })).toHaveAttribute(
+        "href",
+        "/admin/parks?status=pending&page=1",
+      );
+      expect(screen.getByRole("link", { name: "Next" })).toHaveAttribute(
+        "href",
+        "/admin/parks?status=pending&page=3",
+      );
+    });
+
+    it("should reset to page 1 (omit page param) when switching status tabs", async () => {
+      vi.mocked(prisma.park.count).mockResolvedValue(75);
+      vi.mocked(prisma.park.findMany).mockResolvedValue(mockParks as any);
+
+      const component = await AdminParksPage({
+        searchParams: Promise.resolve({ status: "pending", page: "2" }),
+      });
+      render(component);
+
+      const approvedTab = screen.getByRole("link", { name: /approved/i });
+      expect(approvedTab).toHaveAttribute(
+        "href",
+        "/admin/parks?status=approved",
+      );
+
+      const allTab = screen.getByRole("link", { name: /all/i });
+      expect(allTab).toHaveAttribute("href", "/admin/parks");
+    });
   });
 });
