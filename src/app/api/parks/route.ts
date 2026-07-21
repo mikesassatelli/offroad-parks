@@ -1,39 +1,38 @@
 import { NextResponse } from "next/server";
-import { prisma } from "@/lib/prisma";
-import { transformDbPark } from "@/lib/types";
-import { CONDITION_STALE_AFTER_MS } from "@/lib/trail-conditions";
+import { parseParkFilterParams, PARK_PAGE_SIZE } from "@/lib/park-filters";
+import { getParkPage } from "@/lib/park-query";
 
-export async function GET() {
+// Filtering depends on the request query string, so responses must not be
+// statically cached.
+export const dynamic = "force-dynamic";
+
+/**
+ * Paginated, server-filtered park list for the home page.
+ *
+ * Accepts every filter the UI supports (see `buildParkQueryString`) plus a
+ * zero-based `page` (and optional `pageSize`). Returns one page of fully
+ * card-shaped parks together with pagination metadata:
+ *
+ *   { parks: Park[], hasMore: boolean, nextPage: number | null, total: number }
+ */
+export async function GET(request: Request) {
   try {
-    const parks = await prisma.park.findMany({
-      where: {
-        status: "APPROVED",
-      },
-      include: {
-        terrain: true,
-        amenities: true,
-        camping: true,
-        vehicleTypes: true,
-        address: true,
-        trailConditions: {
-          where: {
-            reportStatus: "PUBLISHED",
-            createdAt: { gte: new Date(Date.now() - CONDITION_STALE_AFTER_MS) },
-          },
-          orderBy: { createdAt: "desc" },
-          take: 1,
-          select: { id: true, status: true, reportStatus: true, createdAt: true },
-        },
-      },
-      orderBy: {
-        name: "asc",
-      },
-    });
+    const { searchParams } = new URL(request.url);
+    const params = parseParkFilterParams(searchParams);
 
-    // Transform to client-friendly format
-    const transformedParks = parks.map(transformDbPark);
+    const pageRaw = Number(searchParams.get("page") ?? "0");
+    const page = Number.isFinite(pageRaw) && pageRaw > 0 ? Math.floor(pageRaw) : 0;
 
-    return NextResponse.json(transformedParks);
+    const pageSizeRaw = Number(
+      searchParams.get("pageSize") ?? String(PARK_PAGE_SIZE),
+    );
+    const pageSize =
+      Number.isFinite(pageSizeRaw) && pageSizeRaw > 0
+        ? Math.min(Math.floor(pageSizeRaw), 100)
+        : PARK_PAGE_SIZE;
+
+    const result = await getParkPage(params, page, pageSize);
+    return NextResponse.json(result);
   } catch (error) {
     console.error("Error fetching parks:", error);
     return NextResponse.json(
