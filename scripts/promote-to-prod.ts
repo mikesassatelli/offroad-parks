@@ -13,17 +13,23 @@
  *    review aggregates are NOT copied.
  *  - Dry-run by default. Pass --commit to actually write.
  *
- *   # preview (writes nothing):
+ *  - Which parks: pass one or more exact park names as CLI args to promote just
+ *    those; with no names it falls back to DEFAULT_PROMOTE (the Arkansas batch).
+ *
+ *   # preview the default batch (writes nothing):
  *   npx tsx --env-file=.env --env-file=.env.local scripts/promote-to-prod.ts
+ *   # preview specific parks:
+ *   npx tsx --env-file=.env --env-file=.env.local scripts/promote-to-prod.ts "River Valley OHV Park"
  *   # execute:
- *   npx tsx --env-file=.env --env-file=.env.local scripts/promote-to-prod.ts --commit
+ *   npx tsx --env-file=.env --env-file=.env.local scripts/promote-to-prod.ts "River Valley OHV Park" --commit
  */
 import { PrismaClient } from "@prisma/client";
 import { prisma as dev } from "../src/lib/prisma";
 
-// The 15 verified, new-to-prod Arkansas parks (excludes the 3 known prod dupes:
-// 3B/Eureka Springs Adventure Park, Hot Springs Off-Road Park, Wolf Pen Gap).
-const PROMOTE = [
+// Default batch when no park names are passed on the CLI: the 15 verified,
+// new-to-prod Arkansas parks (excludes the 3 known prod dupes: 3B/Eureka
+// Springs Adventure Park, Hot Springs Off-Road Park, Wolf Pen Gap).
+const DEFAULT_PROMOTE = [
   "Buckhorn OHV Trails",
   "Mill Creek OHV Trail",
   "Brock Creek Trails",
@@ -62,6 +68,8 @@ function generateSlug(name: string): string {
 
 async function main() {
   const commit = process.argv.includes("--commit");
+  const cliNames = process.argv.slice(2).filter((a) => !a.startsWith("--"));
+  const PROMOTE = cliNames.length > 0 ? cliNames : DEFAULT_PROMOTE;
   const prodUrl = process.env.PROD_POSTGRES_URL ?? process.env.PROD_POSTGRES_PRISMA_URL;
   if (!prodUrl) {
     console.error(
