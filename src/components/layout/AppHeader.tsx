@@ -48,22 +48,22 @@ export function AppHeader({ user, showBackButton }: AppHeaderProps) {
 
   return (
     <header className="bg-card/95 backdrop-blur-sm border-b border-border shadow-sm z-20">
-      <div className="max-w-7xl 2xl:max-w-[1800px] 3xl:max-w-[2400px] mx-auto px-6 py-3 flex items-center gap-3">
+      <div className="max-w-7xl 2xl:max-w-[1800px] 3xl:max-w-[2400px] mx-auto px-4 sm:px-6 py-3 flex items-center gap-2 sm:gap-3">
         {showBackButton && (
-          <Button asChild variant="ghost" size="sm" className="mr-2">
-            <Link href="/" className="flex items-center gap-2">
+          <Button asChild variant="ghost" size="sm" className="mr-1 sm:mr-2">
+            <Link href="/" className="flex items-center gap-2" aria-label="Back to Parks">
               <ArrowLeft className="w-4 h-4" />
-              Back to Parks
+              <span className="hidden sm:inline">Back to Parks</span>
             </Link>
           </Button>
         )}
         <Link
           href="/"
-          className="text-xl font-extrabold uppercase tracking-widest text-foreground hover:text-primary transition-colors"
+          className="text-base sm:text-xl font-extrabold uppercase tracking-wide sm:tracking-widest text-foreground hover:text-primary transition-colors whitespace-nowrap"
         >
           Offroad Parks
         </Link>
-        <span className="ml-1 inline-flex items-center text-[10px] px-2 py-0.5 rounded-md bg-primary/15 text-primary border border-primary/25 font-bold uppercase tracking-wider">
+        <span className="ml-1 hidden sm:inline-flex items-center text-[10px] px-2 py-0.5 rounded-md bg-primary/15 text-primary border border-primary/25 font-bold uppercase tracking-wider">
           beta
         </span>
         {/* Desktop nav — hidden on mobile, moved into the sheet below */}
