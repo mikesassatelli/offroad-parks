@@ -4,10 +4,16 @@ export const anthropic = createAnthropic({
   apiKey: process.env.ANTHROPIC_API_KEY,
 });
 
-/** Model used for structured data extraction. */
-export const EXTRACTION_MODEL = anthropic("claude-sonnet-4-20250514");
+/**
+ * Model used for structured data extraction.
+ * NOTE: `claude-sonnet-4-20250514` was retired (returns 404) — the whole
+ * research pipeline 404'd on every call until this was updated. `claude-sonnet-5`
+ * is the current Sonnet and its pricing ($3/$15 per MTok) matches the cost
+ * constants below. Bump to `claude-opus-4-8` if extraction accuracy needs it.
+ */
+export const EXTRACTION_MODEL = anthropic("claude-sonnet-5");
 
-/** Approximate cost per token for cost tracking (Sonnet pricing). */
+/** Approximate cost per token for cost tracking (Sonnet 5 pricing: $3/$15 per MTok). */
 export const COST_PER_INPUT_TOKEN = 3 / 1_000_000;
 export const COST_PER_OUTPUT_TOKEN = 15 / 1_000_000;
 
