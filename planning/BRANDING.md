@@ -236,3 +236,18 @@ After OHV Scout was dropped (§ below), founder wanted to keep the "scout / find
 **Also dropped: `OHVScout`** — availability was clean (domain + IG/TikTok open) but **serious trademark conflict**: Scout Motors (VW-backed off-road-vehicle brand) is extending into apparel (Class 25 filing + "Scout Supply" store), a connected off-road app (Class 9/42), and retail — overlapping all three of our lines; "OHV" is descriptive so the mark collapses to "Scout." Plus onX uses "Scout." in its tagline and Scouting America is litigating. Not pursuable.
 
 **Leading discovery-concept picks:** OHVWaypoint, OHVRecon, OHVLodestar (+ OHVCompass already clean).
+
+### 3g. Round 6 vetting — OHVRecon vs OHVCompass (2026-07-16)
+
+Full screen on the two finalists. Domains + IG/TikTok handles open for both.
+
+| | OHV Recon | OHV Compass |
+|---|---|---|
+| Vehicle-model collision | ❌ **Honda FourTrax "Recon" ATV** — current, mass-market OHV in our exact vertical (SEVERE; "worse than Scout") | ⚠️ Jeep "Compass" SUV — on-road + diluted dictionary word (LOWER/defensible) |
+| Same-space content/apparel | ❌ **TrailRecon** — registered Class 25 mark, identical overland niche | ⚠️ Van Compass (adjacent suspension brand) |
+| Dominant risk | Senior OHV vehicle model + niche apparel reg | Descriptiveness + dilution (weak/hard-to-own) |
+| Verdict | **DROP** — near-disqualifying (Honda Recon) | **Pursuable, weak mark** — best descriptive/discovery pick |
+
+**Recurring pattern:** the evocative-descriptive middle (Scout/Recon/Atlas/Compass/Beacon) is an automaker/offroad-brand minefield. The clean paths are the ends: **plain descriptive weak mark** (OHVCompass / OHVAlmanac) or **distinctive/coined strong mark** (Rutwild).
+
+**Leading pick (descriptive path): `OHVCompass`** — captures the "scout/find your way" concept literally, most badge-native (compass rose), clean availability, no severe collision; accept weak-mark tradeoff. Distinctive alternative: `Rutwild`.
