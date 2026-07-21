@@ -1,17 +1,13 @@
-import { Loader2 } from "lucide-react";
+import { AppHeader } from "@/components/layout/AppHeader";
+import { LoadingMessage } from "@/components/LoadingMessage";
 
 export default function Loading() {
   return (
-    <div
-      className="min-h-screen bg-background flex flex-col items-center justify-center gap-4 px-6"
-      role="status"
-      aria-live="polite"
-    >
-      <Loader2 className="w-10 h-10 text-primary animate-spin" />
-      <p className="text-sm font-medium text-muted-foreground">
-        Firing up the engine…
-      </p>
-      <span className="sr-only">Loading</span>
+    <div className="min-h-screen bg-background flex flex-col">
+      <AppHeader />
+      <main className="flex-1 flex items-center justify-center px-6 py-16">
+        <LoadingMessage />
+      </main>
     </div>
   );
 }
