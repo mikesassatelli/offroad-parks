@@ -853,13 +853,23 @@ enum ParkAlertSeverity {
   SUCCESS
 }
 
+// What kind of alert this is — drives the icon/category shown in the UI and
+// keeps automated agency closures visually distinct from human operator posts.
+// (NWS weather alerts are never stored here; they are live-fetched. See
+// src/lib/weather — the "weather" category exists only at the display layer.)
+enum ParkAlertCategory {
+  OPERATOR // human operator-posted alert (events, notices, closures they set)
+  OFFICIAL_CLOSURE // automated agency closure, e.g. the Iowa DNR OHV scraper
+}
+
 model ParkAlert {
   id        String            @id @default(cuid())
   parkId    String
-  userId    String            // operator user who posted
+  userId    String            // operator user who posted (or the source system bot)
   title     String
   body      String?           @db.Text
   severity  ParkAlertSeverity @default(INFO)
+  category  ParkAlertCategory @default(OPERATOR)
   startsAt  DateTime?         // null = active immediately
   expiresAt DateTime?         // null = indefinite
   isActive  Boolean           @default(true)
@@ -871,5 +881,6 @@ model ParkAlert {
   updatedAt DateTime @updatedAt
 
   @@index([parkId, isActive])
+  @@index([parkId, category, isActive])
   @@index([expiresAt])
 }

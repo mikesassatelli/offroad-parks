@@ -146,6 +146,7 @@ export default async function ParkPage({ params }: ParkPageProps) {
       title: true,
       body: true,
       severity: true,
+      category: true,
       startsAt: true,
       expiresAt: true,
       isActive: true,
@@ -159,6 +160,7 @@ export default async function ParkPage({ params }: ParkPageProps) {
     title: a.title,
     body: a.body,
     severity: a.severity,
+    category: a.category,
     createdAt: a.createdAt.toISOString(),
   }));
 

@@ -260,6 +260,9 @@ export async function syncIowaOhvAlerts({
           title,
           body,
           severity,
+          // Scraper output is always an official agency closure — this is what
+          // gives the alert its distinct closure icon/category in the UI.
+          category: "OFFICIAL_CLOSURE",
           startsAt,
           isActive: true,
         },
@@ -277,7 +280,9 @@ export async function syncIowaOhvAlerts({
     if (changed) {
       await prisma.parkAlert.update({
         where: { id: primary.id },
-        data: { title, body, severity, startsAt },
+        // Re-assert the closure category so any legacy bot alert created before
+        // the category column existed gets reclassified on its next update.
+        data: { title, body, severity, category: "OFFICIAL_CLOSURE", startsAt },
       });
       summary.updated += 1;
     } else {

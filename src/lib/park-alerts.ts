@@ -1,4 +1,4 @@
-import type { ParkAlertSeverity } from "@prisma/client";
+import type { ParkAlertCategory, ParkAlertSeverity } from "@prisma/client";
 
 export const PARK_ALERT_SEVERITIES: ParkAlertSeverity[] = [
   "INFO",
@@ -6,6 +6,16 @@ export const PARK_ALERT_SEVERITIES: ParkAlertSeverity[] = [
   "DANGER",
   "SUCCESS",
 ];
+
+/**
+ * Short human label for each stored alert category. Rendered as the category
+ * chip on the detail-page banner so an automated agency closure reads clearly
+ * differently from a park's own operator notice.
+ */
+export const PARK_ALERT_CATEGORY_LABEL: Record<ParkAlertCategory, string> = {
+  OPERATOR: "Park notice",
+  OFFICIAL_CLOSURE: "Official closure",
+};
 
 /**
  * Priority ordering for alert stacking — higher value surfaces first.

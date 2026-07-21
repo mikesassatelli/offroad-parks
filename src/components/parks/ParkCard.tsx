@@ -11,6 +11,7 @@ import Image from "next/image";
 import { ParkMapHero } from "@/components/parks/ParkMapHero";
 import { ConditionBadge } from "@/features/trail-conditions/ConditionBadge";
 import { RainBadge } from "@/components/parks/RainBadge";
+import { ParkAlertBadges } from "@/components/parks/ParkAlertBadges";
 import type { TrailConditionStatus } from "@/lib/trail-conditions";
 import { isConditionFresh } from "@/lib/trail-conditions";
 
@@ -84,6 +85,11 @@ export function ParkCard({
                 )}
               </Button>
             </div>
+            {/* Alert badges get the prime top-left corner — closures especially
+                need to be seen before a user clicks in. */}
+            <div className="absolute top-2 left-2 z-10">
+              <ParkAlertBadges summary={park.alertSummary} />
+            </div>
             {freshCondition && (
               <div className="absolute bottom-2 left-2 z-10">
                 <ConditionBadge
@@ -115,8 +121,19 @@ export function ParkCard({
                 )}
               </Button>
             </div>
-            {freshCondition && (
-              <div className={`absolute ${conditionOnTop ? "top-2 left-2" : "bottom-2 left-2"} z-10`}>
+            {/* Top-left stack: alert badges, plus the condition badge when the
+                map legend forces it off the bottom-left (conditionOnTop). */}
+            <div className="absolute top-2 left-2 z-10 flex flex-col items-start gap-1">
+              <ParkAlertBadges summary={park.alertSummary} />
+              {freshCondition && conditionOnTop && (
+                <ConditionBadge
+                  status={freshCondition.status as TrailConditionStatus}
+                  size="xs"
+                />
+              )}
+            </div>
+            {freshCondition && !conditionOnTop && (
+              <div className="absolute bottom-2 left-2 z-10">
                 <ConditionBadge
                   status={freshCondition.status as TrailConditionStatus}
                   size="xs"
@@ -145,6 +162,9 @@ export function ParkCard({
                   <StarOff className="w-4 h-4" />
                 )}
               </Button>
+            </div>
+            <div className="absolute top-2 left-2 z-10">
+              <ParkAlertBadges summary={park.alertSummary} />
             </div>
             {freshCondition && (
               <div className="absolute bottom-2 left-2 z-10">

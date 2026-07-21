@@ -1,13 +1,16 @@
-import { getBatchRainProbabilities } from "@/lib/weather/batch";
+import { getBatchParkCardWeather } from "@/lib/weather/batch";
+import type { WeatherAlert } from "@/lib/weather/types";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
-// Stub the nws-client module — batch.ts delegates to getForecast.
+// Stub the nws-client module — batch.ts delegates to getForecast + getActiveAlerts.
 vi.mock("@/lib/weather/nws-client", () => ({
   getForecast: vi.fn(),
+  getActiveAlerts: vi.fn(),
 }));
 
-import { getForecast } from "@/lib/weather/nws-client";
+import { getActiveAlerts, getForecast } from "@/lib/weather/nws-client";
 const mockGetForecast = vi.mocked(getForecast);
+const mockGetActiveAlerts = vi.mocked(getActiveAlerts);
 
 function forecastWithRain(probability: number | null) {
   return [
@@ -23,81 +26,140 @@ function forecastWithRain(probability: number | null) {
   ];
 }
 
+function alert(
+  severity: WeatherAlert["severity"],
+  id: string = severity,
+): WeatherAlert {
+  return {
+    id,
+    event: "Test Warning",
+    severity,
+    headline: null,
+    description: "",
+    effective: "2026-05-12T00:00:00Z",
+    expires: null,
+    urgency: "Expected",
+  };
+}
+
 beforeEach(() => {
   vi.clearAllMocks();
+  // Default: no active alerts unless a test overrides.
+  mockGetActiveAlerts.mockResolvedValue([]);
 });
 
-describe("getBatchRainProbabilities", () => {
-  it("returns a Map keyed by parkId with today's precip probability", async () => {
+describe("getBatchParkCardWeather", () => {
+  it("returns rain probability and no severe weather when there are no alerts", async () => {
     mockGetForecast
       .mockResolvedValueOnce(forecastWithRain(20))
       .mockResolvedValueOnce(forecastWithRain(80));
 
-    const result = await getBatchRainProbabilities([
+    const result = await getBatchParkCardWeather([
       { parkId: "p1", latitude: 39, longitude: -104 },
       { parkId: "p2", latitude: 40, longitude: -105 },
     ]);
 
-    expect(result.get("p1")).toBe(20);
-    expect(result.get("p2")).toBe(80);
+    expect(result.get("p1")).toEqual({ rainChance: 20, severeWeather: null });
+    expect(result.get("p2")).toEqual({ rainChance: 80, severeWeather: null });
   });
 
-  it("maps parks without coordinates to null without calling getForecast", async () => {
-    const result = await getBatchRainProbabilities([
+  it("summarizes only Severe/Extreme alerts, ignoring Minor/Moderate", async () => {
+    mockGetForecast.mockResolvedValue(forecastWithRain(10));
+    mockGetActiveAlerts.mockResolvedValueOnce([
+      alert("Minor", "a"),
+      alert("Severe", "b"),
+      alert("Moderate", "c"),
+    ]);
+
+    const result = await getBatchParkCardWeather([
+      { parkId: "p1", latitude: 39, longitude: -104 },
+    ]);
+
+    expect(result.get("p1")).toEqual({
+      rainChance: 10,
+      severeWeather: { severity: "Severe", count: 1 },
+    });
+  });
+
+  it("reports Extreme when any severe-plus alert is Extreme, counting all severe-plus", async () => {
+    mockGetForecast.mockResolvedValue(forecastWithRain(null));
+    mockGetActiveAlerts.mockResolvedValueOnce([
+      alert("Severe", "a"),
+      alert("Extreme", "b"),
+    ]);
+
+    const result = await getBatchParkCardWeather([
+      { parkId: "p1", latitude: 39, longitude: -104 },
+    ]);
+
+    expect(result.get("p1")).toEqual({
+      rainChance: null,
+      severeWeather: { severity: "Extreme", count: 2 },
+    });
+  });
+
+  it("maps parks without coordinates to an empty summary without calling NWS", async () => {
+    const result = await getBatchParkCardWeather([
       { parkId: "no-coords", latitude: null, longitude: null },
       { parkId: "no-lat", latitude: null, longitude: -104 },
       { parkId: "no-lng", latitude: 39, longitude: null },
     ]);
 
-    expect(result.get("no-coords")).toBeNull();
-    expect(result.get("no-lat")).toBeNull();
-    expect(result.get("no-lng")).toBeNull();
+    expect(result.get("no-coords")).toEqual({
+      rainChance: null,
+      severeWeather: null,
+    });
+    expect(result.get("no-lat")).toEqual({
+      rainChance: null,
+      severeWeather: null,
+    });
+    expect(result.get("no-lng")).toEqual({
+      rainChance: null,
+      severeWeather: null,
+    });
     expect(mockGetForecast).not.toHaveBeenCalled();
+    expect(mockGetActiveAlerts).not.toHaveBeenCalled();
   });
 
-  it("maps parks whose forecast returned no precip probability to null", async () => {
-    mockGetForecast.mockResolvedValueOnce(forecastWithRain(null));
-
-    const result = await getBatchRainProbabilities([
-      { parkId: "p1", latitude: 39, longitude: -104 },
-    ]);
-
-    expect(result.get("p1")).toBeNull();
-  });
-
-  it("maps parks with empty forecast to null", async () => {
-    mockGetForecast.mockResolvedValueOnce([]);
-
-    const result = await getBatchRainProbabilities([
-      { parkId: "p1", latitude: 39, longitude: -104 },
-    ]);
-
-    expect(result.get("p1")).toBeNull();
-  });
-
-  it("maps parks whose getForecast call rejects to null (does not propagate)", async () => {
+  it("degrades a rejected forecast to null rain but still returns alerts", async () => {
     mockGetForecast.mockRejectedValueOnce(new Error("nws 500"));
+    mockGetActiveAlerts.mockResolvedValueOnce([alert("Extreme")]);
 
-    const result = await getBatchRainProbabilities([
+    const result = await getBatchParkCardWeather([
       { parkId: "p1", latitude: 39, longitude: -104 },
     ]);
 
-    expect(result.get("p1")).toBeNull();
+    expect(result.get("p1")).toEqual({
+      rainChance: null,
+      severeWeather: { severity: "Extreme", count: 1 },
+    });
   });
 
-  it("times out slow forecast calls to null", async () => {
+  it("degrades rejected alerts to null severeWeather but still returns rain", async () => {
+    mockGetForecast.mockResolvedValueOnce(forecastWithRain(55));
+    mockGetActiveAlerts.mockRejectedValueOnce(new Error("nws 500"));
+
+    const result = await getBatchParkCardWeather([
+      { parkId: "p1", latitude: 39, longitude: -104 },
+    ]);
+
+    expect(result.get("p1")).toEqual({ rainChance: 55, severeWeather: null });
+  });
+
+  it("times out slow calls to an empty summary", async () => {
     mockGetForecast.mockImplementation(
-      () => new Promise(() => {
-        // never resolves
-      }),
+      () =>
+        new Promise(() => {
+          // never resolves
+        }),
     );
 
-    const result = await getBatchRainProbabilities(
+    const result = await getBatchParkCardWeather(
       [{ parkId: "slow", latitude: 39, longitude: -104 }],
       { timeoutMs: 25 },
     );
 
-    expect(result.get("slow")).toBeNull();
+    expect(result.get("slow")).toEqual({ rainChance: null, severeWeather: null });
   });
 
   it("limits concurrency to the configured cap", async () => {
@@ -116,12 +178,12 @@ describe("getBatchRainProbabilities", () => {
       latitude: 39,
       longitude: -104,
     }));
-    await getBatchRainProbabilities(parks, { concurrency: 3, timeoutMs: 5000 });
+    await getBatchParkCardWeather(parks, { concurrency: 3, timeoutMs: 5000 });
 
     expect(peakInFlight).toBeLessThanOrEqual(3);
   });
 
-  it("returns a result for every input park (even when timeouts and errors mix)", async () => {
+  it("returns a result for every input park", async () => {
     mockGetForecast
       .mockResolvedValueOnce(forecastWithRain(40))
       .mockRejectedValueOnce(new Error("nws"))
@@ -132,11 +194,11 @@ describe("getBatchRainProbabilities", () => {
       { parkId: "b", latitude: 40, longitude: -105 },
       { parkId: "c", latitude: 41, longitude: -106 },
     ];
-    const result = await getBatchRainProbabilities(parks, { concurrency: 1 });
+    const result = await getBatchParkCardWeather(parks, { concurrency: 1 });
 
     expect(result.size).toBe(3);
-    expect(result.get("a")).toBe(40);
-    expect(result.get("b")).toBeNull();
-    expect(result.get("c")).toBe(70);
+    expect(result.get("a")?.rainChance).toBe(40);
+    expect(result.get("b")?.rainChance).toBeNull();
+    expect(result.get("c")?.rainChance).toBe(70);
   });
 });
