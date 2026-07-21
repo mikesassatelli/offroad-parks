@@ -21,14 +21,18 @@ describe("LoginDialog", () => {
     expect(screen.getByText("Sign In")).toBeInTheDocument();
   });
 
-  it("reveals Google and email options when opened", async () => {
+  it("reveals the Google option when opened (email login hidden)", async () => {
     const user = userEvent.setup();
     render(<LoginDialog />);
 
     await user.click(screen.getByText("Sign In"));
 
-    expect(await screen.findByText("Continue with Google")).toBeInTheDocument();
-    expect(screen.getByPlaceholderText("you@example.com")).toBeInTheDocument();
+    expect(
+      await screen.findByText("Sign in with Google"),
+    ).toBeInTheDocument();
+    expect(
+      screen.queryByPlaceholderText("you@example.com"),
+    ).not.toBeInTheDocument();
   });
 
   it("calls Google sign-in with a callback URL", async () => {
@@ -36,44 +40,50 @@ describe("LoginDialog", () => {
     render(<LoginDialog />);
 
     await user.click(screen.getByText("Sign In"));
-    await user.click(await screen.findByText("Continue with Google"));
+    await user.click(await screen.findByText("Sign in with Google"));
 
     expect(signInMock).toHaveBeenCalledWith("google", { callbackUrl: "/" });
   });
 
-  it("sends a magic link via the resend provider and confirms", async () => {
-    const user = userEvent.setup();
-    render(<LoginDialog />);
+  // Passwordless email magic-link sign-in (OP-97) is hidden behind the
+  // EMAIL_LOGIN_ENABLED flag in LoginDialog.tsx. These tests exercise that
+  // path and are skipped while the flag is off; re-enable them alongside the
+  // flag.
+  describe.skip("email magic-link sign-in (disabled via EMAIL_LOGIN_ENABLED)", () => {
+    it("sends a magic link via the resend provider and confirms", async () => {
+      const user = userEvent.setup();
+      render(<LoginDialog />);
 
-    await user.click(screen.getByText("Sign In"));
-    await user.type(
-      await screen.findByPlaceholderText("you@example.com"),
-      "rider@example.com",
-    );
-    await user.click(screen.getByText(/Email me a sign-in link/));
+      await user.click(screen.getByText("Sign In"));
+      await user.type(
+        await screen.findByPlaceholderText("you@example.com"),
+        "rider@example.com",
+      );
+      await user.click(screen.getByText(/Email me a sign-in link/));
 
-    expect(signInMock).toHaveBeenCalledWith("resend", {
-      email: "rider@example.com",
-      redirect: false,
-      callbackUrl: "/",
+      expect(signInMock).toHaveBeenCalledWith("resend", {
+        email: "rider@example.com",
+        redirect: false,
+        callbackUrl: "/",
+      });
+      expect(await screen.findByText("Check your email")).toBeInTheDocument();
     });
-    expect(await screen.findByText("Check your email")).toBeInTheDocument();
-  });
 
-  it("shows an error when the magic-link request fails", async () => {
-    signInMock.mockResolvedValue({ error: "EmailSignInError" } as never);
-    const user = userEvent.setup();
-    render(<LoginDialog />);
+    it("shows an error when the magic-link request fails", async () => {
+      signInMock.mockResolvedValue({ error: "EmailSignInError" } as never);
+      const user = userEvent.setup();
+      render(<LoginDialog />);
 
-    await user.click(screen.getByText("Sign In"));
-    await user.type(
-      await screen.findByPlaceholderText("you@example.com"),
-      "rider@example.com",
-    );
-    await user.click(screen.getByText(/Email me a sign-in link/));
+      await user.click(screen.getByText("Sign In"));
+      await user.type(
+        await screen.findByPlaceholderText("you@example.com"),
+        "rider@example.com",
+      );
+      await user.click(screen.getByText(/Email me a sign-in link/));
 
-    await waitFor(() =>
-      expect(screen.getByText(/Something went wrong/)).toBeInTheDocument(),
-    );
+      await waitFor(() =>
+        expect(screen.getByText(/Something went wrong/)).toBeInTheDocument(),
+      );
+    });
   });
 });
