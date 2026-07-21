@@ -27,6 +27,23 @@ vi.mock("next/navigation", () => ({
 // Mock Next.js server-only
 vi.mock("server-only", () => ({}));
 
+// jsdom doesn't implement matchMedia; provide a minimal stub so components that
+// read viewport media queries (responsive nav in AppHeader/OffroadParksApp) can
+// mount in tests. Defaults to no match (desktop-first render).
+Object.defineProperty(window, "matchMedia", {
+  writable: true,
+  value: (query: string) => ({
+    matches: false,
+    media: query,
+    onchange: null,
+    addEventListener: vi.fn(),
+    removeEventListener: vi.fn(),
+    addListener: vi.fn(),
+    removeListener: vi.fn(),
+    dispatchEvent: vi.fn(),
+  }),
+});
+
 // Mock environment variables
 process.env.NEXTAUTH_URL = "http://localhost:3000";
 process.env.NEXTAUTH_SECRET = "test-secret";
