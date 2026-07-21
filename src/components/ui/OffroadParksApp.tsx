@@ -17,6 +17,12 @@ import { ParkCard } from "@/components/parks/ParkCard";
 import { RouteList } from "@/features/route-planner/RouteList";
 import { MyRoutesOverlayPanel } from "@/features/route-planner/MyRoutesOverlayPanel";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import {
+  Sheet,
+  SheetContent,
+  SheetHeader,
+  SheetTitle,
+} from "@/components/ui/sheet";
 import { LayoutGrid, Map } from "lucide-react";
 
 // Dynamically import MapView to avoid SSR issues with Leaflet
@@ -208,6 +214,59 @@ function OffroadParksAppInner({ parks }: OffroadParksAppProps) {
       }
     : null;
 
+  // Mobile filters live in a slide-in sheet; on desktop the sidebar is inline.
+  // Close the sheet if the viewport grows to desktop so it can't linger open
+  // behind the (now hidden) trigger.
+  const [filtersOpen, setFiltersOpen] = useState(false);
+  useEffect(() => {
+    const mq = window.matchMedia("(min-width: 1024px)");
+    const closeIfDesktop = () => {
+      if (mq.matches) setFiltersOpen(false);
+    };
+    mq.addEventListener("change", closeIfDesktop);
+    return () => mq.removeEventListener("change", closeIfDesktop);
+  }, []);
+
+  const filtersPanel = (
+    <SearchFiltersPanel
+      selectedState={selectedState}
+      onStateChange={setSelectedState}
+      availableStates={availableStates}
+      selectedTerrains={selectedTerrains}
+      onTerrainsChange={setSelectedTerrains}
+      selectedAmenities={selectedAmenities}
+      onAmenitiesChange={setSelectedAmenities}
+      selectedCamping={selectedCamping}
+      onCampingChange={setSelectedCamping}
+      selectedVehicleTypes={selectedVehicleTypes}
+      onVehicleTypesChange={setSelectedVehicleTypes}
+      minTrailMiles={minTrailMiles}
+      onMinTrailMilesChange={setMinTrailMiles}
+      maxTrailMiles={maxTrailMiles}
+      minAcres={minAcres}
+      onMinAcresChange={setMinAcres}
+      maxAcres={maxAcres}
+      minRating={minRating}
+      onMinRatingChange={setMinRating}
+      selectedOwnership={selectedOwnership}
+      onOwnershipChange={setSelectedOwnership}
+      permitRequired={permitRequired}
+      onPermitRequiredChange={setPermitRequired}
+      membershipRequired={membershipRequired}
+      onMembershipRequiredChange={setMembershipRequired}
+      flagsRequired={flagsRequired}
+      onFlagsRequiredChange={setFlagsRequired}
+      sparkArrestorRequired={sparkArrestorRequired}
+      onSparkArrestorRequiredChange={setSparkArrestorRequired}
+      onClearFilters={clearAllFilters}
+      showSavedDefaultsControls={isAuthenticated}
+      hasSavedDefault={hasPreference}
+      isSavingDefault={isSavingPreference}
+      onSaveAsDefault={handleSaveAsDefault}
+      onResetToDefault={handleResetToDefault}
+    />
+  );
+
   return (
     <div className="min-h-screen bg-background">
       {/* Sticky header */}
@@ -225,49 +284,30 @@ function OffroadParksAppInner({ parks }: OffroadParksAppProps) {
         locationLoading={locationLoading}
         onUseMyLocation={handleUseMyLocation}
         onClearLocation={handleClearLocation}
+        onOpenFilters={() => setFiltersOpen(true)}
       />
 
-      <main className="max-w-7xl mx-auto px-6 pb-8">
-        <div className="grid lg:grid-cols-5 gap-6 items-start">
-          <SearchFiltersPanel
-            selectedState={selectedState}
-            onStateChange={setSelectedState}
-            availableStates={availableStates}
-            selectedTerrains={selectedTerrains}
-            onTerrainsChange={setSelectedTerrains}
-            selectedAmenities={selectedAmenities}
-            onAmenitiesChange={setSelectedAmenities}
-            selectedCamping={selectedCamping}
-            onCampingChange={setSelectedCamping}
-            selectedVehicleTypes={selectedVehicleTypes}
-            onVehicleTypesChange={setSelectedVehicleTypes}
-            minTrailMiles={minTrailMiles}
-            onMinTrailMilesChange={setMinTrailMiles}
-            maxTrailMiles={maxTrailMiles}
-            minAcres={minAcres}
-            onMinAcresChange={setMinAcres}
-            maxAcres={maxAcres}
-            minRating={minRating}
-            onMinRatingChange={setMinRating}
-            selectedOwnership={selectedOwnership}
-            onOwnershipChange={setSelectedOwnership}
-            permitRequired={permitRequired}
-            onPermitRequiredChange={setPermitRequired}
-            membershipRequired={membershipRequired}
-            onMembershipRequiredChange={setMembershipRequired}
-            flagsRequired={flagsRequired}
-            onFlagsRequiredChange={setFlagsRequired}
-            sparkArrestorRequired={sparkArrestorRequired}
-            onSparkArrestorRequiredChange={setSparkArrestorRequired}
-            onClearFilters={clearAllFilters}
-            showSavedDefaultsControls={isAuthenticated}
-            hasSavedDefault={hasPreference}
-            isSavingDefault={isSavingPreference}
-            onSaveAsDefault={handleSaveAsDefault}
-            onResetToDefault={handleResetToDefault}
-          />
+      <main className="max-w-7xl 2xl:max-w-[1800px] 3xl:max-w-[2400px] mx-auto px-6 pb-8">
+        {/* Mobile filters — opened by the funnel button in the search bar.
+            Rendered in a slide-in sheet so it doesn't stack a full-height wall
+            above the results. On desktop the sidebar below shows inline. */}
+        <Sheet open={filtersOpen} onOpenChange={setFiltersOpen}>
+          <SheetContent
+            side="left"
+            className="w-[85vw] max-w-sm gap-0 overflow-y-auto p-4"
+          >
+            <SheetHeader className="px-0 pt-0">
+              <SheetTitle>Filters</SheetTitle>
+            </SheetHeader>
+            {filtersPanel}
+          </SheetContent>
+        </Sheet>
 
-          <div className="lg:col-span-4">
+        <div className="flex flex-col lg:flex-row gap-6 items-start">
+          {/* Desktop sidebar — hidden on mobile, shown in the sheet above */}
+          <div className="hidden w-72 shrink-0 lg:block">{filtersPanel}</div>
+
+          <div className="flex-1 min-w-0 w-full">
             <Tabs
               value={activeView}
               onValueChange={(v) => setActiveView(v as "list" | "map")}
@@ -284,7 +324,7 @@ function OffroadParksAppInner({ parks }: OffroadParksAppProps) {
               </TabsList>
 
               <TabsContent value="list" className="mt-0">
-                <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-5">
+                <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-4 3xl:grid-cols-5 gap-5">
                   {filteredParks.map((park) => (
                     <ParkCard
                       key={park.id}

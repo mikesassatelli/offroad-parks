@@ -26,6 +26,26 @@
 
 ---
 
+## E23 · Brand Identity & Merch *(Sprint 8 — current focus)*
+
+**Context:** "Offroad Parks" was always a working codename. Before we can acquire a domain and form an LLC we need a **true identity**. Sprint 8 research (see [BRANDING.md](BRANDING.md) + [BRANDING-merch-plan.md](BRANDING-merch-plan.md)) evaluated two paths — distinctive/ownable (e.g. "Rutwild") vs descriptive/SEO — and the founder chose **`OHVCompass`** (descriptive/discovery: a *compass* = the tool you explore with; most badge-native; dodges the automaker-model landmines that sank Scout/Recon/Atlas). `ohvcompass.com` + all defensive TLDs + IG/TikTok handles confirmed open (2026-07-16). Tradeoff accepted: descriptive = a weak, hard-to-enforce mark — differentiation via brand + content, not legal exclusivity. The merch strategy centers on **Earn-a-Badge** — riders earn a collectible physical + digital badge for logging a park visit, turning merch into the acquisition funnel and a retention loop (bridges to E11 gamification: OP-57 visit tracking / OP-58 achievements).
+
+**Sequencing:** name decision → formal trademark clearance → domain + LLC → visual identity → app rebrand → merch v1 → GTM. Do NOT buy a domain, form the LLC, or print merch until an attorney clears the chosen name.
+
+| Key | Title | Status | Type | Notes |
+|-----|-------|--------|------|-------|
+| OP-104 | Brand Name Selection | done | decision | ✅ **`OHVCompass`** selected 2026-07-16 (Path B, descriptive/discovery). Superseded first pick OHVAlmanac; dropped OHVScout (Scout Motors), OHVRecon (Honda Recon ATV), OHVAtlas (Natural Atlas), OffroadBeacon (Beacon Offroad) on conflicts; Rutwild remains the distinctive-path alternative. See BRANDING.md §3f–3g, §6. |
+| OP-105 | Formal Trademark Clearance | blocked | infra | 🔴 Requires a trademark attorney: full clearance + intent-to-use in Nice classes **9/42/41/25** (consider 16/35/39). "Compass" is descriptive-for-navigation → likely disclaimer/Supplemental Register; clear Jeep/FCA "Compass" (Class 12) + crowded Compass field. Brief in BRANDING.md §6a. Blocks domain/LLC/merch spend. |
+| OP-106 | Domain Acquisition | blocked | infra | `ohvcompass.com` + all defensive TLDs + IG/TikTok handles **confirmed open** (2026-07-16) — register once cleared (OP-105). Checklist in BRANDING.md §6b. Set `NEXT_PUBLIC_SITE_URL` (unblocks OP-103 in E22). |
+| OP-107 | LLC Formation | blocked | infra | Form the entity under the cleared name. Founder + attorney/registered-agent. Depends OP-105. |
+| OP-108 | Visual Identity — "Trail Seal" badge system | backlog | feature | needs-refinement. Commission the vintage-heritage emblem system (roundel/crest/banner, motif kit, earthy palette, 1-color die-cut master) per BRANDING-merch-plan.md §1. Depends OP-104. |
+| OP-109 | App Rebrand | backlog | refactor | Swap "Offroad Parks" → new name across UI, metadata, `SITE_URL`/SEO, emails, legal pages, README. Mechanical once OP-104/108 land. |
+| OP-110 | Merch Line v1 | backlog | feature | needs-refinement. Produce the launch batch (seed sticker pack, minis, banner, PVC + embroidered patches, tees, trucker, koozie) per BRANDING-merch-plan.md §2/§5. Depends OP-108. |
+| OP-111 | Earn-a-Badge Program | backlog | feature | needs-refinement. Product feature: log a park visit → digital badge → claim physical twin; milestones + "collect all the parks" loop. Centerpiece of the merch strategy; overlaps E11 (OP-57/58). Anti-spoofing (verified check-in) required. Depends OP-108 + visit-tracking. |
+| OP-112 | Merch GTM & Seeding | backlog | feature | needs-refinement. Sticker-seeding, event/booth badge-stations, creator seeding, operator co-brand sticker program, QR/UTM funnel instrumentation. Per BRANDING-merch-plan.md §4. Depends OP-110. |
+
+---
+
 ## E0 · Data Quality & Photo Remediation *(Phase 0 — immediate)*
 
 | Key | Title | Status | Type | Notes |
