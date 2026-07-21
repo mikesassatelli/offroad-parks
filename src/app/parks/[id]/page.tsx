@@ -7,9 +7,22 @@ import { auth } from "@/lib/auth";
 import { isAlertActive, sortAlertsForDisplay } from "@/lib/park-alerts";
 import type { ParkAlertDisplay } from "@/components/parks/ParkAlertsBanner";
 import { getActiveAlerts, getCurrentConditions, getForecast } from "@/lib/weather";
+import { SITE_URL } from "@/lib/site";
+import { JsonLd } from "@/components/seo/JsonLd";
 
 interface ParkPageProps {
   params: Promise<{ id: string }>;
+}
+
+/**
+ * Make a possibly-relative image/path URL absolute for use in social-card
+ * metadata and JSON-LD (crawlers require absolute URLs). Returns undefined
+ * when there is no URL to absolutize.
+ */
+function toAbsoluteUrl(url: string | null | undefined): string | undefined {
+  if (!url) return undefined;
+  if (/^https?:\/\//i.test(url)) return url;
+  return `${SITE_URL}/${url.replace(/^\//, "")}`;
 }
 
 /* v8 ignore next - tested via E2E */
@@ -42,6 +55,7 @@ export async function generateMetadata({ params }: ParkPageProps) {
       camping: true,
       vehicleTypes: true,
       address: true,
+      heroPhoto: { select: { id: true, url: true, status: true } },
     },
   });
 
@@ -53,11 +67,45 @@ export async function generateMetadata({ params }: ParkPageProps) {
 
   const park = transformDbPark(dbPark);
 
+  const title = `${park.name} - Offroad Parks`;
+  const description =
+    park.notes ||
+    `Information about ${park.name} in ${park.address.city ? `${park.address.city}, ` : ""}${park.address.state}`;
+  const url = `${SITE_URL}/parks/${dbPark.slug}`;
+
+  // Resolve the operator-controlled hero image (same priority as the detail
+  // page), falling back to the generated map hero, and absolutize it so the
+  // social-card crawlers can fetch it.
+  const approvedPhotos = await prisma.parkPhoto.findMany({
+    where: { parkId: dbPark.id, status: "APPROVED" },
+    select: { id: true, url: true },
+    orderBy: { createdAt: "desc" },
+  });
+  const heroImage = resolveParkHeroImage({
+    heroSource: dbPark.heroSource,
+    heroPhotoId: dbPark.heroPhotoId,
+    heroPhoto: dbPark.heroPhoto,
+    photos: (approvedPhotos ?? []).map((p) => ({ id: p.id, url: p.url, status: "APPROVED" as const })),
+  });
+  const image = toAbsoluteUrl(heroImage ?? dbPark.mapHeroUrl);
+  const images = image ? [image] : undefined;
+
   return {
-    title: `${park.name} - Offroad Parks`,
-    description:
-      park.notes ||
-      `Information about ${park.name} in ${park.address.city ? `${park.address.city}, ` : ""}${park.address.state}`,
+    title,
+    description,
+    openGraph: {
+      type: "article",
+      title,
+      description,
+      url,
+      ...(images ? { images } : {}),
+    },
+    twitter: {
+      card: "summary_large_image",
+      title,
+      description,
+      ...(images ? { images } : {}),
+    },
   };
 }
 
@@ -201,7 +249,46 @@ export default async function ParkPage({ params }: ParkPageProps) {
         }))
       : false;
 
+  // Build schema.org TouristAttraction structured data for rich results.
+  const canonicalUrl = `${SITE_URL}/parks/${dbPark.slug}`;
+  const absoluteHero = toAbsoluteUrl(park.heroImage ?? park.mapHeroUrl);
+  const jsonLd: Record<string, unknown> = {
+    "@context": "https://schema.org",
+    "@type": "TouristAttraction",
+    name: park.name,
+    url: canonicalUrl,
+    ...(park.notes ? { description: park.notes } : {}),
+    ...(absoluteHero ? { image: absoluteHero } : {}),
+    address: {
+      "@type": "PostalAddress",
+      ...(park.address.streetAddress ? { streetAddress: park.address.streetAddress } : {}),
+      ...(park.address.city ? { addressLocality: park.address.city } : {}),
+      addressRegion: park.address.state,
+      ...(park.address.zipCode ? { postalCode: park.address.zipCode } : {}),
+    },
+    ...(park.coords
+      ? {
+          geo: {
+            "@type": "GeoCoordinates",
+            latitude: park.coords.lat,
+            longitude: park.coords.lng,
+          },
+        }
+      : {}),
+    ...(park.averageRating != null && (park.reviewCount ?? 0) > 0
+      ? {
+          aggregateRating: {
+            "@type": "AggregateRating",
+            ratingValue: park.averageRating,
+            reviewCount: park.reviewCount,
+          },
+        }
+      : {}),
+  };
+
   return (
+    <>
+    <JsonLd data={jsonLd} />
     <ParkDetailPage
       park={park}
       photos={photos}
@@ -216,5 +303,6 @@ export default async function ParkPage({ params }: ParkPageProps) {
       weatherForecast={weatherForecast}
       weatherAlerts={weatherAlerts}
     />
+    </>
   );
 }
