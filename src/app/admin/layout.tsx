@@ -9,7 +9,7 @@ import {
   Camera,
   ClipboardCheck,
   ClipboardList,
-  Globe,
+  FlaskConical,
   Home,
   Image as ImageIcon,
   KeyRound,
@@ -167,25 +167,25 @@ export default async function AdminLayout({
               <span className="font-medium">AI Research</span>
             </Link>
             <Link
-              href="/admin/ai-research/pending"
-              className="flex items-center gap-3 px-4 py-3 text-foreground rounded-lg hover:bg-accent hover:text-accent-foreground transition-colors pl-8"
-            >
-              <ClipboardCheck className="w-4 h-4" />
-              <span className="font-medium text-sm">Review Queue</span>
-            </Link>
-            <Link
-              href="/admin/ai-research/sources"
-              className="flex items-center gap-3 px-4 py-3 text-foreground rounded-lg hover:bg-accent hover:text-accent-foreground transition-colors pl-8"
-            >
-              <Globe className="w-4 h-4" />
-              <span className="font-medium text-sm">Sources</span>
-            </Link>
-            <Link
               href="/admin/ai-research/discovery"
               className="flex items-center gap-3 px-4 py-3 text-foreground rounded-lg hover:bg-accent hover:text-accent-foreground transition-colors pl-8"
             >
               <Search className="w-4 h-4" />
-              <span className="font-medium text-sm">Park Discovery</span>
+              <span className="font-medium text-sm">Discover</span>
+            </Link>
+            <Link
+              href="/admin/ai-research/research"
+              className="flex items-center gap-3 px-4 py-3 text-foreground rounded-lg hover:bg-accent hover:text-accent-foreground transition-colors pl-8"
+            >
+              <FlaskConical className="w-4 h-4" />
+              <span className="font-medium text-sm">Research</span>
+            </Link>
+            <Link
+              href="/admin/ai-research/review"
+              className="flex items-center gap-3 px-4 py-3 text-foreground rounded-lg hover:bg-accent hover:text-accent-foreground transition-colors pl-8"
+            >
+              <ClipboardCheck className="w-4 h-4" />
+              <span className="font-medium text-sm">Review</span>
             </Link>
             <Link
               href="/admin/users"
