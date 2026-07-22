@@ -67,7 +67,8 @@ describe("ParkDiscoveryTable", () => {
       json: async () => ({ candidatesFound: 3 }),
     });
     render(<ParkDiscoveryTable candidates={[]} />);
-    const select = screen.getByRole("combobox");
+    // First combobox is the discovery state select (second is the seed panel).
+    const select = screen.getAllByRole("combobox")[0];
     fireEvent.change(select, { target: { value: "UT" } });
 
     fireEvent.click(screen.getByRole("button", { name: /search/i }));
@@ -92,7 +93,9 @@ describe("ParkDiscoveryTable", () => {
       json: async () => ({ error: "quota exceeded" }),
     });
     render(<ParkDiscoveryTable candidates={[]} />);
-    fireEvent.change(screen.getByRole("combobox"), { target: { value: "CA" } });
+    fireEvent.change(screen.getAllByRole("combobox")[0], {
+      target: { value: "CA" },
+    });
     fireEvent.click(screen.getByRole("button", { name: /search/i }));
 
     await waitFor(() => {
@@ -103,11 +106,77 @@ describe("ParkDiscoveryTable", () => {
   it("shows generic error when discovery fetch throws", async () => {
     mockFetch.mockRejectedValueOnce(new Error("offline"));
     render(<ParkDiscoveryTable candidates={[]} />);
-    fireEvent.change(screen.getByRole("combobox"), { target: { value: "AZ" } });
+    fireEvent.change(screen.getAllByRole("combobox")[0], {
+      target: { value: "AZ" },
+    });
     fireEvent.click(screen.getByRole("button", { name: /search/i }));
 
     await waitFor(() => {
       expect(screen.getByText(/error: offline/i)).toBeInTheDocument();
+    });
+  });
+
+  it("Seed button is disabled until a state and a name are provided", () => {
+    render(<ParkDiscoveryTable candidates={[]} />);
+    const seedBtn = screen.getByRole("button", { name: /seed/i });
+    expect(seedBtn).toBeDisabled();
+
+    // Second combobox is the seed panel's state select.
+    fireEvent.change(screen.getAllByRole("combobox")[1], {
+      target: { value: "TN" },
+    });
+    expect(seedBtn).toBeDisabled(); // no names yet
+
+    fireEvent.change(screen.getByPlaceholderText(/windrock/i), {
+      target: { value: "Windrock Park" },
+    });
+    expect(seedBtn).not.toBeDisabled();
+  });
+
+  it("seeds manually entered park names via POST", async () => {
+    mockFetch.mockResolvedValueOnce({
+      ok: true,
+      json: async () => ({ candidatesFound: 2, skipped: 0 }),
+    });
+    render(<ParkDiscoveryTable candidates={[]} />);
+    fireEvent.change(screen.getAllByRole("combobox")[1], {
+      target: { value: "TN" },
+    });
+    fireEvent.change(screen.getByPlaceholderText(/windrock/i), {
+      target: { value: "Windrock Park\nBrimstone Recreation" },
+    });
+    fireEvent.click(screen.getByRole("button", { name: /seed/i }));
+
+    await waitFor(() => {
+      expect(mockFetch).toHaveBeenCalledWith(
+        "/api/admin/ai-research/discovery/seed",
+        expect.objectContaining({
+          method: "POST",
+          body: expect.stringContaining("Windrock Park"),
+        })
+      );
+      expect(
+        screen.getByText(/seeded 2 candidate\(s\) in TN/i)
+      ).toBeInTheDocument();
+    });
+  });
+
+  it("reports skipped names in the seed result", async () => {
+    mockFetch.mockResolvedValueOnce({
+      ok: true,
+      json: async () => ({ candidatesFound: 1, skipped: 1 }),
+    });
+    render(<ParkDiscoveryTable candidates={[]} />);
+    fireEvent.change(screen.getAllByRole("combobox")[1], {
+      target: { value: "TN" },
+    });
+    fireEvent.change(screen.getByPlaceholderText(/windrock/i), {
+      target: { value: "Windrock Park\nWindrock OHV Park" },
+    });
+    fireEvent.click(screen.getByRole("button", { name: /seed/i }));
+
+    await waitFor(() => {
+      expect(screen.getByText(/1 skipped/i)).toBeInTheDocument();
     });
   });
 
