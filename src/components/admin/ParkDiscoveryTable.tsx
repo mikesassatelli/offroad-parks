@@ -10,6 +10,7 @@ import {
   Search,
   CheckCheck,
   XOctagon,
+  ListPlus,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import type { ParkCandidateSummary } from "@/lib/types";
@@ -85,6 +86,12 @@ export function ParkDiscoveryTable({ candidates }: Props) {
   const [discoverState, setDiscoverState] = useState("");
   const [discovering, setDiscovering] = useState(false);
   const [discoverResult, setDiscoverResult] = useState<string | null>(null);
+
+  // Seed park names state
+  const [seedState, setSeedState] = useState("");
+  const [seedNames, setSeedNames] = useState("");
+  const [seeding, setSeeding] = useState(false);
+  const [seedResult, setSeedResult] = useState<string | null>(null);
 
   const pendingCandidates = candidates.filter((c) => c.status === "PENDING");
 
@@ -214,6 +221,51 @@ export function ParkDiscoveryTable({ candidates }: Props) {
     }
   };
 
+  const handleSeed = async () => {
+    const names = seedNames
+      .split("\n")
+      .map((n) => n.trim())
+      .filter(Boolean);
+    if (!seedState || names.length === 0) return;
+    setSeeding(true);
+    setSeedResult(null);
+    try {
+      const response = await fetch(
+        "/api/admin/ai-research/discovery/seed",
+        {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ state: seedState, names }),
+        }
+      );
+      const data = await response.json();
+      if (response.ok) {
+        const parts = [
+          `Seeded ${data.candidatesFound} candidate(s) in ${seedState}`,
+        ];
+        if (data.skipped > 0) {
+          parts.push(`${data.skipped} skipped (duplicate or invalid)`);
+        }
+        setSeedResult(`${parts.join(", ")}.`);
+        setSeedNames("");
+        router.refresh();
+      } else {
+        setSeedResult(`Error: ${data.error || "Seeding failed"}`);
+      }
+    } catch (err) {
+      setSeedResult(
+        `Error: ${err instanceof Error ? err.message : "Network error"}`
+      );
+    } finally {
+      setSeeding(false);
+    }
+  };
+
+  const seedNameCount = seedNames
+    .split("\n")
+    .map((n) => n.trim())
+    .filter(Boolean).length;
+
   const isProcessing = processingId !== null || processingBulk !== null;
 
   return (
@@ -266,6 +318,80 @@ export function ParkDiscoveryTable({ candidates }: Props) {
             }`}
           >
             {discoverResult}
+          </div>
+        )}
+      </div>
+
+      {/* Seed Park Names Manually */}
+      <div className="rounded-lg border border-border bg-card p-4">
+        <p className="text-sm font-medium text-foreground mb-1">
+          Seed park names manually
+        </p>
+        <p className="text-xs text-muted-foreground mb-3">
+          Know the parks already (e.g. from Google Maps)? Add them straight to
+          the candidate queue — one name per line. No AI search runs; details
+          are filled in by research once you accept a candidate.
+        </p>
+        <div className="flex flex-col gap-3 sm:flex-row sm:items-start">
+          <div className="w-full sm:max-w-xs">
+            <label className="block text-xs text-muted-foreground mb-1">
+              State
+            </label>
+            <select
+              value={seedState}
+              onChange={(e) => setSeedState(e.target.value)}
+              className="w-full rounded-md border border-input bg-background text-foreground px-3 py-2 text-sm focus:border-ring focus:ring-1 focus:ring-ring"
+            >
+              <option value="">Select a state...</option>
+              {US_STATES.map((s) => (
+                <option key={s.value} value={s.value}>
+                  {s.label} ({s.value})
+                </option>
+              ))}
+            </select>
+          </div>
+          <div className="flex-1">
+            <label className="block text-xs text-muted-foreground mb-1">
+              Park names (one per line)
+            </label>
+            <textarea
+              value={seedNames}
+              onChange={(e) => setSeedNames(e.target.value)}
+              rows={4}
+              placeholder={"Windrock Park\nBrimstone Recreation\nRoyal Blue OHV Area"}
+              className="w-full rounded-md border border-input bg-background text-foreground px-3 py-2 text-sm focus:border-ring focus:ring-1 focus:ring-ring resize-y"
+            />
+          </div>
+        </div>
+        <div className="mt-3">
+          <Button
+            onClick={handleSeed}
+            disabled={seeding || !seedState || seedNameCount === 0}
+            size="sm"
+          >
+            {seeding ? (
+              <>
+                <Loader2 className="w-4 h-4 mr-1 animate-spin" />
+                Seeding...
+              </>
+            ) : (
+              <>
+                <ListPlus className="w-4 h-4 mr-1" />
+                Seed {seedNameCount > 0 ? `${seedNameCount} ` : ""}Name
+                {seedNameCount === 1 ? "" : "s"}
+              </>
+            )}
+          </Button>
+        </div>
+        {seedResult && (
+          <div
+            className={`mt-3 rounded-lg border px-4 py-3 text-sm ${
+              seedResult.startsWith("Error")
+                ? "bg-red-50 dark:bg-red-900/20 border-red-200 dark:border-red-900/40 text-red-800 dark:text-red-300"
+                : "bg-green-50 dark:bg-green-900/20 border-green-200 dark:border-green-900/40 text-green-800 dark:text-green-300"
+            }`}
+          >
+            {seedResult}
           </div>
         )}
       </div>

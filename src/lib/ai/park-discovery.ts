@@ -54,7 +54,7 @@ export function normalizeParkName(name: string): string {
 
 // ── Fuzzy dedup check ────────────────────────────────────────────────────────
 
-function isFuzzyDuplicate(
+export function isFuzzyDuplicate(
   candidateName: string,
   existingName: string
 ): boolean {
@@ -248,4 +248,109 @@ export async function discoverParksInState(state: string): Promise<{
     inputTokens,
     outputTokens,
   };
+}
+
+// ── Manual name seeding ──────────────────────────────────────────────────────
+// Admins gather park names by hand (e.g. browsing Google Maps) and seed them
+// directly as PENDING candidates — skipping the SerpApi + LLM discovery step.
+// No location/source is captured here; the research pipeline fills that in once
+// a candidate is accepted into a Park.
+
+export type SeedSkip = {
+  name: string;
+  reason: "duplicate" | "invalid";
+};
+
+// Clean and de-duplicate a raw list of typed names before hitting the DB.
+// Trims whitespace, drops blank lines, and removes intra-batch duplicates using
+// the same normalization as fuzzy dedup. Pure/synchronous so it can be unit
+// tested without a database.
+export function dedupeSeedNames(names: string[]): {
+  cleaned: string[];
+  skipped: SeedSkip[];
+} {
+  const cleaned: string[] = [];
+  const seenKeys = new Set<string>();
+  const skipped: SeedSkip[] = [];
+
+  for (const raw of names) {
+    const name = raw.trim().replace(/\s+/g, " ");
+    if (!name) continue; // blank line — silently ignore
+
+    const key = normalizeParkName(name);
+    if (!key) {
+      // Name is nothing but generic suffix words ("OHV Park") — can't dedup or
+      // research it meaningfully.
+      skipped.push({ name, reason: "invalid" });
+      continue;
+    }
+    if (seenKeys.has(key)) {
+      skipped.push({ name, reason: "duplicate" });
+      continue;
+    }
+
+    seenKeys.add(key);
+    cleaned.push(name);
+  }
+
+  return { cleaned, skipped };
+}
+
+export async function seedParkCandidatesByName(
+  state: string,
+  names: string[]
+): Promise<{
+  candidates: Array<{ name: string; state: string }>;
+  skipped: SeedSkip[];
+}> {
+  const canonicalState = normalizeStateName(state);
+  if (!canonicalState) {
+    throw new Error(`Unknown US state: "${state}"`);
+  }
+
+  const { cleaned, skipped } = dedupeSeedNames(names);
+
+  if (cleaned.length === 0) {
+    return { candidates: [], skipped };
+  }
+
+  // Fuzzy dedup against existing parks and pending candidates in this state.
+  const [existingParks, existingCandidates] = await Promise.all([
+    prisma.park.findMany({
+      where: { address: { state: canonicalState } },
+      select: { name: true },
+    }),
+    prisma.parkCandidate.findMany({
+      where: { state: canonicalState },
+      select: { name: true },
+    }),
+  ]);
+
+  const existingNames = [
+    ...existingParks.map((p) => p.name),
+    ...existingCandidates.map((c) => c.name),
+  ];
+
+  const fresh: Array<{ name: string; state: string }> = [];
+  for (const name of cleaned) {
+    const isDuplicate = existingNames.some((existing) =>
+      isFuzzyDuplicate(name, existing)
+    );
+    if (isDuplicate) {
+      skipped.push({ name, reason: "duplicate" });
+      continue;
+    }
+    fresh.push({ name, state: canonicalState });
+  }
+
+  // Persist — city/coords/sourceUrl stay null (unknown at seed time). The
+  // @@unique([name, state]) constraint + skipDuplicates guards against races.
+  if (fresh.length > 0) {
+    await prisma.parkCandidate.createMany({
+      data: fresh,
+      skipDuplicates: true,
+    });
+  }
+
+  return { candidates: fresh, skipped };
 }

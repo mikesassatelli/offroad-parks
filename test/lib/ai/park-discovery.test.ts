@@ -2,6 +2,7 @@ import { describe, it, expect } from "vitest";
 import {
   levenshteinDistance,
   normalizeParkName,
+  dedupeSeedNames,
 } from "@/lib/ai/park-discovery";
 
 describe("levenshteinDistance", () => {
@@ -146,5 +147,44 @@ describe("fuzzy dedup logic", () => {
     const b = normalizeParkName("Carnegie SVRA");
     // Both normalize — "ohv" and "park" stripped
     expect(levenshteinDistance(a, b)).toBe(0);
+  });
+});
+
+describe("dedupeSeedNames", () => {
+  it("trims whitespace and keeps distinct names", () => {
+    const { cleaned, skipped } = dedupeSeedNames([
+      "  Windrock Park  ",
+      "Brimstone Recreation",
+    ]);
+    expect(cleaned).toEqual(["Windrock Park", "Brimstone Recreation"]);
+    expect(skipped).toEqual([]);
+  });
+
+  it("ignores blank lines entirely (not counted as skipped)", () => {
+    const { cleaned, skipped } = dedupeSeedNames(["Windrock", "", "   "]);
+    expect(cleaned).toEqual(["Windrock"]);
+    expect(skipped).toEqual([]);
+  });
+
+  it("collapses internal whitespace", () => {
+    const { cleaned } = dedupeSeedNames(["Royal   Blue   OHV   Area"]);
+    expect(cleaned).toEqual(["Royal Blue OHV Area"]);
+  });
+
+  it("removes intra-batch duplicates using park-name normalization", () => {
+    const { cleaned, skipped } = dedupeSeedNames([
+      "Windrock Park",
+      "Windrock OHV Park", // normalizes to same key as the first
+    ]);
+    expect(cleaned).toEqual(["Windrock Park"]);
+    expect(skipped).toEqual([
+      { name: "Windrock OHV Park", reason: "duplicate" },
+    ]);
+  });
+
+  it("flags names that are only generic suffix words as invalid", () => {
+    const { cleaned, skipped } = dedupeSeedNames(["OHV Park"]);
+    expect(cleaned).toEqual([]);
+    expect(skipped).toEqual([{ name: "OHV Park", reason: "invalid" }]);
   });
 });
