@@ -24,6 +24,7 @@ const makeExtraction = (
   sourcesChecked: 2,
   sourceUrl: "https://example.com/park",
   sourceTitle: "Example source",
+  sourceQuote: "Trails are rated moderate for intermediate riders.",
   sessionId: "sess-1",
   createdAt: "2026-04-01T00:00:00Z",
   ...overrides,
@@ -89,6 +90,24 @@ describe("FieldExtractionReview", () => {
       />
     );
     expect(screen.queryByRole("link")).not.toBeInTheDocument();
+  });
+
+  it("renders the source quote so admins can verify without opening the page", () => {
+    render(<FieldExtractionReview extractions={[makeExtraction()]} />);
+    expect(
+      screen.getByText(/Trails are rated moderate for intermediate riders\./i)
+    ).toBeInTheDocument();
+  });
+
+  it("omits the quote block when sourceQuote is null", () => {
+    render(
+      <FieldExtractionReview
+        extractions={[makeExtraction({ sourceQuote: null })]}
+      />
+    );
+    expect(
+      screen.queryByText(/intermediate riders/i)
+    ).not.toBeInTheDocument();
   });
 
   it("formats boolean extracted values as Yes/No", () => {

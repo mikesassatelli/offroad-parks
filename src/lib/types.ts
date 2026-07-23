@@ -473,6 +473,7 @@ export type FieldExtractionSummary = {
   sourcesChecked: number;
   sourceUrl: string | null;
   sourceTitle: string | null;
+  sourceQuote: string | null;
   sessionId: string | null;
   createdAt: string;
 };
