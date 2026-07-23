@@ -187,6 +187,7 @@ model Park {
   researchSessions     ResearchSession[]
   dataCompletenessScore  Float?
   lastResearchedAt       DateTime?
+  researchQueuedAt       DateTime? // set when queued for bulk research; drained by the research-queue cron
   researchPriority       Int              @default(50)
   researchStatus         ResearchStatus   @default(NEEDS_RESEARCH)
 
@@ -197,6 +198,7 @@ model Park {
   @@index([averageRating])
   @@index([researchStatus])
   @@index([researchPriority])
+  @@index([researchQueuedAt])
 }
 
 enum ParkStatus {

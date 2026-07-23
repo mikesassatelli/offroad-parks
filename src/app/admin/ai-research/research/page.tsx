@@ -2,6 +2,7 @@ import { prisma } from "@/lib/prisma";
 import Link from "next/link";
 import { ArrowRight, FlaskConical } from "lucide-react";
 import { reconcileStuckResearch } from "@/lib/ai/research-lifecycle";
+import { BulkResearchBar } from "@/components/admin/BulkResearchBar";
 import type { ResearchStatus } from "@/lib/types";
 
 export default async function ResearchListPage({
@@ -29,23 +30,27 @@ export default async function ResearchListPage({
     where.name = { contains: q, mode: "insensitive" };
   }
 
-  const parks = await prisma.park.findMany({
-    where,
-    select: {
-      id: true,
-      name: true,
-      researchStatus: true,
-      address: { select: { state: true } },
-      _count: {
-        select: {
-          dataSources: true,
-          fieldExtractions: { where: { status: "PENDING_REVIEW" } },
+  const [parks, queuedCount] = await Promise.all([
+    prisma.park.findMany({
+      where,
+      select: {
+        id: true,
+        name: true,
+        researchStatus: true,
+        researchQueuedAt: true,
+        address: { select: { state: true } },
+        _count: {
+          select: {
+            dataSources: true,
+            fieldExtractions: { where: { status: "PENDING_REVIEW" } },
+          },
         },
       },
-    },
-    orderBy: [{ researchStatus: "asc" }, { name: "asc" }],
-    take: 200,
-  });
+      orderBy: [{ researchStatus: "asc" }, { name: "asc" }],
+      take: 200,
+    }),
+    prisma.park.count({ where: { researchQueuedAt: { not: null } } }),
+  ]);
 
   return (
     <div className="space-y-6">
@@ -85,6 +90,13 @@ export default async function ResearchListPage({
         <StatusFilterLink label="Maintenance" value="MAINTENANCE" active={statusFilter === "MAINTENANCE"} q={q} />
       </div>
 
+      {parks.length > 0 && (
+        <BulkResearchBar
+          parkIds={parks.map((p) => p.id)}
+          queuedCount={queuedCount}
+        />
+      )}
+
       {parks.length === 0 ? (
         <div className="rounded-lg border border-border bg-card p-12 text-center">
           <FlaskConical className="w-8 h-8 mx-auto text-muted-foreground mb-3" />
@@ -118,7 +130,14 @@ export default async function ResearchListPage({
                   </td>
                   <td className="px-4 py-3 text-sm text-muted-foreground">{park.address?.state ?? "—"}</td>
                   <td className="px-4 py-3">
-                    <ResearchStatusBadge status={park.researchStatus} />
+                    <div className="flex items-center gap-1.5">
+                      <ResearchStatusBadge status={park.researchStatus} />
+                      {park.researchQueuedAt && (
+                        <span className="inline-flex items-center rounded-full bg-amber-50 dark:bg-amber-900/20 text-amber-700 dark:text-amber-400 border border-amber-200 dark:border-amber-900/40 px-2 py-0.5 text-[10px] font-medium">
+                          Queued
+                        </span>
+                      )}
+                    </div>
                   </td>
                   <td className="px-4 py-3 text-sm text-foreground">{park._count.dataSources}</td>
                   <td className="px-4 py-3">
