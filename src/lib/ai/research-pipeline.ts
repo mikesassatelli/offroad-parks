@@ -23,7 +23,9 @@ import {
   PHONE_FIELDS,
   URL_FIELDS,
   cleanStreetAddress,
+  cleanCounty,
 } from "./extraction-validator";
+import { normalizeStateName } from "@/lib/us-states";
 
 /**
  * Run the full AI research pipeline for a single park.
@@ -254,6 +256,20 @@ export async function researchPark(
         for (const [key, fieldData] of Object.entries(extraction)) {
           if (!fieldData) continue;
 
+          // `state` is extracted for verification only — never stored/applied
+          // (the park's state is set at creation). A mismatch is a wrong-park
+          // signal, surfaced as a session warning.
+          if (key === "state") {
+            const sourceState = normalizeStateName(String(fieldData.value));
+            const parkState = park.address?.state ?? null;
+            if (sourceState && parkState && sourceState !== parkState) {
+              validationWarnings.push(
+                `${source.url}: source names ${sourceState}, but park is in ${parkState} (possible wrong park)`
+              );
+            }
+            continue;
+          }
+
           // Map flat address keys to dot notation
           const addressFields = [
             "streetAddress",
@@ -306,13 +322,18 @@ export async function researchPark(
               valuesMatch = false;
             }
           } else {
-            // Strip an accidental city/state/zip tail from the street line so
-            // the stored value is just the street address (item b).
-            const scalarValue =
-              fieldName === "address.streetAddress" &&
-              typeof fieldData.value === "string"
-                ? cleanStreetAddress(fieldData.value)
-                : fieldData.value;
+            // Normalize address fields before storing:
+            //  - streetAddress: strip an accidental city/state/zip tail
+            //  - county: strip the "County"/"Parish"/… suffix so "Polk County"
+            //    is stored (and matched) as just "Polk"
+            let scalarValue: unknown = fieldData.value;
+            if (typeof fieldData.value === "string") {
+              if (fieldName === "address.streetAddress") {
+                scalarValue = cleanStreetAddress(fieldData.value);
+              } else if (fieldName === "address.county") {
+                scalarValue = cleanCounty(fieldData.value);
+              }
+            }
 
             extractedValueJson = JSON.stringify(scalarValue);
             valuesMatch =
@@ -481,6 +502,7 @@ export async function researchPark(
  *  - phone: digits only ("(555) 123-4567" === "5551234567")
  *  - url: scheme/www/trailing-slash/tracking-param insensitive
  *  - numeric fields: 25 === 25.0, and "$25" === 25
+ *  - county: "Polk County" === "Polk" (suffix ignored)
  *  - other strings: trimmed, lowercased, whitespace-collapsed
  */
 export function normalizeForComparison(
@@ -505,6 +527,10 @@ export function normalizeForComparison(
       }
       if (fieldName && URL_FIELDS.has(fieldName)) {
         return JSON.stringify(normalizeUrlForComparison(val));
+      }
+      // County: "Polk County" === "Polk" (suffix ignored).
+      if (fieldName === "address.county") {
+        return JSON.stringify(cleanCounty(val).toLowerCase());
       }
       // A numeric-typed field that arrived as a string ("$25", "25 mi").
       if (fieldName && EXTRACTABLE_FIELDS[fieldName] === "number") {

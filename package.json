@@ -16,6 +16,7 @@
     "db:studio": "prisma studio",
     "db:seed-reviews": "tsx prisma/seed-reviews.ts",
     "db:seed-reviews:wipe": "tsx prisma/seed-reviews.ts --wipe",
+    "db:seed-domains": "tsx prisma/seed-domain-reliability.ts",
     "db:normalize-states": "tsx prisma/normalize-state-values.ts",
     "db:normalize-states:dry": "tsx prisma/normalize-state-values.ts --dry",
     "prepare": "husky",
