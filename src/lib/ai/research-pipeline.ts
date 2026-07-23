@@ -16,7 +16,12 @@ import {
 } from "./research-lifecycle";
 import { isAllowedByRobots, clearRobotsCache } from "./robots";
 import { getDefaultReliabilityForSource } from "./domain-reliability";
-import { discoverSources } from "./source-discovery";
+import { discoverSources, normalizeUrl } from "./source-discovery";
+import {
+  PHONE_FIELDS,
+  URL_FIELDS,
+  cleanStreetAddress,
+} from "./extraction-validator";
 
 /**
  * Run the full AI research pipeline for a single park.
@@ -283,11 +288,19 @@ export async function researchPark(
               valuesMatch = false;
             }
           } else {
-            extractedValueJson = JSON.stringify(fieldData.value);
+            // Strip an accidental city/state/zip tail from the street line so
+            // the stored value is just the street address (item b).
+            const scalarValue =
+              fieldName === "address.streetAddress" &&
+              typeof fieldData.value === "string"
+                ? cleanStreetAddress(fieldData.value)
+                : fieldData.value;
+
+            extractedValueJson = JSON.stringify(scalarValue);
             valuesMatch =
               currentValueJson !== null &&
-              normalizeForComparison(extractedValueJson) ===
-                normalizeForComparison(currentValueJson);
+              normalizeForComparison(extractedValueJson, fieldName) ===
+                normalizeForComparison(currentValueJson, fieldName);
           }
 
           // For pending array extractions, deduplicate: skip if an identical
@@ -302,8 +315,8 @@ export async function researchPark(
             });
             if (
               existing?.extractedValue &&
-              normalizeForComparison(existing.extractedValue) ===
-                normalizeForComparison(extractedValueJson)
+              normalizeForComparison(existing.extractedValue, fieldName) ===
+                normalizeForComparison(extractedValueJson, fieldName)
             ) {
               // Duplicate suggestion — skip
               fieldsFoundInSources.set(
@@ -445,22 +458,62 @@ export async function researchPark(
 }
 
 /**
- * Normalize a JSON-encoded value for comparison.
- * Sorts arrays so ["rocks","sand"] matches ["sand","rocks"].
- * Trims and lowercases strings so "5551234567" matches "5551234567".
+ * Normalize a JSON-encoded value for comparison so that a value which merely
+ * *looks* different from the current one isn't queued for review. Comparison is
+ * field-type-aware when `fieldName` is supplied:
+ *  - arrays: order-insensitive (["rocks","sand"] === ["sand","rocks"])
+ *  - phone: digits only ("(555) 123-4567" === "5551234567")
+ *  - url: scheme/www/trailing-slash/tracking-param insensitive
+ *  - numeric fields: 25 === 25.0, and "$25" === 25
+ *  - other strings: trimmed, lowercased, whitespace-collapsed
  */
-function normalizeForComparison(jsonStr: string): string {
+export function normalizeForComparison(
+  jsonStr: string,
+  fieldName?: string
+): string {
   try {
     const val = JSON.parse(jsonStr);
+
     if (Array.isArray(val)) {
       return JSON.stringify([...val].sort());
     }
-    if (typeof val === "string") {
-      return JSON.stringify(val.trim().toLowerCase());
+
+    // JSON.parse already collapses numeric formatting (25 vs 25.0 → 25).
+    if (typeof val === "number") {
+      return JSON.stringify(val);
     }
+
+    if (typeof val === "string") {
+      if (fieldName && PHONE_FIELDS.has(fieldName)) {
+        return JSON.stringify(val.replace(/\D/g, ""));
+      }
+      if (fieldName && URL_FIELDS.has(fieldName)) {
+        return JSON.stringify(normalizeUrlForComparison(val));
+      }
+      // A numeric-typed field that arrived as a string ("$25", "25 mi").
+      if (fieldName && EXTRACTABLE_FIELDS[fieldName] === "number") {
+        const numeric = Number(val.replace(/[^0-9.-]/g, ""));
+        if (val.trim() !== "" && !Number.isNaN(numeric)) {
+          return JSON.stringify(numeric);
+        }
+      }
+      return JSON.stringify(val.trim().toLowerCase().replace(/\s+/g, " "));
+    }
+
     return JSON.stringify(val);
   } catch {
     return jsonStr;
+  }
+}
+
+/** URL comparison key: ignore scheme, www, trailing slash, tracking params, case. */
+function normalizeUrlForComparison(url: string): string {
+  try {
+    return normalizeUrl(url)
+      .replace(/^https?:\/\//i, "")
+      .toLowerCase();
+  } catch {
+    return url.trim().toLowerCase();
   }
 }
 
