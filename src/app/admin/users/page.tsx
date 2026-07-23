@@ -1,5 +1,6 @@
 import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
+import { PeopleTabs } from "@/components/admin/PeopleTabs";
 import {
   UserManagementTable,
   type AssignableRole,
@@ -29,8 +30,8 @@ export default async function AdminUsersPage() {
 
   return (
     <div>
-      <h1 className="text-3xl font-bold text-foreground mb-2">User Management</h1>
-      <p className="text-sm text-muted-foreground mb-8">
+      <PeopleTabs isSuperAdmin={canEditRoles} />
+      <p className="text-sm text-muted-foreground mb-6">
         {canEditRoles
           ? "As a super admin, you can promote or demote users."
           : "Only the super admin can change user roles."}

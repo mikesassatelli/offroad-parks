@@ -1,6 +1,7 @@
 import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { redirect } from "next/navigation";
+import { PeopleTabs } from "@/components/admin/PeopleTabs";
 import {
   OperatorManagementClient,
   type AdminOperatorRow,
@@ -12,6 +13,7 @@ export default async function AdminOperatorsPage() {
   if (role !== "ADMIN" && role !== "SUPER_ADMIN") {
     redirect("/");
   }
+  const isSuperAdmin = role === "SUPER_ADMIN";
 
   const operators = await prisma.operator.findMany({
     orderBy: { createdAt: "desc" },
@@ -59,8 +61,8 @@ export default async function AdminOperatorsPage() {
 
   return (
     <div>
-      <h1 className="text-3xl font-bold text-foreground mb-2">Park Operators</h1>
-      <p className="text-sm text-muted-foreground mb-8">
+      <PeopleTabs isSuperAdmin={isSuperAdmin} />
+      <p className="text-sm text-muted-foreground mb-6">
         Manage operator accounts: create operators, attach/detach parks, and
         add or remove users. Normally operators are created through the
         Park Claims flow — this surface is for direct maintenance.

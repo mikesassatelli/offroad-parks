@@ -76,6 +76,38 @@ export function UserManagementTable({
     }
   }
 
+  // Role select (editable) or badge (read-only) — shared by table + cards.
+  const renderRoleControl = (user: ManagedUser) => {
+    const isSelf = user.id === currentUserId;
+    const isSaving = savingId === user.id || pending;
+    if (!canEditRoles) {
+      return (
+        <span
+          className={`px-2 py-1 text-xs font-medium rounded-full ${roleBadgeClass(user.role)}`}
+        >
+          {user.role}
+        </span>
+      );
+    }
+    return (
+      <select
+        aria-label={`Role for ${user.email ?? user.id}`}
+        disabled={isSaving}
+        value={user.role}
+        onChange={(e) =>
+          handleRoleChange(user.id, e.target.value as AssignableRole)
+        }
+        className="text-xs font-medium rounded-md border border-border bg-background px-2 py-1 disabled:opacity-50"
+      >
+        {ASSIGNABLE_ROLES.map((r) => (
+          <option key={r} value={r} disabled={isSelf && r !== "SUPER_ADMIN"}>
+            {r}
+          </option>
+        ))}
+      </select>
+    );
+  };
+
   return (
     <div className="space-y-4">
       {error && (
@@ -88,7 +120,7 @@ export function UserManagementTable({
       )}
 
       <div className="bg-card rounded-lg shadow border border-border overflow-hidden">
-        <div className="overflow-x-auto">
+        <div className="hidden md:block overflow-x-auto">
           <table className="min-w-full divide-y divide-border">
             <thead className="bg-muted/50">
               <tr>
@@ -111,8 +143,6 @@ export function UserManagementTable({
             </thead>
             <tbody className="bg-card divide-y divide-border">
               {users.map((user) => {
-                const isSelf = user.id === currentUserId;
-                const isSaving = savingId === user.id || pending;
                 return (
                   <tr
                     key={user.id}
@@ -134,42 +164,7 @@ export function UserManagementTable({
                       </div>
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap">
-                      {canEditRoles ? (
-                        <label className="sr-only" htmlFor={`role-${user.id}`}>
-                          Role for {user.email ?? user.id}
-                        </label>
-                      ) : null}
-                      {canEditRoles ? (
-                        <select
-                          id={`role-${user.id}`}
-                          aria-label={`Role for ${user.email ?? user.id}`}
-                          disabled={isSaving}
-                          value={user.role}
-                          onChange={(e) =>
-                            handleRoleChange(
-                              user.id,
-                              e.target.value as AssignableRole,
-                            )
-                          }
-                          className="text-xs font-medium rounded-md border border-border bg-background px-2 py-1 disabled:opacity-50"
-                        >
-                          {ASSIGNABLE_ROLES.map((r) => (
-                            <option
-                              key={r}
-                              value={r}
-                              disabled={isSelf && r !== "SUPER_ADMIN"}
-                            >
-                              {r}
-                            </option>
-                          ))}
-                        </select>
-                      ) : (
-                        <span
-                          className={`px-2 py-1 text-xs font-medium rounded-full ${roleBadgeClass(user.role)}`}
-                        >
-                          {user.role}
-                        </span>
-                      )}
+                      {renderRoleControl(user)}
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap text-sm text-muted-foreground">
                       {user.submittedParkCount}
@@ -182,6 +177,34 @@ export function UserManagementTable({
               })}
             </tbody>
           </table>
+        </div>
+
+        {/* Mobile card layout */}
+        <div className="md:hidden divide-y divide-border">
+          {users.map((user) => (
+            <div key={user.id} className="p-4">
+              <div className="flex items-start justify-between gap-3">
+                <div className="flex items-center gap-3 min-w-0">
+                  <div className="w-8 h-8 rounded-full bg-muted flex items-center justify-center flex-shrink-0">
+                    <UsersIcon className="w-4 h-4 text-muted-foreground" />
+                  </div>
+                  <div className="min-w-0">
+                    <div className="text-sm font-medium text-foreground truncate">
+                      {user.name || "Anonymous"}
+                    </div>
+                    <div className="text-xs text-muted-foreground truncate">
+                      {user.email}
+                    </div>
+                  </div>
+                </div>
+                <div className="flex-shrink-0">{renderRoleControl(user)}</div>
+              </div>
+              <div className="mt-3 flex items-center gap-4 text-xs text-muted-foreground">
+                <span>{user.submittedParkCount} parks submitted</span>
+                <span>Joined {new Date(user.createdAt).toLocaleDateString()}</span>
+              </div>
+            </div>
+          ))}
         </div>
       </div>
     </div>

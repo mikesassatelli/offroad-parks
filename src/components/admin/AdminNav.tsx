@@ -6,11 +6,9 @@ import { usePathname } from "next/navigation";
 import {
   Activity,
   BrainCircuit,
-  Building2,
   Camera,
   ClipboardList,
   Home,
-  KeyRound,
   LayoutDashboard,
   MapPin,
   Menu,
@@ -25,6 +23,8 @@ type NavItem = {
   label: string;
   icon: LucideIcon;
   superAdminOnly?: boolean;
+  /** Extra routes that should also mark this item active. */
+  match?: string[];
 };
 
 // AI Research is near the top — it's the backbone of the app. Its sub-pages
@@ -38,9 +38,12 @@ const NAV_ITEMS: NavItem[] = [
   { href: "/admin/conditions", label: "Trail Conditions", icon: Activity },
   { href: "/admin/reviews", label: "Reviews", icon: MessageSquare },
   { href: "/admin/claims", label: "Park Claims", icon: ClipboardList },
-  { href: "/admin/operators", label: "Park Operators", icon: Building2 },
-  { href: "/admin/users", label: "Users", icon: Users },
-  { href: "/admin/pre-grants", label: "Pre-grants", icon: KeyRound, superAdminOnly: true },
+  {
+    href: "/admin/users",
+    label: "People & Access",
+    icon: Users,
+    match: ["/admin/operators", "/admin/pre-grants"],
+  },
 ];
 
 function NavList({
@@ -92,11 +95,17 @@ export function AdminNav({ isSuperAdmin }: { isSuperAdmin: boolean }) {
 
   const items = NAV_ITEMS.filter((i) => !i.superAdminOnly || isSuperAdmin);
 
-  // Most-specific match wins, so "/admin/parks/new" highlights Add Park (not Parks).
-  const activeHref = items
-    .map((i) => i.href)
-    .filter((h) => pathname === h || pathname.startsWith(`${h}/`))
-    .sort((a, b) => b.length - a.length)[0];
+  // Longest matching route (across each item's href + `match` list) wins, so
+  // "/admin/parks/new" highlights Parks and "/admin/operators" highlights People.
+  const matchLen = (item: NavItem): number => {
+    const lens = [item.href, ...(item.match ?? [])]
+      .filter((h) => pathname === h || pathname.startsWith(`${h}/`))
+      .map((h) => h.length);
+    return lens.length ? Math.max(...lens) : -1;
+  };
+  const activeHref = [...items]
+    .filter((i) => matchLen(i) >= 0)
+    .sort((a, b) => matchLen(b) - matchLen(a))[0]?.href;
 
   return (
     <>
