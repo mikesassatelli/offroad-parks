@@ -26,45 +26,9 @@ export const MIN_SOURCES_FOR_NOT_FOUND = 3;
 /** Max sources to process per research session. */
 export const MAX_SOURCES_PER_SESSION = 5;
 
-/**
- * Park fields that the AI can extract. Maps field name to its value type
- * for display in the admin review UI.
- */
-export const EXTRACTABLE_FIELDS: Record<string, string> = {
-  latitude: "number",
-  longitude: "number",
-  website: "string",
-  phone: "string",
-  campingWebsite: "string",
-  campingPhone: "string",
-  isFree: "boolean",
-  dayPassUSD: "number",
-  vehicleEntryFeeUSD: "number",
-  riderFeeUSD: "number",
-  membershipFeeUSD: "number",
-  milesOfTrails: "number",
-  acres: "number",
-  notes: "string",
-  datesOpen: "string",
-  contactEmail: "string",
-  ownership: "Ownership",
-  permitRequired: "boolean",
-  permitType: "string",
-  membershipRequired: "boolean",
-  maxVehicleWidthInches: "number",
-  flagsRequired: "boolean",
-  sparkArrestorRequired: "boolean",
-  helmetsRequired: "boolean",
-  noiseLimitDBA: "number",
-  "address.streetAddress": "string",
-  "address.city": "string",
-  "address.zipCode": "string",
-  "address.county": "string",
-  terrain: "Terrain[]",
-  amenities: "Amenity[]",
-  camping: "Camping[]",
-  vehicleTypes: "VehicleType[]",
-};
+// EXTRACTABLE_FIELDS now lives in the side-effect-free park-fields module (so it
+// can be shared with client components). Re-exported here for existing importers.
+export { EXTRACTABLE_FIELDS } from "./park-fields";
 
 export function estimateCost(
   inputTokens: number,

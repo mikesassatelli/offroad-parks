@@ -417,4 +417,145 @@ describe("FieldExtractionReview", () => {
     const { container } = render(<FieldExtractionReview extractions={[]} />);
     expect(container.querySelector("h2")).toBeNull();
   });
+
+  describe("typed editors", () => {
+    const openEdit = () =>
+      fireEvent.click(screen.getByTitle(/edit value before approving/i));
+
+    const approveWithEdit = () =>
+      fireEvent.click(screen.getByRole("button", { name: /approve with edit/i }));
+
+    const lastEditedValue = () =>
+      JSON.parse(JSON.parse(mockFetch.mock.calls[0][1].body).editedValue);
+
+    it("edits an array field via option chips and approves selected values", async () => {
+      mockFetch.mockResolvedValueOnce({ ok: true });
+      render(
+        <FieldExtractionReview
+          extractions={[
+            makeExtraction({
+              fieldName: "amenities",
+              extractedValue: JSON.stringify(["restrooms"]),
+              currentValue: JSON.stringify([]),
+            }),
+          ]}
+        />
+      );
+      openEdit();
+      fireEvent.click(screen.getByText("Showers")); // add another option
+      approveWithEdit();
+
+      await waitFor(() => {
+        expect(mockFetch).toHaveBeenCalledWith(
+          "/api/admin/ai-research/extractions/ext-1/approve",
+          expect.objectContaining({ method: "POST" })
+        );
+      });
+      expect(lastEditedValue()).toEqual(["restrooms", "showers"]);
+    });
+
+    it("blocks approving an array field with nothing selected", () => {
+      render(
+        <FieldExtractionReview
+          extractions={[
+            makeExtraction({
+              fieldName: "terrain",
+              extractedValue: JSON.stringify(["sand"]),
+              currentValue: JSON.stringify([]),
+            }),
+          ]}
+        />
+      );
+      openEdit();
+      fireEvent.click(screen.getByText("Sand")); // unselect the only value
+      approveWithEdit();
+      expect(screen.getByText(/select at least one option/i)).toBeInTheDocument();
+      expect(mockFetch).not.toHaveBeenCalled();
+    });
+
+    it("edits ownership via a dropdown constrained to valid options", async () => {
+      mockFetch.mockResolvedValueOnce({ ok: true });
+      render(
+        <FieldExtractionReview
+          extractions={[
+            makeExtraction({
+              fieldName: "ownership",
+              extractedValue: JSON.stringify("private"),
+              currentValue: JSON.stringify("public"),
+            }),
+          ]}
+        />
+      );
+      openEdit();
+      fireEvent.change(screen.getByRole("combobox"), {
+        target: { value: "mixed" },
+      });
+      approveWithEdit();
+      await waitFor(() => expect(mockFetch).toHaveBeenCalled());
+      expect(lastEditedValue()).toBe("mixed");
+    });
+
+    it("edits a boolean field via a Yes/No dropdown", async () => {
+      mockFetch.mockResolvedValueOnce({ ok: true });
+      render(
+        <FieldExtractionReview
+          extractions={[
+            makeExtraction({
+              fieldName: "permitRequired",
+              extractedValue: JSON.stringify(true),
+              currentValue: JSON.stringify(false),
+            }),
+          ]}
+        />
+      );
+      openEdit();
+      fireEvent.change(screen.getByRole("combobox"), {
+        target: { value: "false" },
+      });
+      approveWithEdit();
+      await waitFor(() => expect(mockFetch).toHaveBeenCalled());
+      expect(lastEditedValue()).toBe(false);
+    });
+
+    it("approves a valid number edit as a number", async () => {
+      mockFetch.mockResolvedValueOnce({ ok: true });
+      render(
+        <FieldExtractionReview
+          extractions={[
+            makeExtraction({
+              fieldName: "acres",
+              extractedValue: JSON.stringify(100),
+              currentValue: null,
+            }),
+          ]}
+        />
+      );
+      openEdit();
+      fireEvent.change(screen.getByRole("spinbutton"), {
+        target: { value: "250" },
+      });
+      approveWithEdit();
+      await waitFor(() => expect(mockFetch).toHaveBeenCalled());
+      expect(lastEditedValue()).toBe(250);
+    });
+
+    it("blocks approving an empty number edit", () => {
+      render(
+        <FieldExtractionReview
+          extractions={[
+            makeExtraction({
+              fieldName: "acres",
+              extractedValue: JSON.stringify(100),
+              currentValue: null,
+            }),
+          ]}
+        />
+      );
+      openEdit();
+      fireEvent.change(screen.getByRole("spinbutton"), { target: { value: "" } });
+      approveWithEdit();
+      expect(screen.getByText(/valid number/i)).toBeInTheDocument();
+      expect(mockFetch).not.toHaveBeenCalled();
+    });
+  });
 });

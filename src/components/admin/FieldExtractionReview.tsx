@@ -6,6 +6,50 @@ import { CheckCircle, XCircle, ExternalLink, CheckCheck, XOctagon, Pencil, Check
 import { Button } from "@/components/ui/button";
 import type { FieldExtractionSummary } from "@/lib/types";
 import { FIELD_DISPLAY_NAMES } from "@/lib/ai/field-display-names";
+import {
+  ARRAY_FIELD_OPTIONS,
+  OWNERSHIP_OPTIONS,
+  EXTRACTABLE_FIELDS,
+  humanizeOption,
+} from "@/lib/ai/park-fields";
+
+type EditorKind = "array" | "ownership" | "boolean" | "number" | "string";
+
+function editorKind(fieldName: string): EditorKind {
+  if (fieldName in ARRAY_FIELD_OPTIONS) return "array";
+  const type = EXTRACTABLE_FIELDS[fieldName];
+  if (type === "Ownership") return "ownership";
+  if (type === "boolean") return "boolean";
+  if (type === "number") return "number";
+  return "string";
+}
+
+function parseArrayValue(json: string): string[] {
+  try {
+    const v = JSON.parse(json);
+    return Array.isArray(v) ? v.map(String) : [];
+  } catch {
+    return [];
+  }
+}
+
+function parseStringValue(json: string | null): string {
+  if (!json) return "";
+  try {
+    const v = JSON.parse(json);
+    return typeof v === "string" ? v : String(v);
+  } catch {
+    return json;
+  }
+}
+
+function safeParse(json: string): unknown {
+  try {
+    return JSON.parse(json);
+  } catch {
+    return json;
+  }
+}
 
 type Props = {
   extractions: FieldExtractionSummary[];
@@ -16,7 +60,11 @@ export function FieldExtractionReview({ extractions }: Props) {
   const [processingId, setProcessingId] = useState<string | null>(null);
   const [processingBulk, setProcessingBulk] = useState<string | null>(null);
   const [editingId, setEditingId] = useState<string | null>(null);
+  // `editValue` holds the JSON-encoded value for discrete controls
+  // (array/ownership/boolean); `editRaw` holds the raw text for free-typed
+  // scalars (number/string) so controlled inputs behave naturally.
   const [editValue, setEditValue] = useState<string>("");
+  const [editRaw, setEditRaw] = useState<string>("");
   const [editError, setEditError] = useState<string | null>(null);
 
   // Group extractions by park
@@ -82,20 +130,154 @@ export function FieldExtractionReview({ extractions }: Props) {
 
   const startEdit = (extraction: FieldExtractionSummary) => {
     setEditError(null);
-    // Prefill the editor with the human-readable form of the extracted value.
-    setEditValue(extraction.extractedValue ? formatValue(extraction.extractedValue) : "");
+    const kind = editorKind(extraction.fieldName);
+    const json = extraction.extractedValue;
+
+    if (kind === "number") {
+      const n = json ? Number(safeParse(json)) : NaN;
+      setEditRaw(Number.isNaN(n) ? "" : String(n));
+      setEditValue("");
+    } else if (kind === "string") {
+      setEditRaw(parseStringValue(json));
+      setEditValue("");
+    } else {
+      // Discrete controls read/write JSON directly.
+      const fallback =
+        kind === "array" ? "[]" : kind === "ownership" ? '"unknown"' : "false";
+      setEditValue(json ?? fallback);
+      setEditRaw("");
+    }
     setEditingId(extraction.id);
   };
 
   const saveEdit = (extraction: FieldExtractionSummary) => {
-    // Re-encode the edited text back into the JSON shape the API expects,
-    // preserving the field's underlying type (array / boolean / number / string).
-    const encoded = encodeValue(extraction.fieldName, editValue, extraction.extractedValue);
-    if (encoded === null) {
-      setEditError("Could not parse that value. For list fields use comma-separated values.");
-      return;
+    const kind = editorKind(extraction.fieldName);
+    let finalJson: string;
+
+    if (kind === "number") {
+      const n = Number(editRaw.trim());
+      if (editRaw.trim() === "" || Number.isNaN(n)) {
+        setEditError("Enter a valid number.");
+        return;
+      }
+      finalJson = JSON.stringify(n);
+    } else if (kind === "string") {
+      if (editRaw.trim() === "") {
+        setEditError("Value can't be empty.");
+        return;
+      }
+      finalJson = JSON.stringify(editRaw);
+    } else if (kind === "array") {
+      const arr = parseArrayValue(editValue);
+      if (arr.length === 0) {
+        setEditError("Select at least one option.");
+        return;
+      }
+      finalJson = JSON.stringify(arr);
+    } else {
+      // ownership / boolean — the control always yields a valid value.
+      finalJson = editValue;
     }
-    handleApprove(extraction.id, encoded);
+
+    handleApprove(extraction.id, finalJson);
+  };
+
+  const renderEditor = (extraction: FieldExtractionSummary) => {
+    const field = extraction.fieldName;
+    const kind = editorKind(field);
+
+    if (kind === "array") {
+      const options = ARRAY_FIELD_OPTIONS[field];
+      const selected = new Set(parseArrayValue(editValue));
+      return (
+        <div className="flex flex-wrap gap-1.5">
+          {options.map((opt) => {
+            const checked = selected.has(opt);
+            return (
+              <label
+                key={opt}
+                className={`cursor-pointer select-none rounded-full border px-2.5 py-1 text-xs transition-colors ${
+                  checked
+                    ? "border-green-300 dark:border-green-900/50 bg-green-100 dark:bg-green-900/30 text-green-800 dark:text-green-300"
+                    : "border-input bg-background text-muted-foreground hover:bg-accent"
+                }`}
+              >
+                <input
+                  type="checkbox"
+                  className="sr-only"
+                  checked={checked}
+                  onChange={() => {
+                    const next = new Set(selected);
+                    if (next.has(opt)) next.delete(opt);
+                    else next.add(opt);
+                    setEditValue(JSON.stringify([...next]));
+                  }}
+                />
+                {humanizeOption(opt)}
+              </label>
+            );
+          })}
+        </div>
+      );
+    }
+
+    if (kind === "ownership") {
+      const current = parseStringValue(editValue);
+      return (
+        <select
+          value={current}
+          onChange={(e) => setEditValue(JSON.stringify(e.target.value))}
+          className="w-full max-w-xs rounded-md border border-input bg-background text-foreground px-2 py-1 text-sm focus:border-ring focus:ring-1 focus:ring-ring"
+        >
+          {OWNERSHIP_OPTIONS.map((o) => (
+            <option key={o} value={o}>
+              {humanizeOption(o)}
+            </option>
+          ))}
+        </select>
+      );
+    }
+
+    if (kind === "boolean") {
+      const current = (() => {
+        try {
+          return JSON.parse(editValue) === true;
+        } catch {
+          return false;
+        }
+      })();
+      return (
+        <select
+          value={current ? "true" : "false"}
+          onChange={(e) => setEditValue(JSON.stringify(e.target.value === "true"))}
+          className="w-full max-w-[8rem] rounded-md border border-input bg-background text-foreground px-2 py-1 text-sm focus:border-ring focus:ring-1 focus:ring-ring"
+        >
+          <option value="true">Yes</option>
+          <option value="false">No</option>
+        </select>
+      );
+    }
+
+    if (kind === "number") {
+      return (
+        <input
+          type="number"
+          value={editRaw}
+          onChange={(e) => setEditRaw(e.target.value)}
+          className="w-full max-w-[12rem] rounded-md border border-input bg-background text-foreground px-2 py-1 text-sm font-mono focus:border-ring focus:ring-1 focus:ring-ring"
+        />
+      );
+    }
+
+    // string / address
+    return (
+      <textarea
+        value={editRaw}
+        onChange={(e) => setEditRaw(e.target.value)}
+        rows={1}
+        className="w-full rounded-md border border-input bg-background text-foreground px-2 py-1 text-sm font-mono focus:border-ring focus:ring-1 focus:ring-ring"
+      />
+    );
   };
 
   const handleReject = async (id: string) => {
@@ -176,17 +358,12 @@ export function FieldExtractionReview({ extractions }: Props) {
                     </div>
                     {editingId === extraction.id && (
                       <div className="mt-3 rounded-md border border-border bg-muted/40 p-3">
-                        <label className="block text-xs text-muted-foreground mb-1">
+                        <label className="block text-xs text-muted-foreground mb-1.5">
                           {isArrayField(extraction.fieldName)
-                            ? "Edit values (comma-separated), then approve"
+                            ? "Select values to add, then approve"
                             : "Edit value, then approve"}
                         </label>
-                        <textarea
-                          value={editValue}
-                          onChange={(e) => setEditValue(e.target.value)}
-                          rows={isArrayField(extraction.fieldName) ? 2 : 1}
-                          className="w-full rounded-md border border-input bg-background text-foreground px-2 py-1 text-sm font-mono focus:border-ring focus:ring-1 focus:ring-ring"
-                        />
+                        {renderEditor(extraction)}
                         {editError && (
                           <p className="mt-1 text-xs text-red-600 dark:text-red-400">{editError}</p>
                         )}
@@ -313,52 +490,4 @@ function formatValue(jsonStr: string): string {
   } catch {
     return jsonStr;
   }
-}
-
-/**
- * Re-encode admin-edited display text back into the JSON shape the approve API
- * expects, inferring the target type from the field and the original value.
- * Returns null if the input can't be coerced sensibly.
- */
-function encodeValue(
-  fieldName: string,
-  text: string,
-  originalJson: string | null
-): string | null {
-  const trimmed = text.trim();
-
-  if (isArrayField(fieldName)) {
-    const items = trimmed
-      .split(",")
-      .map((s) => s.trim())
-      .filter((s) => s.length > 0);
-    return JSON.stringify(items);
-  }
-
-  // Infer scalar type from the original extracted value when available.
-  let originalType: "boolean" | "number" | "string" = "string";
-  if (originalJson) {
-    try {
-      const parsed = JSON.parse(originalJson);
-      if (typeof parsed === "boolean") originalType = "boolean";
-      else if (typeof parsed === "number") originalType = "number";
-    } catch {
-      // fall back to string
-    }
-  }
-
-  if (originalType === "boolean") {
-    const lower = trimmed.toLowerCase();
-    if (["yes", "true", "1"].includes(lower)) return JSON.stringify(true);
-    if (["no", "false", "0"].includes(lower)) return JSON.stringify(false);
-    return null;
-  }
-
-  if (originalType === "number") {
-    const num = Number(trimmed);
-    if (Number.isNaN(num)) return null;
-    return JSON.stringify(num);
-  }
-
-  return JSON.stringify(trimmed);
 }
