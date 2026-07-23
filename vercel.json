@@ -5,6 +5,14 @@
     {
       "path": "/api/cron/iowa-ohv-alerts",
       "schedule": "0 12 * * *"
+    },
+    {
+      "path": "/api/cron/research-queue",
+      "schedule": "*/15 * * * *"
+    },
+    {
+      "path": "/api/cron/domain-reliability",
+      "schedule": "30 8 * * *"
     }
   ]
 }

@@ -7,9 +7,9 @@ export const maxDuration = 60;
 
 /**
  * Nightly assisted-auto tuning: nudge domain reliability scores toward observed
- * approve/reject accuracy (bounded) and compute block suggestions. Triggered on
- * a schedule by .github/workflows/domain-reliability.yml (GitHub Actions cron).
- * Guarded by CRON_SECRET: `Authorization: Bearer $CRON_SECRET`.
+ * approve/reject accuracy (bounded) and compute block suggestions. Scheduled
+ * daily via vercel.json `crons`. Vercel attaches `Authorization: Bearer
+ * $CRON_SECRET` to scheduled invocations; anything else is rejected once set.
  */
 export async function GET(request: Request): Promise<NextResponse> {
   const secret = process.env.CRON_SECRET;
