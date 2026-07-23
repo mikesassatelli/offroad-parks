@@ -1,4 +1,11 @@
 import { z } from "zod";
+import {
+  TERRAIN_OPTIONS,
+  AMENITY_OPTIONS,
+  CAMPING_OPTIONS,
+  VEHICLE_TYPE_OPTIONS,
+  OWNERSHIP_OPTIONS,
+} from "./park-fields";
 
 /** Schema for a single extracted field with confidence metadata. */
 function field<T extends z.ZodTypeAny>(valueSchema: T) {
@@ -42,9 +49,7 @@ export const parkExtractionSchema = z.object({
 
   // Operational
   datesOpen: field(z.string()),
-  ownership: field(
-    z.enum(["private", "public", "mixed", "unknown"])
-  ),
+  ownership: field(z.enum(OWNERSHIP_OPTIONS)),
   permitRequired: field(z.boolean()),
   permitType: field(z.string()),
   membershipRequired: field(z.boolean()),
@@ -61,52 +66,10 @@ export const parkExtractionSchema = z.object({
   county: field(z.string()),
 
   // Categorical (arrays)
-  terrain: field(
-    z.array(
-      z.enum(["sand", "rocks", "mud", "trails", "hills", "motocrossTrack"])
-    )
-  ),
-  amenities: field(
-    z.array(
-      z.enum([
-        "restrooms",
-        "showers",
-        "food",
-        "fuel",
-        "repair",
-        "boatRamp",
-        "loadingRamp",
-        "picnicTable",
-        "shelter",
-        "grill",
-        "playground",
-        "wifi",
-        "fishing",
-        "airStation",
-        "trailMaps",
-        "rentals",
-        "training",
-        "firstAid",
-        "store",
-      ])
-    )
-  ),
-  camping: field(
-    z.array(
-      z.enum([
-        "tent",
-        "rv30A",
-        "rv50A",
-        "fullHookup",
-        "cabin",
-        "groupSite",
-        "backcountry",
-      ])
-    )
-  ),
-  vehicleTypes: field(
-    z.array(z.enum(["motorcycle", "atv", "sxs", "fullSize"]))
-  ),
+  terrain: field(z.array(z.enum(TERRAIN_OPTIONS))),
+  amenities: field(z.array(z.enum(AMENITY_OPTIONS))),
+  camping: field(z.array(z.enum(CAMPING_OPTIONS))),
+  vehicleTypes: field(z.array(z.enum(VEHICLE_TYPE_OPTIONS))),
 });
 
 export type ParkExtraction = z.infer<typeof parkExtractionSchema>;
