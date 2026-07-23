@@ -20,6 +20,12 @@ vi.mock("@/components/admin/PhotoModerationTable", () => ({
   ),
 }));
 
+// MapHeroesSection is an async server component with its own prisma queries;
+// stub it here (its logic is covered by MapHeroBackfillRunner's tests).
+vi.mock("@/components/admin/MapHeroesSection", () => ({
+  MapHeroesSection: () => <div data-testid="map-heroes-section" />,
+}));
+
 describe("AdminPhotosPage", () => {
   const mockPhotos = [
     {

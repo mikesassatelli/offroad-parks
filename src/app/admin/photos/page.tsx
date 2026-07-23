@@ -1,6 +1,7 @@
 import { prisma } from "@/lib/prisma";
 import { PhotoModerationTable } from "@/components/admin/PhotoModerationTable";
-import { Camera } from "lucide-react";
+import { MapHeroesSection } from "@/components/admin/MapHeroesSection";
+import { Camera, Upload } from "lucide-react";
 
 export default async function AdminPhotosPage() {
   const photos = await prisma.parkPhoto.findMany({
@@ -46,14 +47,23 @@ export default async function AdminPhotosPage() {
 
   return (
     <div>
-      <div className="mb-8">
-        <h1 className="text-3xl font-bold text-foreground mb-2 flex items-center gap-2">
-          <Camera className="w-8 h-8" />
-          Photo Moderation
-        </h1>
-        <p className="text-muted-foreground">
-          Review, moderate, and audit park photos
-        </p>
+      <div className="mb-8 flex flex-col sm:flex-row sm:items-start sm:justify-between gap-3">
+        <div>
+          <h1 className="text-2xl sm:text-3xl font-bold text-foreground mb-2 flex items-center gap-2">
+            <Camera className="w-7 h-7 sm:w-8 sm:h-8" />
+            Photo Moderation
+          </h1>
+          <p className="text-muted-foreground">
+            Review, moderate, and audit park photos
+          </p>
+        </div>
+        <a
+          href="/admin/photos/bulk-upload"
+          className="inline-flex items-center gap-1.5 px-4 py-2 border border-border bg-card text-foreground rounded-lg hover:bg-accent transition-colors font-medium self-start"
+        >
+          <Upload className="w-4 h-4" />
+          Bulk Upload
+        </a>
       </div>
 
       <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
@@ -76,6 +86,8 @@ export default async function AdminPhotosPage() {
       </div>
 
       <PhotoModerationTable photos={photos} />
+
+      <MapHeroesSection />
     </div>
   );
 }
