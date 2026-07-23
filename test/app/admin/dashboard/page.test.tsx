@@ -3,27 +3,21 @@ import AdminDashboard from "@/app/admin/dashboard/page";
 import { prisma } from "@/lib/prisma";
 import { vi } from "vitest";
 
-// Mock dependencies
 vi.mock("@/lib/prisma", () => ({
   prisma: {
-    park: {
-      count: vi.fn(),
-      findMany: vi.fn(),
-    },
-    user: {
-      count: vi.fn(),
-    },
-    parkPhoto: {
-      count: vi.fn(),
-      findMany: vi.fn(),
-    },
-    parkReview: {
-      count: vi.fn(),
-    },
-    trailCondition: {
-      count: vi.fn(),
-    },
+    park: { count: vi.fn(), findMany: vi.fn() },
+    parkPhoto: { count: vi.fn(), findMany: vi.fn() },
+    parkReview: { count: vi.fn() },
+    trailCondition: { count: vi.fn() },
+    parkClaim: { count: vi.fn() },
+    fieldExtraction: { count: vi.fn() },
+    researchSession: { count: vi.fn(), aggregate: vi.fn(), findMany: vi.fn() },
   },
+}));
+
+// Recharts client component — stubbed so the test doesn't depend on SVG rendering.
+vi.mock("@/components/admin/DashboardCharts", () => ({
+  DashboardCharts: () => <div data-testid="dashboard-charts" />,
 }));
 
 vi.mock("next/image", () => ({
@@ -43,381 +37,173 @@ vi.mock("next/link", () => ({
 describe("AdminDashboard", () => {
   beforeEach(() => {
     vi.clearAllMocks();
-    // Default zero for trailCondition.count — overridden in specific tests
-    vi.mocked(prisma.trailCondition.count).mockResolvedValue(0);
-  });
-
-  it("should render dashboard title", async () => {
     vi.mocked(prisma.park.count).mockResolvedValue(0);
-    vi.mocked(prisma.user.count).mockResolvedValue(0);
     vi.mocked(prisma.parkPhoto.count).mockResolvedValue(0);
     vi.mocked(prisma.parkReview.count).mockResolvedValue(0);
-    vi.mocked(prisma.park.findMany).mockResolvedValue([]);
-    vi.mocked(prisma.parkPhoto.findMany).mockResolvedValue([]);
+    vi.mocked(prisma.trailCondition.count).mockResolvedValue(0);
+    vi.mocked(prisma.parkClaim.count).mockResolvedValue(0);
+    vi.mocked(prisma.fieldExtraction.count).mockResolvedValue(0);
+    vi.mocked(prisma.researchSession.count).mockResolvedValue(0);
+    vi.mocked(prisma.researchSession.aggregate).mockResolvedValue({
+      _sum: { estimatedCostUSD: 0 },
+    } as any);
+    vi.mocked(prisma.researchSession.findMany).mockResolvedValue([] as any);
+    vi.mocked(prisma.park.findMany).mockResolvedValue([] as any);
+    vi.mocked(prisma.parkPhoto.findMany).mockResolvedValue([] as any);
+  });
 
-    const component = await AdminDashboard();
-    render(component);
+  it("renders the dashboard title and sections", async () => {
+    render(await AdminDashboard());
 
     expect(screen.getByText("Dashboard")).toBeInTheDocument();
+    expect(screen.getByText("Needs attention")).toBeInTheDocument();
+    expect(screen.getByText("AI data pipeline")).toBeInTheDocument();
+    expect(screen.getByText("Trends")).toBeInTheDocument();
+    expect(screen.getByTestId("dashboard-charts")).toBeInTheDocument();
   });
 
-  it("should display total parks stat", async () => {
-    vi.mocked(prisma.park.count).mockImplementation((args?: any) => {
-      if (!args?.where) return Promise.resolve(42) as any;
-      if (args.where.status === "PENDING") return Promise.resolve(5) as any;
-      if (args.where.status === "APPROVED") return Promise.resolve(35) as any;
-      if (args.where.status === "REJECTED") return Promise.resolve(2) as any;
-      return Promise.resolve(0) as any;
-    });
-    vi.mocked(prisma.user.count).mockResolvedValue(100);
-    vi.mocked(prisma.parkPhoto.count).mockResolvedValue(10);
-    vi.mocked(prisma.parkReview.count).mockResolvedValue(0);
-    vi.mocked(prisma.park.findMany).mockResolvedValue([]);
-    vi.mocked(prisma.parkPhoto.findMany).mockResolvedValue([]);
+  it("renders the attention queues with deep links", async () => {
+    render(await AdminDashboard());
 
-    const component = await AdminDashboard();
-    render(component);
-
-    expect(screen.getByText("Total Parks")).toBeInTheDocument();
-    expect(screen.getByText("42")).toBeInTheDocument();
+    expect(
+      screen.getByRole("link", { name: /field reviews/i }),
+    ).toHaveAttribute("href", "/admin/ai-research/review");
+    expect(
+      screen.getByRole("link", { name: /research queue/i }),
+    ).toHaveAttribute("href", "/admin/ai-research/research");
+    expect(screen.getByRole("link", { name: /park claims/i })).toHaveAttribute(
+      "href",
+      "/admin/claims",
+    );
   });
 
-  it("should display pending parks stat", async () => {
-    vi.mocked(prisma.park.count).mockImplementation((args?: any) => {
-      if (!args?.where) return Promise.resolve(50) as any;
-      if (args.where.status === "PENDING") return Promise.resolve(12) as any;
-      return Promise.resolve(0) as any;
-    });
-    vi.mocked(prisma.user.count).mockResolvedValue(100);
-    vi.mocked(prisma.parkPhoto.count).mockResolvedValue(5);
-    vi.mocked(prisma.parkReview.count).mockResolvedValue(0);
-    vi.mocked(prisma.park.findMany).mockResolvedValue([]);
-    vi.mocked(prisma.parkPhoto.findMany).mockResolvedValue([]);
+  it("shows the field-review queue count", async () => {
+    vi.mocked(prisma.fieldExtraction.count).mockResolvedValue(9);
+    render(await AdminDashboard());
 
-    const component = await AdminDashboard();
-    render(component);
-
-    expect(screen.getByText("Pending Parks")).toBeInTheDocument();
-    expect(screen.getByText("12")).toBeInTheDocument();
+    const link = screen.getByRole("link", { name: /field reviews/i });
+    expect(link).toHaveTextContent("9");
   });
 
-  it("should display pending photos stat", async () => {
-    vi.mocked(prisma.park.count).mockResolvedValue(0);
-    vi.mocked(prisma.user.count).mockResolvedValue(0);
-    vi.mocked(prisma.parkPhoto.count).mockResolvedValue(8);
-    vi.mocked(prisma.parkReview.count).mockResolvedValue(0);
-    vi.mocked(prisma.park.findMany).mockResolvedValue([]);
-    vi.mocked(prisma.parkPhoto.findMany).mockResolvedValue([]);
+  it("renders the AI pipeline stats including total cost", async () => {
+    vi.mocked(prisma.researchSession.aggregate).mockResolvedValue({
+      _sum: { estimatedCostUSD: 12.5 },
+    } as any);
+    render(await AdminDashboard());
 
-    const component = await AdminDashboard();
-    render(component);
-
-    expect(screen.getByText("Pending Photos")).toBeInTheDocument();
-    expect(screen.getByText("8")).toBeInTheDocument();
+    expect(screen.getByText("Total cost")).toBeInTheDocument();
+    expect(screen.getByText("$12.50")).toBeInTheDocument();
+    expect(screen.getByText("Researched")).toBeInTheDocument();
   });
 
-  it("should display total users stat", async () => {
-    vi.mocked(prisma.park.count).mockResolvedValue(0);
-    vi.mocked(prisma.user.count).mockResolvedValue(250);
-    vi.mocked(prisma.parkPhoto.count).mockResolvedValue(0);
-    vi.mocked(prisma.parkReview.count).mockResolvedValue(0);
-    vi.mocked(prisma.park.findMany).mockResolvedValue([]);
-    vi.mocked(prisma.parkPhoto.findMany).mockResolvedValue([]);
-
-    const component = await AdminDashboard();
-    render(component);
-
-    expect(screen.getByText("Total Users")).toBeInTheDocument();
-    expect(screen.getByText("250")).toBeInTheDocument();
-  });
-
-  it("should display recent pending parks section", async () => {
-    vi.mocked(prisma.park.count).mockResolvedValue(0);
-    vi.mocked(prisma.user.count).mockResolvedValue(0);
-    vi.mocked(prisma.parkPhoto.count).mockResolvedValue(0);
-    vi.mocked(prisma.parkReview.count).mockResolvedValue(0);
-    vi.mocked(prisma.park.findMany).mockResolvedValue([]);
-    vi.mocked(prisma.parkPhoto.findMany).mockResolvedValue([]);
-
-    const component = await AdminDashboard();
-    render(component);
-
-    expect(screen.getByText("Recent Pending Parks")).toBeInTheDocument();
-  });
-
-  it("should show empty state when no pending parks", async () => {
-    vi.mocked(prisma.park.count).mockResolvedValue(0);
-    vi.mocked(prisma.user.count).mockResolvedValue(0);
-    vi.mocked(prisma.parkPhoto.count).mockResolvedValue(0);
-    vi.mocked(prisma.parkReview.count).mockResolvedValue(0);
-    vi.mocked(prisma.park.findMany).mockResolvedValue([]);
-    vi.mocked(prisma.parkPhoto.findMany).mockResolvedValue([]);
-
-    const component = await AdminDashboard();
-    render(component);
-
-    expect(screen.getByText("No pending parks to review")).toBeInTheDocument();
-  });
-
-  it("should display recent pending parks", async () => {
-    vi.mocked(prisma.park.count).mockResolvedValue(0);
-    vi.mocked(prisma.user.count).mockResolvedValue(0);
-    vi.mocked(prisma.parkPhoto.count).mockResolvedValue(0);
-    vi.mocked(prisma.parkReview.count).mockResolvedValue(0);
-
+  it("renders recent pending parks", async () => {
     const mockPendingParks = [
       {
         id: "park-1",
         name: "Test Park One",
         createdAt: new Date("2024-01-15"),
         submitterName: "John Doe",
-        address: {
-          city: "Los Angeles",
-          state: "California",
-        },
+        address: { city: "Los Angeles", state: "California" },
       },
       {
         id: "park-2",
         name: "Test Park Two",
         createdAt: new Date("2024-01-20"),
         submitterName: null,
-        address: {
-          city: null,
-          state: "Nevada",
-        },
+        address: { city: null, state: "Nevada" },
       },
     ];
+    vi.mocked(prisma.park.findMany).mockImplementation((args?: any) =>
+      args?.where?.status === "PENDING"
+        ? (Promise.resolve(mockPendingParks) as any)
+        : (Promise.resolve([]) as any),
+    );
 
-    vi.mocked(prisma.park.findMany).mockImplementation((args?: any) => {
-      if (args?.where?.status === "PENDING") {
-        return Promise.resolve(mockPendingParks as any) as any;
-      }
-      return Promise.resolve([]) as any;
-    });
-    vi.mocked(prisma.parkPhoto.findMany).mockResolvedValue([]);
-
-    const component = await AdminDashboard();
-    render(component);
+    render(await AdminDashboard());
 
     expect(screen.getByText("Test Park One")).toBeInTheDocument();
-    expect(screen.getByText("Test Park Two")).toBeInTheDocument();
     expect(screen.getByText("Los Angeles, California")).toBeInTheDocument();
     expect(screen.getByText("Nevada")).toBeInTheDocument();
   });
 
-  it("should show Anonymous for parks without submitter name", async () => {
-    vi.mocked(prisma.park.count).mockResolvedValue(0);
-    vi.mocked(prisma.user.count).mockResolvedValue(0);
-    vi.mocked(prisma.parkPhoto.count).mockResolvedValue(0);
-    vi.mocked(prisma.parkReview.count).mockResolvedValue(0);
+  it("shows Anonymous for parks without a submitter name", async () => {
+    vi.mocked(prisma.park.findMany).mockImplementation((args?: any) =>
+      args?.where?.status === "PENDING"
+        ? (Promise.resolve([
+            {
+              id: "park-1",
+              name: "Test Park",
+              createdAt: new Date("2024-01-15"),
+              submitterName: null,
+              address: { city: "Test City", state: "Test State" },
+            },
+          ]) as any)
+        : (Promise.resolve([]) as any),
+    );
 
-    const mockPendingParks = [
-      {
-        id: "park-1",
-        name: "Test Park",
-        createdAt: new Date("2024-01-15"),
-        submitterName: null,
-        address: {
-          city: "Test City",
-          state: "Test State",
-        },
-      },
-    ];
-
-    vi.mocked(prisma.park.findMany).mockImplementation((args?: any) => {
-      if (args?.where?.status === "PENDING") {
-        return Promise.resolve(mockPendingParks as any) as any;
-      }
-      return Promise.resolve([]) as any;
-    });
-    vi.mocked(prisma.parkPhoto.findMany).mockResolvedValue([]);
-
-    const component = await AdminDashboard();
-    render(component);
-
+    render(await AdminDashboard());
     expect(screen.getByText(/submitted by: anonymous/i)).toBeInTheDocument();
   });
 
-  it("should render review links for pending parks", async () => {
-    vi.mocked(prisma.park.count).mockResolvedValue(0);
-    vi.mocked(prisma.user.count).mockResolvedValue(0);
-    vi.mocked(prisma.parkPhoto.count).mockResolvedValue(0);
-    vi.mocked(prisma.parkReview.count).mockResolvedValue(0);
+  it("links a pending park to its review", async () => {
+    vi.mocked(prisma.park.findMany).mockImplementation((args?: any) =>
+      args?.where?.status === "PENDING"
+        ? (Promise.resolve([
+            {
+              id: "park-123",
+              name: "Test Park",
+              createdAt: new Date(),
+              submitterName: "Test User",
+              address: { city: "Test City", state: "Test State" },
+            },
+          ]) as any)
+        : (Promise.resolve([]) as any),
+    );
 
-    const mockPendingParks = [
-      {
-        id: "park-123",
-        name: "Test Park",
-        createdAt: new Date(),
-        submitterName: "Test User",
-        address: {
-          city: "Test City",
-          state: "Test State",
-        },
-      },
-    ];
-
-    vi.mocked(prisma.park.findMany).mockImplementation((args?: any) => {
-      if (args?.where?.status === "PENDING") {
-        return Promise.resolve(mockPendingParks as any) as any;
-      }
-      return Promise.resolve([]) as any;
-    });
-    vi.mocked(prisma.parkPhoto.findMany).mockResolvedValue([]);
-
-    const component = await AdminDashboard();
-    render(component);
-
-    const reviewLink = screen.getByRole("link", { name: /review/i });
-    expect(reviewLink).toHaveAttribute(
+    render(await AdminDashboard());
+    expect(screen.getByRole("link", { name: /^review$/i })).toHaveAttribute(
       "href",
       "/admin/parks?highlight=park-123",
     );
   });
 
-  it("should display recent photos section", async () => {
-    vi.mocked(prisma.park.count).mockResolvedValue(0);
-    vi.mocked(prisma.user.count).mockResolvedValue(0);
-    vi.mocked(prisma.parkPhoto.count).mockResolvedValue(0);
-    vi.mocked(prisma.parkReview.count).mockResolvedValue(0);
-    vi.mocked(prisma.park.findMany).mockResolvedValue([]);
-    vi.mocked(prisma.parkPhoto.findMany).mockResolvedValue([]);
-
-    const component = await AdminDashboard();
-    render(component);
-
-    expect(screen.getByText("Recent Photos")).toBeInTheDocument();
-  });
-
-  it("should show View All link for photos", async () => {
-    vi.mocked(prisma.park.count).mockResolvedValue(0);
-    vi.mocked(prisma.user.count).mockResolvedValue(0);
-    vi.mocked(prisma.parkPhoto.count).mockResolvedValue(0);
-    vi.mocked(prisma.parkReview.count).mockResolvedValue(0);
-    vi.mocked(prisma.park.findMany).mockResolvedValue([]);
-    vi.mocked(prisma.parkPhoto.findMany).mockResolvedValue([]);
-
-    const component = await AdminDashboard();
-    render(component);
-
-    const viewAllLink = screen.getByRole("link", { name: /view all/i });
-    expect(viewAllLink).toHaveAttribute("href", "/admin/photos");
-  });
-
-  it("should show empty state when no photos", async () => {
-    vi.mocked(prisma.park.count).mockResolvedValue(0);
-    vi.mocked(prisma.user.count).mockResolvedValue(0);
-    vi.mocked(prisma.parkPhoto.count).mockResolvedValue(0);
-    vi.mocked(prisma.parkReview.count).mockResolvedValue(0);
-    vi.mocked(prisma.park.findMany).mockResolvedValue([]);
-    vi.mocked(prisma.parkPhoto.findMany).mockResolvedValue([]);
-
-    const component = await AdminDashboard();
-    render(component);
-
+  it("shows empty states for pending parks and photos", async () => {
+    render(await AdminDashboard());
+    expect(screen.getByText("No pending parks to review")).toBeInTheDocument();
     expect(screen.getByText("No photos uploaded yet")).toBeInTheDocument();
   });
 
-  it("should display recent photos", async () => {
-    vi.mocked(prisma.park.count).mockResolvedValue(0);
-    vi.mocked(prisma.user.count).mockResolvedValue(0);
-    vi.mocked(prisma.parkPhoto.count).mockResolvedValue(0);
-    vi.mocked(prisma.parkReview.count).mockResolvedValue(0);
-    vi.mocked(prisma.park.findMany).mockResolvedValue([]);
-
-    const mockPhotos = [
+  it("renders recent photos with a View All link", async () => {
+    vi.mocked(prisma.parkPhoto.findMany).mockResolvedValue([
       {
         id: "photo-1",
         url: "https://example.com/photo1.jpg",
         caption: "Test Photo",
         status: "PENDING",
-        park: {
-          name: "Test Park",
-          slug: "test-park",
-        },
-        user: {
-          name: "John Doe",
-        },
+        park: { name: "Test Park", slug: "test-park" },
+        user: { name: "John Doe" },
       },
-    ];
+    ] as any);
 
-    vi.mocked(prisma.parkPhoto.findMany).mockResolvedValue(mockPhotos as any);
+    const { container } = render(await AdminDashboard());
 
-    const component = await AdminDashboard();
-    const { container } = render(component);
-
+    expect(screen.getByText("Recent Photos")).toBeInTheDocument();
+    expect(screen.getByRole("link", { name: /view all/i })).toHaveAttribute(
+      "href",
+      "/admin/photos",
+    );
     const images = container.querySelectorAll("img");
-    expect(images.length).toBeGreaterThan(0);
     expect(images[0]).toHaveAttribute("src", "https://example.com/photo1.jpg");
   });
 
-  it("should render all six stat cards", async () => {
-    vi.mocked(prisma.park.count).mockResolvedValue(10);
-    vi.mocked(prisma.user.count).mockResolvedValue(50);
-    vi.mocked(prisma.parkPhoto.count).mockResolvedValue(5);
-    vi.mocked(prisma.parkReview.count).mockResolvedValue(3);
-    vi.mocked(prisma.park.findMany).mockResolvedValue([]);
-    vi.mocked(prisma.parkPhoto.findMany).mockResolvedValue([]);
-
-    const component = await AdminDashboard();
-    render(component);
-
-    expect(screen.getByText("Total Parks")).toBeInTheDocument();
-    expect(screen.getByText("Pending Parks")).toBeInTheDocument();
-    expect(screen.getByText("Pending Photos")).toBeInTheDocument();
-    expect(screen.getByText("Pending Reviews")).toBeInTheDocument();
-    expect(screen.getByText("Pending Conditions")).toBeInTheDocument();
-    expect(screen.getByText("Total Users")).toBeInTheDocument();
-  });
-
-  it("should display pending conditions stat", async () => {
-    vi.mocked(prisma.park.count).mockResolvedValue(0);
-    vi.mocked(prisma.user.count).mockResolvedValue(0);
-    vi.mocked(prisma.parkPhoto.count).mockResolvedValue(0);
-    vi.mocked(prisma.parkReview.count).mockResolvedValue(0);
-    vi.mocked(prisma.trailCondition.count).mockResolvedValue(7);
-    vi.mocked(prisma.park.findMany).mockResolvedValue([]);
-    vi.mocked(prisma.parkPhoto.findMany).mockResolvedValue([]);
-
-    const component = await AdminDashboard();
-    render(component);
-
-    expect(screen.getByText("Pending Conditions")).toBeInTheDocument();
-    expect(screen.getByText("7")).toBeInTheDocument();
-  });
-
-  it("should fetch limited number of pending parks", async () => {
-    vi.mocked(prisma.park.count).mockResolvedValue(0);
-    vi.mocked(prisma.user.count).mockResolvedValue(0);
-    vi.mocked(prisma.parkPhoto.count).mockResolvedValue(0);
-    vi.mocked(prisma.parkReview.count).mockResolvedValue(0);
-    vi.mocked(prisma.park.findMany).mockResolvedValue([]);
-    vi.mocked(prisma.parkPhoto.findMany).mockResolvedValue([]);
-
+  it("fetches limited pending parks and recent photos", async () => {
     await AdminDashboard();
 
     expect(prisma.park.findMany).toHaveBeenCalledWith(
-      expect.objectContaining({
-        where: { status: "PENDING" },
-        take: 5,
-      }),
+      expect.objectContaining({ where: { status: "PENDING" }, take: 5 }),
     );
-  });
-
-  it("should fetch limited number of recent photos", async () => {
-    vi.mocked(prisma.park.count).mockResolvedValue(0);
-    vi.mocked(prisma.user.count).mockResolvedValue(0);
-    vi.mocked(prisma.parkPhoto.count).mockResolvedValue(0);
-    vi.mocked(prisma.parkReview.count).mockResolvedValue(0);
-    vi.mocked(prisma.park.findMany).mockResolvedValue([]);
-    vi.mocked(prisma.parkPhoto.findMany).mockResolvedValue([]);
-
-    await AdminDashboard();
-
     expect(prisma.parkPhoto.findMany).toHaveBeenCalledWith(
-      expect.objectContaining({
-        take: 8,
-      }),
+      expect.objectContaining({ take: 8 }),
     );
   });
 });
