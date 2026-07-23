@@ -1,6 +1,7 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
+import { useRouter } from "next/navigation";
 import { Camera, CheckCircle, Edit, MapPin, Trash2, XCircle } from "lucide-react";
 
 type ParkStatus = "PENDING" | "APPROVED" | "REJECTED" | "DRAFT";
@@ -29,18 +30,36 @@ interface Park {
 interface Props {
   parks: Park[];
   highlightId?: string;
+  statusFilter?: string;
+  initialSearch?: string;
 }
 
-export function ParkManagementTable({ parks, highlightId }: Props) {
+export function ParkManagementTable({
+  parks,
+  highlightId,
+  statusFilter = "all",
+  initialSearch = "",
+}: Props) {
+  const router = useRouter();
   const [processingId, setProcessingId] = useState<string | null>(null);
-  const [search, setSearch] = useState("");
+  const [search, setSearch] = useState(initialSearch);
 
-  const filteredParks = parks.filter(
-    (p) =>
-      p.name.toLowerCase().includes(search.toLowerCase()) ||
-      (p.address?.city ?? "").toLowerCase().includes(search.toLowerCase()) ||
-      (p.address?.state ?? "").toLowerCase().includes(search.toLowerCase()),
-  );
+  // Search runs server-side so it spans every park, not just this page. Push the
+  // term into the URL (debounced) and let the server component re-query; reset
+  // to page 1 on every new search.
+  useEffect(() => {
+    if (search === initialSearch) return;
+    const handle = setTimeout(() => {
+      const query = new URLSearchParams();
+      if (statusFilter && statusFilter !== "all") {
+        query.set("status", statusFilter);
+      }
+      if (search.trim()) query.set("search", search.trim());
+      const qs = query.toString();
+      router.push(qs ? `/admin/parks?${qs}` : "/admin/parks");
+    }, 300);
+    return () => clearTimeout(handle);
+  }, [search, initialSearch, statusFilter, router]);
 
   const handleApprove = async (parkId: string) => {
     setProcessingId(parkId);
@@ -140,14 +159,16 @@ export function ParkManagementTable({ parks, highlightId }: Props) {
           className="w-full max-w-sm px-4 py-2 border border-input bg-background text-foreground rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-ring focus:border-transparent"
         />
       </div>
-      {filteredParks.length === 0 ? (
+      {parks.length === 0 ? (
         <div className="p-12 text-center">
           <MapPin className="w-12 h-12 text-muted-foreground mx-auto mb-4" />
           <h3 className="text-lg font-medium text-foreground mb-2">
             No parks found
           </h3>
           <p className="text-muted-foreground">
-            No parks match the current filter criteria.
+            {search.trim()
+              ? `No parks match "${search.trim()}".`
+              : "No parks match the current filter criteria."}
           </p>
         </div>
       ) : (
@@ -176,7 +197,7 @@ export function ParkManagementTable({ parks, highlightId }: Props) {
             </tr>
           </thead>
           <tbody className="bg-card divide-y divide-border">
-            {filteredParks.map((park) => (
+            {parks.map((park) => (
               <tr
                 key={park.id}
                 className={`hover:bg-accent/50 transition-colors ${

@@ -269,6 +269,76 @@ describe("AdminParksPage", () => {
     );
   });
 
+  describe("search", () => {
+    it("builds a DB-side OR clause across name/city/state", async () => {
+      vi.mocked(prisma.park.findMany).mockResolvedValue([]);
+
+      await AdminParksPage({
+        searchParams: Promise.resolve({ search: "dunes" }),
+      });
+
+      expect(prisma.park.findMany).toHaveBeenCalledWith(
+        expect.objectContaining({
+          where: {
+            OR: [
+              { name: { contains: "dunes", mode: "insensitive" } },
+              {
+                address: {
+                  is: { city: { contains: "dunes", mode: "insensitive" } },
+                },
+              },
+              {
+                address: {
+                  is: { state: { contains: "dunes", mode: "insensitive" } },
+                },
+              },
+            ],
+          },
+        }),
+      );
+    });
+
+    it("ANDs the status filter with the search clause when both are present", async () => {
+      vi.mocked(prisma.park.findMany).mockResolvedValue([]);
+
+      await AdminParksPage({
+        searchParams: Promise.resolve({ status: "approved", search: "dunes" }),
+      });
+
+      const call = vi.mocked(prisma.park.findMany).mock.calls[0][0] as any;
+      expect(call.where.AND).toHaveLength(2);
+      expect(call.where.AND[0]).toEqual({ status: "APPROVED" });
+      expect(call.where.AND[1].OR).toHaveLength(3);
+    });
+
+    it("trims whitespace and treats a blank search as no filter", async () => {
+      vi.mocked(prisma.park.findMany).mockResolvedValue([]);
+
+      await AdminParksPage({
+        searchParams: Promise.resolve({ search: "   " }),
+      });
+
+      expect(prisma.park.findMany).toHaveBeenCalledWith(
+        expect.objectContaining({ where: {} }),
+      );
+    });
+
+    it("preserves the search term in pagination links", async () => {
+      vi.mocked(prisma.park.count).mockResolvedValue(75);
+      vi.mocked(prisma.park.findMany).mockResolvedValue(mockParks as any);
+
+      const component = await AdminParksPage({
+        searchParams: Promise.resolve({ search: "dunes", page: "2" }),
+      });
+      render(component);
+
+      expect(screen.getByRole("link", { name: "Next" })).toHaveAttribute(
+        "href",
+        "/admin/parks?search=dunes&page=3",
+      );
+    });
+  });
+
   describe("pagination", () => {
     it("should request the correct skip/take for a given page", async () => {
       vi.mocked(prisma.park.count).mockResolvedValue(60);
