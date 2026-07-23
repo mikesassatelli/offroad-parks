@@ -141,6 +141,7 @@ export async function GET(request: Request) {
     sourcesChecked: e.sourcesChecked,
     sourceUrl: e.dataSource?.url ?? null,
     sourceTitle: e.dataSource?.title ?? null,
+    sourceQuote: e.sourceQuote,
     sessionId: e.sessionId,
     createdAt: e.createdAt.toISOString(),
   }));

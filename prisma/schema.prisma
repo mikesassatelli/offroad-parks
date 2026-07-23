@@ -739,6 +739,7 @@ model FieldExtraction {
   parkId          String
   fieldName       String
   extractedValue  String?               @db.Text
+  sourceQuote     String?               @db.Text // short snippet from the source showing where the value was found
   confidence      FieldConfidence       @default(AI_EXTRACTED)
   confidenceScore Float?
   status          FieldExtractionStatus @default(PENDING_REVIEW)

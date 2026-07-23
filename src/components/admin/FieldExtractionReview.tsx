@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
-import { CheckCircle, XCircle, ExternalLink, CheckCheck, XOctagon, Pencil, Check, X } from "lucide-react";
+import { CheckCircle, XCircle, ExternalLink, CheckCheck, XOctagon, Pencil, Check, X, Quote } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import type { FieldExtractionSummary } from "@/lib/types";
 import { FIELD_DISPLAY_NAMES } from "@/lib/ai/field-display-names";
@@ -215,6 +215,14 @@ export function FieldExtractionReview({ extractions }: Props) {
                           </Button>
                         </div>
                       </div>
+                    )}
+                    {extraction.sourceQuote && (
+                      <blockquote className="mt-3 flex gap-2 rounded-md border-l-2 border-border bg-muted/40 px-3 py-2 text-xs text-muted-foreground italic">
+                        <Quote className="w-3 h-3 flex-shrink-0 mt-0.5 opacity-60" />
+                        <span className="break-words">
+                          &ldquo;{extraction.sourceQuote}&rdquo;
+                        </span>
+                      </blockquote>
                     )}
                     {extraction.sourceUrl && (
                       <div className="mt-2">

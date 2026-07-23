@@ -332,6 +332,10 @@ export async function researchPark(
               parkId,
               fieldName,
               extractedValue: extractedValueJson,
+              // Snippet from the source showing where the value came from, so an
+              // admin can verify without opening the page. The LLM returns this
+              // per field (see park-data-extractor prompt).
+              sourceQuote: fieldData.source_quote?.trim() || null,
               confidence: "AI_EXTRACTED",
               confidenceScore: fieldData.confidence,
               status: valuesMatch ? "APPROVED" : "PENDING_REVIEW",
