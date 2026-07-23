@@ -1,6 +1,7 @@
 import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { redirect } from "next/navigation";
+import { PeopleTabs } from "@/components/admin/PeopleTabs";
 import { PreGrantManagementClient, type PreGrantRow } from "./PreGrantManagementClient";
 
 export default async function AdminPreGrantsPage() {
@@ -26,8 +27,8 @@ export default async function AdminPreGrantsPage() {
 
   return (
     <div>
-      <h1 className="text-3xl font-bold text-foreground mb-2">Pre-grants</h1>
-      <p className="text-sm text-muted-foreground mb-8">
+      <PeopleTabs isSuperAdmin={true} />
+      <p className="text-sm text-muted-foreground mb-6">
         Declare a role and/or operator membership for an email so it is applied
         automatically on their first sign-in. Useful for onboarding beta
         testers without making them go through the claim flow.

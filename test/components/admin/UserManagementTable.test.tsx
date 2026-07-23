@@ -1,10 +1,14 @@
-import { render, screen, waitFor } from "@testing-library/react";
+import { render, screen, waitFor, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import {
   UserManagementTable,
   type ManagedUser,
 } from "@/components/admin/UserManagementTable";
 import { vi, describe, it, expect, beforeEach, afterEach } from "vitest";
+
+// Renders as a desktop table + a mobile card list (jsdom applies no CSS, so both
+// are present). Scope role/badge assertions to the desktop table.
+const inTable = () => within(screen.getByRole("table"));
 
 const mockRefresh = vi.fn();
 vi.mock("next/navigation", () => ({
@@ -60,9 +64,9 @@ describe("UserManagementTable", () => {
       />,
     );
 
-    expect(screen.getByText("USER")).toBeInTheDocument();
-    expect(screen.getByText("ADMIN")).toBeInTheDocument();
-    expect(screen.getByText("SUPER_ADMIN")).toBeInTheDocument();
+    expect(inTable().getByText("USER")).toBeInTheDocument();
+    expect(inTable().getByText("ADMIN")).toBeInTheDocument();
+    expect(inTable().getByText("SUPER_ADMIN")).toBeInTheDocument();
     expect(screen.queryAllByRole("combobox")).toHaveLength(0);
   });
 
@@ -75,7 +79,7 @@ describe("UserManagementTable", () => {
       />,
     );
 
-    expect(screen.getAllByRole("combobox")).toHaveLength(3);
+    expect(inTable().getAllByRole("combobox")).toHaveLength(3);
   });
 
   it("disables non-SUPER_ADMIN options for the current viewer (no self-demote)", () => {
@@ -87,7 +91,7 @@ describe("UserManagementTable", () => {
       />,
     );
 
-    const ownSelect = screen.getByLabelText(
+    const ownSelect = inTable().getByLabelText(
       "Role for mike.sassatelli@gmail.com",
     ) as HTMLSelectElement;
     const options = Array.from(ownSelect.querySelectorAll("option"));
@@ -109,7 +113,7 @@ describe("UserManagementTable", () => {
       />,
     );
 
-    const aliceSelect = screen.getByLabelText("Role for alice@example.com");
+    const aliceSelect = inTable().getByLabelText("Role for alice@example.com");
     await user.selectOptions(aliceSelect, "ADMIN");
 
     expect(mockFetch).toHaveBeenCalledWith("/api/admin/users/u1/role", {
@@ -137,7 +141,7 @@ describe("UserManagementTable", () => {
       />,
     );
 
-    const bobSelect = screen.getByLabelText("Role for bob@example.com");
+    const bobSelect = inTable().getByLabelText("Role for bob@example.com");
     await user.selectOptions(bobSelect, "USER");
 
     await waitFor(() =>

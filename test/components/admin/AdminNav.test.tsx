@@ -19,18 +19,26 @@ describe("AdminNav", () => {
     expect(screen.getByRole("link", { name: /^parks$/i })).toBeInTheDocument();
   });
 
-  it("hides Pre-grants from non-super-admins", () => {
+  it("shows a single People & Access entry (Users/Operators/Pre-grants are tabs)", () => {
     render(<AdminNav isSuperAdmin={false} />);
+    expect(
+      screen.getByRole("link", { name: /people & access/i })
+    ).toBeInTheDocument();
+    // The individual pages are no longer separate top-level nav items.
     expect(
       screen.queryByRole("link", { name: /pre-grants/i })
     ).not.toBeInTheDocument();
+    expect(
+      screen.queryByRole("link", { name: /park operators/i })
+    ).not.toBeInTheDocument();
   });
 
-  it("shows Pre-grants to super admins", () => {
+  it("marks People & Access active on Operators and Pre-grants routes", () => {
+    mockPathname = "/admin/operators";
     render(<AdminNav isSuperAdmin={true} />);
     expect(
-      screen.getByRole("link", { name: /pre-grants/i })
-    ).toBeInTheDocument();
+      screen.getByRole("link", { name: /people & access/i })
+    ).toHaveAttribute("aria-current", "page");
   });
 
   it("marks AI Research active on its sub-routes (most-specific match)", () => {
