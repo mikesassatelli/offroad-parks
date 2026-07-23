@@ -66,6 +66,20 @@ describe("normalizeForComparison", () => {
     });
   });
 
+  describe("county", () => {
+    it("treats 'Polk County' the same as 'Polk'", () => {
+      expect(matches('"Polk County"', '"Polk"', "address.county")).toBe(true);
+    });
+
+    it("still distinguishes genuinely different counties", () => {
+      expect(matches('"Polk County"', '"Benton"', "address.county")).toBe(false);
+    });
+
+    it("does not strip the county suffix without the field hint", () => {
+      expect(matches('"Polk County"', '"Polk"')).toBe(false);
+    });
+  });
+
   describe("arrays", () => {
     it("is order-insensitive", () => {
       expect(matches('["rocks","sand"]', '["sand","rocks"]', "terrain")).toBe(

@@ -174,3 +174,15 @@ export function cleanStreetAddress(raw: string): string {
   }
   return trimmed;
 }
+
+/**
+ * Standardize a county name to just the name — strip a trailing "County",
+ * "Parish", "Borough", "Census Area", or "Municipality" so a source's
+ * "Polk County" matches a stored value of "Polk".
+ */
+export function cleanCounty(raw: string): string {
+  return raw
+    .trim()
+    .replace(/\s+(County|Parish|Borough|Census Area|Municipality)\.?$/i, "")
+    .trim();
+}

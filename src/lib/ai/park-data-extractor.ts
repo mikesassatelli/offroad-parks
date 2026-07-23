@@ -38,6 +38,8 @@ Rules:
 - For terrain, map descriptions: "sandy" = "sand", "rocky" = "rocks", "wooded trails" or "forest trails" = "trails", "hilly" or "mountain" = "hills", "muddy" or "clay" = "mud"
 - For amenities, only include amenities explicitly mentioned. "Full facilities" is too vague to map.
 - For the address, keep the fields separate: streetAddress is the street line ONLY (number + street, e.g. "123 Main St"). Do NOT include the city, state, or ZIP in streetAddress — put those in the city and zipCode fields.
+- For county, give the name only, WITHOUT the word "County"/"Parish"/"Borough" (e.g. "Polk", not "Polk County").
+- Extract the US state the park is located in (full name or 2-letter code) if the source states it — this is used to confirm the source is about the right park.
 - Omit numeric quantities (milesOfTrails, acres, maxVehicleWidthInches, noiseLimitDBA) when the source says none or zero — only include a positive number actually stated in the source.
 - Confidence scoring:
   - 0.9-1.0: Explicitly and unambiguously stated (e.g., "Day pass: $25")

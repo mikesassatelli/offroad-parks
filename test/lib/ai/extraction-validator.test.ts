@@ -2,6 +2,7 @@ import { describe, it, expect } from "vitest";
 import {
   validateExtraction,
   cleanStreetAddress,
+  cleanCounty,
 } from "@/lib/ai/extraction-validator";
 
 describe("validateExtraction", () => {
@@ -385,5 +386,36 @@ describe("cleanStreetAddress", () => {
 
   it("trims surrounding whitespace", () => {
     expect(cleanStreetAddress("  100 Ridge Road  ")).toBe("100 Ridge Road");
+  });
+});
+
+describe("cleanCounty", () => {
+  it("strips a trailing 'County'", () => {
+    expect(cleanCounty("Polk County")).toBe("Polk");
+  });
+
+  it("strips 'Parish' (Louisiana)", () => {
+    expect(cleanCounty("De Soto Parish")).toBe("De Soto");
+  });
+
+  it("strips 'Borough' and 'Census Area' (Alaska)", () => {
+    expect(cleanCounty("North Slope Borough")).toBe("North Slope");
+    expect(cleanCounty("Nome Census Area")).toBe("Nome");
+  });
+
+  it("is case-insensitive on the suffix", () => {
+    expect(cleanCounty("Polk COUNTY")).toBe("Polk");
+  });
+
+  it("leaves a bare county name unchanged", () => {
+    expect(cleanCounty("Polk")).toBe("Polk");
+  });
+
+  it("does not strip 'County' mid-name", () => {
+    expect(cleanCounty("County Line")).toBe("County Line");
+  });
+
+  it("trims whitespace", () => {
+    expect(cleanCounty("  Polk County  ")).toBe("Polk");
   });
 });

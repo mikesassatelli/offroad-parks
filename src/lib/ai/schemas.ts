@@ -62,6 +62,7 @@ export const parkExtractionSchema = z.object({
   // Address
   streetAddress: field(z.string()),
   city: field(z.string()),
+  state: field(z.string()), // verification only — not stored; a mismatch flags a wrong park
   zipCode: field(z.string()),
   county: field(z.string()),
 
