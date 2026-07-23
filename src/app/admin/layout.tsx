@@ -2,26 +2,8 @@ import { auth } from "@/lib/auth";
 import Link from "next/link";
 import { redirect } from "next/navigation";
 import { ThemeToggle } from "@/components/ThemeToggle";
-import {
-  Activity,
-  BrainCircuit,
-  Building2,
-  Camera,
-  ClipboardCheck,
-  ClipboardList,
-  FlaskConical,
-  Home,
-  Image as ImageIcon,
-  KeyRound,
-  LayoutDashboard,
-  LogOut,
-  MapPin,
-  MessageSquare,
-  PlusCircle,
-  Search,
-  Upload,
-  Users,
-} from "lucide-react";
+import { AdminNav } from "@/components/admin/AdminNav";
+import { LogOut } from "lucide-react";
 
 export default async function AdminLayout({
   children,
@@ -51,8 +33,8 @@ export default async function AdminLayout({
                 Admin Dashboard
               </h1>
             </div>
-            <div className="flex items-center gap-4">
-              <span className="text-sm text-muted-foreground">
+            <div className="flex items-center gap-3 sm:gap-4">
+              <span className="hidden sm:inline text-sm text-muted-foreground truncate max-w-[40vw]">
                 {session.user.email}
               </span>
               <ThemeToggle />
@@ -61,153 +43,16 @@ export default async function AdminLayout({
                 className="text-sm text-muted-foreground hover:text-foreground flex items-center gap-1 transition-colors"
               >
                 <LogOut className="w-4 h-4" />
-                Sign Out
+                <span className="hidden sm:inline">Sign Out</span>
               </Link>
             </div>
           </div>
         </div>
       </header>
 
-      <div className="flex max-w-7xl mx-auto">
-        {/* Sidebar */}
-        <aside className="w-64 bg-card border-r border-border min-h-[calc(100vh-4rem)]">
-          <nav className="p-4 space-y-2">
-            <Link
-              href="/"
-              className="flex items-center gap-3 px-4 py-3 text-foreground rounded-lg hover:bg-accent hover:text-accent-foreground transition-colors"
-            >
-              <Home className="w-5 h-5" />
-              <span className="font-medium">Return to Homepage</span>
-            </Link>
-            <div className="border-t border-border my-2"></div>
-            <Link
-              href="/admin/dashboard"
-              className="flex items-center gap-3 px-4 py-3 text-foreground rounded-lg hover:bg-accent hover:text-accent-foreground transition-colors"
-            >
-              <LayoutDashboard className="w-5 h-5" />
-              <span className="font-medium">Dashboard</span>
-            </Link>
-            <Link
-              href="/admin/parks"
-              className="flex items-center gap-3 px-4 py-3 text-foreground rounded-lg hover:bg-accent hover:text-accent-foreground transition-colors"
-            >
-              <MapPin className="w-5 h-5" />
-              <span className="font-medium">Parks</span>
-            </Link>
-            <Link
-              href="/admin/parks/new"
-              className="flex items-center gap-3 px-4 py-3 text-foreground rounded-lg hover:bg-accent hover:text-accent-foreground transition-colors"
-            >
-              <PlusCircle className="w-5 h-5" />
-              <span className="font-medium">Add Park</span>
-            </Link>
-            <Link
-              href="/admin/parks/bulk-upload"
-              className="flex items-center gap-3 px-4 py-3 text-foreground rounded-lg hover:bg-accent hover:text-accent-foreground transition-colors"
-            >
-              <Upload className="w-5 h-5" />
-              <span className="font-medium">Bulk Upload</span>
-            </Link>
-            <Link
-              href="/admin/photos"
-              className="flex items-center gap-3 px-4 py-3 text-foreground rounded-lg hover:bg-accent hover:text-accent-foreground transition-colors"
-            >
-              <Camera className="w-5 h-5" />
-              <span className="font-medium">Photos</span>
-            </Link>
-            <Link
-              href="/admin/photos/bulk-upload"
-              className="flex items-center gap-3 px-4 py-3 text-foreground rounded-lg hover:bg-accent hover:text-accent-foreground transition-colors pl-8"
-            >
-              <Upload className="w-4 h-4" />
-              <span className="font-medium text-sm">Bulk Photo Upload</span>
-            </Link>
-
-            <Link
-              href="/admin/conditions"
-              className="flex items-center gap-3 px-4 py-3 text-foreground rounded-lg hover:bg-accent hover:text-accent-foreground transition-colors"
-            >
-              <Activity className="w-5 h-5" />
-              <span className="font-medium">Trail Conditions</span>
-            </Link>
-            <Link
-              href="/admin/reviews"
-              className="flex items-center gap-3 px-4 py-3 text-foreground rounded-lg hover:bg-accent hover:text-accent-foreground transition-colors"
-            >
-              <MessageSquare className="w-5 h-5" />
-              <span className="font-medium">Reviews</span>
-            </Link>
-            <Link
-              href="/admin/claims"
-              className="flex items-center gap-3 px-4 py-3 text-foreground rounded-lg hover:bg-accent hover:text-accent-foreground transition-colors"
-            >
-              <ClipboardList className="w-5 h-5" />
-              <span className="font-medium">Park Claims</span>
-            </Link>
-            <Link
-              href="/admin/operators"
-              className="flex items-center gap-3 px-4 py-3 text-foreground rounded-lg hover:bg-accent hover:text-accent-foreground transition-colors"
-            >
-              <Building2 className="w-5 h-5" />
-              <span className="font-medium">Park Operators</span>
-            </Link>
-            <Link
-              href="/admin/map-heroes"
-              className="flex items-center gap-3 px-4 py-3 text-foreground rounded-lg hover:bg-accent hover:text-accent-foreground transition-colors"
-            >
-              <ImageIcon className="w-5 h-5" />
-              <span className="font-medium">Map Heroes</span>
-            </Link>
-            <div className="border-t border-border my-2"></div>
-            <Link
-              href="/admin/ai-research"
-              className="flex items-center gap-3 px-4 py-3 text-foreground rounded-lg hover:bg-accent hover:text-accent-foreground transition-colors"
-            >
-              <BrainCircuit className="w-5 h-5" />
-              <span className="font-medium">AI Research</span>
-            </Link>
-            <Link
-              href="/admin/ai-research/discovery"
-              className="flex items-center gap-3 px-4 py-3 text-foreground rounded-lg hover:bg-accent hover:text-accent-foreground transition-colors pl-8"
-            >
-              <Search className="w-4 h-4" />
-              <span className="font-medium text-sm">Discover</span>
-            </Link>
-            <Link
-              href="/admin/ai-research/research"
-              className="flex items-center gap-3 px-4 py-3 text-foreground rounded-lg hover:bg-accent hover:text-accent-foreground transition-colors pl-8"
-            >
-              <FlaskConical className="w-4 h-4" />
-              <span className="font-medium text-sm">Research</span>
-            </Link>
-            <Link
-              href="/admin/ai-research/review"
-              className="flex items-center gap-3 px-4 py-3 text-foreground rounded-lg hover:bg-accent hover:text-accent-foreground transition-colors pl-8"
-            >
-              <ClipboardCheck className="w-4 h-4" />
-              <span className="font-medium text-sm">Review</span>
-            </Link>
-            <Link
-              href="/admin/users"
-              className="flex items-center gap-3 px-4 py-3 text-foreground rounded-lg hover:bg-accent hover:text-accent-foreground transition-colors"
-            >
-              <Users className="w-5 h-5" />
-              <span className="font-medium">Users</span>
-            </Link>
-            {isSuperAdmin && (
-              <Link
-                href="/admin/pre-grants"
-                className="flex items-center gap-3 px-4 py-3 text-foreground rounded-lg hover:bg-accent hover:text-accent-foreground transition-colors"
-              >
-                <KeyRound className="w-5 h-5" />
-                <span className="font-medium">Pre-grants</span>
-              </Link>
-            )}
-          </nav>
-        </aside>
-
-        {/* Main Content */}
-        <main className="flex-1 p-8">{children}</main>
+      <div className="md:flex max-w-7xl mx-auto">
+        <AdminNav isSuperAdmin={isSuperAdmin} />
+        <main className="flex-1 min-w-0 p-4 sm:p-6 lg:p-8">{children}</main>
       </div>
     </div>
   );
