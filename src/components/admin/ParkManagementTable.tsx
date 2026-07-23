@@ -148,6 +148,47 @@ export function ParkManagementTable({
     );
   };
 
+  // Shared action buttons — rendered in both the desktop table and mobile cards.
+  const renderActions = (park: Park) => (
+    <>
+      {park.status === "PENDING" && (
+        <>
+          <button
+            onClick={() => handleApprove(park.id)}
+            disabled={processingId === park.id}
+            className="text-green-600 dark:text-green-400 hover:text-green-900 dark:hover:text-green-200 disabled:opacity-50 disabled:cursor-not-allowed"
+            title="Approve"
+          >
+            <CheckCircle className="w-5 h-5" />
+          </button>
+          <button
+            onClick={() => handleReject(park.id)}
+            disabled={processingId === park.id}
+            className="text-red-600 dark:text-red-400 hover:text-red-900 dark:hover:text-red-200 disabled:opacity-50 disabled:cursor-not-allowed"
+            title="Reject"
+          >
+            <XCircle className="w-5 h-5" />
+          </button>
+        </>
+      )}
+      <a
+        href={`/admin/parks/${park.id}/edit`}
+        className="text-primary hover:text-primary/80"
+        title="Edit"
+      >
+        <Edit className="w-5 h-5" />
+      </a>
+      <button
+        onClick={() => handleDelete(park.id, park.name)}
+        disabled={processingId === park.id}
+        className="text-red-600 dark:text-red-400 hover:text-red-900 dark:hover:text-red-200 disabled:opacity-50 disabled:cursor-not-allowed"
+        title="Delete"
+      >
+        <Trash2 className="w-5 h-5" />
+      </button>
+    </>
+  );
+
   return (
     <div className="bg-card rounded-lg shadow border border-border overflow-hidden">
       <div className="px-6 py-3 border-b border-border">
@@ -172,7 +213,7 @@ export function ParkManagementTable({
           </p>
         </div>
       ) : (
-      <div className="overflow-x-auto">
+      <div className="hidden md:block overflow-x-auto">
         <table className="min-w-full divide-y divide-border">
           <thead className="bg-muted/50">
             <tr>
@@ -247,41 +288,7 @@ export function ParkManagementTable({
                 </td>
                 <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
                   <div className="flex items-center justify-end gap-2">
-                    {park.status === "PENDING" && (
-                      <>
-                        <button
-                          onClick={() => handleApprove(park.id)}
-                          disabled={processingId === park.id}
-                          className="text-green-600 dark:text-green-400 hover:text-green-900 dark:hover:text-green-200 disabled:opacity-50 disabled:cursor-not-allowed"
-                          title="Approve"
-                        >
-                          <CheckCircle className="w-5 h-5" />
-                        </button>
-                        <button
-                          onClick={() => handleReject(park.id)}
-                          disabled={processingId === park.id}
-                          className="text-red-600 dark:text-red-400 hover:text-red-900 dark:hover:text-red-200 disabled:opacity-50 disabled:cursor-not-allowed"
-                          title="Reject"
-                        >
-                          <XCircle className="w-5 h-5" />
-                        </button>
-                      </>
-                    )}
-                    <a
-                      href={`/admin/parks/${park.id}/edit`}
-                      className="text-primary hover:text-primary/80"
-                      title="Edit"
-                    >
-                      <Edit className="w-5 h-5" />
-                    </a>
-                    <button
-                      onClick={() => handleDelete(park.id, park.name)}
-                      disabled={processingId === park.id}
-                      className="text-red-600 dark:text-red-400 hover:text-red-900 dark:hover:text-red-200 disabled:opacity-50 disabled:cursor-not-allowed"
-                      title="Delete"
-                    >
-                      <Trash2 className="w-5 h-5" />
-                    </button>
+                    {renderActions(park)}
                   </div>
                 </td>
               </tr>
@@ -289,6 +296,73 @@ export function ParkManagementTable({
           </tbody>
         </table>
       </div>
+      )}
+
+      {/* Mobile card layout */}
+      {parks.length > 0 && (
+        <div className="md:hidden divide-y divide-border">
+          {parks.map((park) => (
+            <div
+              key={park.id}
+              className={`p-4 ${park.id === highlightId ? "bg-primary/10" : ""}`}
+            >
+              <div className="flex items-start justify-between gap-3">
+                <div className="min-w-0">
+                  <div className="flex items-center gap-2 flex-wrap">
+                    <span className="text-sm font-medium text-foreground break-words">
+                      {park.name}
+                    </span>
+                    {park.status === "APPROVED" && park.photos.length === 0 && (
+                      <span
+                        className="inline-flex items-center gap-1 px-1.5 py-0.5 text-[10px] font-semibold rounded-full bg-amber-100 dark:bg-amber-900/30 text-amber-700 dark:text-amber-300 border border-amber-200 dark:border-amber-900/50"
+                        title="No approved photos"
+                      >
+                        <Camera className="w-2.5 h-2.5" />
+                        No photos
+                      </span>
+                    )}
+                  </div>
+                  <div className="text-xs text-muted-foreground break-words">
+                    {park.slug}
+                  </div>
+                </div>
+                <div className="flex-shrink-0">{getStatusBadge(park.status)}</div>
+              </div>
+
+              <div className="mt-3 grid grid-cols-2 gap-2 text-sm">
+                <div>
+                  <p className="text-[11px] uppercase tracking-wide text-muted-foreground">
+                    Location
+                  </p>
+                  <p className="text-foreground">
+                    {park.address?.city ? `${park.address.city}, ` : ""}
+                    {park.address?.state ?? "Unknown"}
+                  </p>
+                </div>
+                <div>
+                  <p className="text-[11px] uppercase tracking-wide text-muted-foreground">
+                    Submitted by
+                  </p>
+                  <p className="text-foreground truncate">
+                    {park.submittedBy?.name || park.submitterName || "Anonymous"}
+                  </p>
+                </div>
+                <div>
+                  <p className="text-[11px] uppercase tracking-wide text-muted-foreground">
+                    Date
+                  </p>
+                  <p className="text-foreground">
+                    {new Date(park.createdAt).toLocaleDateString()}
+                  </p>
+                </div>
+              </div>
+
+              <div className="mt-3 flex items-center gap-4 border-t border-border pt-3">
+                {renderActions(park)}
+              </div>
+            </div>
+          ))}
+        </div>
       )}
     </div>
   );
