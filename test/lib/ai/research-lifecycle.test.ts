@@ -4,6 +4,7 @@ import {
   shouldGraduate,
   getCurrentFieldValue,
   getExcludedFields,
+  resolveTerminalStatus,
 } from "@/lib/ai/research-lifecycle";
 import { prisma } from "@/lib/prisma";
 import type { DbPark } from "@/lib/types";
@@ -459,5 +460,29 @@ describe("getExcludedFields", () => {
     expect(result).toHaveLength(2);
     expect(result).toContain("terrain");
     expect(result).toContain("amenities");
+  });
+});
+
+describe("resolveTerminalStatus", () => {
+  it("graduates to RESEARCHED when the run met the bar", () => {
+    expect(resolveTerminalStatus("IN_PROGRESS", true)).toBe("RESEARCHED");
+    expect(resolveTerminalStatus("NEEDS_RESEARCH", true)).toBe("RESEARCHED");
+    expect(resolveTerminalStatus("PARTIAL", true)).toBe("RESEARCHED");
+  });
+
+  it("falls back to PARTIAL when the run did not graduate", () => {
+    expect(resolveTerminalStatus("NEEDS_RESEARCH", false)).toBe("PARTIAL");
+    expect(resolveTerminalStatus("IN_PROGRESS", false)).toBe("PARTIAL");
+    expect(resolveTerminalStatus("RESEARCHED", false)).toBe("PARTIAL");
+  });
+
+  it("never leaves a park stuck in IN_PROGRESS", () => {
+    expect(resolveTerminalStatus("IN_PROGRESS", true)).not.toBe("IN_PROGRESS");
+    expect(resolveTerminalStatus("IN_PROGRESS", false)).not.toBe("IN_PROGRESS");
+  });
+
+  it("preserves an admin-set MAINTENANCE status regardless of graduation", () => {
+    expect(resolveTerminalStatus("MAINTENANCE", true)).toBe("MAINTENANCE");
+    expect(resolveTerminalStatus("MAINTENANCE", false)).toBe("MAINTENANCE");
   });
 });

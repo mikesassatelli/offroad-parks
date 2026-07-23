@@ -70,7 +70,12 @@ export type VehicleType = "motorcycle" | "atv" | "sxs" | "fullSize";
 export type ParkStatus = "PENDING" | "APPROVED" | "REJECTED" | "DRAFT";
 
 // AI Data Context Engine types
-export type ResearchStatus = "NEEDS_RESEARCH" | "IN_PROGRESS" | "RESEARCHED" | "MAINTENANCE";
+export type ResearchStatus =
+  | "NEEDS_RESEARCH"
+  | "IN_PROGRESS"
+  | "PARTIAL"
+  | "RESEARCHED"
+  | "MAINTENANCE";
 export type DataSourceType = "website" | "pdf" | "facebook" | "governmentPage" | "reviewSite" | "campingDirectory" | "other";
 export type DataSourceOrigin = "OPERATOR_PROVIDED" | "AI_DISCOVERED" | "ADMIN_ADDED" | "USER_SUBMITTED";
 export type CrawlStatus = "PENDING" | "SUCCESS" | "FAILED" | "ROBOTS_BLOCKED" | "SKIPPED" | "WRONG_PARK";

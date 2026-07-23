@@ -17,6 +17,7 @@ export default async function AIResearchPage() {
     totalParks,
     needsResearch,
     inProgress,
+    partial,
     researched,
     maintenance,
     pendingReviewCount,
@@ -29,6 +30,7 @@ export default async function AIResearchPage() {
     prisma.park.count(),
     prisma.park.count({ where: { researchStatus: "NEEDS_RESEARCH" } }),
     prisma.park.count({ where: { researchStatus: "IN_PROGRESS" } }),
+    prisma.park.count({ where: { researchStatus: "PARTIAL" } }),
     prisma.park.count({ where: { researchStatus: "RESEARCHED" } }),
     prisma.park.count({ where: { researchStatus: "MAINTENANCE" } }),
     prisma.fieldExtraction.count({ where: { status: "PENDING_REVIEW" } }),
@@ -87,7 +89,7 @@ export default async function AIResearchPage() {
       {/* Research Status Breakdown */}
       <div className="rounded-lg border border-border bg-card p-6">
         <h2 className="text-lg font-semibold text-foreground mb-4">Research Status</h2>
-        <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+        <div className="grid grid-cols-2 lg:grid-cols-5 gap-4">
           <div className="rounded-lg bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-900/40 p-4">
             <p className="text-sm text-red-600 dark:text-red-400 font-medium">Needs Research</p>
             <p className="mt-1 text-2xl font-bold text-red-900 dark:text-red-200">{needsResearch}</p>
@@ -95,6 +97,10 @@ export default async function AIResearchPage() {
           <div className="rounded-lg bg-yellow-50 dark:bg-yellow-900/20 border border-yellow-200 dark:border-yellow-900/40 p-4">
             <p className="text-sm text-yellow-600 dark:text-yellow-400 font-medium">In Progress</p>
             <p className="mt-1 text-2xl font-bold text-yellow-900 dark:text-yellow-200">{inProgress}</p>
+          </div>
+          <div className="rounded-lg bg-amber-50 dark:bg-amber-900/20 border border-amber-200 dark:border-amber-900/40 p-4">
+            <p className="text-sm text-amber-600 dark:text-amber-400 font-medium">Partial</p>
+            <p className="mt-1 text-2xl font-bold text-amber-900 dark:text-amber-200">{partial}</p>
           </div>
           <div className="rounded-lg bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-900/40 p-4">
             <p className="text-sm text-green-600 dark:text-green-400 font-medium">Researched</p>

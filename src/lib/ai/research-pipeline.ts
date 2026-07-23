@@ -13,7 +13,9 @@ import {
   calculateCompleteness,
   shouldGraduate,
   getCurrentFieldValue,
+  resolveTerminalStatus,
 } from "./research-lifecycle";
+import type { ResearchStatus } from "@/lib/types";
 import { isAllowedByRobots, clearRobotsCache } from "./robots";
 import { getDefaultReliabilityForSource } from "./domain-reliability";
 import { discoverSources, normalizeUrl } from "./source-discovery";
@@ -60,10 +62,23 @@ export async function researchPark(
     },
   });
 
+  // IN_PROGRESS is a transient "actively running" state. Set it up front and
+  // resolve to a terminal state in `finally` so a crashed run never leaves the
+  // park stuck. MAINTENANCE is left alone (admin-managed).
+  const priorStatus = park.researchStatus as ResearchStatus;
+  if (priorStatus !== "IN_PROGRESS" && priorStatus !== "MAINTENANCE") {
+    await prisma.park.update({
+      where: { id: parkId },
+      data: { researchStatus: "IN_PROGRESS" },
+    });
+  }
+
   let totalInputTokens = 0;
   let totalOutputTokens = 0;
   let totalFieldsExtracted = 0;
   let totalSourcesFound = 0;
+  let sourcesProcessed = 0;
+  let graduated = false;
 
   try {
     // Get fields to exclude (already resolved)
@@ -74,6 +89,8 @@ export async function researchPark(
       (f) => !excludedFields.includes(f)
     );
     if (remainingFields.length === 0) {
+      // Nothing left to research — every field is approved or marked not-found.
+      graduated = true;
       await completeSession(session.id, {
         status: "COMPLETED",
         summary: "All fields already resolved. No extraction needed.",
@@ -87,8 +104,9 @@ export async function researchPark(
 
     // Stage 1: Source Discovery (for parks still being actively researched)
     if (
-      park.researchStatus === "NEEDS_RESEARCH" ||
-      park.researchStatus === "IN_PROGRESS"
+      priorStatus === "NEEDS_RESEARCH" ||
+      priorStatus === "IN_PROGRESS" ||
+      priorStatus === "PARTIAL"
     ) {
       // Exclude all existing URLs + URLs previously rejected as wrong park
       const existingUrls = park.dataSources.map((s) => s.url);
@@ -401,34 +419,13 @@ export async function researchPark(
       }
     }
 
-    // Update park metadata
-    const completenessScore = calculateCompleteness(park);
+    // Decide graduation. The park's terminal research status is applied in the
+    // `finally` block so it's set exactly once, on every exit path.
     const approvedCount = await prisma.fieldExtraction.count({
       where: { parkId, status: "APPROVED" },
     });
-
-    const updateData: Record<string, unknown> = {
-      lastResearchedAt: new Date(),
-      dataCompletenessScore: completenessScore,
-    };
-
-    // Advance research status
-    if (park.researchStatus === "NEEDS_RESEARCH") {
-      updateData.researchStatus = "IN_PROGRESS";
-    }
-
-    if (
-      shouldGraduate(park, approvedCount, sources.length) &&
-      park.researchStatus !== "RESEARCHED" &&
-      park.researchStatus !== "MAINTENANCE"
-    ) {
-      updateData.researchStatus = "RESEARCHED";
-    }
-
-    await prisma.park.update({
-      where: { id: parkId },
-      data: updateData,
-    });
+    sourcesProcessed = sources.length;
+    graduated = shouldGraduate(park, approvedCount, sourcesProcessed);
 
     // Complete session
     const summaryParts = [
@@ -446,7 +443,7 @@ export async function researchPark(
       outputTokens: totalOutputTokens,
     });
   } catch (error) {
-    // Mark session as failed
+    // Mark session as failed. `graduated` stays false → park resolves to PARTIAL.
     await completeSession(session.id, {
       status: "FAILED",
       errorMessage:
@@ -456,6 +453,21 @@ export async function researchPark(
       inputTokens: totalInputTokens,
       outputTokens: totalOutputTokens,
     });
+  } finally {
+    // Always leave a terminal resting state — never a dangling IN_PROGRESS.
+    const terminalStatus = resolveTerminalStatus(priorStatus, graduated);
+    await prisma.park
+      .update({
+        where: { id: parkId },
+        data: {
+          researchStatus: terminalStatus,
+          lastResearchedAt: new Date(),
+          dataCompletenessScore: calculateCompleteness(park),
+        },
+      })
+      .catch(() => {
+        // Best-effort — never mask the run's real outcome with a write error.
+      });
   }
 
   return { sessionId: session.id };
