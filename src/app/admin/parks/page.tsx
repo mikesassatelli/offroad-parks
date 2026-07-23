@@ -6,6 +6,7 @@ interface SearchParams {
   status?: string;
   highlight?: string;
   page?: string;
+  search?: string;
 }
 
 const PAGE_SIZE = 25;
@@ -25,18 +26,50 @@ export default async function AdminParksPage({
 }) {
   const params = await searchParams;
   const statusFilter = params.status || "all";
+  const searchTerm = (params.search ?? "").trim();
 
-  // Build where clause based on status filter
+  // Search runs in the DB (name / city / state) so it spans ALL parks, not just
+  // the current page. Kept separate from the status filter so the tab badges
+  // below can reflect the active search too.
+  const searchWhere: Prisma.ParkWhereInput = searchTerm
+    ? {
+        OR: [
+          { name: { contains: searchTerm, mode: "insensitive" } },
+          {
+            address: {
+              is: { city: { contains: searchTerm, mode: "insensitive" } },
+            },
+          },
+          {
+            address: {
+              is: { state: { contains: searchTerm, mode: "insensitive" } },
+            },
+          },
+        ],
+      }
+    : {};
+
+  // Combine the status and search filters, keeping the clause minimal: `{}`
+  // when unfiltered, a bare status/search clause when only one is active, and
+  // an AND only when both apply.
+  const conditions: Prisma.ParkWhereInput[] = [];
+  if (statusFilter !== "all") {
+    conditions.push({
+      status: statusFilter.toUpperCase() as
+        | "PENDING"
+        | "APPROVED"
+        | "REJECTED"
+        | "DRAFT",
+    });
+  }
+  if (searchTerm) conditions.push(searchWhere);
+
   const whereClause: Prisma.ParkWhereInput =
-    statusFilter === "all"
+    conditions.length === 0
       ? {}
-      : {
-          status: statusFilter.toUpperCase() as
-            | "PENDING"
-            | "APPROVED"
-            | "REJECTED"
-            | "DRAFT",
-        };
+      : conditions.length === 1
+        ? conditions[0]
+        : { AND: conditions };
 
   // Total count for the current filter, used to compute pagination bounds.
   const totalCount = await prisma.park.count({ where: whereClause });
@@ -53,6 +86,7 @@ export default async function AdminParksPage({
   // on the current page.
   const statusCounts = await prisma.park.groupBy({
     by: ["status"],
+    where: searchWhere,
     _count: { _all: true },
   });
   const countsByStatus = new Map<ParkStatus, number>(
@@ -94,6 +128,7 @@ export default async function AdminParksPage({
   const buildHref = (overrides: Record<string, string | undefined>) => {
     const query = new URLSearchParams();
     if (statusFilter !== "all") query.set("status", statusFilter);
+    if (searchTerm) query.set("search", searchTerm);
     for (const [key, value] of Object.entries(overrides)) {
       if (value === undefined) {
         query.delete(key);
@@ -147,7 +182,12 @@ export default async function AdminParksPage({
       </div>
 
       {/* Parks Table */}
-      <ParkManagementTable parks={parks} highlightId={params.highlight} />
+      <ParkManagementTable
+        parks={parks}
+        highlightId={params.highlight}
+        statusFilter={statusFilter}
+        initialSearch={searchTerm}
+      />
 
       {/* Pagination Controls */}
       {totalCount > 0 && (

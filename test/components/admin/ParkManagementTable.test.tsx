@@ -3,6 +3,11 @@ import userEvent from "@testing-library/user-event";
 import { ParkManagementTable } from "@/components/admin/ParkManagementTable";
 import { vi } from "vitest";
 
+const mockPush = vi.fn();
+vi.mock("next/navigation", () => ({
+  useRouter: () => ({ push: mockPush }),
+}));
+
 describe("ParkManagementTable", () => {
   const mockParks = [
     {
@@ -102,7 +107,7 @@ describe("ParkManagementTable", () => {
     ).toBeInTheDocument();
   });
 
-  it("should still show search bar when no results match", async () => {
+  it("pushes a server-side search query to the URL when typing", async () => {
     const user = userEvent.setup();
 
     render(<ParkManagementTable parks={mockParks} />);
@@ -111,10 +116,32 @@ describe("ParkManagementTable", () => {
       "Search by name, city, or state...",
     );
     await user.type(searchInput, "zzznomatch");
-
-    expect(screen.getByText("No parks found")).toBeInTheDocument();
-    expect(searchInput).toBeInTheDocument();
     expect(searchInput).toHaveValue("zzznomatch");
+
+    // Search is server-driven now — typing debounces a navigation rather than
+    // filtering the current page's rows in place.
+    await waitFor(() => {
+      expect(mockPush).toHaveBeenCalledWith("/admin/parks?search=zzznomatch");
+    });
+  });
+
+  it("preserves the active status filter in the search URL", async () => {
+    const user = userEvent.setup();
+
+    render(
+      <ParkManagementTable parks={mockParks} statusFilter="pending" />,
+    );
+
+    await user.type(
+      screen.getByPlaceholderText("Search by name, city, or state..."),
+      "dunes",
+    );
+
+    await waitFor(() => {
+      expect(mockPush).toHaveBeenCalledWith(
+        "/admin/parks?status=pending&search=dunes",
+      );
+    });
   });
 
   it("should render table headers", () => {
