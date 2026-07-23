@@ -6,21 +6,22 @@ import { reconcileStuckResearch } from "@/lib/ai/research-lifecycle";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
-// Research is I/O-heavy (crawl + LLM per source); take the full window. The
-// in-function time budget stops starting new parks well before this.
-export const maxDuration = 300;
+// Kept within the 60s ceiling that all Vercel plans allow. The in-function time
+// budget stops starting new parks a few seconds before this.
+export const maxDuration = 60;
 
 // Max parks to consider per drain. The wall-clock budget usually stops us sooner;
 // leftovers wait for the next tick.
-const BATCH_SIZE = 8;
-const TIME_BUDGET_MS = 4 * 60_000;
+const BATCH_SIZE = 5;
+const TIME_BUDGET_MS = 50_000;
 const MAX_CONCURRENT = 2;
 
 /**
- * Cron: drain the bulk-research queue. Picks the oldest queued parks and runs
- * research on a time-boxed batch, clearing each park's queue flag as it goes.
- * Wired up in vercel.json `crons`. Vercel attaches
- * `Authorization: Bearer $CRON_SECRET`; we reject anything else once configured.
+ * Drain the bulk-research queue: pick the oldest queued parks and research a
+ * time-boxed batch, clearing each park's queue flag as it goes. Triggered on a
+ * schedule by .github/workflows/research-queue.yml (GitHub Actions cron — no
+ * dependency on the Vercel plan's cron limits). Guarded by CRON_SECRET:
+ * `Authorization: Bearer $CRON_SECRET`; anything else is rejected once set.
  */
 export async function GET(request: Request): Promise<NextResponse> {
   const secret = process.env.CRON_SECRET;

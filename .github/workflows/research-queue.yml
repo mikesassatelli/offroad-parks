@@ -1,0 +1,33 @@
+name: Research Queue Drain
+
+# Drives the bulk-research queue on a schedule. GitHub Actions cron isn't subject
+# to the Vercel plan's cron-frequency limits, so we can drain every 15 minutes.
+# It just pings the CRON_SECRET-guarded drain endpoint; all the work runs on
+# Vercel. Scheduled runs only fire from the default branch once merged.
+on:
+  schedule:
+    - cron: "*/15 * * * *"
+  workflow_dispatch: {}
+
+jobs:
+  drain:
+    runs-on: ubuntu-latest
+    steps:
+      # Skip cleanly (with a warning) until the secrets are configured, so an
+      # unconfigured repo doesn't get a red X every 15 minutes.
+      - name: Check drain config is present
+        id: cfg
+        run: |
+          if [ -n "${{ secrets.RESEARCH_QUEUE_URL }}" ] && [ -n "${{ secrets.CRON_SECRET }}" ]; then
+            echo "ok=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "::warning::Research-queue drain skipped — set RESEARCH_QUEUE_URL (e.g. https://your-domain/api/cron/research-queue) and CRON_SECRET in repo Secrets (Settings → Secrets and variables → Actions)."
+            echo "ok=false" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Drain the research queue
+        if: steps.cfg.outputs.ok == 'true'
+        run: |
+          curl --fail --silent --show-error --max-time 70 \
+            -H "Authorization: Bearer ${{ secrets.CRON_SECRET }}" \
+            "${{ secrets.RESEARCH_QUEUE_URL }}"
