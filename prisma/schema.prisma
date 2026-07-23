@@ -811,6 +811,7 @@ model DomainReliability {
   domainPattern      String   @unique  // e.g. "riderplanet-usa.com", ".gov"
   defaultReliability Int      @default(50)
   isBlocked          Boolean  @default(false)
+  locked             Boolean  @default(false) // pin the score against nightly auto-tuning
   notes              String?
 
   createdAt DateTime @default(now())

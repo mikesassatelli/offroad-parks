@@ -523,6 +523,7 @@ export type DomainReliabilitySummary = {
   domainPattern: string;
   defaultReliability: number;
   isBlocked: boolean;
+  locked: boolean;
   notes: string | null;
   createdAt: string;
 };
