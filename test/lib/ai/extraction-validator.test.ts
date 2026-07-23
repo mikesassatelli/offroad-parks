@@ -1,5 +1,8 @@
 import { describe, it, expect } from "vitest";
-import { validateExtraction } from "@/lib/ai/extraction-validator";
+import {
+  validateExtraction,
+  cleanStreetAddress,
+} from "@/lib/ai/extraction-validator";
 
 describe("validateExtraction", () => {
   // ---- Latitude ----
@@ -317,5 +320,70 @@ describe("validateExtraction", () => {
       const result = validateExtraction("dayPassUSD", 500.01, null);
       expect(result.valid).toBe(false);
     });
+  });
+
+  // ---- Positive-quantity fields (item c) ----
+  describe("positive-quantity fields", () => {
+    const fields = [
+      "milesOfTrails",
+      "acres",
+      "maxVehicleWidthInches",
+      "noiseLimitDBA",
+    ];
+
+    for (const field of fields) {
+      it(`accepts a positive ${field}`, () => {
+        expect(validateExtraction(field, 42, null)).toEqual({ valid: true });
+      });
+
+      it(`rejects ${field} of 0`, () => {
+        const result = validateExtraction(field, 0, null);
+        expect(result.valid).toBe(false);
+        expect(result.reason).toContain("greater than 0");
+      });
+
+      it(`rejects negative ${field}`, () => {
+        expect(validateExtraction(field, -5, null).valid).toBe(false);
+      });
+
+      it(`rejects non-numeric ${field}`, () => {
+        expect(validateExtraction(field, "lots", null).valid).toBe(false);
+      });
+    }
+  });
+});
+
+// ---- Street address cleaning (item b) ----
+describe("cleanStreetAddress", () => {
+  it("strips a trailing city, state, and zip", () => {
+    expect(cleanStreetAddress("123 Main St, Boise, ID 83702")).toBe(
+      "123 Main St"
+    );
+  });
+
+  it("strips a trailing city + zip without state", () => {
+    expect(cleanStreetAddress("456 Elk Rd, Moab 84532")).toBe("456 Elk Rd");
+  });
+
+  it("strips a trailing state abbreviation", () => {
+    expect(cleanStreetAddress("789 Dune Way, Glamis, CA")).toBe("789 Dune Way");
+  });
+
+  it("strips a bare trailing zip segment", () => {
+    expect(cleanStreetAddress("12 Trailhead Ln, 55901")).toBe("12 Trailhead Ln");
+  });
+
+  it("leaves a legitimate street comma intact", () => {
+    expect(cleanStreetAddress("123 Main St, Suite 4")).toBe(
+      "123 Main St, Suite 4"
+    );
+  });
+
+  it("leaves a plain street line untouched", () => {
+    expect(cleanStreetAddress("100 Ridge Road")).toBe("100 Ridge Road");
+  });
+
+  it("trims surrounding whitespace", () => {
+    expect(cleanStreetAddress("  100 Ridge Road  ")).toBe("100 Ridge Road");
   });
 });

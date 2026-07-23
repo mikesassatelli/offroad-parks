@@ -37,6 +37,8 @@ Rules:
 - For pricing, extract the most common/standard adult rate. If seasonal pricing exists, use the peak season price.
 - For terrain, map descriptions: "sandy" = "sand", "rocky" = "rocks", "wooded trails" or "forest trails" = "trails", "hilly" or "mountain" = "hills", "muddy" or "clay" = "mud"
 - For amenities, only include amenities explicitly mentioned. "Full facilities" is too vague to map.
+- For the address, keep the fields separate: streetAddress is the street line ONLY (number + street, e.g. "123 Main St"). Do NOT include the city, state, or ZIP in streetAddress — put those in the city and zipCode fields.
+- Omit numeric quantities (milesOfTrails, acres, maxVehicleWidthInches, noiseLimitDBA) when the source says none or zero — only include a positive number actually stated in the source.
 - Confidence scoring:
   - 0.9-1.0: Explicitly and unambiguously stated (e.g., "Day pass: $25")
   - 0.7-0.89: Clearly implied with minor interpretation (e.g., "Fees: Adults $25" → dayPassUSD=25)

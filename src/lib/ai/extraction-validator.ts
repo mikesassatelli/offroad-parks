@@ -5,16 +5,26 @@ export type ValidationResult = {
   reason?: string;
 };
 
-const PRICE_FIELDS = new Set([
+export const PRICE_FIELDS = new Set([
   "dayPassUSD",
   "vehicleEntryFeeUSD",
   "riderFeeUSD",
   "membershipFeeUSD",
 ]);
 
-const PHONE_FIELDS = new Set(["phone", "campingPhone"]);
+export const PHONE_FIELDS = new Set(["phone", "campingPhone"]);
 
-const URL_FIELDS = new Set(["website", "campingWebsite"]);
+export const URL_FIELDS = new Set(["website", "campingWebsite"]);
+
+// Quantity fields where a value of 0 (or negative) is meaningless — a park with
+// "0 miles of trails" or "0 acres" is a bad extraction, not a real data point.
+// These get dropped rather than queued for review.
+export const POSITIVE_QUANTITY_FIELDS = new Set([
+  "milesOfTrails",
+  "acres",
+  "maxVehicleWidthInches",
+  "noiseLimitDBA",
+]);
 
 /**
  * Validate a single extracted field value.
@@ -105,6 +115,20 @@ export function validateExtraction(
     return { valid: true };
   }
 
+  // --- Positive-quantity fields (trail miles, acres, width, noise limit) ---
+  if (POSITIVE_QUANTITY_FIELDS.has(fieldName)) {
+    if (typeof value !== "number" || Number.isNaN(value)) {
+      return { valid: false, reason: `${fieldName} must be a number` };
+    }
+    if (value <= 0) {
+      return {
+        valid: false,
+        reason: `${fieldName} ${value} must be greater than 0`,
+      };
+    }
+    return { valid: true };
+  }
+
   // --- Email ---
   if (fieldName === "contactEmail") {
     if (typeof value !== "string") {
@@ -120,4 +144,33 @@ export function validateExtraction(
 
   // --- All other fields: no additional validation ---
   return { valid: true };
+}
+
+/**
+ * Strip an accidental city/state/zip tail from a street address so the stored
+ * `streetAddress` is just the street line. The LLM sometimes returns a full
+ * one-line address (e.g. "123 Main St, Boise, ID 83702") into `streetAddress`,
+ * duplicating the separately-extracted city/zip fields.
+ *
+ * Only strips when the trailing comma-segment clearly looks like city/state/zip,
+ * so legitimate street commas ("123 Main St, Suite 4") are left intact.
+ */
+export function cleanStreetAddress(raw: string): string {
+  const trimmed = raw.trim();
+  const parts = trimmed
+    .split(",")
+    .map((p) => p.trim())
+    .filter(Boolean);
+  if (parts.length < 2) return trimmed;
+
+  const last = parts[parts.length - 1];
+  // Trailing segment ending in a ZIP ("Boise, ID 83702", "Moab 84532", "83702")
+  // or a bare 2-letter state abbreviation ("…, Boise, ID") is a location tail.
+  const endsWithZip = /\b\d{5}(-\d{4})?$/.test(last);
+  const isTrailingState = parts.length >= 3 && /^[A-Za-z]{2}\.?$/.test(last);
+
+  if (endsWithZip || isTrailingState) {
+    return parts[0];
+  }
+  return trimmed;
 }
