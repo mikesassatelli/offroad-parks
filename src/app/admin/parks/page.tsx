@@ -1,6 +1,7 @@
 import { prisma } from "@/lib/prisma";
 import { ParkManagementTable } from "@/components/admin/ParkManagementTable";
 import type { Prisma, ParkStatus } from "@prisma/client";
+import { Plus, Upload } from "lucide-react";
 
 interface SearchParams {
   status?: string;
@@ -142,14 +143,26 @@ export default async function AdminParksPage({
 
   return (
     <div>
-      <div className="flex items-center justify-between mb-8">
-        <h1 className="text-3xl font-bold text-foreground">Park Management</h1>
-        <a
-          href="/admin/parks/new"
-          className="px-4 py-2 bg-primary text-primary-foreground rounded-lg hover:bg-primary/90 transition-colors font-medium"
-        >
-          Add New Park
-        </a>
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 mb-8">
+        <h1 className="text-2xl sm:text-3xl font-bold text-foreground">
+          Park Management
+        </h1>
+        <div className="flex items-center gap-2">
+          <a
+            href="/admin/parks/bulk-upload"
+            className="inline-flex items-center gap-1.5 px-4 py-2 border border-border bg-card text-foreground rounded-lg hover:bg-accent transition-colors font-medium"
+          >
+            <Upload className="w-4 h-4" />
+            Bulk Upload
+          </a>
+          <a
+            href="/admin/parks/new"
+            className="inline-flex items-center gap-1.5 px-4 py-2 bg-primary text-primary-foreground rounded-lg hover:bg-primary/90 transition-colors font-medium"
+          >
+            <Plus className="w-4 h-4" />
+            Add New Park
+          </a>
+        </div>
       </div>
 
       {/* Status Filter Tabs */}

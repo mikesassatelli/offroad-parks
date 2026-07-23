@@ -1,7 +1,11 @@
-import { render, screen, waitFor } from "@testing-library/react";
+import { render, screen, waitFor, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { ParkManagementTable } from "@/components/admin/ParkManagementTable";
 import { vi } from "vitest";
+
+// The table renders twice (desktop table + mobile card list); jsdom applies no
+// CSS so both are present. Scope content/action assertions to the desktop table.
+const inTable = () => within(screen.getByRole("table"));
 
 const mockPush = vi.fn();
 vi.mock("next/navigation", () => ({
@@ -147,68 +151,68 @@ describe("ParkManagementTable", () => {
   it("should render table headers", () => {
     render(<ParkManagementTable parks={mockParks} />);
 
-    expect(screen.getByText("Park")).toBeInTheDocument();
-    expect(screen.getByText("Location")).toBeInTheDocument();
-    expect(screen.getByText("Status")).toBeInTheDocument();
-    expect(screen.getByText("Submitted By")).toBeInTheDocument();
-    expect(screen.getByText("Date")).toBeInTheDocument();
-    expect(screen.getByText("Actions")).toBeInTheDocument();
+    expect(inTable().getByText("Park")).toBeInTheDocument();
+    expect(inTable().getByText("Location")).toBeInTheDocument();
+    expect(inTable().getByText("Status")).toBeInTheDocument();
+    expect(inTable().getByText("Submitted By")).toBeInTheDocument();
+    expect(inTable().getByText("Date")).toBeInTheDocument();
+    expect(inTable().getByText("Actions")).toBeInTheDocument();
   });
 
   it("should render all parks", () => {
     render(<ParkManagementTable parks={mockParks} />);
 
-    expect(screen.getByText("Test Park One")).toBeInTheDocument();
-    expect(screen.getByText("Test Park Two")).toBeInTheDocument();
-    expect(screen.getByText("Test Park Three")).toBeInTheDocument();
+    expect(inTable().getByText("Test Park One")).toBeInTheDocument();
+    expect(inTable().getByText("Test Park Two")).toBeInTheDocument();
+    expect(inTable().getByText("Test Park Three")).toBeInTheDocument();
   });
 
   it("should render park slug below name", () => {
     render(<ParkManagementTable parks={mockParks} />);
 
-    expect(screen.getByText("test-park-one")).toBeInTheDocument();
-    expect(screen.getByText("test-park-two")).toBeInTheDocument();
+    expect(inTable().getByText("test-park-one")).toBeInTheDocument();
+    expect(inTable().getByText("test-park-two")).toBeInTheDocument();
   });
 
   it("should render location with city and state", () => {
     render(<ParkManagementTable parks={mockParks} />);
 
-    expect(screen.getByText("Los Angeles, California")).toBeInTheDocument();
-    expect(screen.getByText("Phoenix, Arizona")).toBeInTheDocument();
+    expect(inTable().getByText("Los Angeles, California")).toBeInTheDocument();
+    expect(inTable().getByText("Phoenix, Arizona")).toBeInTheDocument();
   });
 
   it("should render location without city when not provided", () => {
     render(<ParkManagementTable parks={mockParks} />);
 
-    expect(screen.getByText("Nevada")).toBeInTheDocument();
+    expect(inTable().getByText("Nevada")).toBeInTheDocument();
   });
 
   it("should render status badges", () => {
     render(<ParkManagementTable parks={mockParks} />);
 
-    expect(screen.getByText("PENDING")).toBeInTheDocument();
-    expect(screen.getByText("APPROVED")).toBeInTheDocument();
-    expect(screen.getByText("REJECTED")).toBeInTheDocument();
+    expect(inTable().getByText("PENDING")).toBeInTheDocument();
+    expect(inTable().getByText("APPROVED")).toBeInTheDocument();
+    expect(inTable().getByText("REJECTED")).toBeInTheDocument();
   });
 
   it("should render submitter name", () => {
     render(<ParkManagementTable parks={mockParks} />);
 
-    expect(screen.getByText("John Doe")).toBeInTheDocument();
-    expect(screen.getByText("Jane Smith")).toBeInTheDocument();
+    expect(inTable().getByText("John Doe")).toBeInTheDocument();
+    expect(inTable().getByText("Jane Smith")).toBeInTheDocument();
   });
 
   it("should render submitter email", () => {
     render(<ParkManagementTable parks={mockParks} />);
 
-    expect(screen.getByText("john@example.com")).toBeInTheDocument();
-    expect(screen.getByText("jane@example.com")).toBeInTheDocument();
+    expect(inTable().getByText("john@example.com")).toBeInTheDocument();
+    expect(inTable().getByText("jane@example.com")).toBeInTheDocument();
   });
 
   it("should render Anonymous when no submitter info", () => {
     render(<ParkManagementTable parks={mockParks} />);
 
-    expect(screen.getByText("Anonymous")).toBeInTheDocument();
+    expect(inTable().getByText("Anonymous")).toBeInTheDocument();
   });
 
   it("should render formatted dates", () => {
@@ -216,13 +220,13 @@ describe("ParkManagementTable", () => {
 
     // Dates are formatted with toLocaleDateString()
     expect(
-      screen.getByText(new Date("2024-01-15").toLocaleDateString()),
+      inTable().getAllByText(new Date("2024-01-15").toLocaleDateString())[0],
     ).toBeInTheDocument();
     expect(
-      screen.getByText(new Date("2024-02-20").toLocaleDateString()),
+      inTable().getAllByText(new Date("2024-02-20").toLocaleDateString())[0],
     ).toBeInTheDocument();
     expect(
-      screen.getByText(new Date("2024-03-10").toLocaleDateString()),
+      inTable().getAllByText(new Date("2024-03-10").toLocaleDateString())[0],
     ).toBeInTheDocument();
   });
 
@@ -230,17 +234,14 @@ describe("ParkManagementTable", () => {
     render(<ParkManagementTable parks={mockParks} />);
 
     // Only pending park should have approve/reject buttons
-    const approveButtons = screen.getAllByTitle("Approve");
-    const rejectButtons = screen.getAllByTitle("Reject");
-
-    expect(approveButtons).toHaveLength(1);
-    expect(rejectButtons).toHaveLength(1);
+    expect(inTable().getAllByTitle("Approve")).toHaveLength(1);
+    expect(inTable().getAllByTitle("Reject")).toHaveLength(1);
   });
 
   it("should render edit link for all parks", () => {
     render(<ParkManagementTable parks={mockParks} />);
 
-    const editLinks = screen.getAllByTitle("Edit");
+    const editLinks = inTable().getAllByTitle("Edit");
     expect(editLinks).toHaveLength(3);
     expect(editLinks[0]).toHaveAttribute("href", "/admin/parks/park-1/edit");
   });
@@ -248,7 +249,7 @@ describe("ParkManagementTable", () => {
   it("should render delete button for all parks", () => {
     render(<ParkManagementTable parks={mockParks} />);
 
-    const deleteButtons = screen.getAllByTitle("Delete");
+    const deleteButtons = inTable().getAllByTitle("Delete");
     expect(deleteButtons).toHaveLength(3);
   });
 
@@ -267,7 +268,7 @@ describe("ParkManagementTable", () => {
 
     render(<ParkManagementTable parks={mockParks} />);
 
-    await user.click(screen.getByTitle("Approve"));
+    await user.click(inTable().getByTitle("Approve"));
 
     expect(mockFetch).toHaveBeenCalledWith("/api/admin/parks/park-1/approve", {
       method: "POST",
@@ -284,7 +285,7 @@ describe("ParkManagementTable", () => {
 
     render(<ParkManagementTable parks={mockParks} />);
 
-    await user.click(screen.getByTitle("Reject"));
+    await user.click(inTable().getByTitle("Reject"));
 
     expect(mockFetch).toHaveBeenCalledWith("/api/admin/parks/park-1/reject", {
       method: "POST",
@@ -301,7 +302,7 @@ describe("ParkManagementTable", () => {
 
     render(<ParkManagementTable parks={mockParks} />);
 
-    await user.click(screen.getByTitle("Approve"));
+    await user.click(inTable().getByTitle("Approve"));
 
     await waitFor(() => {
       expect(mockAlert).toHaveBeenCalledWith("Failed to approve park");
@@ -316,7 +317,7 @@ describe("ParkManagementTable", () => {
 
     render(<ParkManagementTable parks={mockParks} />);
 
-    await user.click(screen.getByTitle("Reject"));
+    await user.click(inTable().getByTitle("Reject"));
 
     await waitFor(() => {
       expect(mockAlert).toHaveBeenCalledWith("Failed to reject park");
@@ -331,7 +332,7 @@ describe("ParkManagementTable", () => {
 
     render(<ParkManagementTable parks={mockParks} />);
 
-    await user.click(screen.getByTitle("Approve"));
+    await user.click(inTable().getByTitle("Approve"));
 
     await waitFor(() => {
       expect(mockAlert).toHaveBeenCalledWith("Failed to approve park");
@@ -344,7 +345,7 @@ describe("ParkManagementTable", () => {
 
     render(<ParkManagementTable parks={mockParks} />);
 
-    await user.click(screen.getByTitle("Reject"));
+    await user.click(inTable().getByTitle("Reject"));
 
     await waitFor(() => {
       expect(mockAlert).toHaveBeenCalledWith("Failed to reject park");
@@ -358,7 +359,7 @@ describe("ParkManagementTable", () => {
 
     render(<ParkManagementTable parks={mockParks} />);
 
-    const deleteButtons = screen.getAllByTitle("Delete");
+    const deleteButtons = inTable().getAllByTitle("Delete");
     await user.click(deleteButtons[0]);
 
     expect(mockConfirm).toHaveBeenCalledWith(
@@ -380,7 +381,7 @@ describe("ParkManagementTable", () => {
 
     render(<ParkManagementTable parks={mockParks} />);
 
-    const deleteButtons = screen.getAllByTitle("Delete");
+    const deleteButtons = inTable().getAllByTitle("Delete");
     await user.click(deleteButtons[0]);
 
     expect(mockFetch).not.toHaveBeenCalled();
@@ -394,7 +395,7 @@ describe("ParkManagementTable", () => {
 
     render(<ParkManagementTable parks={mockParks} />);
 
-    const deleteButtons = screen.getAllByTitle("Delete");
+    const deleteButtons = inTable().getAllByTitle("Delete");
     await user.click(deleteButtons[0]);
 
     await waitFor(() => {
@@ -411,8 +412,8 @@ describe("ParkManagementTable", () => {
 
     render(<ParkManagementTable parks={mockParks} />);
 
-    const approveButton = screen.getByTitle("Approve");
-    const rejectButton = screen.getByTitle("Reject");
+    const approveButton = inTable().getByTitle("Approve");
+    const rejectButton = inTable().getByTitle("Reject");
 
     await user.click(approveButton);
 
@@ -440,7 +441,7 @@ describe("ParkManagementTable", () => {
   it("should show 'No photos' badge for approved park with no photos", () => {
     const approvedPark = { ...mockParks[1], photos: [] }; // park-2 is APPROVED
     render(<ParkManagementTable parks={[approvedPark]} />);
-    expect(screen.getByText("No photos")).toBeInTheDocument();
+    expect(inTable().getByText("No photos")).toBeInTheDocument();
   });
 
   it("should not show 'No photos' badge for approved park with photos", () => {
@@ -464,7 +465,7 @@ describe("ParkManagementTable", () => {
 
     render(<ParkManagementTable parks={[draftPark]} />);
 
-    expect(screen.getByText("DRAFT")).toBeInTheDocument();
+    expect(inTable().getByText("DRAFT")).toBeInTheDocument();
   });
 
   it("should not show approve/reject buttons for approved parks", () => {
@@ -490,7 +491,7 @@ describe("ParkManagementTable", () => {
 
     render(<ParkManagementTable parks={mockParks} />);
 
-    const deleteButtons = screen.getAllByTitle("Delete");
+    const deleteButtons = inTable().getAllByTitle("Delete");
     await user.click(deleteButtons[0]);
 
     await waitFor(() => {

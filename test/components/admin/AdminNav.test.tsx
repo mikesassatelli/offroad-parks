@@ -46,16 +46,16 @@ describe("AdminNav", () => {
     ).not.toHaveAttribute("aria-current");
   });
 
-  it("marks Add Park (not Parks) active on /admin/parks/new", () => {
+  it("marks Parks active on its sub-routes (Add Park is a button, not a nav item)", () => {
     mockPathname = "/admin/parks/new";
     render(<AdminNav isSuperAdmin={false} />);
-    expect(screen.getByRole("link", { name: /add park/i })).toHaveAttribute(
+    expect(
+      screen.queryByRole("link", { name: /add park/i })
+    ).not.toBeInTheDocument();
+    expect(screen.getByRole("link", { name: /^parks$/i })).toHaveAttribute(
       "aria-current",
       "page"
     );
-    expect(
-      screen.getByRole("link", { name: /^parks$/i })
-    ).not.toHaveAttribute("aria-current");
   });
 
   it("opens and closes the mobile drawer", () => {
