@@ -1,6 +1,8 @@
 import { prisma } from "@/lib/prisma";
 import Link from "next/link";
 import { ArrowRight, FlaskConical } from "lucide-react";
+import { reconcileStuckResearch } from "@/lib/ai/research-lifecycle";
+import type { ResearchStatus } from "@/lib/types";
 
 export default async function ResearchListPage({
   searchParams,
@@ -11,9 +13,13 @@ export default async function ResearchListPage({
   const q = params.q?.trim() || "";
   const statusFilter = params.status || "ALL";
 
+  // Heal any parks stuck in IN_PROGRESS (orphaned fire-and-forget runs) before
+  // we read the list, so the statuses shown are accurate.
+  await reconcileStuckResearch();
+
   const where: {
     status: "APPROVED";
-    researchStatus?: "NEEDS_RESEARCH" | "IN_PROGRESS" | "RESEARCHED" | "MAINTENANCE";
+    researchStatus?: ResearchStatus;
     name?: { contains: string; mode: "insensitive" };
   } = { status: "APPROVED" };
   if (statusFilter !== "ALL") {
@@ -74,6 +80,7 @@ export default async function ResearchListPage({
         <StatusFilterLink label="All" value="ALL" active={statusFilter === "ALL"} q={q} />
         <StatusFilterLink label="Needs Research" value="NEEDS_RESEARCH" active={statusFilter === "NEEDS_RESEARCH"} q={q} />
         <StatusFilterLink label="In Progress" value="IN_PROGRESS" active={statusFilter === "IN_PROGRESS"} q={q} />
+        <StatusFilterLink label="Partial" value="PARTIAL" active={statusFilter === "PARTIAL"} q={q} />
         <StatusFilterLink label="Researched" value="RESEARCHED" active={statusFilter === "RESEARCHED"} q={q} />
         <StatusFilterLink label="Maintenance" value="MAINTENANCE" active={statusFilter === "MAINTENANCE"} q={q} />
       </div>
@@ -172,6 +179,7 @@ function ResearchStatusBadge({ status }: { status: string }) {
   const styles: Record<string, string> = {
     NEEDS_RESEARCH: "bg-red-100 dark:bg-red-900/30 text-red-800 dark:text-red-300 border-red-200 dark:border-red-900/50",
     IN_PROGRESS: "bg-yellow-100 dark:bg-yellow-900/30 text-yellow-800 dark:text-yellow-300 border-yellow-200 dark:border-yellow-900/50",
+    PARTIAL: "bg-amber-100 dark:bg-amber-900/30 text-amber-800 dark:text-amber-300 border-amber-200 dark:border-amber-900/50",
     RESEARCHED: "bg-green-100 dark:bg-green-900/30 text-green-800 dark:text-green-300 border-green-200 dark:border-green-900/50",
     MAINTENANCE: "bg-blue-100 dark:bg-blue-900/30 text-blue-800 dark:text-blue-300 border-blue-200 dark:border-blue-900/50",
   };

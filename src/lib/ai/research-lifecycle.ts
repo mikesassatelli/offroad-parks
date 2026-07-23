@@ -1,6 +1,13 @@
 import { prisma } from "@/lib/prisma";
 import { EXTRACTABLE_FIELDS } from "./config";
-import type { DbPark } from "@/lib/types";
+import type { DbPark, ResearchStatus } from "@/lib/types";
+
+/**
+ * A research session left IN_PROGRESS longer than this (with no active run) is
+ * considered orphaned — the serverless invocation almost certainly died. Used by
+ * reconcileStuckResearch() to un-stick parks.
+ */
+export const STUCK_SESSION_MINUTES = 15;
 
 /**
  * Get field names to exclude from extraction prompts.
@@ -59,6 +66,82 @@ export function shouldGraduate(
     hasTerrain &&
     hasVehicleTypes
   );
+}
+
+/**
+ * Decide a park's resting research status once a research run finishes. Pure so
+ * it can be unit tested. `IN_PROGRESS` is only ever a transient (actively-
+ * running) state now — a finished run always resolves to a terminal state:
+ *  - MAINTENANCE is preserved (an admin opted the park into periodic re-checks)
+ *  - graduated → RESEARCHED
+ *  - otherwise → PARTIAL (ran, but data is incomplete / awaiting review)
+ */
+export function resolveTerminalStatus(
+  priorStatus: ResearchStatus,
+  graduated: boolean
+): ResearchStatus {
+  if (priorStatus === "MAINTENANCE") return "MAINTENANCE";
+  return graduated ? "RESEARCHED" : "PARTIAL";
+}
+
+/**
+ * Heal parks stuck in IN_PROGRESS. A park is stuck if it's marked IN_PROGRESS
+ * but has no research session that is genuinely still running (started within
+ * the last STUCK_SESSION_MINUTES) — e.g. a fire-and-forget run whose serverless
+ * invocation died before writing a terminal status. Orphaned IN_PROGRESS
+ * sessions are marked FAILED and the park is reset to a runnable resting state
+ * (PARTIAL if it has been researched before, else NEEDS_RESEARCH).
+ *
+ * Returns the number of parks reconciled. Cheap when nothing is stuck.
+ */
+export async function reconcileStuckResearch(): Promise<number> {
+  const threshold = new Date(Date.now() - STUCK_SESSION_MINUTES * 60_000);
+
+  const stuck = await prisma.park.findMany({
+    where: {
+      researchStatus: "IN_PROGRESS",
+      NOT: {
+        researchSessions: {
+          some: { status: "IN_PROGRESS", startedAt: { gte: threshold } },
+        },
+      },
+    },
+    select: { id: true, lastResearchedAt: true },
+  });
+
+  if (stuck.length === 0) return 0;
+
+  const ids = stuck.map((p) => p.id);
+  const researchedBefore = stuck
+    .filter((p) => p.lastResearchedAt !== null)
+    .map((p) => p.id);
+  const neverResearched = stuck
+    .filter((p) => p.lastResearchedAt === null)
+    .map((p) => p.id);
+
+  await prisma.researchSession.updateMany({
+    where: { parkId: { in: ids }, status: "IN_PROGRESS" },
+    data: {
+      status: "FAILED",
+      completedAt: new Date(),
+      errorMessage: "Reconciled: session orphaned or exceeded time limit.",
+    },
+  });
+
+  if (researchedBefore.length > 0) {
+    await prisma.park.updateMany({
+      where: { id: { in: researchedBefore } },
+      data: { researchStatus: "PARTIAL" },
+    });
+  }
+  if (neverResearched.length > 0) {
+    await prisma.park.updateMany({
+      where: { id: { in: neverResearched } },
+      data: { researchStatus: "NEEDS_RESEARCH" },
+    });
+  }
+
+  return stuck.length;
 }
 
 /**

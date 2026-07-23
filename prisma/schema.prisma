@@ -307,7 +307,8 @@ enum Ownership {
 
 enum ResearchStatus {
   NEEDS_RESEARCH
-  IN_PROGRESS
+  IN_PROGRESS // a research session is actively running right now
+  PARTIAL // ran at least once but hasn't graduated (incomplete / awaiting review)
   RESEARCHED
   MAINTENANCE
 }

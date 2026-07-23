@@ -11,6 +11,7 @@ export async function GET() {
     totalParks,
     needsResearch,
     inProgress,
+    partial,
     researched,
     maintenance,
     pendingReviewCount,
@@ -21,6 +22,7 @@ export async function GET() {
     prisma.park.count(),
     prisma.park.count({ where: { researchStatus: "NEEDS_RESEARCH" } }),
     prisma.park.count({ where: { researchStatus: "IN_PROGRESS" } }),
+    prisma.park.count({ where: { researchStatus: "PARTIAL" } }),
     prisma.park.count({ where: { researchStatus: "RESEARCHED" } }),
     prisma.park.count({ where: { researchStatus: "MAINTENANCE" } }),
     prisma.fieldExtraction.count({ where: { status: "PENDING_REVIEW" } }),
@@ -36,6 +38,7 @@ export async function GET() {
   const parksByResearchStatus: Record<ResearchStatus, number> = {
     NEEDS_RESEARCH: needsResearch,
     IN_PROGRESS: inProgress,
+    PARTIAL: partial,
     RESEARCHED: researched,
     MAINTENANCE: maintenance,
   };
