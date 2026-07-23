@@ -16,6 +16,7 @@ const makeDomain = (
   domainPattern: ".gov",
   defaultReliability: 80,
   isBlocked: false,
+  locked: false,
   notes: "Government sites",
   createdAt: "2026-04-01T00:00:00Z",
   ...overrides,

@@ -1,5 +1,7 @@
 import { prisma } from "@/lib/prisma";
 import { getDomainAccuracyStats } from "@/lib/ai/feedback-loop";
+import { computeDomainAdjustments } from "@/lib/ai/domain-tuning";
+import { DomainSuggestions } from "@/components/admin/DomainSuggestions";
 import Link from "next/link";
 import {
   DollarSign,
@@ -46,6 +48,24 @@ export default async function AIResearchPage() {
   ]);
 
   const totalCost = costResult._sum.estimatedCostUSD ?? 0;
+
+  // Surface one-click block suggestions from the same logic the nightly tuner
+  // uses, annotated with the existing DomainReliability row id (if any).
+  const domainRows = await prisma.domainReliability.findMany({
+    select: {
+      id: true,
+      domainPattern: true,
+      defaultReliability: true,
+      isBlocked: true,
+      locked: true,
+    },
+  });
+  const { blockSuggestions } = computeDomainAdjustments(domainAccuracy, domainRows);
+  const domainSuggestions = blockSuggestions.map((s) => ({
+    ...s,
+    existingId:
+      domainRows.find((r) => r.domainPattern === s.domainPattern)?.id ?? null,
+  }));
 
   return (
     <div className="space-y-6">
@@ -119,6 +139,7 @@ export default async function AIResearchPage() {
           <BarChart3 className="w-5 h-5 text-muted-foreground" />
           <h2 className="text-lg font-semibold text-foreground">Domain Accuracy</h2>
         </div>
+        <DomainSuggestions suggestions={domainSuggestions} />
         {domainAccuracy.length === 0 ? (
           <p className="text-muted-foreground text-sm">No extraction reviews yet. Approve or reject extractions to see accuracy data.</p>
         ) : (

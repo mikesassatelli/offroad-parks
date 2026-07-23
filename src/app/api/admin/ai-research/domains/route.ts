@@ -16,6 +16,7 @@ export async function GET() {
     domainPattern: d.domainPattern,
     defaultReliability: d.defaultReliability,
     isBlocked: d.isBlocked,
+    locked: d.locked,
     notes: d.notes,
     createdAt: d.createdAt.toISOString(),
   }));
@@ -28,7 +29,7 @@ export async function POST(request: Request) {
   if (adminResult instanceof NextResponse) return adminResult;
 
   const body = await request.json();
-  const { domainPattern, defaultReliability, isBlocked, notes } = body;
+  const { domainPattern, defaultReliability, isBlocked, locked, notes } = body;
 
   if (!domainPattern || typeof domainPattern !== "string" || !domainPattern.trim()) {
     return NextResponse.json(
@@ -65,6 +66,7 @@ export async function POST(request: Request) {
       domainPattern: domainPattern.trim(),
       defaultReliability,
       isBlocked: isBlocked ?? false,
+      locked: locked ?? false,
       notes: notes || null,
     },
   });
@@ -76,6 +78,7 @@ export async function POST(request: Request) {
       domainPattern: domain.domainPattern,
       defaultReliability: domain.defaultReliability,
       isBlocked: domain.isBlocked,
+      locked: domain.locked,
       notes: domain.notes,
       createdAt: domain.createdAt.toISOString(),
     } satisfies DomainReliabilitySummary,
@@ -87,7 +90,7 @@ export async function PATCH(request: Request) {
   if (adminResult instanceof NextResponse) return adminResult;
 
   const body = await request.json();
-  const { id, defaultReliability, isBlocked, notes } = body;
+  const { id, defaultReliability, isBlocked, locked, notes } = body;
 
   if (!id) {
     return NextResponse.json({ error: "id is required" }, { status: 400 });
@@ -123,6 +126,10 @@ export async function PATCH(request: Request) {
     updateData.isBlocked = Boolean(isBlocked);
   }
 
+  if (locked !== undefined) {
+    updateData.locked = Boolean(locked);
+  }
+
   if (notes !== undefined) {
     updateData.notes = notes || null;
   }
@@ -139,6 +146,7 @@ export async function PATCH(request: Request) {
       domainPattern: updated.domainPattern,
       defaultReliability: updated.defaultReliability,
       isBlocked: updated.isBlocked,
+      locked: updated.locked,
       notes: updated.notes,
       createdAt: updated.createdAt.toISOString(),
     } satisfies DomainReliabilitySummary,

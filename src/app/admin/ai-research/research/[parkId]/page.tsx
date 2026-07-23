@@ -88,6 +88,7 @@ export default async function ParkResearchWorkspacePage({
     domainPattern: d.domainPattern,
     defaultReliability: d.defaultReliability,
     isBlocked: d.isBlocked,
+    locked: d.locked,
     notes: d.notes,
     createdAt: d.createdAt.toISOString(),
   }));

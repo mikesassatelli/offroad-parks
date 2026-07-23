@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
-import { Plus, Pencil, Trash2, Check, X } from "lucide-react";
+import { Plus, Pencil, Trash2, Check, X, Lock, LockOpen } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import type { DomainReliabilitySummary } from "@/lib/types";
 
@@ -89,6 +89,20 @@ export function DomainReliabilityTable({ domains }: Props) {
       }
     } finally {
       setSaving(false);
+    }
+  };
+
+  const handleToggleLock = async (id: string, locked: boolean) => {
+    const response = await fetch("/api/admin/ai-research/domains", {
+      method: "PATCH",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ id, locked: !locked }),
+    });
+    if (response.ok) {
+      router.refresh();
+    } else {
+      const data = await response.json();
+      alert(data.error || "Failed to update lock");
     }
   };
 
@@ -276,13 +290,26 @@ export function DomainReliabilityTable({ domains }: Props) {
                         />
                         Blocked
                       </label>
-                    ) : domain.isBlocked ? (
-                      <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium border bg-red-100 dark:bg-red-900/30 text-red-800 dark:text-red-300 border-red-200 dark:border-red-900/50">
-                        Blocked
-                      </span>
                     ) : (
-                      <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium border bg-green-100 dark:bg-green-900/30 text-green-800 dark:text-green-300 border-green-200 dark:border-green-900/50">
-                        Active
+                      <span className="inline-flex items-center gap-1.5">
+                        {domain.isBlocked ? (
+                          <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium border bg-red-100 dark:bg-red-900/30 text-red-800 dark:text-red-300 border-red-200 dark:border-red-900/50">
+                            Blocked
+                          </span>
+                        ) : (
+                          <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium border bg-green-100 dark:bg-green-900/30 text-green-800 dark:text-green-300 border-green-200 dark:border-green-900/50">
+                            Active
+                          </span>
+                        )}
+                        {domain.locked && (
+                          <span
+                            title="Score pinned — skipped by nightly auto-tuning"
+                            className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-medium border bg-muted text-muted-foreground border-border"
+                          >
+                            <Lock className="w-2.5 h-2.5" />
+                            Pinned
+                          </span>
+                        )}
                       </span>
                     )}
                   </td>
@@ -326,6 +353,25 @@ export function DomainReliabilityTable({ domains }: Props) {
                         </>
                       ) : (
                         <>
+                          <Button
+                            variant="ghost"
+                            size="icon-sm"
+                            onClick={() =>
+                              handleToggleLock(domain.id, domain.locked)
+                            }
+                            title={
+                              domain.locked
+                                ? "Unpin — allow auto-tuning"
+                                : "Pin score — skip auto-tuning"
+                            }
+                            className="text-muted-foreground hover:text-primary hover:bg-primary/10"
+                          >
+                            {domain.locked ? (
+                              <Lock className="w-4 h-4" />
+                            ) : (
+                              <LockOpen className="w-4 h-4" />
+                            )}
+                          </Button>
                           <Button
                             variant="ghost"
                             size="icon-sm"
