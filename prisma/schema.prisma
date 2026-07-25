@@ -180,6 +180,7 @@ model Park {
   parkClaims       ParkClaim[]
   editLogs         ParkEditLog[]
   parkAlerts       ParkAlert[]
+  mapMarkers       ParkMapMarker[]
 
   // AI Research fields
   dataSources          DataSource[]
@@ -888,4 +889,47 @@ model ParkAlert {
   @@index([parkId, isActive])
   @@index([parkId, category, isActive])
   @@index([expiresAt])
+}
+
+// ── Park Map Markers ─────────────────────────────────────────────────────────
+// Named POINT features that belong to a park but are NOT themselves
+// destinations — trailheads, campgrounds/recreation areas, staging lots, gates.
+// A park that is a trail *system* (e.g. Brock Creek) has several of these
+// rendered as pins on top of its trail-geometry overlay on the map. Distinct
+// from Park: markers are never searched, filtered, favorited, reviewed, or
+// AI-researched. See docs/poc/trail-overlay.md.
+//
+// `source`/`sourceRef`/`license` carry per-marker provenance so mixed-license
+// data (e.g. CC0 USFS trail lines + ODbL OpenStreetMap trailhead points) stays
+// auditable and attributable.
+model ParkMapMarker {
+  id        String        @id @default(cuid())
+  parkId    String
+  type      MapMarkerType
+  name      String
+  latitude  Float
+  longitude Float
+  notes     String?
+
+  // Provenance
+  source    String? // e.g. "OpenStreetMap", "USFS Recreation Sites", "operator"
+  sourceRef String? // e.g. "osm:node/10132771817"
+  license   String? // e.g. "ODbL", "CC0", "operator-provided"
+
+  park Park @relation(fields: [parkId], references: [id], onDelete: Cascade)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([parkId])
+}
+
+enum MapMarkerType {
+  TRAILHEAD
+  CAMPGROUND
+  RECREATION_AREA
+  STAGING
+  PARKING
+  GATE
+  POI
 }

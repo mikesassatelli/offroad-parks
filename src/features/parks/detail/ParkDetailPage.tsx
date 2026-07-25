@@ -33,6 +33,8 @@ import { TrailConditionsDisplay } from "@/features/trail-conditions/TrailConditi
 import { useReviews } from "@/hooks/useReviews";
 import { useParkReview } from "@/hooks/useParkReview";
 import { AppHeader } from "@/components/layout/AppHeader";
+import { findTrailOverlay } from "./trailOverlays";
+import type { TrailFeatureCollection } from "@/features/map/components/TrailOverlay";
 
 // Dynamically import map to avoid SSR issues
 const MapView = dynamic(
@@ -89,6 +91,33 @@ function ParkDetailPageInner({
   const router = useRouter();
   const { data: session } = useSession();
   const [showReviewForm, setShowReviewForm] = useState(false);
+
+  // Trail-geometry overlay for the Location tab. POC bridge: the trail *lines*
+  // are a static GeoJSON matched by park name (see ./trailOverlays); the point
+  // *markers* (trailheads / rec areas) come from park.mapMarkers in the DB.
+  const trailOverlayCfg = findTrailOverlay(park.name);
+  const overlayUrl = trailOverlayCfg?.geojsonUrl ?? null;
+  const [trailOverlay, setTrailOverlay] = useState<TrailFeatureCollection | null>(
+    null,
+  );
+  useEffect(() => {
+    if (!overlayUrl) return;
+    let cancelled = false;
+    fetch(overlayUrl)
+      .then((r) => (r.ok ? r.json() : null))
+      .then((data) => {
+        if (!cancelled) setTrailOverlay(data);
+      })
+      .catch(() => {
+        /* overlay is best-effort; leave it unset on failure */
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, [overlayUrl]);
+  // Only surface the overlay when one is configured for this park (guards the
+  // fetched state against a park that has no overlay).
+  const activeTrailOverlay = overlayUrl ? trailOverlay : null;
 
   const user = session?.user
     ? {
@@ -424,9 +453,18 @@ function ParkDetailPageInner({
                           below the search map's label threshold (9) and
                           there is only one marker so there is no overlap
                           risk. */}
+                      {/* When a trail overlay is configured for this park we
+                          frame the map on the trail network (initialCenter/
+                          Zoom) instead of the single park pin, and render the
+                          trail lines + point markers on top. Otherwise the map
+                          keeps its original single-park behaviour. */}
                       <MapView
                         parks={[park]}
-                        fitOnVisible
+                        trailOverlay={activeTrailOverlay}
+                        mapMarkers={park.mapMarkers}
+                        fitOnVisible={!trailOverlayCfg}
+                        initialCenter={trailOverlayCfg?.center}
+                        initialZoom={trailOverlayCfg?.zoom}
                         alwaysShowLabel
                         containerClassName="h-96 w-full rounded-lg overflow-hidden border shadow-sm"
                       />

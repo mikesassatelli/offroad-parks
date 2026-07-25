@@ -128,6 +128,17 @@ export default async function ParkPage({ params }: ParkPageProps) {
       // Include the operator-selected hero photo so the detail-page header
       // image can mirror the park-card image (heroSource = PHOTO).
       heroPhoto: { select: { id: true, url: true, status: true } },
+      // Point markers (trailheads / rec areas) for the Location-tab overlay.
+      mapMarkers: {
+        select: {
+          id: true,
+          type: true,
+          name: true,
+          latitude: true,
+          longitude: true,
+          notes: true,
+        },
+      },
     },
   });
 
