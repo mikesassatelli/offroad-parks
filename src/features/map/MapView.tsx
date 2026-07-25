@@ -8,6 +8,9 @@ import { MapVisibilityHandler } from "./components/MapVisibilityHandler";
 import { CustomWaypointMarker } from "./components/CustomWaypointMarker";
 import { ParkMarker } from "./components/ParkMarker";
 import { RoutePolylines } from "./components/RoutePolylines";
+import { TrailOverlay, type TrailFeatureCollection } from "./components/TrailOverlay";
+import { MapMarkerLayer } from "./components/MapMarkerLayer";
+import type { ParkMapMarker } from "@/lib/types";
 import "./utils/markers"; // Initialize marker icons
 import "leaflet/dist/leaflet.css";
 
@@ -126,6 +129,24 @@ interface MapViewProps {
    * would otherwise never show.
    */
   alwaysShowLabel?: boolean;
+  /**
+   * POC (trail-overlay): a GeoJSON FeatureCollection of trail LineStrings to
+   * draw on top of the base map, styled by managed-use. When omitted nothing
+   * changes — existing callers are unaffected. See TrailOverlay.
+   */
+  trailOverlay?: TrailFeatureCollection | null;
+  /**
+   * Point markers (trailheads, campgrounds/rec areas) drawn on top of the map.
+   * Optional — omitted callers render no extra markers.
+   */
+  mapMarkers?: ParkMapMarker[] | null;
+  /**
+   * Explicit map center/zoom override. Normally the map derives its center
+   * from the provided parks; the trail-overlay POC uses this to frame a trail
+   * system directly without a synthetic park. Both must be set to take effect.
+   */
+  initialCenter?: [number, number];
+  initialZoom?: number;
 }
 
 export function MapView({
@@ -141,6 +162,10 @@ export function MapView({
   fitOnVisibleZoom = 8,
   containerClassName,
   alwaysShowLabel = false,
+  trailOverlay,
+  mapMarkers,
+  initialCenter,
+  initialZoom,
 }: MapViewProps) {
   const [zoomLevel, setZoomLevel] = useState(4);
 
@@ -150,12 +175,13 @@ export function MapView({
   );
 
   const centerPosition: [number, number] = useMemo(() => {
+    if (initialCenter) return initialCenter;
     if (parksWithCoordinates.length === 0) {
       return [39.8283, -98.5795]; // Center of US
     }
     const firstPark = parksWithCoordinates[0];
     return [firstPark.coords!.lat, firstPark.coords!.lng];
-  }, [parksWithCoordinates]);
+  }, [parksWithCoordinates, initialCenter]);
 
   const wrapperClassName =
     containerClassName ??
@@ -169,11 +195,17 @@ export function MapView({
       ? parksWithCoordinates[0]
       : undefined;
 
+  // The Leaflet "stale container size" fix must run whenever the map is
+  // rendered inside a lazily-shown panel — both the single-park detail case
+  // (recenters on the park) and the explicit-center case (invalidateSize only,
+  // preserving the caller's initialCenter/initialZoom framing).
+  const needsVisibilityFix = !!visibilityCenter || !!initialCenter;
+
   return (
     <div className={wrapperClassName}>
       <MapContainer
         center={centerPosition}
-        zoom={fitOnVisible ? fitOnVisibleZoom : 4}
+        zoom={initialZoom ?? (fitOnVisible ? fitOnVisibleZoom : 4)}
         style={{ height: "100%", width: "100%" }}
         scrollWheelZoom={true}
       >
@@ -181,11 +213,21 @@ export function MapView({
           attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
           url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
         />
-        <MapBoundsHandler
-          parks={parksWithCoordinates}
-          waypoints={routeWaypoints.length > 0 ? routeWaypoints : undefined}
-        />
-        {visibilityCenter && (
+        {/* POC: OHV trail-network overlay (managed-use styled) */}
+        {trailOverlay && <TrailOverlay data={trailOverlay} />}
+        {/* Point markers: trailheads, campgrounds/rec areas */}
+        {mapMarkers && mapMarkers.length > 0 && (
+          <MapMarkerLayer markers={mapMarkers} />
+        )}
+        {/* When an explicit center is supplied the caller frames the map
+            itself (e.g. the trail-overlay POC), so skip auto-fit. */}
+        {!initialCenter && (
+          <MapBoundsHandler
+            parks={parksWithCoordinates}
+            waypoints={routeWaypoints.length > 0 ? routeWaypoints : undefined}
+          />
+        )}
+        {needsVisibilityFix && (
           <MapVisibilityHandler
             center={visibilityCenter}
             zoom={fitOnVisibleZoom}

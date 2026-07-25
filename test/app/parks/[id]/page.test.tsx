@@ -277,6 +277,16 @@ describe("Park Detail Page", () => {
           address: true,
           operator: { select: { name: true } },
           heroPhoto: { select: { id: true, url: true, status: true } },
+          mapMarkers: {
+            select: {
+              id: true,
+              type: true,
+              name: true,
+              latitude: true,
+              longitude: true,
+              notes: true,
+            },
+          },
         },
       });
     });

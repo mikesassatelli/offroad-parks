@@ -59,6 +59,23 @@ export function createCustomWaypointIcon(emoji = "📍", color = "orange") {
   return createTeardropIcon(bg, border, emoji, "13px", 26);
 }
 
+// Park map markers (trailheads / rec areas) — teardrop with a type emoji.
+const MAP_MARKER_STYLE: Record<string, { emoji: string; color: string }> = {
+  TRAILHEAD: { emoji: "🥾", color: "blue" },
+  CAMPGROUND: { emoji: "🏕️", color: "green" },
+  RECREATION_AREA: { emoji: "🏕️", color: "green" },
+  STAGING: { emoji: "🅿️", color: "purple" },
+  PARKING: { emoji: "🅿️", color: "purple" },
+  GATE: { emoji: "⛔", color: "red" },
+  POI: { emoji: "📍", color: "orange" },
+};
+
+export function createMapMarkerIcon(type: string) {
+  const style = MAP_MARKER_STYLE[type] ?? MAP_MARKER_STYLE.POI;
+  const { bg, border } = PIN_COLORS[style.color] ?? PIN_COLORS.blue;
+  return createTeardropIcon(bg, border, style.emoji, "14px", 30);
+}
+
 // Unselected park pin — small solid circle, forest green
 export const defaultParkIcon = (() => {
   const size = 14;

@@ -88,6 +88,26 @@ export type ParkCandidateStatus = "PENDING" | "ACCEPTED" | "REJECTED";
 // Ownership type
 export type Ownership = "private" | "public" | "mixed" | "unknown";
 
+// Point features attached to a park (trailheads, campgrounds/rec areas, etc.).
+// Mirrors the Prisma `MapMarkerType` enum.
+export type MapMarkerType =
+  | "TRAILHEAD"
+  | "CAMPGROUND"
+  | "RECREATION_AREA"
+  | "STAGING"
+  | "PARKING"
+  | "GATE"
+  | "POI";
+
+export type ParkMapMarker = {
+  id: string;
+  type: MapMarkerType;
+  name: string;
+  lat: number;
+  lng: number;
+  notes?: string;
+};
+
 // Review system types
 export type ReviewStatus = "PENDING" | "APPROVED" | "HIDDEN";
 
@@ -189,6 +209,7 @@ export type DbPark = {
   address: DbAddress | null; // May be null from Prisma, but we ensure it exists for approved parks
   photos?: Array<{ id?: string; parkId?: string; userId?: string | null; url: string; caption?: string | null; status?: string; createdAt?: Date; updatedAt?: Date }>;
   trailConditions?: Array<{ id: string; status: string; reportStatus: string; createdAt: Date }>;
+  mapMarkers?: Array<{ id: string; type: MapMarkerType; name: string; latitude: number; longitude: number; notes: string | null }>;
 };
 
 // Client-facing park type (transformed for UI compatibility)
@@ -250,6 +271,8 @@ export type Park = {
   alertSummary?: ParkCardAlertSummary | null;
   // Operator
   hasOperator?: boolean;
+  // Point markers (trailheads, rec areas) for the Location-tab map overlay.
+  mapMarkers?: ParkMapMarker[];
 };
 
 /** Compact alert state shown as pills on a park card. */
@@ -406,6 +429,15 @@ export function transformDbPark(dbPark: DbPark): Park {
       : undefined,
     // Operator
     hasOperator: dbPark.operatorId != null,
+    // Point markers (only present when the caller includes the relation)
+    mapMarkers: dbPark.mapMarkers?.map((m) => ({
+      id: m.id,
+      type: m.type,
+      name: m.name,
+      lat: m.latitude,
+      lng: m.longitude,
+      notes: m.notes ?? undefined,
+    })),
   };
 }
 
