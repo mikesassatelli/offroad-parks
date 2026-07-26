@@ -92,21 +92,26 @@ function ParkDetailPageInner({
   const { data: session } = useSession();
   const [showReviewForm, setShowReviewForm] = useState(false);
 
-  // Trail-geometry overlay for the Location tab. POC bridge: the trail *lines*
-  // are a static GeoJSON matched by park name (see ./trailOverlays); the point
-  // *markers* (trailheads / rec areas) come from park.mapMarkers in the DB.
+  // Trail-geometry overlay for the Location tab. Source priority:
+  //   1. DB — park.trailGeometry.geojson (ParkTrailGeometry table).
+  //   2. Fallback — a bundled static GeoJSON matched by park name
+  //      (./trailOverlays), which keeps rendering if the DB row is absent.
+  // Point *markers* (trailheads / rec areas) come from park.mapMarkers.
   const trailOverlayCfg = findTrailOverlay(park.name);
-  const overlayUrl = trailOverlayCfg?.geojsonUrl ?? null;
-  const [trailOverlay, setTrailOverlay] = useState<TrailFeatureCollection | null>(
-    null,
-  );
+  const dbTrailGeometry =
+    (park.trailGeometry?.geojson as TrailFeatureCollection | undefined) ?? null;
+  const overlayUrl = !dbTrailGeometry
+    ? (trailOverlayCfg?.geojsonUrl ?? null)
+    : null;
+  const [fetchedOverlay, setFetchedOverlay] =
+    useState<TrailFeatureCollection | null>(null);
   useEffect(() => {
     if (!overlayUrl) return;
     let cancelled = false;
     fetch(overlayUrl)
       .then((r) => (r.ok ? r.json() : null))
       .then((data) => {
-        if (!cancelled) setTrailOverlay(data);
+        if (!cancelled) setFetchedOverlay(data);
       })
       .catch(() => {
         /* overlay is best-effort; leave it unset on failure */
@@ -115,9 +120,8 @@ function ParkDetailPageInner({
       cancelled = true;
     };
   }, [overlayUrl]);
-  // Only surface the overlay when one is configured for this park (guards the
-  // fetched state against a park that has no overlay).
-  const activeTrailOverlay = overlayUrl ? trailOverlay : null;
+  const activeTrailOverlay =
+    dbTrailGeometry ?? (overlayUrl ? fetchedOverlay : null);
 
   const user = session?.user
     ? {

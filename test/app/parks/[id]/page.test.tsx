@@ -287,6 +287,14 @@ describe("Park Detail Page", () => {
               notes: true,
             },
           },
+          trailGeometry: {
+            select: {
+              geojson: true,
+              featureCount: true,
+              sourceName: true,
+              license: true,
+            },
+          },
         },
       });
     });

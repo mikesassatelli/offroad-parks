@@ -210,6 +210,12 @@ export type DbPark = {
   photos?: Array<{ id?: string; parkId?: string; userId?: string | null; url: string; caption?: string | null; status?: string; createdAt?: Date; updatedAt?: Date }>;
   trailConditions?: Array<{ id: string; status: string; reportStatus: string; createdAt: Date }>;
   mapMarkers?: Array<{ id: string; type: MapMarkerType; name: string; latitude: number; longitude: number; notes: string | null }>;
+  trailGeometry?: {
+    geojson: unknown;
+    featureCount: number | null;
+    sourceName: string | null;
+    license: string | null;
+  } | null;
 };
 
 // Client-facing park type (transformed for UI compatibility)
@@ -273,6 +279,13 @@ export type Park = {
   hasOperator?: boolean;
   // Point markers (trailheads, rec areas) for the Location-tab map overlay.
   mapMarkers?: ParkMapMarker[];
+  // Trail-network line geometry (GeoJSON FeatureCollection), when present.
+  trailGeometry?: {
+    geojson: unknown;
+    featureCount?: number;
+    sourceName?: string;
+    license?: string;
+  } | null;
 };
 
 /** Compact alert state shown as pills on a park card. */
@@ -438,6 +451,14 @@ export function transformDbPark(dbPark: DbPark): Park {
       lng: m.longitude,
       notes: m.notes ?? undefined,
     })),
+    trailGeometry: dbPark.trailGeometry
+      ? {
+          geojson: dbPark.trailGeometry.geojson,
+          featureCount: dbPark.trailGeometry.featureCount ?? undefined,
+          sourceName: dbPark.trailGeometry.sourceName ?? undefined,
+          license: dbPark.trailGeometry.license ?? undefined,
+        }
+      : undefined,
   };
 }
 
