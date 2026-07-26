@@ -56,7 +56,7 @@ model User {
   parkClaims       ParkClaim[]
   parkEditLogs     ParkEditLog[]
   routes           Route[]
-  searchPreference UserSearchPreference?
+  savedFilters     SavedSearchFilter[]
   parkAlerts       ParkAlert[]
 
   createdAt DateTime @default(now())
@@ -667,22 +667,25 @@ model ParkEditLog {
   @@index([createdAt])
 }
 
-// Saved Filters panel default — one row per user.
-// Persists a user's preferred park-search Filters panel state so it can be
-// auto-applied on their next visit and restored on demand.
+// Saved Filters panel presets — many named presets per user.
+// A user builds a Filters panel state and saves it under a name; presets are
+// applied manually from the Presets control (no auto-apply on load).
 //
 // The `filters` Json blob holds the full Filters panel state shape (state,
 // vehicle types, terrain, amenities, camping, rating, sliders, etc.).
-// Schema is validated server-side on upsert via Zod (userSearchPreferenceSchema).
-model UserSearchPreference {
+// Schema is validated server-side via Zod (savedSearchFiltersSchema). Names are
+// unique per user; the API caps the number of presets per user.
+model SavedSearchFilter {
   id        String   @id @default(cuid())
-  userId    String   @unique
+  userId    String
+  name      String
   filters   Json
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
   user User @relation(fields: [userId], references: [id], onDelete: Cascade)
 
+  @@unique([userId, name])
   @@index([userId])
 }
 

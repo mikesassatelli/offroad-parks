@@ -7,10 +7,10 @@ import type { Park, SavedRoute } from "@/lib/types";
 import { useFilteredParks } from "@/hooks/useFilteredParks";
 import { useFavorites } from "@/hooks/useFavorites";
 import { useRouteBuilder } from "@/hooks/useRouteBuilder";
-import { useSearchPreferences } from "@/hooks/useSearchPreferences";
+import { useSearchPresets } from "@/hooks/useSearchPresets";
+import { useSignInPrompt } from "@/components/auth/SignInPromptProvider";
 import { useParkList, useParkMarkers } from "@/hooks/useServerParks";
 import { haversineDistance } from "@/lib/geo";
-import { FILTER_QUERY_KEYS } from "@/lib/search-preferences";
 import {
   buildParkQueryString,
   parkFilterParamsToState,
@@ -182,40 +182,26 @@ function OffroadParksAppInner({
   });
 
   const {
-    preference,
-    hasPreference,
+    presets,
     isAuthenticated,
-    isSaving: isSavingPreference,
-    savePreference,
-  } = useSearchPreferences();
+    isSaving: isSavingPreset,
+    createPreset,
+    deletePreset,
+  } = useSearchPresets();
+  const { promptSignIn } = useSignInPrompt();
 
-  // Auto-apply the saved default on first load — unless the URL already
-  // carries filter query params, in which case the explicit URL state wins.
-  const autoAppliedRef = useRef(false);
-  useEffect(() => {
-    if (autoAppliedRef.current) return;
-    if (!preference?.filters) return;
-    if (typeof window !== "undefined") {
-      const search = new URLSearchParams(window.location.search);
-      const urlHasFilters = FILTER_QUERY_KEYS.some((key) => search.has(key));
-      if (urlHasFilters) {
-        autoAppliedRef.current = true;
-        return;
-      }
-    }
-    applyFilters(preference.filters);
-    autoAppliedRef.current = true;
-  }, [preference, applyFilters]);
-
-  const handleSaveAsDefault = async () => {
-    await savePreference(getCurrentFilters());
+  const handleApplyPreset = (id: string) => {
+    const preset = presets.find((p) => p.id === id);
+    if (preset) applyFilters(preset.filters);
   };
 
-  const handleResetToDefault = async () => {
-    if (preference?.filters) {
-      applyFilters(preference.filters);
-    }
-  };
+  const handleSavePreset = (name: string) =>
+    createPreset(name, getCurrentFilters());
+
+  const handleSignInToSavePresets = () =>
+    promptSignIn({
+      description: "Sign in to save your search filters as presets.",
+    });
 
   const handleUseMyLocation = () => {
     if (!navigator.geolocation) return;
@@ -384,11 +370,13 @@ function OffroadParksAppInner({
       sparkArrestorRequired={sparkArrestorRequired}
       onSparkArrestorRequiredChange={setSparkArrestorRequired}
       onClearFilters={clearAllFilters}
-      showSavedDefaultsControls={isAuthenticated}
-      hasSavedDefault={hasPreference}
-      isSavingDefault={isSavingPreference}
-      onSaveAsDefault={handleSaveAsDefault}
-      onResetToDefault={handleResetToDefault}
+      isAuthenticated={isAuthenticated}
+      presets={presets}
+      onApplyPreset={handleApplyPreset}
+      onSavePreset={handleSavePreset}
+      onDeletePreset={deletePreset}
+      isSavingPreset={isSavingPreset}
+      onSignInToSave={handleSignInToSavePresets}
     />
   );
 
