@@ -61,11 +61,16 @@ const WelcomeContext = createContext<WelcomeContextValue | null>(null);
 export function WelcomeProvider({ children }: { children: React.ReactNode }) {
   const mounted = useIsMounted();
   const [manualOpen, setManualOpen] = useState(false);
+  const [dismissed, setDismissed] = useState(false);
 
-  // Auto-open only on the client, only until the visitor has dismissed it once.
-  // `hasSeenWelcome()` is short-circuited behind `mounted`, so it never runs on
-  // the server. Once dismissed we write the flag, so this flips to false.
-  const autoOpen = mounted && !hasSeenWelcome();
+  // Auto-open only on the client, only until the visitor dismisses it. The
+  // `dismissed` React state is what makes a close re-render: on a first visit
+  // `open` is driven purely by `autoOpen`, so `manualOpen` never flipped and a
+  // bare `setManualOpen(false)` would be a no-op that React bails out of,
+  // leaving the dialog stuck open. Flipping `dismissed` forces the re-render.
+  // `hasSeenWelcome()` (short-circuited behind `mounted`, so it never runs on
+  // the server) keeps it from auto-opening again on later page loads.
+  const autoOpen = mounted && !dismissed && !hasSeenWelcome();
   const open = manualOpen || autoOpen;
 
   const handleOpenChange = useCallback((next: boolean) => {
@@ -74,6 +79,7 @@ export function WelcomeProvider({ children }: { children: React.ReactNode }) {
     } else {
       markSeen();
       setManualOpen(false);
+      setDismissed(true);
     }
   }, []);
 
