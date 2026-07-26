@@ -76,7 +76,7 @@ export type ResearchStatus =
   | "PARTIAL"
   | "RESEARCHED"
   | "MAINTENANCE";
-export type DataSourceType = "website" | "pdf" | "facebook" | "governmentPage" | "reviewSite" | "campingDirectory" | "other";
+export type DataSourceType = "website" | "pdf" | "facebook" | "governmentPage" | "reviewSite" | "campingDirectory" | "googlePlaces" | "other";
 export type DataSourceOrigin = "OPERATOR_PROVIDED" | "AI_DISCOVERED" | "ADMIN_ADDED" | "USER_SUBMITTED";
 export type CrawlStatus = "PENDING" | "SUCCESS" | "FAILED" | "ROBOTS_BLOCKED" | "SKIPPED" | "WRONG_PARK";
 export type FieldConfidence = "OPERATOR_CONFIRMED" | "HUMAN_VERIFIED" | "AI_EXTRACTED" | "USER_SUBMITTED" | "AI_INFERRED" | "NOT_FOUND";
@@ -163,6 +163,7 @@ export type DbPark = {
   mapHeroGeneratedAt: Date | null;
   // AI Research fields
   dataCompletenessScore: number | null;
+  googlePlaceId: string | null;
   lastResearchedAt: Date | null;
   researchPriority: number;
   researchStatus: ResearchStatus;
