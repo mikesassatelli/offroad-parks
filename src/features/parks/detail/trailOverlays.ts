@@ -25,6 +25,18 @@ const TRAIL_OVERLAYS: TrailOverlayConfig[] = [
     center: [35.5143, -92.8117],
     zoom: 13,
   },
+  {
+    match: /moccasin/i,
+    geojsonUrl: "/poc/moccasin-gap-trails.geojson",
+    center: [35.5694, -93.1008],
+    zoom: 13,
+  },
+  {
+    match: /buckhorn/i,
+    geojsonUrl: "/poc/buckhorn-trails.geojson",
+    center: [35.7289, -94.3087],
+    zoom: 13,
+  },
 ];
 
 export function findTrailOverlay(parkName: string): TrailOverlayConfig | null {

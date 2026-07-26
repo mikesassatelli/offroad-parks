@@ -139,6 +139,15 @@ export default async function ParkPage({ params }: ParkPageProps) {
           notes: true,
         },
       },
+      // Trail-network line geometry for the Location-tab overlay.
+      trailGeometry: {
+        select: {
+          geojson: true,
+          featureCount: true,
+          sourceName: true,
+          license: true,
+        },
+      },
     },
   });
 
