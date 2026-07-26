@@ -1,6 +1,8 @@
 import "@/app/globals.css";
 import { Analytics } from "@vercel/analytics/next";
 import { ThemeProvider } from "@/components/ThemeProvider";
+import { SignInPromptProvider } from "@/components/auth/SignInPromptProvider";
+import { WelcomeProvider } from "@/components/welcome/WelcomeProvider";
 import { CookieConsent } from "@/components/CookieConsent";
 import { SiteFooter } from "@/components/layout/SiteFooter";
 import { SITE_URL } from "@/lib/site";
@@ -37,9 +39,13 @@ export default function RootLayout({
     <html lang="en" suppressHydrationWarning>
       <body className="min-h-screen bg-background">
         <ThemeProvider>
-          {children}
-          <SiteFooter />
-          <CookieConsent />
+          <WelcomeProvider>
+            <SignInPromptProvider>
+              {children}
+              <SiteFooter />
+              <CookieConsent />
+            </SignInPromptProvider>
+          </WelcomeProvider>
         </ThemeProvider>
         <Analytics />
       </body>

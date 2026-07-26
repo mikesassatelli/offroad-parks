@@ -10,7 +10,8 @@ import { RouteListHeader } from "./components/RouteListHeader";
 import { RouteListItem } from "./components/RouteListItem";
 import { ShareRouteDialog } from "./ShareRouteDialog";
 import { Button } from "@/components/ui/button";
-import { Check, Copy, Loader2, MapPin, Share2, X } from "lucide-react";
+import { useSignInPrompt } from "@/components/auth/SignInPromptProvider";
+import { Check, Copy, Loader2, LogIn, MapPin, Share2, X } from "lucide-react";
 
 interface RouteListProps {
   waypoints: RouteWaypoint[];
@@ -79,6 +80,7 @@ export function RouteList({
 }: RouteListProps) {
   const { data: session } = useSession();
   const isAuthenticated = !!session?.user;
+  const { promptSignIn } = useSignInPrompt();
 
   // Support legacy prop shape
   const waypoints = waypointsProp ?? routeParks ?? [];
@@ -430,6 +432,34 @@ export function RouteList({
                 </Button>
               </div>
             )}
+          </div>
+        )}
+
+        {/* Signed-out nudge: routes can only be saved with an account, so once
+            there's a route worth keeping (2+ waypoints) invite them to sign in.
+            Mirrors the authenticated Save & Share gating above. */}
+        {!isAuthenticated && waypoints.length >= 2 && (
+          <div className="mt-4 pt-4 border-t">
+            <p className="text-xs font-semibold uppercase tracking-widest text-muted-foreground mb-2">
+              Save &amp; Share
+            </p>
+            <p className="text-xs text-muted-foreground mb-3">
+              Sign in to save this route to your account and share it with a link.
+            </p>
+            <Button
+              variant="default"
+              size="sm"
+              className="w-full"
+              onClick={() =>
+                promptSignIn({
+                  description:
+                    "Sign in to save your routes and share them with a link.",
+                })
+              }
+            >
+              <LogIn className="w-3 h-3 mr-1" />
+              Sign in to save
+            </Button>
           </div>
         )}
       </CardContent>
