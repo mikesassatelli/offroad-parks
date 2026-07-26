@@ -1,7 +1,6 @@
 import { render, screen } from "@testing-library/react";
 import SubmitParkPage from "@/app/submit/page";
 import { auth } from "@/lib/auth";
-import { redirect } from "next/navigation";
 import { vi } from "vitest";
 
 // Mock dependencies
@@ -11,6 +10,12 @@ vi.mock("@/lib/auth", () => ({
 
 vi.mock("next/navigation", () => ({
   redirect: vi.fn(),
+}));
+
+vi.mock("@/app/submit/SubmitSignInGate", () => ({
+  SubmitSignInGate: () => (
+    <div data-testid="submit-signin-gate">Sign in required</div>
+  ),
 }));
 
 vi.mock("next/link", () => ({
@@ -32,17 +37,16 @@ describe("SubmitParkPage", () => {
     vi.clearAllMocks();
   });
 
-  it("should redirect to signin when not authenticated", async () => {
+  it("should render the themed sign-in gate when not authenticated", async () => {
     vi.mocked(auth).mockResolvedValue(null as any);
-    vi.mocked(redirect).mockImplementation(() => {
-      throw new Error("NEXT_REDIRECT");
-    });
 
-    await expect(SubmitParkPage()).rejects.toThrow("NEXT_REDIRECT");
+    const component = await SubmitParkPage();
+    render(component);
 
-    expect(redirect).toHaveBeenCalledWith(
-      "/api/auth/signin?callbackUrl=/submit",
-    );
+    expect(screen.getByTestId("submit-signin-gate")).toBeInTheDocument();
+    expect(
+      screen.queryByTestId("park-submission-form"),
+    ).not.toBeInTheDocument();
   });
 
   it("should render submit page for authenticated user", async () => {
