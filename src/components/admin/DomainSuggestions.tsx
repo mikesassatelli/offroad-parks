@@ -4,6 +4,7 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { Loader2, ShieldAlert, Sparkles, Ban } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { ReadOnlyGate } from "@/components/admin/read-only";
 
 export type DomainBlockSuggestion = {
   domainPattern: string;
@@ -84,24 +85,26 @@ export function DomainSuggestions({ suggestions }: Props) {
         <p className="text-xs text-muted-foreground">
           Reliability scores auto-tune nightly from your approve/reject feedback.
         </p>
-        <Button
-          onClick={handleAutoTune}
-          disabled={tuning}
-          size="sm"
-          variant="outline"
-        >
-          {tuning ? (
-            <>
-              <Loader2 className="w-4 h-4 mr-1 animate-spin" />
-              Tuning...
-            </>
-          ) : (
-            <>
-              <Sparkles className="w-4 h-4 mr-1" />
-              Auto-tune now
-            </>
-          )}
-        </Button>
+        <ReadOnlyGate>
+          <Button
+            onClick={handleAutoTune}
+            disabled={tuning}
+            size="sm"
+            variant="outline"
+          >
+            {tuning ? (
+              <>
+                <Loader2 className="w-4 h-4 mr-1 animate-spin" />
+                Tuning...
+              </>
+            ) : (
+              <>
+                <Sparkles className="w-4 h-4 mr-1" />
+                Auto-tune now
+              </>
+            )}
+          </Button>
+        </ReadOnlyGate>
       </div>
 
       {tuneResult && (
@@ -140,20 +143,22 @@ export function DomainSuggestions({ suggestions }: Props) {
                     {Math.round(s.accuracy * 100)}% accurate over {s.reviewCount} reviews
                   </span>
                 </span>
-                <Button
-                  onClick={() => handleBlock(s)}
-                  disabled={blockingPattern !== null}
-                  size="sm"
-                  variant="outline"
-                  className="text-red-700 dark:text-red-400 border-red-300 dark:border-red-900/50 hover:bg-red-50 dark:hover:bg-red-900/20"
-                >
-                  {blockingPattern === s.domainPattern ? (
-                    <Loader2 className="w-4 h-4 mr-1 animate-spin" />
-                  ) : (
-                    <Ban className="w-4 h-4 mr-1" />
-                  )}
-                  Block
-                </Button>
+                <ReadOnlyGate>
+                  <Button
+                    onClick={() => handleBlock(s)}
+                    disabled={blockingPattern !== null}
+                    size="sm"
+                    variant="outline"
+                    className="text-red-700 dark:text-red-400 border-red-300 dark:border-red-900/50 hover:bg-red-50 dark:hover:bg-red-900/20"
+                  >
+                    {blockingPattern === s.domainPattern ? (
+                      <Loader2 className="w-4 h-4 mr-1 animate-spin" />
+                    ) : (
+                      <Ban className="w-4 h-4 mr-1" />
+                    )}
+                    Block
+                  </Button>
+                </ReadOnlyGate>
               </li>
             ))}
           </ul>

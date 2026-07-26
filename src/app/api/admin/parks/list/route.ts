@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
+import { canAdminView } from "@/lib/roles";
 
 export const runtime = "nodejs";
 
@@ -12,8 +13,7 @@ export async function GET() {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 
-  const userRole = (session.user as { role?: string })?.role;
-  if (userRole !== "ADMIN" && userRole !== "SUPER_ADMIN") {
+  if (!canAdminView(session.user.role)) {
     return NextResponse.json({ error: "Forbidden" }, { status: 403 });
   }
 

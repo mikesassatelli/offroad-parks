@@ -4,6 +4,7 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { Loader2, Layers } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { ReadOnlyGate } from "@/components/admin/read-only";
 
 type Props = {
   /** Park ids currently listed (the active filter/search result). */
@@ -74,23 +75,25 @@ export function BulkResearchBar({ parkIds, queuedCount }: Props) {
             )}
           </p>
         </div>
-        <Button
-          onClick={handleQueue}
-          disabled={submitting || parkIds.length === 0}
-          size="sm"
-        >
-          {submitting ? (
-            <>
-              <Loader2 className="w-4 h-4 mr-1 animate-spin" />
-              Queuing...
-            </>
-          ) : (
-            <>
-              <Layers className="w-4 h-4 mr-1" />
-              Queue {parkIds.length} park{parkIds.length === 1 ? "" : "s"}
-            </>
-          )}
-        </Button>
+        <ReadOnlyGate>
+          <Button
+            onClick={handleQueue}
+            disabled={submitting || parkIds.length === 0}
+            size="sm"
+          >
+            {submitting ? (
+              <>
+                <Loader2 className="w-4 h-4 mr-1 animate-spin" />
+                Queuing...
+              </>
+            ) : (
+              <>
+                <Layers className="w-4 h-4 mr-1" />
+                Queue {parkIds.length} park{parkIds.length === 1 ? "" : "s"}
+              </>
+            )}
+          </Button>
+        </ReadOnlyGate>
       </div>
       {result && (
         <div

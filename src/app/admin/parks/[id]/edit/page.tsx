@@ -2,6 +2,7 @@ import { notFound, redirect } from "next/navigation";
 import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { ParkSubmissionForm } from "@/components/forms/ParkSubmissionForm";
+import { canAdminView } from "@/lib/roles";
 
 interface EditParkPageProps {
   params: Promise<{
@@ -17,7 +18,7 @@ export default async function EditParkPage({ params }: EditParkPageProps) {
     redirect("/api/auth/signin");
   }
 
-  if (session.user.role !== "ADMIN" && session.user.role !== "SUPER_ADMIN") {
+  if (!canAdminView(session.user.role)) {
     redirect("/");
   }
 

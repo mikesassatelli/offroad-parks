@@ -55,6 +55,7 @@ export async function MapHeroesSection() {
         />
       </div>
 
+      {/* The runner self-gates its Run button for read-only viewers. */}
       <MapHeroBackfillRunner initialRemaining={needingBackfill} />
     </section>
   );

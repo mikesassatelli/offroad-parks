@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import Image from "next/image";
 import { Check, ExternalLink, Trash2, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { ReadOnlyGate } from "@/components/admin/read-only";
 import Link from "next/link";
 
 export interface ModerationPhoto {
@@ -136,33 +137,35 @@ export function PhotoModerationTable({
   };
 
   const renderPhotoActions = (photo: ModerationPhoto) => (
-    <div className="flex gap-2 pt-2">
-      {photo.status === "PENDING" && (
-        <>
-          <Button size="sm" onClick={() => handleApprove(photo.id)} disabled={processingId === photo.id} className="flex-1">
-            <Check className="w-4 h-4 mr-1" /> Approve
+    <ReadOnlyGate>
+      <div className="flex gap-2 pt-2">
+        {photo.status === "PENDING" && (
+          <>
+            <Button size="sm" onClick={() => handleApprove(photo.id)} disabled={processingId === photo.id} className="flex-1">
+              <Check className="w-4 h-4 mr-1" /> Approve
+            </Button>
+            <Button size="sm" variant="destructive" onClick={() => handleReject(photo.id)} disabled={processingId === photo.id} className="flex-1">
+              <X className="w-4 h-4 mr-1" /> Reject
+            </Button>
+          </>
+        )}
+        {photo.status === "REJECTED" && (
+          <>
+            <Button size="sm" onClick={() => handleApprove(photo.id)} disabled={processingId === photo.id} className="flex-1">
+              <Check className="w-4 h-4 mr-1" /> Approve
+            </Button>
+            <Button size="sm" variant="destructive" onClick={() => handleDelete(photo.id)} disabled={processingId === photo.id}>
+              <Trash2 className="w-4 h-4" />
+            </Button>
+          </>
+        )}
+        {photo.status === "APPROVED" && (
+          <Button size="sm" variant="destructive" onClick={() => handleDelete(photo.id)} disabled={processingId === photo.id} className="flex-1">
+            <Trash2 className="w-4 h-4 mr-1" /> Delete
           </Button>
-          <Button size="sm" variant="destructive" onClick={() => handleReject(photo.id)} disabled={processingId === photo.id} className="flex-1">
-            <X className="w-4 h-4 mr-1" /> Reject
-          </Button>
-        </>
-      )}
-      {photo.status === "REJECTED" && (
-        <>
-          <Button size="sm" onClick={() => handleApprove(photo.id)} disabled={processingId === photo.id} className="flex-1">
-            <Check className="w-4 h-4 mr-1" /> Approve
-          </Button>
-          <Button size="sm" variant="destructive" onClick={() => handleDelete(photo.id)} disabled={processingId === photo.id}>
-            <Trash2 className="w-4 h-4" />
-          </Button>
-        </>
-      )}
-      {photo.status === "APPROVED" && (
-        <Button size="sm" variant="destructive" onClick={() => handleDelete(photo.id)} disabled={processingId === photo.id} className="flex-1">
-          <Trash2 className="w-4 h-4 mr-1" /> Delete
-        </Button>
-      )}
-    </div>
+        )}
+      </div>
+    </ReadOnlyGate>
   );
 
   const renderPhotoCard = (photo: ModerationPhoto) => (

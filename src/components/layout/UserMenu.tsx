@@ -23,7 +23,10 @@ interface UserMenuProps {
 
 export function UserMenu({ user, onSignOut }: UserMenuProps) {
   const isAdmin = user.role === "ADMIN" || user.role === "SUPER_ADMIN";
-  const showPrivilegedSection = isAdmin || user.role === "OPERATOR";
+  // Beta testers get read-only admin access — surface the Admin Panel link,
+  // but not operator tooling.
+  const canViewAdmin = isAdmin || user.role === "BETA_TESTER";
+  const showPrivilegedSection = canViewAdmin || user.role === "OPERATOR";
   return (
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
@@ -40,7 +43,7 @@ export function UserMenu({ user, onSignOut }: UserMenuProps) {
         {showPrivilegedSection && (
           <>
             <DropdownMenuSeparator />
-            {isAdmin && (
+            {canViewAdmin && (
               <DropdownMenuItem asChild>
                 <Link href="/admin" className="cursor-pointer">
                   <Settings className="w-4 h-4 mr-2" />
@@ -48,12 +51,14 @@ export function UserMenu({ user, onSignOut }: UserMenuProps) {
                 </Link>
               </DropdownMenuItem>
             )}
-            <DropdownMenuItem asChild>
-              <Link href="/operator" className="cursor-pointer">
-                <Building2 className="w-4 h-4 mr-2" />
-                Manage Parks
-              </Link>
-            </DropdownMenuItem>
+            {user.role !== "BETA_TESTER" && (
+              <DropdownMenuItem asChild>
+                <Link href="/operator" className="cursor-pointer">
+                  <Building2 className="w-4 h-4 mr-2" />
+                  Manage Parks
+                </Link>
+              </DropdownMenuItem>
+            )}
           </>
         )}
         <DropdownMenuSeparator />

@@ -9,13 +9,13 @@ declare module "next-auth" {
       name?: string | null;
       email?: string | null;
       image?: string | null;
-      /** User role — "USER" | "OPERATOR" | "ADMIN" | "SUPER_ADMIN" | undefined */
+      /** User role — "USER" | "OPERATOR" | "ADMIN" | "SUPER_ADMIN" | "BETA_TESTER" | undefined */
       role?: string;
     };
   }
 
   interface User {
-    /** User role stored in DB — "USER" | "OPERATOR" | "ADMIN" | "SUPER_ADMIN" | null */
+    /** User role stored in DB — "USER" | "OPERATOR" | "ADMIN" | "SUPER_ADMIN" | "BETA_TESTER" | null */
     role?: string | null;
   }
 }

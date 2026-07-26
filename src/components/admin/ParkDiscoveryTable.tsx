@@ -13,6 +13,7 @@ import {
   ListPlus,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { ReadOnlyGate } from "@/components/admin/read-only";
 import type { ParkCandidateSummary } from "@/lib/types";
 import Link from "next/link";
 
@@ -291,23 +292,25 @@ export function ParkDiscoveryTable({ candidates }: Props) {
               ))}
             </select>
           </div>
-          <Button
-            onClick={handleDiscover}
-            disabled={discovering || !discoverState}
-            size="sm"
-          >
-            {discovering ? (
-              <>
-                <Loader2 className="w-4 h-4 mr-1 animate-spin" />
-                Searching...
-              </>
-            ) : (
-              <>
-                <Search className="w-4 h-4 mr-1" />
-                Search
-              </>
-            )}
-          </Button>
+          <ReadOnlyGate>
+            <Button
+              onClick={handleDiscover}
+              disabled={discovering || !discoverState}
+              size="sm"
+            >
+              {discovering ? (
+                <>
+                  <Loader2 className="w-4 h-4 mr-1 animate-spin" />
+                  Searching...
+                </>
+              ) : (
+                <>
+                  <Search className="w-4 h-4 mr-1" />
+                  Search
+                </>
+              )}
+            </Button>
+          </ReadOnlyGate>
         </div>
         {discoverResult && (
           <div
@@ -364,24 +367,26 @@ export function ParkDiscoveryTable({ candidates }: Props) {
           </div>
         </div>
         <div className="mt-3">
-          <Button
-            onClick={handleSeed}
-            disabled={seeding || !seedState || seedNameCount === 0}
-            size="sm"
-          >
-            {seeding ? (
-              <>
-                <Loader2 className="w-4 h-4 mr-1 animate-spin" />
-                Seeding...
-              </>
-            ) : (
-              <>
-                <ListPlus className="w-4 h-4 mr-1" />
-                Seed {seedNameCount > 0 ? `${seedNameCount} ` : ""}Name
-                {seedNameCount === 1 ? "" : "s"}
-              </>
-            )}
-          </Button>
+          <ReadOnlyGate>
+            <Button
+              onClick={handleSeed}
+              disabled={seeding || !seedState || seedNameCount === 0}
+              size="sm"
+            >
+              {seeding ? (
+                <>
+                  <Loader2 className="w-4 h-4 mr-1 animate-spin" />
+                  Seeding...
+                </>
+              ) : (
+                <>
+                  <ListPlus className="w-4 h-4 mr-1" />
+                  Seed {seedNameCount > 0 ? `${seedNameCount} ` : ""}Name
+                  {seedNameCount === 1 ? "" : "s"}
+                </>
+              )}
+            </Button>
+          </ReadOnlyGate>
         </div>
         {seedResult && (
           <div
@@ -398,36 +403,38 @@ export function ParkDiscoveryTable({ candidates }: Props) {
 
       {/* Bulk Actions */}
       {pendingCandidates.length > 0 && (
-        <div className="flex items-center gap-2">
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={handleBulkAccept}
-            disabled={isProcessing}
-            className="text-green-700 dark:text-green-400 border-green-300 dark:border-green-900/50 hover:bg-green-50 dark:hover:bg-green-900/20"
-          >
-            {processingBulk === "accept" ? (
-              <Loader2 className="w-4 h-4 mr-1 animate-spin" />
-            ) : (
-              <CheckCheck className="w-4 h-4 mr-1" />
-            )}
-            Accept All Pending ({pendingCandidates.length})
-          </Button>
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={handleBulkReject}
-            disabled={isProcessing}
-            className="text-red-700 dark:text-red-400 border-red-300 dark:border-red-900/50 hover:bg-red-50 dark:hover:bg-red-900/20"
-          >
-            {processingBulk === "reject" ? (
-              <Loader2 className="w-4 h-4 mr-1 animate-spin" />
-            ) : (
-              <XOctagon className="w-4 h-4 mr-1" />
-            )}
-            Reject All Pending ({pendingCandidates.length})
-          </Button>
-        </div>
+        <ReadOnlyGate>
+          <div className="flex items-center gap-2">
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={handleBulkAccept}
+              disabled={isProcessing}
+              className="text-green-700 dark:text-green-400 border-green-300 dark:border-green-900/50 hover:bg-green-50 dark:hover:bg-green-900/20"
+            >
+              {processingBulk === "accept" ? (
+                <Loader2 className="w-4 h-4 mr-1 animate-spin" />
+              ) : (
+                <CheckCheck className="w-4 h-4 mr-1" />
+              )}
+              Accept All Pending ({pendingCandidates.length})
+            </Button>
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={handleBulkReject}
+              disabled={isProcessing}
+              className="text-red-700 dark:text-red-400 border-red-300 dark:border-red-900/50 hover:bg-red-50 dark:hover:bg-red-900/20"
+            >
+              {processingBulk === "reject" ? (
+                <Loader2 className="w-4 h-4 mr-1 animate-spin" />
+              ) : (
+                <XOctagon className="w-4 h-4 mr-1" />
+              )}
+              Reject All Pending ({pendingCandidates.length})
+            </Button>
+          </div>
+        </ReadOnlyGate>
       )}
 
       {/* Candidates Table */}
@@ -507,67 +514,69 @@ export function ParkDiscoveryTable({ candidates }: Props) {
                   </td>
                   <td className="px-4 py-3">
                     {candidate.status === "PENDING" ? (
-                      <div className="flex items-center gap-1">
-                        <Button
-                          variant="ghost"
-                          size="icon-sm"
-                          onClick={() => handleAccept(candidate.id)}
-                          disabled={isProcessing}
-                          title="Accept — create park"
-                          className="text-green-600 dark:text-green-400 hover:text-green-700 dark:hover:text-green-300 hover:bg-green-50 dark:hover:bg-green-900/20"
-                        >
-                          {processingId === candidate.id ? (
-                            <Loader2 className="w-5 h-5 animate-spin" />
-                          ) : (
-                            <CheckCircle className="w-5 h-5" />
-                          )}
-                        </Button>
-                        {showRejectInput === candidate.id ? (
-                          <div className="flex items-center gap-1">
-                            <input
-                              type="text"
-                              placeholder="Reason (optional)"
-                              value={rejectReasons[candidate.id] || ""}
-                              onChange={(e) =>
-                                setRejectReasons((prev) => ({
-                                  ...prev,
-                                  [candidate.id]: e.target.value,
-                                }))
-                              }
-                              className="w-32 rounded-md border border-input bg-background text-foreground px-2 py-1 text-xs focus:border-destructive focus:ring-1 focus:ring-destructive"
-                              onKeyDown={(e) => {
-                                if (e.key === "Enter")
-                                  handleReject(candidate.id);
-                                if (e.key === "Escape")
-                                  setShowRejectInput(null);
-                              }}
-                            />
-                            <Button
-                              variant="ghost"
-                              size="icon-sm"
-                              onClick={() => handleReject(candidate.id)}
-                              disabled={isProcessing}
-                              title="Confirm reject"
-                              className="text-red-600 dark:text-red-400 hover:text-red-700 dark:hover:text-red-300 hover:bg-red-50 dark:hover:bg-red-900/20"
-                            >
-                              <XCircle className="w-4 h-4" />
-                            </Button>
-                          </div>
-                        ) : (
+                      <ReadOnlyGate>
+                        <div className="flex items-center gap-1">
                           <Button
                             variant="ghost"
                             size="icon-sm"
-                            onClick={() =>
-                              setShowRejectInput(candidate.id)
-                            }
+                            onClick={() => handleAccept(candidate.id)}
                             disabled={isProcessing}
-                            title="Reject"
-                            className="text-red-600 dark:text-red-400 hover:text-red-700 dark:hover:text-red-300 hover:bg-red-50 dark:hover:bg-red-900/20"
+                            title="Accept — create park"
+                            className="text-green-600 dark:text-green-400 hover:text-green-700 dark:hover:text-green-300 hover:bg-green-50 dark:hover:bg-green-900/20"
                           >
-                            <XCircle className="w-5 h-5" />
+                            {processingId === candidate.id ? (
+                              <Loader2 className="w-5 h-5 animate-spin" />
+                            ) : (
+                              <CheckCircle className="w-5 h-5" />
+                            )}
                           </Button>
-                        )}
-                      </div>
+                          {showRejectInput === candidate.id ? (
+                            <div className="flex items-center gap-1">
+                              <input
+                                type="text"
+                                placeholder="Reason (optional)"
+                                value={rejectReasons[candidate.id] || ""}
+                                onChange={(e) =>
+                                  setRejectReasons((prev) => ({
+                                    ...prev,
+                                    [candidate.id]: e.target.value,
+                                  }))
+                                }
+                                className="w-32 rounded-md border border-input bg-background text-foreground px-2 py-1 text-xs focus:border-destructive focus:ring-1 focus:ring-destructive"
+                                onKeyDown={(e) => {
+                                  if (e.key === "Enter")
+                                    handleReject(candidate.id);
+                                  if (e.key === "Escape")
+                                    setShowRejectInput(null);
+                                }}
+                              />
+                              <Button
+                                variant="ghost"
+                                size="icon-sm"
+                                onClick={() => handleReject(candidate.id)}
+                                disabled={isProcessing}
+                                title="Confirm reject"
+                                className="text-red-600 dark:text-red-400 hover:text-red-700 dark:hover:text-red-300 hover:bg-red-50 dark:hover:bg-red-900/20"
+                              >
+                                <XCircle className="w-4 h-4" />
+                              </Button>
+                            </div>
+                          ) : (
+                            <Button
+                              variant="ghost"
+                              size="icon-sm"
+                              onClick={() =>
+                                setShowRejectInput(candidate.id)
+                              }
+                              disabled={isProcessing}
+                              title="Reject"
+                              className="text-red-600 dark:text-red-400 hover:text-red-700 dark:hover:text-red-300 hover:bg-red-50 dark:hover:bg-red-900/20"
+                            >
+                              <XCircle className="w-5 h-5" />
+                            </Button>
+                          )}
+                        </div>
+                      </ReadOnlyGate>
                     ) : null}
                   </td>
                 </tr>

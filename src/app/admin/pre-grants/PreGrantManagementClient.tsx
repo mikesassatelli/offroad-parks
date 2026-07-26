@@ -4,9 +4,15 @@ import { useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
 import { CheckCircle2, Trash2 } from "lucide-react";
 
-type Role = "USER" | "OPERATOR" | "ADMIN" | "SUPER_ADMIN";
+type Role = "USER" | "OPERATOR" | "ADMIN" | "SUPER_ADMIN" | "BETA_TESTER";
 
-const ASSIGNABLE_ROLES: Role[] = ["USER", "OPERATOR", "ADMIN", "SUPER_ADMIN"];
+const ASSIGNABLE_ROLES: Role[] = [
+  "USER",
+  "BETA_TESTER",
+  "OPERATOR",
+  "ADMIN",
+  "SUPER_ADMIN",
+];
 
 export interface PreGrantRow {
   id: string;
@@ -31,6 +37,8 @@ function roleBadgeClass(role: string | null): string {
       return "bg-purple-100 text-purple-800 dark:bg-purple-900/30 dark:text-purple-300";
     case "OPERATOR":
       return "bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-300";
+    case "BETA_TESTER":
+      return "bg-emerald-100 text-emerald-800 dark:bg-emerald-900/30 dark:text-emerald-300";
     case "USER":
       return "bg-gray-100 text-gray-800 dark:bg-gray-900/30 dark:text-gray-300";
     default:

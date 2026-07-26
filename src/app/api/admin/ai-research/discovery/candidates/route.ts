@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import { requireAdmin } from "@/lib/api-helpers";
+import { requireAdmin, requireAdminView } from "@/lib/api-helpers";
 import { prisma } from "@/lib/prisma";
 import { researchPark } from "@/lib/ai/research-pipeline";
 import { generateMapHeroAsync } from "@/lib/map-hero/generate";
@@ -26,7 +26,7 @@ async function ensureUniqueSlug(baseSlug: string): Promise<string> {
 
 // GET — List ParkCandidate records
 export async function GET(request: Request) {
-  const adminResult = await requireAdmin();
+  const adminResult = await requireAdminView();
   if (adminResult instanceof NextResponse) return adminResult;
 
   const { searchParams } = new URL(request.url);

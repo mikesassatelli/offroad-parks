@@ -1,12 +1,13 @@
 import { NextResponse } from "next/server";
 import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
+import { canAdminView } from "@/lib/roles";
 import { transformDbReview } from "@/lib/types";
 import type { DbReview, ReviewStatus } from "@/lib/types";
 
 export const runtime = "nodejs";
 
-// GET /api/admin/reviews - Get all reviews (admin only)
+// GET /api/admin/reviews - Get all reviews (admin view access)
 export async function GET(request: Request) {
   const session = await auth();
 
@@ -14,9 +15,8 @@ export async function GET(request: Request) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 
-  // Check admin role
-  const userRole = (session.user as { role?: string })?.role;
-  if (userRole !== "ADMIN" && userRole !== "SUPER_ADMIN") {
+  // Allow admin viewers (incl. read-only beta testers) to browse reviews.
+  if (!canAdminView(session.user.role)) {
     return NextResponse.json({ error: "Forbidden" }, { status: 403 });
   }
 

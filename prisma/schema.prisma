@@ -76,6 +76,11 @@ enum UserRole {
   ADMIN
   OPERATOR
   SUPER_ADMIN
+  // Read-only access to the admin console for beta testers. Can view every
+  // admin page but cannot perform any mutating action — enforced server-side
+  // (never in the admin/write role sets) and surfaced in the UI as disabled,
+  // greyed-out controls. See src/lib/roles.ts.
+  BETA_TESTER
 }
 
 // Pre-grants — declare a role / operator membership that should be applied

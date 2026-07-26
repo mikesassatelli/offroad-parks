@@ -1,10 +1,10 @@
 import { NextResponse } from "next/server";
-import { requireAdmin } from "@/lib/api-helpers";
+import { requireAdmin, requireAdminView } from "@/lib/api-helpers";
 import { prisma } from "@/lib/prisma";
 import type { DomainReliabilitySummary } from "@/lib/types";
 
 export async function GET() {
-  const adminResult = await requireAdmin();
+  const adminResult = await requireAdminView();
   if (adminResult instanceof NextResponse) return adminResult;
 
   const domains = await prisma.domainReliability.findMany({

@@ -3,6 +3,7 @@
 import { useState, useRef } from "react";
 import * as Papa from "papaparse";
 import { Button } from "@/components/ui/button";
+import { ReadOnlyGate } from "@/components/admin/read-only";
 import { ALL_TERRAIN_TYPES, ALL_AMENITIES, ALL_CAMPING_TYPES, ALL_VEHICLE_TYPES, ALL_OWNERSHIP_TYPES, US_STATES } from "@/lib/constants";
 
 interface BulkParkInput {
@@ -602,15 +603,17 @@ export function BulkParkUpload() {
 
       {/* Actions */}
       <div className="flex gap-3">
-        <Button
-          onClick={handleSubmit}
-          disabled={parks.length === 0 || isUploading}
-          size="lg"
-        >
-          {isUploading
-            ? "Uploading..."
-            : `Upload ${parks.length} Park${parks.length !== 1 ? "s" : ""}`}
-        </Button>
+        <ReadOnlyGate>
+          <Button
+            onClick={handleSubmit}
+            disabled={parks.length === 0 || isUploading}
+            size="lg"
+          >
+            {isUploading
+              ? "Uploading..."
+              : `Upload ${parks.length} Park${parks.length !== 1 ? "s" : ""}`}
+          </Button>
+        </ReadOnlyGate>
         <Button
           onClick={handleReset}
           variant="outline"

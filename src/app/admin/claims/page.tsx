@@ -7,6 +7,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { CheckCircle, XCircle, Trash2, Building2, User, MapPin, Phone, Mail, MessageSquare } from "lucide-react";
+import { ReadOnlyGate } from "@/components/admin/read-only";
 
 type ClaimStatus = "PENDING" | "APPROVED" | "REJECTED";
 
@@ -225,17 +226,19 @@ export default function AdminClaimsPage() {
                     <Badge variant={statusBadgeVariant(claim.status)}>
                       {claim.status}
                     </Badge>
-                    <Button
-                      size="sm"
-                      variant="ghost"
-                      className="h-7 w-7 p-0 text-muted-foreground hover:text-destructive"
-                      onClick={() => handleDelete(claim.id, claim.claimantName)}
-                      disabled={actionLoading === claim.id}
-                      data-testid={`delete-${claim.id}`}
-                      title="Delete claim"
-                    >
-                      <Trash2 className="w-4 h-4" />
-                    </Button>
+                    <ReadOnlyGate>
+                      <Button
+                        size="sm"
+                        variant="ghost"
+                        className="h-7 w-7 p-0 text-muted-foreground hover:text-destructive"
+                        onClick={() => handleDelete(claim.id, claim.claimantName)}
+                        disabled={actionLoading === claim.id}
+                        data-testid={`delete-${claim.id}`}
+                        title="Delete claim"
+                      >
+                        <Trash2 className="w-4 h-4" />
+                      </Button>
+                    </ReadOnlyGate>
                   </div>
                 </div>
               </CardHeader>
@@ -301,16 +304,18 @@ export default function AdminClaimsPage() {
                 {claim.status === "PENDING" && (
                   <div className="flex flex-col gap-2 pt-1">
                     <div className="flex gap-2">
-                      <Button
-                        size="sm"
-                        className="flex-1"
-                        onClick={() => handleApprove(claim.id)}
-                        disabled={actionLoading === claim.id}
-                        data-testid={`approve-${claim.id}`}
-                      >
-                        <CheckCircle className="w-4 h-4 mr-1" />
-                        {actionLoading === claim.id ? "Processing…" : "Approve"}
-                      </Button>
+                      <ReadOnlyGate className="flex-1">
+                        <Button
+                          size="sm"
+                          className="flex-1"
+                          onClick={() => handleApprove(claim.id)}
+                          disabled={actionLoading === claim.id}
+                          data-testid={`approve-${claim.id}`}
+                        >
+                          <CheckCircle className="w-4 h-4 mr-1" />
+                          {actionLoading === claim.id ? "Processing…" : "Approve"}
+                        </Button>
+                      </ReadOnlyGate>
                       <Button
                         size="sm"
                         variant="destructive"
@@ -339,16 +344,18 @@ export default function AdminClaimsPage() {
                             }))
                           }
                         />
-                        <Button
-                          size="sm"
-                          variant="destructive"
-                          className="w-full"
-                          onClick={() => handleReject(claim.id)}
-                          disabled={actionLoading === claim.id}
-                          data-testid={`reject-confirm-${claim.id}`}
-                        >
-                          Confirm Rejection
-                        </Button>
+                        <ReadOnlyGate block className="w-full">
+                          <Button
+                            size="sm"
+                            variant="destructive"
+                            className="w-full"
+                            onClick={() => handleReject(claim.id)}
+                            disabled={actionLoading === claim.id}
+                            data-testid={`reject-confirm-${claim.id}`}
+                          >
+                            Confirm Rejection
+                          </Button>
+                        </ReadOnlyGate>
                       </div>
                     )}
                   </div>

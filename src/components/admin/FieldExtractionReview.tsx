@@ -4,6 +4,7 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { CheckCircle, XCircle, ExternalLink, CheckCheck, XOctagon, Pencil, Check, X, Quote } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { ReadOnlyGate } from "@/components/admin/read-only";
 import type { FieldExtractionSummary } from "@/lib/types";
 import { FIELD_DISPLAY_NAMES } from "@/lib/ai/field-display-names";
 import {
@@ -307,26 +308,28 @@ export function FieldExtractionReview({ extractions }: Props) {
             </h2>
             <div className="flex items-center gap-2">
               <span className="text-xs text-muted-foreground mr-2">{parkExtractions.length} field{parkExtractions.length !== 1 ? "s" : ""}</span>
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={() => handleBulkApprove(parkId, parkExtractions.map(e => e.id))}
-                disabled={processingId !== null || processingBulk !== null}
-                className="text-green-700 dark:text-green-400 border-green-300 dark:border-green-900/50 hover:bg-green-50 dark:hover:bg-green-900/20"
-              >
-                <CheckCheck className="w-4 h-4 mr-1" />
-                Approve All
-              </Button>
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={() => handleBulkReject(parkId, parkExtractions.map(e => e.id))}
-                disabled={processingId !== null || processingBulk !== null}
-                className="text-red-700 dark:text-red-400 border-red-300 dark:border-red-900/50 hover:bg-red-50 dark:hover:bg-red-900/20"
-              >
-                <XOctagon className="w-4 h-4 mr-1" />
-                Reject All
-              </Button>
+              <ReadOnlyGate>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => handleBulkApprove(parkId, parkExtractions.map(e => e.id))}
+                  disabled={processingId !== null || processingBulk !== null}
+                  className="text-green-700 dark:text-green-400 border-green-300 dark:border-green-900/50 hover:bg-green-50 dark:hover:bg-green-900/20"
+                >
+                  <CheckCheck className="w-4 h-4 mr-1" />
+                  Approve All
+                </Button>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => handleBulkReject(parkId, parkExtractions.map(e => e.id))}
+                  disabled={processingId !== null || processingBulk !== null}
+                  className="text-red-700 dark:text-red-400 border-red-300 dark:border-red-900/50 hover:bg-red-50 dark:hover:bg-red-900/20"
+                >
+                  <XOctagon className="w-4 h-4 mr-1" />
+                  Reject All
+                </Button>
+              </ReadOnlyGate>
             </div>
           </div>
           <div className="divide-y divide-border">
@@ -368,16 +371,18 @@ export function FieldExtractionReview({ extractions }: Props) {
                           <p className="mt-1 text-xs text-red-600 dark:text-red-400">{editError}</p>
                         )}
                         <div className="mt-2 flex items-center gap-2">
-                          <Button
-                            size="sm"
-                            onClick={() => saveEdit(extraction)}
-                            disabled={processingId !== null}
-                            className="text-green-700 dark:text-green-400"
-                            variant="outline"
-                          >
-                            <Check className="w-4 h-4 mr-1" />
-                            Approve with edit
-                          </Button>
+                          <ReadOnlyGate>
+                            <Button
+                              size="sm"
+                              onClick={() => saveEdit(extraction)}
+                              disabled={processingId !== null}
+                              className="text-green-700 dark:text-green-400"
+                              variant="outline"
+                            >
+                              <Check className="w-4 h-4 mr-1" />
+                              Approve with edit
+                            </Button>
+                          </ReadOnlyGate>
                           <Button
                             size="sm"
                             variant="ghost"
@@ -426,26 +431,28 @@ export function FieldExtractionReview({ extractions }: Props) {
                     >
                       <Pencil className="w-4 h-4" />
                     </Button>
-                    <Button
-                      variant="ghost"
-                      size="icon-sm"
-                      onClick={() => handleApprove(extraction.id)}
-                      disabled={processingId !== null}
-                      title="Approve — apply this value to the live park"
-                      className="text-green-600 dark:text-green-400 hover:text-green-700 dark:hover:text-green-300 hover:bg-green-50 dark:hover:bg-green-900/20"
-                    >
-                      <CheckCircle className="w-5 h-5" />
-                    </Button>
-                    <Button
-                      variant="ghost"
-                      size="icon-sm"
-                      onClick={() => handleReject(extraction.id)}
-                      disabled={processingId !== null}
-                      title="Deny — discard this proposed change"
-                      className="text-red-600 dark:text-red-400 hover:text-red-700 dark:hover:text-red-300 hover:bg-red-50 dark:hover:bg-red-900/20"
-                    >
-                      <XCircle className="w-5 h-5" />
-                    </Button>
+                    <ReadOnlyGate>
+                      <Button
+                        variant="ghost"
+                        size="icon-sm"
+                        onClick={() => handleApprove(extraction.id)}
+                        disabled={processingId !== null}
+                        title="Approve — apply this value to the live park"
+                        className="text-green-600 dark:text-green-400 hover:text-green-700 dark:hover:text-green-300 hover:bg-green-50 dark:hover:bg-green-900/20"
+                      >
+                        <CheckCircle className="w-5 h-5" />
+                      </Button>
+                      <Button
+                        variant="ghost"
+                        size="icon-sm"
+                        onClick={() => handleReject(extraction.id)}
+                        disabled={processingId !== null}
+                        title="Deny — discard this proposed change"
+                        className="text-red-600 dark:text-red-400 hover:text-red-700 dark:hover:text-red-300 hover:bg-red-50 dark:hover:bg-red-900/20"
+                      >
+                        <XCircle className="w-5 h-5" />
+                      </Button>
+                    </ReadOnlyGate>
                   </div>
                 </div>
               </div>

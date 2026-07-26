@@ -3,6 +3,11 @@ import Link from "next/link";
 import { redirect } from "next/navigation";
 import { ThemeToggle } from "@/components/ThemeToggle";
 import { AdminNav } from "@/components/admin/AdminNav";
+import {
+  AdminReadOnlyProvider,
+  ReadOnlyBanner,
+} from "@/components/admin/read-only";
+import { canAdminView, isReadOnlyAdmin } from "@/lib/roles";
 import { LogOut } from "lucide-react";
 
 export default async function AdminLayout({
@@ -17,13 +22,16 @@ export default async function AdminLayout({
   }
 
   const userRole = (session.user as { role?: string })?.role;
-  if (userRole !== "ADMIN" && userRole !== "SUPER_ADMIN") {
+  if (!canAdminView(userRole)) {
     redirect("/");
   }
   const isSuperAdmin = userRole === "SUPER_ADMIN";
+  const readOnly = isReadOnlyAdmin(userRole);
 
   return (
+    <AdminReadOnlyProvider isReadOnly={readOnly}>
     <div className="min-h-screen bg-background text-foreground">
+      {readOnly && <ReadOnlyBanner />}
       {/* Admin Header */}
       <header className="bg-card border-b border-border">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -55,5 +63,6 @@ export default async function AdminLayout({
         <main className="flex-1 min-w-0 p-4 sm:p-6 lg:p-8">{children}</main>
       </div>
     </div>
+    </AdminReadOnlyProvider>
   );
 }

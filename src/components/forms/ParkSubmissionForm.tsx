@@ -24,6 +24,7 @@ import { TerrainCheckboxGroup } from "@/components/forms/park-fields/TerrainChec
 import { VehicleTypesCheckboxGroup } from "@/components/forms/park-fields/VehicleTypesCheckboxGroup";
 import { Image as ImageIcon, Loader2, X } from "lucide-react";
 import Image from "next/image";
+import { ReadOnlyGate } from "@/components/admin/read-only";
 
 interface FormData {
   name: string;
@@ -901,20 +902,22 @@ export function ParkSubmissionForm({
       )}
 
       <div className="flex gap-3">
-        <Button type="submit" disabled={isSubmitting}>
-          {isSubmitting ? (
-            <>
-              <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-              {isEditMode ? "Updating..." : "Submitting..."}
-            </>
-          ) : isEditMode ? (
-            "Update Park"
-          ) : isAdminForm ? (
-            "Create Park"
-          ) : (
-            "Submit for Review"
-          )}
-        </Button>
+        <ReadOnlyGate>
+          <Button type="submit" disabled={isSubmitting}>
+            {isSubmitting ? (
+              <>
+                <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                {isEditMode ? "Updating..." : "Submitting..."}
+              </>
+            ) : isEditMode ? (
+              "Update Park"
+            ) : isAdminForm ? (
+              "Create Park"
+            ) : (
+              "Submit for Review"
+            )}
+          </Button>
+        </ReadOnlyGate>
         <Button
           type="button"
           variant="outline"

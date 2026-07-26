@@ -4,6 +4,7 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { Check, ExternalLink, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { ReadOnlyGate } from "@/components/admin/read-only";
 import Link from "next/link";
 import {
   CONDITION_LABELS,
@@ -232,25 +233,27 @@ export function ConditionModerationTable({
 
                     <td className="px-6 py-4">
                       {isPending ? (
-                        <div className="flex gap-2">
-                          <Button
-                            size="sm"
-                            onClick={() => handleApprove(condition.id)}
-                            disabled={processingId === condition.id}
-                          >
-                            <Check className="w-4 h-4 mr-1" />
-                            Approve
-                          </Button>
-                          <Button
-                            size="sm"
-                            variant="destructive"
-                            onClick={() => handleReject(condition.id)}
-                            disabled={processingId === condition.id}
-                          >
-                            <X className="w-4 h-4 mr-1" />
-                            Reject
-                          </Button>
-                        </div>
+                        <ReadOnlyGate>
+                          <div className="flex gap-2">
+                            <Button
+                              size="sm"
+                              onClick={() => handleApprove(condition.id)}
+                              disabled={processingId === condition.id}
+                            >
+                              <Check className="w-4 h-4 mr-1" />
+                              Approve
+                            </Button>
+                            <Button
+                              size="sm"
+                              variant="destructive"
+                              onClick={() => handleReject(condition.id)}
+                              disabled={processingId === condition.id}
+                            >
+                              <X className="w-4 h-4 mr-1" />
+                              Reject
+                            </Button>
+                          </div>
+                        </ReadOnlyGate>
                       ) : (
                         <span className="text-xs text-green-600 dark:text-green-400 font-medium">
                           Published

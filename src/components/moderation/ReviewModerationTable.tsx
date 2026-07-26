@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
+import { ReadOnlyGate } from "@/components/admin/read-only";
 import {
   Table,
   TableBody,
@@ -84,51 +85,53 @@ export function ReviewModerationTable({
     const isApproved = review.status === "APPROVED";
 
     return (
-      <div className="flex gap-2">
-        {!isApproved && (
-          <Button
-            size="sm"
-            variant="outline"
-            onClick={() => handleAction(review.id, "approve")}
-            disabled={processingId === review.id}
-          >
-            Approve
-          </Button>
-        )}
-        {isHidden ? (
-          <Button
-            size="sm"
-            variant="outline"
-            onClick={() => handleAction(review.id, "restore")}
-            disabled={processingId === review.id}
-          >
-            Restore
-          </Button>
-        ) : (
-          <Button
-            size="sm"
-            variant="outline"
-            onClick={() => handleAction(review.id, "hide")}
-            disabled={processingId === review.id}
-          >
-            Hide
-          </Button>
-        )}
-        {actions.delete && (
-          <Button
-            size="sm"
-            variant="destructive"
-            onClick={() => {
-              if (confirm("Are you sure you want to permanently delete this review?")) {
-                handleAction(review.id, "delete");
-              }
-            }}
-            disabled={processingId === review.id}
-          >
-            Delete
-          </Button>
-        )}
-      </div>
+      <ReadOnlyGate>
+        <div className="flex gap-2">
+          {!isApproved && (
+            <Button
+              size="sm"
+              variant="outline"
+              onClick={() => handleAction(review.id, "approve")}
+              disabled={processingId === review.id}
+            >
+              Approve
+            </Button>
+          )}
+          {isHidden ? (
+            <Button
+              size="sm"
+              variant="outline"
+              onClick={() => handleAction(review.id, "restore")}
+              disabled={processingId === review.id}
+            >
+              Restore
+            </Button>
+          ) : (
+            <Button
+              size="sm"
+              variant="outline"
+              onClick={() => handleAction(review.id, "hide")}
+              disabled={processingId === review.id}
+            >
+              Hide
+            </Button>
+          )}
+          {actions.delete && (
+            <Button
+              size="sm"
+              variant="destructive"
+              onClick={() => {
+                if (confirm("Are you sure you want to permanently delete this review?")) {
+                  handleAction(review.id, "delete");
+                }
+              }}
+              disabled={processingId === review.id}
+            >
+              Delete
+            </Button>
+          )}
+        </div>
+      </ReadOnlyGate>
     );
   };
 

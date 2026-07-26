@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
+import { canAdminView } from "@/lib/roles";
 
 export const runtime = "nodejs";
 
@@ -9,7 +10,7 @@ type ClaimStatus = "PENDING" | "APPROVED" | "REJECTED";
 // GET /api/admin/claims?status=PENDING&page=1&limit=20
 export async function GET(request: Request) {
   const session = await auth();
-  if (!session?.user?.id || session.user.role !== "ADMIN" && session.user.role !== "SUPER_ADMIN") {
+  if (!session?.user?.id || !canAdminView(session.user.role)) {
     return NextResponse.json({ error: "Forbidden" }, { status: 403 });
   }
 
