@@ -2,6 +2,7 @@
 
 import { useCallback, useEffect, useState } from "react";
 import { useSession } from "next-auth/react";
+import { useSignInPrompt } from "@/components/auth/SignInPromptProvider";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { TrailConditionForm } from "./TrailConditionForm";
@@ -29,6 +30,7 @@ const COLOR_CLASS: Record<string, string> = {
 
 export function TrailConditionsDisplay({ parkSlug }: TrailConditionsDisplayProps) {
   const { data: session } = useSession();
+  const { promptSignIn } = useSignInPrompt();
   const [conditions, setConditions] = useState<TrailConditionReport[]>([]);
   const [loading, setLoading] = useState(true);
   const [showForm, setShowForm] = useState(false);
@@ -114,10 +116,17 @@ export function TrailConditionsDisplay({ parkSlug }: TrailConditionsDisplayProps
 
         {!session?.user && (
           <p className="text-xs text-muted-foreground">
-            {/* eslint-disable-next-line @next/next/no-html-link-for-pages */}
-            <a href="/api/auth/signin" className="text-primary underline underline-offset-2 font-medium hover:opacity-80">
+            <button
+              type="button"
+              onClick={() =>
+                promptSignIn({
+                  description: "Sign in to report current trail conditions.",
+                })
+              }
+              className="text-primary underline underline-offset-2 font-medium hover:opacity-80"
+            >
               Sign in
-            </a>{" "}
+            </button>{" "}
             to report trail conditions.
           </p>
         )}

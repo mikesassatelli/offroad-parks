@@ -309,22 +309,28 @@ describe("ParkDetailPage", () => {
     expect(screen.queryByTestId("photo-upload-form")).not.toBeInTheDocument();
   });
 
-  it("should show sign-in CTA when unauthenticated and no photos", () => {
+  it("should show a photos sign-in CTA when unauthenticated and no photos", () => {
     vi.mocked(useSession).mockReturnValue({ data: null } as any);
 
     render(<ParkDetailPage park={mockPark} photos={[]} />);
 
-    // Multiple "Sign in" links may exist (photos CTA + trail conditions) — check photos-specific text
-    expect(screen.getAllByText(/sign in/i).length).toBeGreaterThanOrEqual(1);
-    expect(screen.getByText(/to be the first to add photos/i)).toBeInTheDocument();
+    // "be the first" copy for an empty gallery, plus the CTA button.
+    expect(screen.getByText(/add the first photos/i)).toBeInTheDocument();
+    expect(
+      screen.getByRole("button", { name: /sign in to add photos/i }),
+    ).toBeInTheDocument();
   });
 
-  it("should not show sign-in CTA when unauthenticated but photos exist", () => {
+  it("should show a photos sign-in CTA when unauthenticated and photos exist", () => {
     vi.mocked(useSession).mockReturnValue({ data: null } as any);
 
     render(<ParkDetailPage park={mockPark} photos={mockPhotos} />);
 
-    expect(screen.queryByText(/to be the first to add photos/i)).not.toBeInTheDocument();
+    // Non-empty gallery gets the "share your own" copy, still with the CTA.
+    expect(screen.getByText(/share your own photos/i)).toBeInTheDocument();
+    expect(
+      screen.getByRole("button", { name: /sign in to add photos/i }),
+    ).toBeInTheDocument();
   });
 
   it("should render photo upload form when authenticated", () => {

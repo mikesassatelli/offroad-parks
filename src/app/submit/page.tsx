@@ -1,13 +1,13 @@
-import { redirect } from "next/navigation";
 import { auth } from "@/lib/auth";
 import { ParkSubmissionForm } from "@/components/forms/ParkSubmissionForm";
 import { SubmitParkClient } from "./SubmitParkClient";
+import { SubmitSignInGate } from "./SubmitSignInGate";
 
 export default async function SubmitParkPage() {
   const session = await auth();
 
   if (!session?.user) {
-    redirect("/api/auth/signin?callbackUrl=/submit");
+    return <SubmitSignInGate />;
   }
 
   const user = {

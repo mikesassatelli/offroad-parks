@@ -33,6 +33,7 @@ import { TrailConditionsDisplay } from "@/features/trail-conditions/TrailConditi
 import { useReviews } from "@/hooks/useReviews";
 import { useParkReview } from "@/hooks/useParkReview";
 import { AppHeader } from "@/components/layout/AppHeader";
+import { useSignInPrompt } from "@/components/auth/SignInPromptProvider";
 import { findTrailOverlay } from "./trailOverlays";
 import type { TrailFeatureCollection } from "@/features/map/components/TrailOverlay";
 
@@ -90,6 +91,7 @@ function ParkDetailPageInner({
 }: ParkDetailPageProps) {
   const router = useRouter();
   const { data: session } = useSession();
+  const { promptSignIn } = useSignInPrompt();
   const [showReviewForm, setShowReviewForm] = useState(false);
 
   // Trail-geometry overlay for the Location tab. Source priority:
@@ -312,15 +314,26 @@ function ParkDetailPageInner({
                     parkSlug={park.id}
                     onSuccess={handlePhotoUploadSuccess}
                   />
-                ) : photos.length === 0 ? (
-                  <div className="text-center py-6 px-4 border border-dashed border-border rounded-lg bg-muted/30">
+                ) : (
+                  <div className="text-center py-6 px-4 border border-dashed border-border rounded-lg bg-muted/30 space-y-3">
                     <p className="text-sm text-muted-foreground">
-                      {/* eslint-disable-next-line @next/next/no-html-link-for-pages */}
-                      <a href="/api/auth/signin" className="text-primary underline underline-offset-2 font-medium hover:opacity-80">Sign in</a>
-                      {" "}to be the first to add photos for this park.
+                      {photos.length === 0
+                        ? "Been here? Add the first photos of this park."
+                        : "Been here? Share your own photos of this park."}
                     </p>
+                    <Button
+                      size="sm"
+                      onClick={() =>
+                        promptSignIn({
+                          description:
+                            "Sign in to add your photos of this park.",
+                        })
+                      }
+                    >
+                      Sign in to add photos
+                    </Button>
                   </div>
-                ) : null}
+                )}
               </TabsContent>
 
               {/* Reviews Tab */}
@@ -340,6 +353,27 @@ function ParkDetailPageInner({
                     </div>
                   </CardHeader>
                   <CardContent className="space-y-6">
+                    {/* Signed-out prompt to contribute a review */}
+                    {!session?.user && (
+                      <div className="text-center py-6 px-4 border border-dashed border-border rounded-lg bg-muted/30 space-y-3">
+                        <p className="text-sm text-muted-foreground">
+                          Been here? Sign in to rate this park and share your
+                          experience.
+                        </p>
+                        <Button
+                          size="sm"
+                          onClick={() =>
+                            promptSignIn({
+                              description:
+                                "Sign in to write a review and rate this park.",
+                            })
+                          }
+                        >
+                          Sign in to write a review
+                        </Button>
+                      </div>
+                    )}
+
                     {/* User's own review or form */}
                     {session?.user && (showReviewForm || userReview) && (
                       <div className="border-b pb-6">
