@@ -181,6 +181,7 @@ model Park {
   editLogs         ParkEditLog[]
   parkAlerts       ParkAlert[]
   mapMarkers       ParkMapMarker[]
+  trailGeometry    ParkTrailGeometry?
 
   // AI Research fields
   dataSources          DataSource[]
@@ -932,4 +933,28 @@ enum MapMarkerType {
   PARKING
   GATE
   POI
+}
+
+// ── Park Trail Geometry ──────────────────────────────────────────────────────
+// The actual trail-network line geometry for a park that is (or contains) a
+// trail system, stored as a GeoJSON FeatureCollection of LineStrings. Rendered
+// as the map overlay on the park detail Location tab. One row per park.
+//
+// GeoJSON lives in a Json column (fine for the dozens-of-systems scale; revisit
+// vector tiles / PMTiles only at hundreds). `sourceName`/`sourceUrl`/`license`/
+// `publishedDate` carry provenance for the accuracy + attribution requirement.
+model ParkTrailGeometry {
+  id            String    @id @default(cuid())
+  parkId        String    @unique
+  geojson       Json      // FeatureCollection of trail LineStrings (EPSG:4326)
+  featureCount  Int?      // number of trail segments (denormalized for display)
+  sourceName    String?   // e.g. "USFS National Forest System Trails"
+  sourceUrl     String?
+  license       String?   // e.g. "Public domain (USFS / CC0)"
+  publishedDate DateTime? // authoritative-as-of date of the source
+  importedAt    DateTime  @default(now())
+
+  park Park @relation(fields: [parkId], references: [id], onDelete: Cascade)
+
+  updatedAt DateTime @updatedAt
 }
