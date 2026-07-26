@@ -5,6 +5,7 @@ import { ArrowRight, Building2, ChevronDown, ChevronUp, CheckCircle, XCircle } f
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { useSignInPrompt } from "@/components/auth/SignInPromptProvider";
 
 interface ParkClaimCTAProps {
   parkSlug: string;
@@ -28,6 +29,7 @@ interface ClaimFormData {
 }
 
 export function ParkClaimCTA({ parkSlug, isLoggedIn, hasOperator, existingClaim, isOperatorOfPark, operatorName }: ParkClaimCTAProps) {
+  const { promptSignIn } = useSignInPrompt();
   const [isExpanded, setIsExpanded] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isSuccess, setIsSuccess] = useState(
@@ -178,13 +180,17 @@ export function ParkClaimCTA({ parkSlug, isLoggedIn, hasOperator, existingClaim,
 
         {!isLoggedIn ? (
           <p className="text-xs text-muted-foreground">
-            {/* eslint-disable-next-line @next/next/no-html-link-for-pages */}
-            <a
-              href="/api/auth/signin"
+            <button
+              type="button"
+              onClick={() =>
+                promptSignIn({
+                  description: "Sign in to claim and manage this park.",
+                })
+              }
               className="text-primary underline underline-offset-2 font-medium hover:opacity-80"
             >
               Sign in
-            </a>{" "}
+            </button>{" "}
             to claim this park.
           </p>
         ) : (

@@ -87,13 +87,14 @@ describe("ParkClaimCTA", () => {
     expect(screen.getByText("Own or manage this park?")).toBeInTheDocument();
   });
 
-  it("shows sign-in link when not logged in", () => {
+  it("shows a sign-in prompt button when not logged in", () => {
     render(
       <ParkClaimCTA parkSlug="test-park" isLoggedIn={false} />
     );
-    const signInLink = screen.getByText("Sign in");
-    expect(signInLink).toBeInTheDocument();
-    expect(signInLink.closest("a")).toHaveAttribute("href", "/api/auth/signin");
+    // The "Sign in" affordance is a button that opens the themed sign-in
+    // dialog (via useSignInPrompt), not a link to the native NextAuth page.
+    const signIn = screen.getByRole("button", { name: "Sign in" });
+    expect(signIn).toBeInTheDocument();
     expect(screen.getByText(/to claim this park/)).toBeInTheDocument();
   });
 

@@ -10,7 +10,7 @@ import {
 } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { GoogleLogo } from "@/components/auth/GoogleLogo";
-import { LockedGate } from "@/components/LockedGate";
+import { TrailSign } from "@/components/TrailSign";
 
 const DEFAULT_DESCRIPTION =
   "Sign in to save favorites, plan routes, and leave reviews. It's free and takes a second.";
@@ -27,7 +27,7 @@ export interface SignInRequiredDialogProps {
 /**
  * Themed "you need to sign in" popup — the rugged, on-brand replacement for the
  * native `alert("Please sign in…")` we used to gate favorites and other
- * signed-in-only actions. Mirrors the 404 page's look (the {@link LockedGate}
+ * signed-in-only actions. Mirrors the 404 page's look (the {@link TrailSign}
  * illustration, an uppercase eyebrow, an extrabold heading and muted body copy)
  * so a blocked action feels like part of the trail, not a browser interruption.
  */
@@ -41,7 +41,7 @@ export function SignInRequiredDialog({
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="max-w-sm">
         <div className="flex flex-col items-center text-center">
-          <LockedGate className="w-44 mb-5" />
+          <TrailSign className="w-44 mb-5" />
 
           <p className="text-xs font-bold uppercase tracking-widest text-primary">
             Sign in required
