@@ -1,4 +1,4 @@
-import { fireEvent, render, screen } from "@testing-library/react";
+import { fireEvent, render, screen, waitFor } from "@testing-library/react";
 import { SearchFiltersPanel } from "@/components/parks/SearchFiltersPanel";
 import { vi } from "vitest";
 
@@ -400,71 +400,82 @@ describe("SearchFiltersPanel", () => {
     expect(mockProps.onCampingChange).toHaveBeenCalledWith(["cabin"]);
   });
 
-  describe("saved-defaults controls", () => {
-    it("does not render the saved-defaults section when the flag is off (anonymous users)", () => {
-      render(<SearchFiltersPanel {...mockProps} />);
+  describe("filter presets", () => {
+    it("shows a sign-in CTA for anonymous users and invokes onSignInToSave", () => {
+      const onSignInToSave = vi.fn();
+      render(
+        <SearchFiltersPanel {...mockProps} onSignInToSave={onSignInToSave} />,
+      );
 
-      expect(screen.queryByTestId("saved-defaults-controls")).toBeNull();
-      expect(screen.queryByText("Save as default")).toBeNull();
-      expect(screen.queryByText("Reset to default")).toBeNull();
+      expect(
+        screen.getByText(/sign in to save your filters as presets/i),
+      ).toBeInTheDocument();
+      fireEvent.click(screen.getByText("Sign in"));
+      expect(onSignInToSave).toHaveBeenCalledTimes(1);
     });
 
-    it("renders the Save-as-default button but hides Reset-to-default when no saved default exists", () => {
+    it("prompts to save the current filters when signed in with no presets", () => {
+      render(<SearchFiltersPanel {...mockProps} isAuthenticated />);
+
+      expect(screen.getByText("Save current filters")).toBeInTheDocument();
+      expect(
+        screen.queryByText(/sign in to save your filters/i),
+      ).not.toBeInTheDocument();
+    });
+
+    it("applies a preset when its chip is clicked", () => {
+      const onApplyPreset = vi.fn();
       render(
         <SearchFiltersPanel
           {...mockProps}
-          showSavedDefaultsControls
-          hasSavedDefault={false}
+          isAuthenticated
+          presets={[{ id: "p1", name: "Sandy" }]}
+          onApplyPreset={onApplyPreset}
         />,
       );
 
-      expect(screen.getByTestId("saved-defaults-controls")).toBeInTheDocument();
-      expect(screen.getByText("Save as default")).toBeInTheDocument();
-      expect(screen.queryByText("Reset to default")).toBeNull();
+      fireEvent.click(screen.getByText("Sandy"));
+      expect(onApplyPreset).toHaveBeenCalledWith("p1");
     });
 
-    it("renders both Save and Reset buttons when a saved default exists", () => {
+    it("deletes a preset when its × is clicked", () => {
+      const onDeletePreset = vi.fn();
       render(
         <SearchFiltersPanel
           {...mockProps}
-          showSavedDefaultsControls
-          hasSavedDefault
+          isAuthenticated
+          presets={[{ id: "p1", name: "Sandy" }]}
+          onDeletePreset={onDeletePreset}
         />,
       );
 
-      expect(screen.getByText("Save as default")).toBeInTheDocument();
-      expect(screen.getByText("Reset to default")).toBeInTheDocument();
+      fireEvent.click(
+        screen.getByRole("button", { name: /delete preset sandy/i }),
+      );
+      expect(onDeletePreset).toHaveBeenCalledWith("p1");
     });
 
-    it("invokes onSaveAsDefault when the Save button is clicked", () => {
-      const onSaveAsDefault = vi.fn();
+    it("saves a new preset with the typed name", async () => {
+      const onSavePreset = vi.fn().mockResolvedValue({ ok: true });
       render(
         <SearchFiltersPanel
           {...mockProps}
-          showSavedDefaultsControls
-          onSaveAsDefault={onSaveAsDefault}
+          isAuthenticated
+          onSavePreset={onSavePreset}
         />,
       );
 
-      fireEvent.click(screen.getByText("Save as default"));
+      fireEvent.click(screen.getByText("Save current filters"));
+      fireEvent.change(screen.getByLabelText("Preset name"), {
+        target: { value: "  Weekend rigs  " },
+      });
+      fireEvent.click(screen.getByText("Save"));
 
-      expect(onSaveAsDefault).toHaveBeenCalledTimes(1);
-    });
-
-    it("invokes onResetToDefault when the Reset button is clicked", () => {
-      const onResetToDefault = vi.fn();
-      render(
-        <SearchFiltersPanel
-          {...mockProps}
-          showSavedDefaultsControls
-          hasSavedDefault
-          onResetToDefault={onResetToDefault}
-        />,
+      // Trimmed name is passed through, and the input closes on success.
+      expect(onSavePreset).toHaveBeenCalledWith("Weekend rigs");
+      await waitFor(() =>
+        expect(screen.queryByLabelText("Preset name")).not.toBeInTheDocument(),
       );
-
-      fireEvent.click(screen.getByText("Reset to default"));
-
-      expect(onResetToDefault).toHaveBeenCalledTimes(1);
     });
   });
 });

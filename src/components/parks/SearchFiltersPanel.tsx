@@ -1,3 +1,4 @@
+import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import {
   Select,
@@ -23,7 +24,7 @@ import {
 } from "@/lib/constants";
 import { formatAmenity, formatCamping, formatOwnership, formatTerrain } from "@/lib/formatting";
 import type { Amenity, Camping, Terrain } from "@/lib/types";
-import { BookmarkCheck, ChevronDown, RotateCcw, Star } from "lucide-react";
+import { ChevronDown, LogIn, Plus, RotateCcw, Star, X } from "lucide-react";
 
 interface SearchFiltersPanelProps {
   selectedState: string | undefined;
@@ -56,13 +57,18 @@ interface SearchFiltersPanelProps {
   sparkArrestorRequired: string;
   onSparkArrestorRequiredChange: (value: string) => void;
   onClearFilters: () => void;
-  // Saved-default-filters controls. When `showSavedDefaultsControls` is false
-  // (anonymous users) the related buttons are not rendered at all.
-  showSavedDefaultsControls?: boolean;
-  hasSavedDefault?: boolean;
-  isSavingDefault?: boolean;
-  onSaveAsDefault?: () => void;
-  onResetToDefault?: () => void;
+  // Named filter presets. Signed-in users can save the current filters as a
+  // named preset and apply/delete saved ones; signed-out users see a sign-in
+  // CTA (onSignInToSave) in place of the controls.
+  isAuthenticated?: boolean;
+  presets?: { id: string; name: string }[];
+  onApplyPreset?: (id: string) => void;
+  onSavePreset?: (
+    name: string,
+  ) => Promise<{ ok: boolean; error?: string }> | void;
+  onDeletePreset?: (id: string) => void;
+  isSavingPreset?: boolean;
+  onSignInToSave?: () => void;
 }
 
 function FilterSection({
@@ -129,12 +135,33 @@ export function SearchFiltersPanel({
   sparkArrestorRequired,
   onSparkArrestorRequiredChange,
   onClearFilters,
-  showSavedDefaultsControls = false,
-  hasSavedDefault = false,
-  isSavingDefault = false,
-  onSaveAsDefault,
-  onResetToDefault,
+  isAuthenticated = false,
+  presets = [],
+  onApplyPreset,
+  onSavePreset,
+  onDeletePreset,
+  isSavingPreset = false,
+  onSignInToSave,
 }: SearchFiltersPanelProps) {
+  const [showSaveInput, setShowSaveInput] = useState(false);
+  const [presetName, setPresetName] = useState("");
+  const [saveError, setSaveError] = useState<string | null>(null);
+
+  const handleSavePreset = async () => {
+    if (!onSavePreset) return;
+    const name = presetName.trim();
+    if (!name) return;
+    const result = await onSavePreset(name);
+    // A void return (or an ok result) means success.
+    if (!result || result.ok) {
+      setPresetName("");
+      setShowSaveInput(false);
+      setSaveError(null);
+    } else {
+      setSaveError(result.error ?? "Couldn't save that preset.");
+    }
+  };
+
   const handleStateChange = (value: string) => {
     onStateChange(value === "__all" ? undefined : value);
   };
@@ -233,38 +260,123 @@ export function SearchFiltersPanel({
         </Button>
       </div>
 
-      {/* Saved-default controls — signed-in only */}
-      {showSavedDefaultsControls && (
-        <div
-          data-testid="saved-defaults-controls"
-          className="flex flex-wrap gap-2 py-3"
-        >
-          <Button
-            type="button"
-            variant="outline"
-            size="sm"
-            onClick={onSaveAsDefault}
-            disabled={isSavingDefault}
-            className="h-7 gap-1.5 text-xs"
-          >
-            <Star className="h-3 w-3" />
-            Save as default
-          </Button>
-          {hasSavedDefault && (
+      {/* Filter presets */}
+      <div data-testid="filter-presets" className="space-y-2 py-3">
+        <p className="flex items-center gap-1.5 text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+          <Star className="h-3 w-3" />
+          Presets
+        </p>
+
+        {isAuthenticated ? (
+          <>
+            {presets.length > 0 ? (
+              <div className="flex flex-wrap gap-1.5">
+                {presets.map((preset) => (
+                  <span
+                    key={preset.id}
+                    className="inline-flex items-center rounded-md border border-border bg-background text-xs"
+                  >
+                    <button
+                      type="button"
+                      onClick={() => onApplyPreset?.(preset.id)}
+                      className="px-2 py-1 font-medium text-foreground transition-colors hover:text-primary"
+                    >
+                      {preset.name}
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => onDeletePreset?.(preset.id)}
+                      aria-label={`Delete preset ${preset.name}`}
+                      className="py-1 pl-0.5 pr-1.5 text-muted-foreground transition-colors hover:text-destructive"
+                    >
+                      <X className="h-3 w-3" />
+                    </button>
+                  </span>
+                ))}
+              </div>
+            ) : (
+              <p className="text-xs text-muted-foreground">
+                Save your current filters as a preset to reuse them later.
+              </p>
+            )}
+
+            {showSaveInput ? (
+              <div className="space-y-1.5">
+                <div className="flex gap-1.5">
+                  <input
+                    type="text"
+                    value={presetName}
+                    onChange={(e) => {
+                      setPresetName(e.target.value);
+                      setSaveError(null);
+                    }}
+                    onKeyDown={(e) => {
+                      if (e.key === "Enter") {
+                        e.preventDefault();
+                        handleSavePreset();
+                      }
+                    }}
+                    placeholder="Preset name…"
+                    aria-label="Preset name"
+                    className="flex-1 rounded-md border border-input bg-background px-2.5 py-1 text-sm focus:outline-none focus:ring-2 focus:ring-ring"
+                  />
+                  <Button
+                    type="button"
+                    size="sm"
+                    className="h-7"
+                    onClick={handleSavePreset}
+                    disabled={isSavingPreset || !presetName.trim()}
+                  >
+                    Save
+                  </Button>
+                  <Button
+                    type="button"
+                    size="sm"
+                    variant="ghost"
+                    className="h-7"
+                    onClick={() => {
+                      setShowSaveInput(false);
+                      setPresetName("");
+                      setSaveError(null);
+                    }}
+                  >
+                    Cancel
+                  </Button>
+                </div>
+                {saveError && (
+                  <p className="text-xs text-destructive">{saveError}</p>
+                )}
+              </div>
+            ) : (
+              <Button
+                type="button"
+                variant="outline"
+                size="sm"
+                onClick={() => setShowSaveInput(true)}
+                className="h-7 gap-1.5 text-xs"
+              >
+                <Plus className="h-3 w-3" />
+                Save current filters
+              </Button>
+            )}
+          </>
+        ) : (
+          <div className="space-y-2 rounded-lg border border-dashed border-border bg-muted/30 px-3 py-2.5">
+            <p className="text-xs text-muted-foreground">
+              Sign in to save your filters as presets and reuse them anytime.
+            </p>
             <Button
               type="button"
-              variant="ghost"
               size="sm"
-              onClick={onResetToDefault}
-              disabled={isSavingDefault}
-              className="h-7 gap-1.5 text-xs text-muted-foreground hover:text-foreground"
+              onClick={onSignInToSave}
+              className="h-7 gap-1.5 text-xs"
             >
-              <BookmarkCheck className="h-3 w-3" />
-              Reset to default
+              <LogIn className="h-3 w-3" />
+              Sign in
             </Button>
-          )}
-        </div>
-      )}
+          </div>
+        )}
+      </div>
 
       {/* State */}
       <FilterSection title="State" defaultOpen count={selectedState ? 1 : 0}>

@@ -29,9 +29,31 @@ export const savedSearchFiltersSchema = z.object({
 
 export type SavedSearchFilters = z.infer<typeof savedSearchFiltersSchema>;
 
-export const putSearchPreferenceBodySchema = z.object({
+/** Max named filter presets a single user may keep. */
+export const MAX_PRESETS = 12;
+
+/** A preset name: trimmed, non-empty, reasonably short. */
+export const presetNameSchema = z
+  .string()
+  .trim()
+  .min(1, "Give your preset a name")
+  .max(60, "Preset name is too long");
+
+/** POST /api/me/search-presets body. */
+export const createPresetBodySchema = z.object({
+  name: presetNameSchema,
   filters: savedSearchFiltersSchema,
 });
+
+/** PATCH /api/me/search-presets/[id] body — rename and/or replace filters. */
+export const updatePresetBodySchema = z
+  .object({
+    name: presetNameSchema.optional(),
+    filters: savedSearchFiltersSchema.optional(),
+  })
+  .refine((b) => b.name !== undefined || b.filters !== undefined, {
+    message: "Nothing to update",
+  });
 
 /** Known filter query-string keys. If any of these appear in the URL we
  * respect the explicit URL state and skip auto-applying the saved default. */
