@@ -188,7 +188,7 @@ describe("useFavorites", () => {
     });
   });
 
-  it("should show alert when not authenticated and trying to toggle", async () => {
+  it("should prompt the user to sign in when not authenticated and trying to toggle", async () => {
     vi.mocked(useSession).mockReturnValue({
       data: null,
       status: "unauthenticated",
@@ -201,8 +201,11 @@ describe("useFavorites", () => {
       await result.current.toggleFavorite("park-1");
     });
 
+    // With no SignInPromptProvider mounted (as in this isolated hook test),
+    // useSignInPrompt() falls back to a native alert carrying the same copy the
+    // themed sign-in dialog would show.
     expect(global.alert).toHaveBeenCalledWith(
-      "Please sign in to save favorites",
+      "Sign in to save parks to your favorites and get back to them anytime.",
     );
     expect(global.fetch).not.toHaveBeenCalled();
   });

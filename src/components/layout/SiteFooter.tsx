@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { WelcomeFooterLink } from "@/components/welcome/WelcomeFooterLink";
 
 /**
  * Global site footer. Provides always-available links to the legal pages
@@ -75,10 +76,11 @@ export function SiteFooter() {
       </div>
 
       <div className="border-t border-border">
-        <div className="max-w-7xl mx-auto px-6 py-6">
+        <div className="max-w-7xl mx-auto px-6 py-6 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
           <p className="text-xs text-muted-foreground">
             © {year} Offroad Parks. All rights reserved.
           </p>
+          <WelcomeFooterLink className="text-xs text-muted-foreground hover:text-foreground transition-colors self-start sm:self-auto" />
         </div>
       </div>
     </footer>

@@ -1,8 +1,10 @@
 import { useEffect, useState } from "react";
 import { useSession } from "next-auth/react";
+import { useSignInPrompt } from "@/components/auth/SignInPromptProvider";
 
 export function useFavorites() {
   const { data: session } = useSession();
+  const { promptSignIn } = useSignInPrompt();
   const [favoriteParkIds, setFavoriteParkIds] = useState<string[]>([]);
   const [isLoading, setIsLoading] = useState(false);
 
@@ -33,7 +35,7 @@ export function useFavorites() {
 
   const toggleFavorite = async (parkId: string) => {
     if (!session?.user) {
-      alert("Please sign in to save favorites");
+      promptSignIn({ description: "Sign in to save parks to your favorites and get back to them anytime." });
       return;
     }
 
