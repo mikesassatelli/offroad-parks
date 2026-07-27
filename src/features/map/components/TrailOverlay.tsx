@@ -61,7 +61,9 @@ const STYLE: Record<
   },
   // 4WD > 50\" open. Solid slate.
   fourwd: { color: "#0f766e", weight: 4, label: "4WD > 50\"" },
-  other: { color: "#6b7280", weight: 2.5, dashArray: "2 6", label: "Other" },
+  // Motorized trail whose per-vehicle class isn't published (e.g. Ouachita NF
+  // in the national layer). Solid sky-blue so it still reads as a real trail.
+  other: { color: "#0ea5e9", weight: 3, label: "OHV (class not specified)" },
 };
 
 const isOpen = (v?: string | null) => (v ?? "").toLowerCase() === "open";
