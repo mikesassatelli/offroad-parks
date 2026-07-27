@@ -37,6 +37,12 @@ const TRAIL_OVERLAYS: TrailOverlayConfig[] = [
     center: [35.7289, -94.3087],
     zoom: 13,
   },
+  {
+    match: /wolf\s*pen/i,
+    geojsonUrl: "/poc/wolf-pen-gap-trails.geojson",
+    center: [34.4707, -94.0823],
+    zoom: 13,
+  },
 ];
 
 export function findTrailOverlay(parkName: string): TrailOverlayConfig | null {
