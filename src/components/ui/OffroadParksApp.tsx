@@ -420,8 +420,15 @@ function OffroadParksAppInner({
           {/* Desktop sidebar — hidden on mobile, shown in the sheet above.
               Sticks beneath the pinned header while the list scrolls. */}
           <div
-            className="hidden w-72 shrink-0 lg:block lg:sticky lg:self-start lg:max-h-[calc(100vh-1rem)] lg:overflow-y-auto"
-            style={{ top: stickyOffset ? stickyOffset + 16 : undefined }}
+            className="hidden w-72 shrink-0 lg:block lg:sticky lg:self-start lg:overflow-y-auto"
+            style={{
+              top: stickyOffset ? stickyOffset + 16 : undefined,
+              // Fit the scroll box within the space visible below the pinned
+              // header (top offset) with a matching 16px gap at the bottom, so
+              // the facets' own scrollbar reveals every filter without needing
+              // to scroll the whole page down first.
+              maxHeight: `calc(100vh - ${stickyOffset + 32}px)`,
+            }}
           >
             {filtersPanel}
           </div>
