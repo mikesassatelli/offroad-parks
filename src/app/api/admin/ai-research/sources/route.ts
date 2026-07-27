@@ -1,11 +1,11 @@
 import { NextResponse } from "next/server";
-import { requireAdmin } from "@/lib/api-helpers";
+import { requireAdmin, requireAdminView } from "@/lib/api-helpers";
 import { prisma } from "@/lib/prisma";
 import type { DataSourceSummary } from "@/lib/types";
 import { normalizeUrl } from "@/lib/ai/source-discovery";
 
 export async function GET(request: Request) {
-  const adminResult = await requireAdmin();
+  const adminResult = await requireAdminView();
   if (adminResult instanceof NextResponse) return adminResult;
 
   const url = new URL(request.url);

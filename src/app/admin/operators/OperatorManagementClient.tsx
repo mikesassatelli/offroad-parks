@@ -13,6 +13,7 @@ import {
   Trash2,
   X,
 } from "lucide-react";
+import { ReadOnlyGate } from "@/components/admin/read-only";
 
 export interface AdminOperatorRow {
   id: string;
@@ -282,14 +283,16 @@ export function OperatorManagementClient({ initialOperators }: Props) {
             hint="User must already exist. If not, use Pre-grants."
           />
           <div className="md:col-span-2">
-            <button
-              type="submit"
-              disabled={creating || pending}
-              className="rounded-md bg-primary text-primary-foreground px-4 py-2 text-sm font-medium hover:bg-primary/90 disabled:opacity-50 inline-flex items-center gap-1"
-            >
-              <Plus className="w-4 h-4" />
-              {creating ? "Creating…" : "Create operator"}
-            </button>
+            <ReadOnlyGate>
+              <button
+                type="submit"
+                disabled={creating || pending}
+                className="rounded-md bg-primary text-primary-foreground px-4 py-2 text-sm font-medium hover:bg-primary/90 disabled:opacity-50 inline-flex items-center gap-1"
+              >
+                <Plus className="w-4 h-4" />
+                {creating ? "Creating…" : "Create operator"}
+              </button>
+            </ReadOnlyGate>
           </div>
         </form>
       </section>
@@ -492,14 +495,16 @@ function OperatorRow({
         <div className="flex items-center gap-2">
           {editing ? (
             <>
-              <button
-                type="button"
-                disabled={saving}
-                onClick={saveEdit}
-                className="text-xs rounded-md bg-primary text-primary-foreground px-3 py-1 hover:bg-primary/90 disabled:opacity-50"
-              >
-                {saving ? "Saving…" : "Save"}
-              </button>
+              <ReadOnlyGate>
+                <button
+                  type="button"
+                  disabled={saving}
+                  onClick={saveEdit}
+                  className="text-xs rounded-md bg-primary text-primary-foreground px-3 py-1 hover:bg-primary/90 disabled:opacity-50"
+                >
+                  {saving ? "Saving…" : "Save"}
+                </button>
+              </ReadOnlyGate>
               <button
                 type="button"
                 onClick={() => {
@@ -524,15 +529,17 @@ function OperatorRow({
               >
                 Edit
               </button>
-              <button
-                type="button"
-                disabled={busy}
-                onClick={onDeleteOperator}
-                className="text-xs rounded-md border border-red-300 text-red-700 px-2 py-1 hover:bg-red-50 disabled:opacity-50 dark:border-red-900 dark:text-red-300 dark:hover:bg-red-950/40 inline-flex items-center gap-1"
-              >
-                <Trash2 className="w-3 h-3" />
-                Delete
-              </button>
+              <ReadOnlyGate>
+                <button
+                  type="button"
+                  disabled={busy}
+                  onClick={onDeleteOperator}
+                  className="text-xs rounded-md border border-red-300 text-red-700 px-2 py-1 hover:bg-red-50 disabled:opacity-50 dark:border-red-900 dark:text-red-300 dark:hover:bg-red-950/40 inline-flex items-center gap-1"
+                >
+                  <Trash2 className="w-3 h-3" />
+                  Delete
+                </button>
+              </ReadOnlyGate>
             </>
           )}
         </div>
@@ -555,16 +562,18 @@ function OperatorRow({
                     <Link href={`/parks/${p.slug}`} className="text-sm hover:underline">
                       {p.name}
                     </Link>
-                    <button
-                      type="button"
-                      disabled={busy}
-                      onClick={() => onDetachPark(p.id, p.name)}
-                      className="text-xs text-muted-foreground hover:text-red-700 disabled:opacity-50 inline-flex items-center gap-1"
-                      title="Detach park"
-                    >
-                      <X className="w-3 h-3" />
-                      Detach
-                    </button>
+                    <ReadOnlyGate>
+                      <button
+                        type="button"
+                        disabled={busy}
+                        onClick={() => onDetachPark(p.id, p.name)}
+                        className="text-xs text-muted-foreground hover:text-red-700 disabled:opacity-50 inline-flex items-center gap-1"
+                        title="Detach park"
+                      >
+                        <X className="w-3 h-3" />
+                        Detach
+                      </button>
+                    </ReadOnlyGate>
                   </li>
                 ))}
               </ul>
@@ -585,13 +594,15 @@ function OperatorRow({
                 placeholder="park-slug-to-attach"
                 className="flex-1 rounded-md border border-border bg-background px-3 py-1.5 text-sm"
               />
-              <button
-                type="submit"
-                disabled={busy || !attachSlug.trim()}
-                className="text-xs rounded-md border border-border px-3 py-1.5 hover:bg-accent disabled:opacity-50"
-              >
-                Attach
-              </button>
+              <ReadOnlyGate>
+                <button
+                  type="submit"
+                  disabled={busy || !attachSlug.trim()}
+                  className="text-xs rounded-md border border-border px-3 py-1.5 hover:bg-accent disabled:opacity-50"
+                >
+                  Attach
+                </button>
+              </ReadOnlyGate>
             </form>
           </div>
 
@@ -615,16 +626,18 @@ function OperatorRow({
                           {m.role}
                         </span>
                       </div>
-                      <button
-                        type="button"
-                        disabled={busy}
-                        onClick={() => onRemoveUser(m.user.id, label)}
-                        className="text-xs text-muted-foreground hover:text-red-700 disabled:opacity-50 inline-flex items-center gap-1"
-                        title="Remove user"
-                      >
-                        <X className="w-3 h-3" />
-                        Remove
-                      </button>
+                      <ReadOnlyGate>
+                        <button
+                          type="button"
+                          disabled={busy}
+                          onClick={() => onRemoveUser(m.user.id, label)}
+                          className="text-xs text-muted-foreground hover:text-red-700 disabled:opacity-50 inline-flex items-center gap-1"
+                          title="Remove user"
+                        >
+                          <X className="w-3 h-3" />
+                          Remove
+                        </button>
+                      </ReadOnlyGate>
                     </li>
                   );
                 })}
@@ -655,13 +668,15 @@ function OperatorRow({
                 <option value="OWNER">OWNER</option>
                 <option value="MEMBER">MEMBER</option>
               </select>
-              <button
-                type="submit"
-                disabled={busy || !addUserEmail.trim()}
-                className="text-xs rounded-md border border-border px-3 py-1.5 hover:bg-accent disabled:opacity-50"
-              >
-                Add
-              </button>
+              <ReadOnlyGate>
+                <button
+                  type="submit"
+                  disabled={busy || !addUserEmail.trim()}
+                  className="text-xs rounded-md border border-border px-3 py-1.5 hover:bg-accent disabled:opacity-50"
+                >
+                  Add
+                </button>
+              </ReadOnlyGate>
             </form>
           </div>
         </div>

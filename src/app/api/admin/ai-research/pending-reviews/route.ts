@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import { requireAdmin } from "@/lib/api-helpers";
+import { requireAdminView } from "@/lib/api-helpers";
 import { prisma } from "@/lib/prisma";
 import { getCurrentFieldValue } from "@/lib/ai/research-lifecycle";
 import type { FieldExtractionSummary, DbPark } from "@/lib/types";
@@ -22,7 +22,7 @@ function normalizeForComparison(jsonStr: string): string {
 }
 
 export async function GET(request: Request) {
-  const adminResult = await requireAdmin();
+  const adminResult = await requireAdminView();
   if (adminResult instanceof NextResponse) return adminResult;
 
   const url = new URL(request.url);

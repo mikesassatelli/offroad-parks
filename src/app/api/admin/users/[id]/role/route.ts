@@ -4,7 +4,13 @@ import { prisma } from "@/lib/prisma";
 
 export const runtime = "nodejs";
 
-const ASSIGNABLE_ROLES = ["USER", "OPERATOR", "ADMIN", "SUPER_ADMIN"] as const;
+const ASSIGNABLE_ROLES = [
+  "USER",
+  "BETA_TESTER",
+  "OPERATOR",
+  "ADMIN",
+  "SUPER_ADMIN",
+] as const;
 type AssignableRole = (typeof ASSIGNABLE_ROLES)[number];
 
 // PATCH /api/admin/users/[id]/role — only SUPER_ADMIN may promote/demote users.

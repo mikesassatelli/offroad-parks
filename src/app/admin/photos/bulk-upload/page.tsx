@@ -2,6 +2,7 @@
 
 import { useState, useRef, useCallback } from "react";
 import { Upload, X, Check, AlertCircle, Loader2 } from "lucide-react";
+import { ReadOnlyGate } from "@/components/admin/read-only";
 
 interface ParkOption {
   id: string;
@@ -324,23 +325,25 @@ export default function BulkPhotoUploadPage() {
 
           {/* Upload button */}
           <div className="flex items-center gap-4">
-            <button
-              onClick={handleUpload}
-              disabled={uploading || readyCount === 0}
-              className="px-6 py-2.5 bg-primary text-primary-foreground font-medium rounded-lg hover:bg-primary/90 disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2 transition-colors"
-            >
-              {uploading ? (
-                <>
-                  <Loader2 className="w-4 h-4 animate-spin" />
-                  Uploading...
-                </>
-              ) : (
-                <>
-                  <Upload className="w-4 h-4" />
-                  Upload {readyCount} photo{readyCount !== 1 ? "s" : ""}
-                </>
-              )}
-            </button>
+            <ReadOnlyGate>
+              <button
+                onClick={handleUpload}
+                disabled={uploading || readyCount === 0}
+                className="px-6 py-2.5 bg-primary text-primary-foreground font-medium rounded-lg hover:bg-primary/90 disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2 transition-colors"
+              >
+                {uploading ? (
+                  <>
+                    <Loader2 className="w-4 h-4 animate-spin" />
+                    Uploading...
+                  </>
+                ) : (
+                  <>
+                    <Upload className="w-4 h-4" />
+                    Upload {readyCount} photo{readyCount !== 1 ? "s" : ""}
+                  </>
+                )}
+              </button>
+            </ReadOnlyGate>
             {readyCount < entries.length && (
               <p className="text-sm text-muted-foreground">
                 {entries.length - readyCount} photo

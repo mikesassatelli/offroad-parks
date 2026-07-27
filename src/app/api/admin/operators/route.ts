@@ -8,13 +8,13 @@
 import { NextResponse } from "next/server";
 import { Prisma } from "@prisma/client";
 import { prisma } from "@/lib/prisma";
-import { requireAdmin } from "@/lib/api-helpers";
+import { requireAdmin, requireAdminView } from "@/lib/api-helpers";
 
 export const runtime = "nodejs";
 
 // GET /api/admin/operators — list all operators with their parks + users.
 export async function GET(): Promise<NextResponse> {
-  const authResult = await requireAdmin();
+  const authResult = await requireAdminView();
   if (authResult instanceof NextResponse) return authResult;
 
   const operators = await prisma.operator.findMany({

@@ -4,6 +4,7 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { Plus, ExternalLink, Play, Loader2, ShieldCheck, ShieldOff, SkipForward, RotateCcw, Ban, Unlock } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { ReadOnlyGate } from "@/components/admin/read-only";
 import type { DataSourceSummary } from "@/lib/types";
 
 type Props = {
@@ -95,23 +96,25 @@ export function SourceManagementTable({ sources, parkId }: Props) {
             Crawl all sources, discover new ones via web search, and extract park data using AI.
           </p>
         </div>
-        <Button
-          onClick={handleResearch}
-          disabled={researching}
-          size="sm"
-        >
-          {researching ? (
-            <>
-              <Loader2 className="w-4 h-4 mr-1 animate-spin" />
-              Researching...
-            </>
-          ) : (
-            <>
-              <Play className="w-4 h-4 mr-1" />
-              Run Research
-            </>
-          )}
-        </Button>
+        <ReadOnlyGate>
+          <Button
+            onClick={handleResearch}
+            disabled={researching}
+            size="sm"
+          >
+            {researching ? (
+              <>
+                <Loader2 className="w-4 h-4 mr-1 animate-spin" />
+                Researching...
+              </>
+            ) : (
+              <>
+                <Play className="w-4 h-4 mr-1" />
+                Run Research
+              </>
+            )}
+          </Button>
+        </ReadOnlyGate>
       </div>
       {researchResult && (
         <div
@@ -148,10 +151,12 @@ export function SourceManagementTable({ sources, parkId }: Props) {
             />
             Official
           </label>
-          <Button type="submit" size="sm" disabled={adding}>
-            <Plus className="w-4 h-4 mr-1" />
-            Add
-          </Button>
+          <ReadOnlyGate>
+            <Button type="submit" size="sm" disabled={adding}>
+              <Plus className="w-4 h-4 mr-1" />
+              Add
+            </Button>
+          </ReadOnlyGate>
         </div>
       </form>
 
@@ -221,6 +226,7 @@ export function SourceManagementTable({ sources, parkId }: Props) {
                     </span>
                   </td>
                   <td className="px-4 py-3">
+                    <ReadOnlyGate>
                     <div className="flex items-center gap-1">
                       {source.crawlStatus === "WRONG_PARK" ? (
                         <Button
@@ -307,6 +313,7 @@ export function SourceManagementTable({ sources, parkId }: Props) {
                         </>
                       )}
                     </div>
+                    </ReadOnlyGate>
                   </td>
                 </tr>
               ))}

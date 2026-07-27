@@ -1,6 +1,7 @@
 import {
   parseJsonBody,
   requireAdmin,
+  requireAdminView,
   requireAuth,
   requireSuperAdmin,
 } from "@/lib/api-helpers";
@@ -73,6 +74,56 @@ describe("requireAdmin", () => {
     expect(result).not.toBeInstanceOf(NextResponse);
     expect(result).toEqual(session);
   });
+
+  it("should return 403 for a read-only beta tester (no write access)", async () => {
+    (auth as ReturnType<typeof vi.fn>).mockResolvedValue({
+      user: { id: "beta-1", role: "BETA_TESTER" },
+    });
+
+    const result = await requireAdmin();
+
+    expect(result).toBeInstanceOf(NextResponse);
+    expect((result as NextResponse).status).toBe(403);
+  });
+});
+
+describe("requireAdminView", () => {
+  beforeEach(() => {
+    vi.clearAllMocks();
+  });
+
+  it("should return 401 when no session", async () => {
+    (auth as ReturnType<typeof vi.fn>).mockResolvedValue(null);
+
+    const result = await requireAdminView();
+
+    expect(result).toBeInstanceOf(NextResponse);
+    expect((result as NextResponse).status).toBe(401);
+  });
+
+  it("should return 403 for a regular user", async () => {
+    (auth as ReturnType<typeof vi.fn>).mockResolvedValue({
+      user: { id: "user-1", role: "USER" },
+    });
+
+    const result = await requireAdminView();
+
+    expect(result).toBeInstanceOf(NextResponse);
+    expect((result as NextResponse).status).toBe(403);
+  });
+
+  it.each(["ADMIN", "SUPER_ADMIN", "BETA_TESTER"])(
+    "should return the session for %s (view access)",
+    async (role) => {
+      const session = { user: { id: `${role}-1`, role } };
+      (auth as ReturnType<typeof vi.fn>).mockResolvedValue(session);
+
+      const result = await requireAdminView();
+
+      expect(result).not.toBeInstanceOf(NextResponse);
+      expect(result).toEqual(session);
+    },
+  );
 });
 
 describe("requireSuperAdmin", () => {

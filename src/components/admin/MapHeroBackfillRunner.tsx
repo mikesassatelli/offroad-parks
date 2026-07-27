@@ -8,6 +8,7 @@
 
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
+import { ReadOnlyGate } from "@/components/admin/read-only";
 import { Card } from "@/components/ui/card";
 import { Loader2, Play, Square, AlertCircle, CheckCircle2 } from "lucide-react";
 
@@ -106,10 +107,12 @@ export function MapHeroBackfillRunner({ initialRemaining }: { initialRemaining: 
             Stop
           </Button>
         ) : (
-          <Button onClick={start} disabled={state.remaining === 0}>
-            <Play className="w-4 h-4 mr-2" />
-            {state.remaining === 0 ? "All parks covered" : "Run backfill"}
-          </Button>
+          <ReadOnlyGate>
+            <Button onClick={start} disabled={state.remaining === 0}>
+              <Play className="w-4 h-4 mr-2" />
+              {state.remaining === 0 ? "All parks covered" : "Run backfill"}
+            </Button>
+          </ReadOnlyGate>
         )}
         {state.running && (
           <div className="flex items-center gap-2 text-sm text-muted-foreground">

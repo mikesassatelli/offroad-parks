@@ -1,6 +1,7 @@
 import { redirect } from "next/navigation";
 import { auth } from "@/lib/auth";
 import { BulkParkUpload } from "@/components/admin/BulkParkUpload";
+import { canAdminView } from "@/lib/roles";
 
 export const metadata = {
   title: "Bulk Upload Parks - Admin",
@@ -15,9 +16,9 @@ export default async function BulkUploadPage() {
     redirect("/api/auth/signin");
   }
 
-  // Require admin role
+  // Require admin view access (read-only beta testers see a disabled form)
   const userRole = (session.user as { role?: string })?.role;
-  if (userRole !== "ADMIN" && userRole !== "SUPER_ADMIN") {
+  if (!canAdminView(userRole)) {
     redirect("/");
   }
 

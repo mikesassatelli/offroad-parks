@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { Camera, CheckCircle, Edit, MapPin, Trash2, XCircle } from "lucide-react";
+import { ReadOnlyGate } from "@/components/admin/read-only";
 
 type ParkStatus = "PENDING" | "APPROVED" | "REJECTED" | "DRAFT";
 
@@ -152,7 +153,7 @@ export function ParkManagementTable({
   const renderActions = (park: Park) => (
     <>
       {park.status === "PENDING" && (
-        <>
+        <ReadOnlyGate>
           <button
             onClick={() => handleApprove(park.id)}
             disabled={processingId === park.id}
@@ -169,7 +170,7 @@ export function ParkManagementTable({
           >
             <XCircle className="w-5 h-5" />
           </button>
-        </>
+        </ReadOnlyGate>
       )}
       <a
         href={`/admin/parks/${park.id}/edit`}
@@ -178,14 +179,16 @@ export function ParkManagementTable({
       >
         <Edit className="w-5 h-5" />
       </a>
-      <button
-        onClick={() => handleDelete(park.id, park.name)}
-        disabled={processingId === park.id}
-        className="text-red-600 dark:text-red-400 hover:text-red-900 dark:hover:text-red-200 disabled:opacity-50 disabled:cursor-not-allowed"
-        title="Delete"
-      >
-        <Trash2 className="w-5 h-5" />
-      </button>
+      <ReadOnlyGate>
+        <button
+          onClick={() => handleDelete(park.id, park.name)}
+          disabled={processingId === park.id}
+          className="text-red-600 dark:text-red-400 hover:text-red-900 dark:hover:text-red-200 disabled:opacity-50 disabled:cursor-not-allowed"
+          title="Delete"
+        >
+          <Trash2 className="w-5 h-5" />
+        </button>
+      </ReadOnlyGate>
     </>
   );
 

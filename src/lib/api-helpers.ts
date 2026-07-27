@@ -6,15 +6,15 @@ import { NextResponse } from "next/server";
 import { z } from "zod";
 import type { Session } from "next-auth";
 import { auth } from "@/lib/auth";
+import { canAdminWrite, canAdminView } from "@/lib/roles";
 
 /** A session that is guaranteed to have a user (post-auth-guard). */
 type AuthenticatedSession = Session & { user: NonNullable<Session["user"]> };
 
-/** Roles that grant access to the admin console. */
-const ADMIN_ROLES = new Set(["ADMIN", "SUPER_ADMIN"]);
-
 /**
- * Verify the request comes from an authenticated admin (ADMIN or SUPER_ADMIN).
+ * Verify the request comes from an admin allowed to MUTATE (ADMIN or
+ * SUPER_ADMIN). Read-only beta testers are rejected here — use this guard on
+ * every mutating handler (POST/PATCH/PUT/DELETE).
  * Returns the session on success, or a NextResponse 401/403 on failure.
  *
  * Usage:
@@ -29,7 +29,26 @@ export async function requireAdmin(): Promise<
   if (!session?.user?.id) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
-  if (!ADMIN_ROLES.has(session.user.role ?? "")) {
+  if (!canAdminWrite(session.user.role)) {
+    return NextResponse.json({ error: "Forbidden" }, { status: 403 });
+  }
+  return session as AuthenticatedSession;
+}
+
+/**
+ * Verify the request comes from a user allowed to VIEW the admin console
+ * (ADMIN, SUPER_ADMIN, or read-only BETA_TESTER). Use this on read-only
+ * handlers (GET) that back admin pages, so beta testers can browse the data.
+ * Returns the session on success, or a NextResponse 401/403 on failure.
+ */
+export async function requireAdminView(): Promise<
+  AuthenticatedSession | NextResponse
+> {
+  const session = await auth();
+  if (!session?.user?.id) {
+    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  }
+  if (!canAdminView(session.user.role)) {
     return NextResponse.json({ error: "Forbidden" }, { status: 403 });
   }
   return session as AuthenticatedSession;

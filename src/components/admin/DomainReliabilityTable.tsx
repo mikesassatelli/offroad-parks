@@ -4,6 +4,7 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { Plus, Pencil, Trash2, Check, X, Lock, LockOpen } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { ReadOnlyGate } from "@/components/admin/read-only";
 import type { DomainReliabilitySummary } from "@/lib/types";
 
 type Props = {
@@ -202,9 +203,11 @@ export function DomainReliabilityTable({ domains }: Props) {
                 />
                 Blocked
               </label>
-              <Button type="submit" size="sm" disabled={adding}>
-                Add
-              </Button>
+              <ReadOnlyGate>
+                <Button type="submit" size="sm" disabled={adding}>
+                  Add
+                </Button>
+              </ReadOnlyGate>
               <Button
                 type="button"
                 variant="ghost"
@@ -331,16 +334,18 @@ export function DomainReliabilityTable({ domains }: Props) {
                     <div className="flex items-center gap-1">
                       {editingId === domain.id ? (
                         <>
-                          <Button
-                            variant="ghost"
-                            size="icon-sm"
-                            onClick={() => handleSave(domain.id)}
-                            disabled={saving}
-                            title="Save"
-                            className="text-green-600 dark:text-green-400 hover:text-green-700 dark:hover:text-green-300 hover:bg-green-50 dark:hover:bg-green-900/20"
-                          >
-                            <Check className="w-4 h-4" />
-                          </Button>
+                          <ReadOnlyGate>
+                            <Button
+                              variant="ghost"
+                              size="icon-sm"
+                              onClick={() => handleSave(domain.id)}
+                              disabled={saving}
+                              title="Save"
+                              className="text-green-600 dark:text-green-400 hover:text-green-700 dark:hover:text-green-300 hover:bg-green-50 dark:hover:bg-green-900/20"
+                            >
+                              <Check className="w-4 h-4" />
+                            </Button>
+                          </ReadOnlyGate>
                           <Button
                             variant="ghost"
                             size="icon-sm"
@@ -353,25 +358,27 @@ export function DomainReliabilityTable({ domains }: Props) {
                         </>
                       ) : (
                         <>
-                          <Button
-                            variant="ghost"
-                            size="icon-sm"
-                            onClick={() =>
-                              handleToggleLock(domain.id, domain.locked)
-                            }
-                            title={
-                              domain.locked
-                                ? "Unpin — allow auto-tuning"
-                                : "Pin score — skip auto-tuning"
-                            }
-                            className="text-muted-foreground hover:text-primary hover:bg-primary/10"
-                          >
-                            {domain.locked ? (
-                              <Lock className="w-4 h-4" />
-                            ) : (
-                              <LockOpen className="w-4 h-4" />
-                            )}
-                          </Button>
+                          <ReadOnlyGate>
+                            <Button
+                              variant="ghost"
+                              size="icon-sm"
+                              onClick={() =>
+                                handleToggleLock(domain.id, domain.locked)
+                              }
+                              title={
+                                domain.locked
+                                  ? "Unpin — allow auto-tuning"
+                                  : "Pin score — skip auto-tuning"
+                              }
+                              className="text-muted-foreground hover:text-primary hover:bg-primary/10"
+                            >
+                              {domain.locked ? (
+                                <Lock className="w-4 h-4" />
+                              ) : (
+                                <LockOpen className="w-4 h-4" />
+                              )}
+                            </Button>
+                          </ReadOnlyGate>
                           <Button
                             variant="ghost"
                             size="icon-sm"
@@ -381,17 +388,19 @@ export function DomainReliabilityTable({ domains }: Props) {
                           >
                             <Pencil className="w-4 h-4" />
                           </Button>
-                          <Button
-                            variant="ghost"
-                            size="icon-sm"
-                            onClick={() =>
-                              handleDelete(domain.id, domain.domainPattern)
-                            }
-                            title="Delete"
-                            className="text-muted-foreground hover:text-destructive hover:bg-destructive/10"
-                          >
-                            <Trash2 className="w-4 h-4" />
-                          </Button>
+                          <ReadOnlyGate>
+                            <Button
+                              variant="ghost"
+                              size="icon-sm"
+                              onClick={() =>
+                                handleDelete(domain.id, domain.domainPattern)
+                              }
+                              title="Delete"
+                              className="text-muted-foreground hover:text-destructive hover:bg-destructive/10"
+                            >
+                              <Trash2 className="w-4 h-4" />
+                            </Button>
+                          </ReadOnlyGate>
                         </>
                       )}
                     </div>

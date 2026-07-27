@@ -2,6 +2,7 @@ import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { redirect } from "next/navigation";
 import { PeopleTabs } from "@/components/admin/PeopleTabs";
+import { canAdminView } from "@/lib/roles";
 import {
   OperatorManagementClient,
   type AdminOperatorRow,
@@ -10,7 +11,7 @@ import {
 export default async function AdminOperatorsPage() {
   const session = await auth();
   const role = (session?.user as { role?: string })?.role;
-  if (role !== "ADMIN" && role !== "SUPER_ADMIN") {
+  if (!canAdminView(role)) {
     redirect("/");
   }
   const isSuperAdmin = role === "SUPER_ADMIN";
