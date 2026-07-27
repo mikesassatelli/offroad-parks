@@ -1,4 +1,4 @@
-import { render, screen } from "@testing-library/react";
+import { fireEvent, render, screen } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { ParkDetailPage } from "@/features/parks/detail/ParkDetailPage";
 import type { Park } from "@/lib/types";
@@ -20,6 +20,31 @@ vi.mock("next-auth/react", () => ({
   SessionProvider: ({ children }: any) => children,
   useSession: vi.fn(),
 }));
+
+// Mock the favorites hook so we can assert toggle calls and control state.
+const mockToggleFavorite = vi.fn();
+const mockIsFavorite = vi.fn(() => false);
+vi.mock("@/hooks/useFavorites", () => ({
+  useFavorites: () => ({
+    isFavorite: mockIsFavorite,
+    toggleFavorite: mockToggleFavorite,
+    favoriteParkIds: [],
+    isLoading: false,
+  }),
+}));
+
+// Mock the (Wave-1) correction dialog so we can assert it is mounted with the
+// right props without exercising its internals.
+vi.mock(
+  "@/features/parks/detail/components/SuggestCorrectionDialog",
+  () => ({
+    SuggestCorrectionDialog: ({ parkSlug, parkName }: any) => (
+      <div data-testid="suggest-correction-dialog">
+        correction:{parkSlug}:{parkName}
+      </div>
+    ),
+  }),
+);
 
 // Mock child components
 vi.mock("@/features/parks/detail/components/ParkOverviewCard", () => ({
@@ -210,6 +235,7 @@ describe("ParkDetailPage", () => {
   beforeEach(() => {
     vi.clearAllMocks();
     vi.mocked(useSession).mockReturnValue({ data: null } as any);
+    mockIsFavorite.mockReturnValue(false);
   });
 
   it("should render park name in header", () => {
@@ -551,5 +577,134 @@ describe("ParkDetailPage", () => {
     expect(sidebar).toContainElement(
       screen.getByTestId("park-contact-sidebar"),
     );
+  });
+
+  describe("Favorite toggle", () => {
+    it("renders an 'Add to favorites' button when the park is not favorited", () => {
+      mockIsFavorite.mockReturnValue(false);
+      render(<ParkDetailPage park={mockPark} photos={[]} />);
+
+      expect(
+        screen.getByRole("button", { name: /add to favorites/i }),
+      ).toBeInTheDocument();
+    });
+
+    it("renders a 'Remove from favorites' button when the park is favorited", () => {
+      mockIsFavorite.mockReturnValue(true);
+      render(<ParkDetailPage park={mockPark} photos={[]} />);
+
+      const btn = screen.getByRole("button", {
+        name: /remove from favorites/i,
+      });
+      expect(btn).toBeInTheDocument();
+      expect(btn).toHaveAttribute("aria-pressed", "true");
+    });
+
+    it("calls toggleFavorite with the park slug (park.id) when clicked", async () => {
+      const user = userEvent.setup();
+      render(<ParkDetailPage park={mockPark} photos={[]} />);
+
+      await user.click(
+        screen.getByRole("button", { name: /add to favorites/i }),
+      );
+
+      expect(mockToggleFavorite).toHaveBeenCalledWith("test-park");
+    });
+
+    it("queries isFavorite using the park slug (park.id)", () => {
+      render(<ParkDetailPage park={mockPark} photos={[]} />);
+
+      expect(mockIsFavorite).toHaveBeenCalledWith("test-park");
+    });
+  });
+
+  describe("Share button", () => {
+    afterEach(() => {
+      // Clean up navigator overrides so tests don't leak share/clipboard state.
+      delete (navigator as any).share;
+      delete (navigator as any).clipboard;
+    });
+
+    it("uses the Web Share API when available", async () => {
+      const share = vi.fn().mockResolvedValue(undefined);
+      Object.assign(navigator, { share });
+      const user = userEvent.setup();
+
+      render(<ParkDetailPage park={mockPark} photos={[]} />);
+      await user.click(
+        screen.getByRole("button", { name: /share this park/i }),
+      );
+
+      expect(share).toHaveBeenCalledTimes(1);
+      expect(share).toHaveBeenCalledWith(
+        expect.objectContaining({ title: "Test Park", url: expect.any(String) }),
+      );
+    });
+
+    it("falls back to copying the link and shows a 'Copied!' state", async () => {
+      delete (navigator as any).share;
+      const writeText = vi.fn().mockResolvedValue(undefined);
+      // defineProperty (not Object.assign) so this survives regardless of any
+      // read-only navigator.clipboard stub installed elsewhere.
+      Object.defineProperty(navigator, "clipboard", {
+        value: { writeText },
+        configurable: true,
+      });
+
+      render(<ParkDetailPage park={mockPark} photos={[]} />);
+      fireEvent.click(
+        screen.getByRole("button", { name: /share this park/i }),
+      );
+
+      expect(writeText).toHaveBeenCalledTimes(1);
+      expect(await screen.findByText("Copied!")).toBeInTheDocument();
+    });
+  });
+
+  describe("Suggest a correction", () => {
+    it("mounts the correction dialog with the park slug and name", () => {
+      render(<ParkDetailPage park={mockPark} photos={[]} />);
+
+      const dialog = screen.getByTestId("suggest-correction-dialog");
+      expect(dialog).toBeInTheDocument();
+      expect(dialog).toHaveTextContent("correction:test-park:Test Park");
+    });
+  });
+
+  describe("Data freshness / provenance", () => {
+    it("renders a 'Last verified' line when lastResearchedAt is present", () => {
+      const park = { ...mockPark, lastResearchedAt: "2026-01-15T00:00:00.000Z" };
+      render(<ParkDetailPage park={park} photos={[]} />);
+
+      expect(screen.getByText(/last verified/i)).toBeInTheDocument();
+    });
+
+    it("hides the 'Last verified' line when lastResearchedAt is absent", () => {
+      render(<ParkDetailPage park={mockPark} photos={[]} />);
+
+      expect(screen.queryByText(/last verified/i)).not.toBeInTheDocument();
+    });
+
+    it("renders trail-data attribution on the Location tab when present", () => {
+      const park = {
+        ...mockPark,
+        trailGeometry: {
+          geojson: { type: "FeatureCollection", features: [] },
+          sourceName: "OpenStreetMap",
+          license: "ODbL",
+        },
+      };
+      render(<ParkDetailPage park={park} photos={[]} />);
+
+      expect(
+        screen.getByText(/trail data: openstreetmap \(odbl\)/i),
+      ).toBeInTheDocument();
+    });
+
+    it("omits trail-data attribution when no sourceName is present", () => {
+      render(<ParkDetailPage park={mockPark} photos={[]} />);
+
+      expect(screen.queryByText(/trail data:/i)).not.toBeInTheDocument();
+    });
   });
 });

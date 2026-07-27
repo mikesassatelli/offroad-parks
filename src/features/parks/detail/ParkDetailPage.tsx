@@ -7,7 +7,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import type { Park } from "@/lib/types";
-import { Camera, CheckCircle, Clock, MapPin, MessageSquare, Pencil } from "lucide-react";
+import { Camera, Check, CheckCircle, Clock, MapPin, MessageSquare, Pencil, Share2, Star, StarOff } from "lucide-react";
 import { SessionProvider, useSession } from "next-auth/react";
 import dynamic from "next/dynamic";
 import Link from "next/link";
@@ -34,6 +34,9 @@ import { useReviews } from "@/hooks/useReviews";
 import { useParkReview } from "@/hooks/useParkReview";
 import { AppHeader } from "@/components/layout/AppHeader";
 import { useSignInPrompt } from "@/components/auth/SignInPromptProvider";
+import { useFavorites } from "@/hooks/useFavorites";
+import { formatDate } from "@/lib/formatting";
+import { SuggestCorrectionDialog } from "./components/SuggestCorrectionDialog";
 import { findTrailOverlay } from "./trailOverlays";
 import type { TrailFeatureCollection } from "@/features/map/components/TrailOverlay";
 
@@ -92,7 +95,29 @@ function ParkDetailPageInner({
   const router = useRouter();
   const { data: session } = useSession();
   const { promptSignIn } = useSignInPrompt();
+  const { isFavorite, toggleFavorite } = useFavorites();
   const [showReviewForm, setShowReviewForm] = useState(false);
+  // Share control: prefer the native Web Share API; otherwise copy the URL to
+  // the clipboard and show a transient "Copied!" confirmation.
+  const [shareCopied, setShareCopied] = useState(false);
+  const handleShare = async () => {
+    const url = window.location.href;
+    if (typeof navigator !== "undefined" && navigator.share) {
+      try {
+        await navigator.share({ title: park.name, url });
+      } catch {
+        /* user dismissed the share sheet or it failed — no-op */
+      }
+      return;
+    }
+    try {
+      await navigator.clipboard.writeText(url);
+      setShareCopied(true);
+      setTimeout(() => setShareCopied(false), 2000);
+    } catch {
+      /* clipboard unavailable — leave state unchanged */
+    }
+  };
 
   // Trail-geometry overlay for the Location tab. Source priority:
   //   1. DB — park.trailGeometry.geojson (ParkTrailGeometry table).
@@ -204,18 +229,60 @@ function ParkDetailPageInner({
                   {park.address.state}
                 </span>
               </div>
+              {park.lastResearchedAt && (
+                <p className="text-xs text-muted-foreground mt-1">
+                  Last verified {formatDate(park.lastResearchedAt)}
+                </p>
+              )}
             </div>
-            {isAdmin && parkDbId && (
-              <Button asChild variant="outline" size="sm">
-                <Link
-                  href={`/admin/parks/${parkDbId}/edit`}
-                  aria-label="Edit in Admin"
-                >
-                  <Pencil className="w-4 h-4" />
-                  Edit in Admin
-                </Link>
+            <div className="flex items-center gap-2">
+              {/* Favorite (star) toggle. Keyed by park slug (park.id). The
+                  hook handles the signed-out sign-in prompt internally. */}
+              <Button
+                size="icon"
+                variant={isFavorite(park.id) ? "default" : "secondary"}
+                onClick={() => toggleFavorite(park.id)}
+                aria-pressed={isFavorite(park.id)}
+                aria-label={
+                  isFavorite(park.id)
+                    ? "Remove from favorites"
+                    : "Add to favorites"
+                }
+              >
+                {isFavorite(park.id) ? (
+                  <Star className="w-4 h-4 fill-current" />
+                ) : (
+                  <StarOff className="w-4 h-4" />
+                )}
               </Button>
-            )}
+              {/* Share: native share sheet where supported, else copy-link. */}
+              <Button
+                size="icon"
+                variant="secondary"
+                onClick={handleShare}
+                aria-label="Share this park"
+              >
+                {shareCopied ? (
+                  <Check className="w-4 h-4" />
+                ) : (
+                  <Share2 className="w-4 h-4" />
+                )}
+                <span className="sr-only">
+                  {shareCopied ? "Copied!" : "Share"}
+                </span>
+              </Button>
+              {isAdmin && parkDbId && (
+                <Button asChild variant="outline" size="sm">
+                  <Link
+                    href={`/admin/parks/${parkDbId}/edit`}
+                    aria-label="Edit in Admin"
+                  >
+                    <Pencil className="w-4 h-4" />
+                    Edit in Admin
+                  </Link>
+                </Button>
+              )}
+            </div>
           </div>
           {(park.averageRating || park.averageDifficulty || park.averageTerrain || park.averageFacilities) && (
             <div className="flex flex-wrap items-center gap-x-6 gap-y-2 mt-4">
@@ -287,6 +354,17 @@ function ParkDetailPageInner({
                 <ParkOverviewCard park={park} />
                 <ParkAttributesCards park={park} />
                 <ParkOperationalCard park={park} />
+                {/* Low-key crowdsourced-correction affordance. The dialog
+                    renders its own trigger and self-gates on auth. */}
+                <div className="flex flex-wrap items-center justify-between gap-3 rounded-lg border border-dashed border-border bg-muted/30 px-4 py-3">
+                  <p className="text-sm text-muted-foreground">
+                    See something wrong or out of date?
+                  </p>
+                  <SuggestCorrectionDialog
+                    parkSlug={park.id}
+                    parkName={park.name}
+                  />
+                </div>
               </TabsContent>
 
               {/* Photos Tab */}
@@ -506,6 +584,16 @@ function ParkDetailPageInner({
                         alwaysShowLabel
                         containerClassName="h-96 w-full rounded-lg overflow-hidden border shadow-sm"
                       />
+                      {/* Trail-geometry provenance / attribution. Shown only
+                          when the DB row carries a source name. */}
+                      {park.trailGeometry?.sourceName && (
+                        <p className="mt-2 text-xs text-muted-foreground">
+                          Trail data: {park.trailGeometry.sourceName}
+                          {park.trailGeometry.license
+                            ? ` (${park.trailGeometry.license})`
+                            : ""}
+                        </p>
+                      )}
                     </CardContent>
                   </Card>
                 </TabsContent>
