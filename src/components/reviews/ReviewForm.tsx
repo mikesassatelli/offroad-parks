@@ -13,6 +13,8 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Image as ImageIcon, X } from "lucide-react";
+import Image from "next/image";
 import { StarRatingInput, DifficultyRatingInput } from "./StarRating";
 import {
   ALL_VISIT_CONDITIONS,
@@ -24,8 +26,21 @@ import {
   formatRecommendedDuration,
   formatVehicleType,
 } from "@/lib/formatting";
-import type { ReviewFormData } from "@/hooks/useParkReview";
+import { MAX_REVIEW_PHOTOS, type ReviewFormData } from "@/hooks/useParkReview";
 import type { Review, VehicleType, VisitCondition, RecommendedDuration } from "@/lib/types";
+
+const ALLOWED_PHOTO_TYPES = [
+  "image/jpeg",
+  "image/jpg",
+  "image/png",
+  "image/webp",
+];
+const MAX_PHOTO_SIZE = 5 * 1024 * 1024; // 5MB
+
+interface SelectedPhoto {
+  file: File;
+  preview: string;
+}
 
 interface ReviewFormProps {
   initialData?: Review | null;
@@ -58,6 +73,56 @@ export function ReviewForm({
 
   const [errors, setErrors] = useState<string[]>([]);
 
+  const [photos, setPhotos] = useState<SelectedPhoto[]>([]);
+  const [photoError, setPhotoError] = useState<string | null>(null);
+
+  const handlePhotoChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const selected = Array.from(e.target.files ?? []);
+    // Reset the input so selecting the same file again re-triggers onChange.
+    e.target.value = "";
+    if (selected.length === 0) return;
+
+    setPhotoError(null);
+
+    let nextPhotos = [...photos];
+    for (const file of selected) {
+      if (nextPhotos.length >= MAX_REVIEW_PHOTOS) {
+        setPhotoError(`You can attach up to ${MAX_REVIEW_PHOTOS} photos.`);
+        break;
+      }
+      if (!ALLOWED_PHOTO_TYPES.includes(file.type)) {
+        setPhotoError(
+          "Invalid file type. Only JPEG, PNG, and WebP images are allowed.",
+        );
+        continue;
+      }
+      if (file.size > MAX_PHOTO_SIZE) {
+        setPhotoError("File too large. Maximum size is 5MB.");
+        continue;
+      }
+
+      const entry: SelectedPhoto = { file, preview: "" };
+      nextPhotos = [...nextPhotos, entry];
+
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        setPhotos((current) =>
+          current.map((p) =>
+            p.file === file ? { ...p, preview: reader.result as string } : p,
+          ),
+        );
+      };
+      reader.readAsDataURL(file);
+    }
+
+    setPhotos(nextPhotos);
+  };
+
+  const handleRemovePhoto = (index: number) => {
+    setPhotos((current) => current.filter((_, i) => i !== index));
+    setPhotoError(null);
+  };
+
   const validate = (): boolean => {
     const newErrors: string[] = [];
 
@@ -88,7 +153,10 @@ export function ReviewForm({
       return;
     }
 
-    const result = await onSubmit(formData);
+    const result = await onSubmit({
+      ...formData,
+      photos: photos.map((p) => p.file),
+    });
     if (result.success && result.message) {
       alert(result.message);
     } else if (!result.success && result.message) {
@@ -283,6 +351,69 @@ export function ReviewForm({
               }
               placeholder="e.g., Families, Experienced riders, Big rigs"
             />
+          </div>
+
+          {/* Photos */}
+          <div className="space-y-2">
+            <Label htmlFor="review-photos">
+              Photos (optional)
+            </Label>
+            <p className="text-xs text-muted-foreground">
+              Attach up to {MAX_REVIEW_PHOTOS} photos (JPG, PNG, or WebP, max 5MB
+              each). Photos are added to the park gallery after approval.
+            </p>
+
+            {photos.length > 0 && (
+              <div className="grid grid-cols-4 gap-2">
+                {photos.map((photo, index) => (
+                  <div
+                    key={index}
+                    className="relative aspect-square rounded-md overflow-hidden border border-border"
+                  >
+                    {photo.preview && (
+                      <Image
+                        src={photo.preview}
+                        alt={`Review photo ${index + 1}`}
+                        fill
+                        className="object-cover"
+                      />
+                    )}
+                    <button
+                      type="button"
+                      aria-label={`Remove photo ${index + 1}`}
+                      onClick={() => handleRemovePhoto(index)}
+                      className="absolute top-1 right-1 bg-destructive text-destructive-foreground p-0.5 rounded-full hover:bg-destructive/90"
+                    >
+                      <X className="w-3 h-3" />
+                    </button>
+                  </div>
+                ))}
+              </div>
+            )}
+
+            {photos.length < MAX_REVIEW_PHOTOS && (
+              <label
+                htmlFor="review-photos"
+                className="mt-2 flex flex-col items-center justify-center w-full h-24 border-2 border-dashed border-border rounded-lg cursor-pointer hover:border-primary transition-colors"
+              >
+                <ImageIcon className="w-6 h-6 mb-1 text-muted-foreground" />
+                <span className="text-sm text-muted-foreground">
+                  Click to add photos
+                </span>
+                <input
+                  id="review-photos"
+                  type="file"
+                  multiple
+                  className="hidden"
+                  accept="image/jpeg,image/jpg,image/png,image/webp"
+                  onChange={handlePhotoChange}
+                />
+              </label>
+            )}
+
+            {photoError && (
+              <p className="text-sm text-destructive">{photoError}</p>
+            )}
           </div>
 
           {/* Actions */}

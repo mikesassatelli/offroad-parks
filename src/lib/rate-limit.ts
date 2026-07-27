@@ -102,6 +102,8 @@ export const RATE_LIMITS = {
   conditions: { limit: 10, windowMs: 60 * 60 * 1000 },
   /** Park claims are rare; guard hard against spam. */
   claims: { limit: 5, windowMs: 24 * 60 * 60 * 1000 },
+  /** Suggest-a-correction submissions: a handful per day per user. */
+  corrections: { limit: 10, windowMs: 24 * 60 * 60 * 1000 },
 } as const satisfies Record<string, RateLimitOptions>;
 
 /** Test-only: clear the in-memory store between cases. */

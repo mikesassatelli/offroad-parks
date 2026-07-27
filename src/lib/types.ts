@@ -263,6 +263,9 @@ export type Park = {
   averageFacilities?: number;
   reviewCount?: number;
   averageRecommendedStay?: RecommendedDuration;
+  // Data provenance: when the park's info was last verified by AI research.
+  // ISO string; undefined when the park has never been researched.
+  lastResearchedAt?: string;
   // Trail conditions (most recent fresh published report)
   latestCondition?: {
     status: string;
@@ -434,6 +437,10 @@ export function transformDbPark(dbPark: DbPark): Park {
     averageFacilities: dbPark.averageFacilities ?? undefined,
     reviewCount: dbPark.reviewCount ?? undefined,
     averageRecommendedStay: dbPark.averageRecommendedStay ?? undefined,
+    // Data provenance — last AI-research verification timestamp (ISO string).
+    lastResearchedAt: dbPark.lastResearchedAt
+      ? dbPark.lastResearchedAt.toISOString()
+      : undefined,
     // Trail conditions — latest fresh published report
     latestCondition: dbPark.trailConditions?.[0]
       ? {

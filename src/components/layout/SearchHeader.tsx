@@ -1,6 +1,7 @@
 "use client";
 
-import { Filter, Locate, LocateFixed, Search } from "lucide-react";
+import { useState } from "react";
+import { Filter, Locate, LocateFixed, MapPin, Search } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import {
@@ -12,6 +13,9 @@ import {
 } from "@/components/ui/select";
 import type { SortOption } from "@/hooks/useFilteredParks";
 
+/** Distance-cutoff options (miles) for the radius select. */
+export const RADIUS_OPTIONS = [25, 50, 100, 200] as const;
+
 interface SearchHeaderProps {
   searchQuery: string;
   onSearchQueryChange: (query: string) => void;
@@ -21,6 +25,11 @@ interface SearchHeaderProps {
   locationLoading?: boolean;
   onUseMyLocation?: () => void;
   onClearLocation?: () => void;
+  /** Resolve a typed location (city/zip) to coords via /api/geocode. */
+  onLocationSearch?: (query: string) => void;
+  /** Current distance cutoff in miles (undefined = no cutoff). */
+  radiusMiles?: number;
+  onRadiusChange?: (miles: number | undefined) => void;
   /** Opens the filters sheet (mobile only — the sidebar is inline on desktop). */
   onOpenFilters?: () => void;
 }
@@ -34,10 +43,26 @@ export function SearchHeader({
   locationLoading = false,
   onUseMyLocation,
   onClearLocation,
+  onLocationSearch,
+  radiusMiles,
+  onRadiusChange,
   onOpenFilters,
 }: SearchHeaderProps) {
+  const [locationQuery, setLocationQuery] = useState("");
+
   const handleSortChange = (value: string) => {
     onSortChange(value as SortOption);
+  };
+
+  const handleLocationSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    const q = locationQuery.trim();
+    if (!q) return;
+    onLocationSearch?.(q);
+  };
+
+  const handleRadiusChange = (value: string) => {
+    onRadiusChange?.(value === "__any" ? undefined : Number(value));
   };
 
   return (
@@ -53,6 +78,20 @@ export function SearchHeader({
           />
         </div>
         <div className="flex items-center gap-2">
+          {/* Manual location entry — resolves a typed city/zip to coords. */}
+          <form
+            onSubmit={handleLocationSubmit}
+            className="relative hidden md:block"
+          >
+            <MapPin className="absolute left-2.5 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-muted-foreground" />
+            <Input
+              placeholder="City or ZIP…"
+              aria-label="Search by location"
+              value={locationQuery}
+              onChange={(e) => setLocationQuery(e.target.value)}
+              className="pl-8 h-9 w-32 lg:w-40"
+            />
+          </form>
           {locationActive ? (
             <Button
               variant="secondary"
@@ -78,6 +117,25 @@ export function SearchHeader({
                 {locationLoading ? "Locating…" : "Near Me"}
               </span>
             </Button>
+          )}
+          {/* Distance cutoff — only meaningful once a location is active. */}
+          {locationActive && (
+            <Select
+              onValueChange={handleRadiusChange}
+              value={radiusMiles ? String(radiusMiles) : "__any"}
+            >
+              <SelectTrigger className="w-24 h-9" aria-label="Distance radius">
+                <SelectValue placeholder="Radius" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="__any">Any dist.</SelectItem>
+                {RADIUS_OPTIONS.map((miles) => (
+                  <SelectItem key={miles} value={String(miles)}>
+                    {miles} mi
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
           )}
           {/* Mobile filters trigger — the sidebar is inline on desktop, so this
               only appears below lg. Opens the shared filters sheet. */}
@@ -106,6 +164,7 @@ export function SearchHeader({
               <SelectItem value="difficulty-high">Most Difficult</SelectItem>
               <SelectItem value="difficulty-low">Least Difficult</SelectItem>
               <SelectItem value="most-reviewed">Most Reviewed</SelectItem>
+              <SelectItem value="newest">Newest</SelectItem>
             </SelectContent>
           </Select>
         </div>

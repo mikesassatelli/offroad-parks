@@ -85,6 +85,12 @@ describe("SearchFiltersPanel", () => {
     maxAcres: 10000,
     minRating: "",
     onMinRatingChange: vi.fn(),
+    minDifficulty: "",
+    onMinDifficultyChange: vi.fn(),
+    freeOnly: false,
+    onFreeOnlyChange: vi.fn(),
+    maxDayPassUSD: 0,
+    onMaxDayPassUSDChange: vi.fn(),
     selectedOwnership: "",
     onOwnershipChange: vi.fn(),
     permitRequired: "",
@@ -281,6 +287,36 @@ describe("SearchFiltersPanel", () => {
   it("should render Spark Arrestor Required filter label", () => {
     render(<SearchFiltersPanel {...mockProps} />);
     expect(screen.getByText("Spark Arrestor Required")).toBeInTheDocument();
+  });
+
+  it("should render Pricing section with Free only toggle", () => {
+    render(<SearchFiltersPanel {...mockProps} />);
+    expect(screen.getByText("Pricing")).toBeInTheDocument();
+    expect(screen.getByText("Free only")).toBeInTheDocument();
+  });
+
+  it("should call onFreeOnlyChange when the Free only checkbox is toggled", () => {
+    render(<SearchFiltersPanel {...mockProps} />);
+    const freeCheckbox = screen.getByRole("checkbox", { name: /free only/i });
+    fireEvent.click(freeCheckbox);
+    expect(mockProps.onFreeOnlyChange).toHaveBeenCalledWith(true);
+  });
+
+  it("should reflect the freeOnly prop on the checkbox", () => {
+    render(<SearchFiltersPanel {...mockProps} freeOnly />);
+    const freeCheckbox = screen.getByRole("checkbox", {
+      name: /free only/i,
+    }) as HTMLInputElement;
+    expect(freeCheckbox.checked).toBe(true);
+  });
+
+  it("should render the Minimum Difficulty control", () => {
+    render(<SearchFiltersPanel {...mockProps} />);
+    expect(screen.getByText("Minimum Difficulty")).toBeInTheDocument();
+    // Options come from MIN_DIFFICULTY_FILTERS. "Any Difficulty" appears both
+    // as the placeholder and the first option in the mocked Select.
+    expect(screen.getAllByText("Any Difficulty").length).toBeGreaterThan(0);
+    expect(screen.getByText("3+ (Hard)")).toBeInTheDocument();
   });
 
   it("should render camping types from constants", () => {

@@ -11,6 +11,7 @@ import { useSearchPresets } from "@/hooks/useSearchPresets";
 import { useSignInPrompt } from "@/components/auth/SignInPromptProvider";
 import { useParkList, useParkMarkers } from "@/hooks/useServerParks";
 import { haversineDistance } from "@/lib/geo";
+import { geocodeQuery } from "@/lib/geocode-client";
 import {
   buildParkQueryString,
   parkFilterParamsToState,
@@ -75,6 +76,11 @@ function OffroadParksAppInner({
       : null,
   );
   const [locationLoading, setLocationLoading] = useState(false);
+  // Optional distance cutoff (miles) applied alongside the distance sort. Rides
+  // the coords channel, seeded from the URL like the coords themselves.
+  const [radiusMiles, setRadiusMiles] = useState<number | undefined>(
+    initialUrlParams.radiusMiles,
+  );
 
   // The filter/sort STATE (and its setters, saved-default helpers) still live
   // in useFilteredParks so behaviour and tests are preserved. Its client-side
@@ -101,6 +107,12 @@ function OffroadParksAppInner({
     setMinAcres,
     minRating,
     setMinRating,
+    minDifficulty,
+    setMinDifficulty,
+    freeOnly,
+    setFreeOnly,
+    maxDayPassUSD,
+    setMaxDayPassUSD,
     selectedOwnership,
     setSelectedOwnership,
     permitRequired,
@@ -135,6 +147,9 @@ function OffroadParksAppInner({
         minTrailMiles,
         minAcres,
         minRating,
+        minDifficulty,
+        freeOnly,
+        maxDayPassUSD,
         selectedOwnership,
         permitRequired,
         membershipRequired,
@@ -142,6 +157,7 @@ function OffroadParksAppInner({
         sparkArrestorRequired,
         sortOption,
         userCoords,
+        radiusMiles,
       }).toString(),
     [
       searchQuery,
@@ -153,6 +169,9 @@ function OffroadParksAppInner({
       minTrailMiles,
       minAcres,
       minRating,
+      minDifficulty,
+      freeOnly,
+      maxDayPassUSD,
       selectedOwnership,
       permitRequired,
       membershipRequired,
@@ -160,6 +179,7 @@ function OffroadParksAppInner({
       sparkArrestorRequired,
       sortOption,
       userCoords,
+      radiusMiles,
     ],
   );
 
@@ -218,8 +238,22 @@ function OffroadParksAppInner({
     );
   };
 
+  // Resolve a typed location via the /api/geocode route, then drive the exact
+  // same coords path "Near Me" uses (set coords + switch to distance sort).
+  const handleLocationSearch = async (query: string) => {
+    if (!query.trim()) return;
+    setLocationLoading(true);
+    const result = await geocodeQuery(query);
+    setLocationLoading(false);
+    if (result) {
+      setUserCoords({ lat: result.lat, lng: result.lng });
+      setSortOption("distance-nearest");
+    }
+  };
+
   const handleClearLocation = () => {
     setUserCoords(null);
+    setRadiusMiles(undefined);
     setSortOption("name");
   };
 
@@ -359,6 +393,12 @@ function OffroadParksAppInner({
       maxAcres={facets.maxAcres}
       minRating={minRating}
       onMinRatingChange={setMinRating}
+      minDifficulty={minDifficulty}
+      onMinDifficultyChange={setMinDifficulty}
+      freeOnly={freeOnly}
+      onFreeOnlyChange={setFreeOnly}
+      maxDayPassUSD={maxDayPassUSD}
+      onMaxDayPassUSDChange={setMaxDayPassUSD}
       selectedOwnership={selectedOwnership}
       onOwnershipChange={setSelectedOwnership}
       permitRequired={permitRequired}
@@ -396,6 +436,9 @@ function OffroadParksAppInner({
           locationLoading={locationLoading}
           onUseMyLocation={handleUseMyLocation}
           onClearLocation={handleClearLocation}
+          onLocationSearch={handleLocationSearch}
+          radiusMiles={radiusMiles}
+          onRadiusChange={setRadiusMiles}
           onOpenFilters={() => setFiltersOpen(true)}
         />
       </div>

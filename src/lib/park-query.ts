@@ -164,13 +164,20 @@ export async function getParkPage(
       orderBy: [{ name: "asc" }, { id: "asc" }],
     });
 
-    const withDistance = all.map((p) => ({
+    let withDistance = all.map((p) => ({
       park: p,
       distance: p.latitude != null && p.longitude != null
         ? haversineDistance(userLat, userLng, p.latitude, p.longitude)
         : Number.POSITIVE_INFINITY,
     }));
     withDistance.sort((a, b) => a.distance - b.distance);
+
+    // Optional radius cutoff (miles) — drop everything beyond it, which also
+    // removes coordinate-less parks (Infinity distance).
+    if (params.radiusMiles != null && params.radiusMiles > 0) {
+      const radius = params.radiusMiles;
+      withDistance = withDistance.filter((d) => d.distance <= radius);
+    }
 
     const total = withDistance.length;
     const slice = withDistance.slice(skip, skip + pageSize).map((d) => d.park);
@@ -266,7 +273,27 @@ export async function getParkMarkers(params: ParkFilterParams): Promise<Park[]> 
     select: parkMarkerSelect,
     orderBy: [{ name: "asc" }, { id: "asc" }],
   });
-  return rows.map(toMarkerPark);
+  const markers = rows.map(toMarkerPark);
+
+  // Honour the distance radius cutoff on the map too. Applied whenever coords +
+  // radius are present (the client only forwards them with the distance sort).
+  // Coordinate-less parks fall outside any radius.
+  if (
+    params.userLat != null &&
+    params.userLng != null &&
+    params.radiusMiles != null &&
+    params.radiusMiles > 0
+  ) {
+    const { userLat, userLng, radiusMiles } = params;
+    return markers.filter(
+      (m) =>
+        m.coords != null &&
+        haversineDistance(userLat, userLng, m.coords.lat, m.coords.lng) <=
+          radiusMiles,
+    );
+  }
+
+  return markers;
 }
 
 export interface ParkFacets {

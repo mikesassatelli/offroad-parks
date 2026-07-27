@@ -36,6 +36,12 @@ export interface ParkFilterParams {
   minTrailMiles: number;
   minAcres: number;
   minRating: string;
+  /** Minimum review-aggregated difficulty (1–5). Empty string = no filter. */
+  minDifficulty: string;
+  /** Only match parks flagged free (isFree === true). */
+  freeOnly: boolean;
+  /** Max day-pass price in USD. 0 = no filter. */
+  maxDayPassUSD: number;
   ownership: string;
   permitRequired: TriState;
   membershipRequired: TriState;
@@ -46,6 +52,9 @@ export interface ParkFilterParams {
    *  distance sort is active. Used for server-side distance ordering. */
   userLat?: number;
   userLng?: number;
+  /** Optional distance cutoff (miles) applied alongside the distance sort.
+   *  Rides the geolocation coords channel, not the generic filter machinery. */
+  radiusMiles?: number;
 }
 
 const VALID_SORTS: readonly SortOption[] = [
@@ -58,6 +67,7 @@ const VALID_SORTS: readonly SortOption[] = [
   "difficulty-low",
   "most-reviewed",
   "distance-nearest",
+  "newest",
 ];
 
 function normaliseTriState(value: string | null): TriState {
@@ -98,6 +108,10 @@ export function parseParkFilterParams(
   const userLat = latRaw != null && latRaw !== "" ? Number(latRaw) : undefined;
   const userLng = lngRaw != null && lngRaw !== "" ? Number(lngRaw) : undefined;
 
+  const radiusRaw = params.get("radius");
+  const radiusMiles =
+    radiusRaw != null && radiusRaw !== "" ? Number(radiusRaw) : undefined;
+
   return {
     q: (params.get("q") ?? "").trim(),
     state: params.get("state") || undefined,
@@ -108,6 +122,9 @@ export function parseParkFilterParams(
     minTrailMiles: readNumber(params.get("minTrailMiles"), 0),
     minAcres: readNumber(params.get("minAcres"), 0),
     minRating: params.get("minRating") ?? "",
+    minDifficulty: params.get("minDifficulty") ?? "",
+    freeOnly: params.get("free") === "1",
+    maxDayPassUSD: readNumber(params.get("maxPrice"), 0),
     ownership: params.get("ownership") ?? "",
     permitRequired: normaliseTriState(params.get("permit")),
     membershipRequired: normaliseTriState(params.get("membership")),
@@ -116,6 +133,10 @@ export function parseParkFilterParams(
     sort,
     userLat: Number.isFinite(userLat) ? userLat : undefined,
     userLng: Number.isFinite(userLng) ? userLng : undefined,
+    radiusMiles:
+      radiusMiles != null && Number.isFinite(radiusMiles) && radiusMiles > 0
+        ? radiusMiles
+        : undefined,
   };
 }
 
@@ -135,6 +156,9 @@ export interface ParkFilterState {
   minTrailMiles: number;
   minAcres: number;
   minRating: string;
+  minDifficulty: string;
+  freeOnly: boolean;
+  maxDayPassUSD: number;
   selectedOwnership: string;
   permitRequired: TriState;
   membershipRequired: TriState;
@@ -155,6 +179,9 @@ export function parkFilterParamsToState(p: ParkFilterParams): ParkFilterState {
     minTrailMiles: p.minTrailMiles,
     minAcres: p.minAcres,
     minRating: p.minRating,
+    minDifficulty: p.minDifficulty,
+    freeOnly: p.freeOnly,
+    maxDayPassUSD: p.maxDayPassUSD,
     selectedOwnership: p.ownership,
     permitRequired: p.permitRequired,
     membershipRequired: p.membershipRequired,
@@ -196,6 +223,9 @@ export interface ParkQueryInput {
   minTrailMiles?: number;
   minAcres?: number;
   minRating?: string;
+  minDifficulty?: string;
+  freeOnly?: boolean;
+  maxDayPassUSD?: number;
   selectedOwnership?: string;
   permitRequired?: string;
   membershipRequired?: string;
@@ -203,6 +233,8 @@ export interface ParkQueryInput {
   sparkArrestorRequired?: string;
   sortOption?: SortOption;
   userCoords?: { lat: number; lng: number } | null;
+  /** Distance cutoff (miles) — only forwarded with the distance sort. */
+  radiusMiles?: number;
 }
 
 /**
@@ -227,6 +259,10 @@ export function buildParkQueryString(input: ParkQueryInput): URLSearchParams {
   if (input.minAcres && input.minAcres > 0)
     params.set("minAcres", String(input.minAcres));
   if (input.minRating) params.set("minRating", input.minRating);
+  if (input.minDifficulty) params.set("minDifficulty", input.minDifficulty);
+  if (input.freeOnly) params.set("free", "1");
+  if (input.maxDayPassUSD && input.maxDayPassUSD > 0)
+    params.set("maxPrice", String(input.maxDayPassUSD));
   if (input.selectedOwnership) params.set("ownership", input.selectedOwnership);
   if (input.permitRequired) params.set("permit", input.permitRequired);
   if (input.membershipRequired)
@@ -243,6 +279,8 @@ export function buildParkQueryString(input: ParkQueryInput): URLSearchParams {
   if (sort === "distance-nearest" && input.userCoords) {
     params.set("lat", String(input.userCoords.lat));
     params.set("lng", String(input.userCoords.lng));
+    if (input.radiusMiles && input.radiusMiles > 0)
+      params.set("radius", String(input.radiusMiles));
   }
 
   return params;
@@ -325,6 +363,18 @@ export function buildParkWhere(
       and.push({ averageRating: { gte: value } });
     }
   }
+  if (params.minDifficulty) {
+    const value = parseFloat(params.minDifficulty);
+    if (Number.isFinite(value)) {
+      and.push({ averageDifficulty: { gte: value } });
+    }
+  }
+  if (params.freeOnly) {
+    and.push({ isFree: true });
+  }
+  if (params.maxDayPassUSD > 0) {
+    and.push({ dayPassUSD: { lte: params.maxDayPassUSD } });
+  }
   if (params.ownership) {
     and.push({ ownership: params.ownership as never });
   }
@@ -376,6 +426,8 @@ export function buildParkOrderBy(
       ];
     case "most-reviewed":
       return [{ reviewCount: "desc" }, ...tiebreak];
+    case "newest":
+      return [{ createdAt: "desc" }, ...tiebreak];
     case "name":
     case "distance-nearest":
     default:
