@@ -156,6 +156,29 @@ describe("POST /api/admin/pre-grants", () => {
     });
   });
 
+  it("accepts BETA_TESTER as a grantable role", async () => {
+    vi.mocked(auth).mockResolvedValue(superAdmin as any);
+    vi.mocked(prisma.userPreGrant.findUnique).mockResolvedValue(null);
+    vi.mocked(prisma.userPreGrant.create).mockResolvedValue({
+      id: "pg-beta",
+      email: "beta@y.com",
+      grantRole: "BETA_TESTER",
+      operatorParkSlug: null,
+    } as any);
+
+    const res = await POST(
+      jsonRequest({ email: "beta@y.com", grantRole: "BETA_TESTER" }),
+    );
+
+    expect(res.status).toBe(201);
+    expect(prisma.userPreGrant.create).toHaveBeenCalledWith({
+      data: expect.objectContaining({
+        email: "beta@y.com",
+        grantRole: "BETA_TESTER",
+      }),
+    });
+  });
+
   it("creates a pre-grant with role + operator slug after validating the park", async () => {
     vi.mocked(auth).mockResolvedValue(superAdmin as any);
     vi.mocked(prisma.userPreGrant.findUnique).mockResolvedValue(null);
