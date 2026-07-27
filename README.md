@@ -105,6 +105,18 @@ EMAIL_FROM="Offroad Parks <noreply@yourdomain.com>"
 # keys and safe to expose to the client. Readable stack traces (source-map
 # upload) additionally need withSentryConfig + SENTRY_AUTH_TOKEN — a follow-up.
 NEXT_PUBLIC_SENTRY_DSN=""
+
+# AI research pipeline (optional; each degrades gracefully when unset).
+# - SERPAPI_API_KEY: web search for source & park discovery.
+# - ANTHROPIC_API_KEY: LLM data extraction.
+# - GOOGLE_PLACES_API_KEY: authoritative structured location data (coordinates,
+#   address, phone, website) pulled straight from a park's Google Maps listing.
+#   When set, the research pipeline runs a Places lookup before crawling web
+#   pages, so location fields come from Google rather than being inferred by the
+#   LLM. Uses the Places API (v1); enable "Places API (New)" in Google Cloud.
+SERPAPI_API_KEY=""
+ANTHROPIC_API_KEY=""
+GOOGLE_PLACES_API_KEY=""
 ```
 
 #### Getting credentials:

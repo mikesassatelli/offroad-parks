@@ -17,6 +17,13 @@ export const EXTRACTION_MODEL = anthropic("claude-sonnet-5");
 export const COST_PER_INPUT_TOKEN = 3 / 1_000_000;
 export const COST_PER_OUTPUT_TOKEN = 15 / 1_000_000;
 
+/**
+ * Approximate cost of one Google Places Text Search lookup. The field mask in
+ * google-places.ts holds the request to the Places "Pro" SKU (~$32 / 1000 as of
+ * 2026). Added to a research session's estimatedCostUSD alongside token cost.
+ */
+export const GOOGLE_PLACES_COST_PER_LOOKUP = 0.032;
+
 /** Max content length (in characters) sent to the LLM per source. */
 export const MAX_CONTENT_CHARS = 32_000;
 

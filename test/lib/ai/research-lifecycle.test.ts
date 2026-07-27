@@ -42,6 +42,7 @@ function makePark(overrides: Partial<DbPark> = {}): DbPark {
     status: "APPROVED",
     operatorId: null,
     dataCompletenessScore: null,
+    googlePlaceId: null,
     lastResearchedAt: null,
     researchPriority: 50,
     researchStatus: "NEEDS_RESEARCH",

@@ -1,11 +1,20 @@
 import { prisma } from "@/lib/prisma";
-import type { ResearchTrigger } from "@/lib/types";
+import type { DbPark, ResearchTrigger } from "@/lib/types";
 import {
   estimateCost,
   MAX_SOURCES_PER_SESSION,
   MIN_SOURCES_FOR_NOT_FOUND,
   EXTRACTABLE_FIELDS,
+  GOOGLE_PLACES_COST_PER_LOOKUP,
 } from "./config";
+import {
+  lookupGooglePlace,
+  placeToFieldValues,
+  PLACE_PROVIDED_FIELDS,
+  GOOGLE_PLACES_RELIABILITY,
+  GOOGLE_PLACES_CONFIDENCE,
+  type PlaceData,
+} from "./google-places";
 import { extractContent } from "./content-extractor";
 import { extractParkData } from "./park-data-extractor";
 import {
@@ -24,6 +33,7 @@ import {
   URL_FIELDS,
   cleanStreetAddress,
   cleanCounty,
+  validateExtraction,
 } from "./extraction-validator";
 import { normalizeStateName } from "@/lib/us-states";
 
@@ -77,6 +87,7 @@ export async function researchPark(
 
   let totalInputTokens = 0;
   let totalOutputTokens = 0;
+  let totalPlacesCostUSD = 0;
   let totalFieldsExtracted = 0;
   let totalSourcesFound = 0;
   let sourcesProcessed = 0;
@@ -104,12 +115,134 @@ export async function researchPark(
       return { sessionId: session.id };
     }
 
-    // Stage 1: Source Discovery (for parks still being actively researched)
-    if (
+    // Track which fields were found across all sources (including Places).
+    const fieldsFoundInSources = new Map<string, number>();
+
+    // OP-82: Collect validation warnings across all sources.
+    const validationWarnings: string[] = [];
+
+    // Fields Places supplied this session — excluded from LLM re-extraction so
+    // the model isn't asked to re-guess (and pay for) values Places already gave
+    // authoritatively. Kept separate from `excludedFields`, which means
+    // "already resolved" (APPROVED / NOT_FOUND).
+    const placeFoundFields = new Set<string>();
+
+    const activelyResearching =
       priorStatus === "NEEDS_RESEARCH" ||
       priorStatus === "IN_PROGRESS" ||
-      priorStatus === "PARTIAL"
-    ) {
+      priorStatus === "PARTIAL";
+
+    // Stage 0: Google Places lookup — authoritative, structured location data.
+    // Runs before web-source discovery so its high-quality values take
+    // precedence and the LLM doesn't re-guess fields Places already supplied.
+    if (activelyResearching) {
+      const placeRelevantRemaining: string[] = PLACE_PROVIDED_FIELDS.filter(
+        (f) => remainingFields.includes(f)
+      );
+
+      // Skip the paid call entirely when no Places-provided field still needs
+      // research.
+      if (placeRelevantRemaining.length > 0) {
+        const lookup = await lookupGooglePlace(
+          park.name,
+          park.address?.state ?? "",
+          park.address?.city ?? null
+        );
+
+        if (lookup.apiCalled) {
+          totalPlacesCostUSD += GOOGLE_PLACES_COST_PER_LOOKUP;
+        }
+
+        if (lookup.place) {
+          const place = lookup.place;
+
+          // Persist a googlePlaces DataSource (upsert — idempotent across
+          // re-runs). It is consumed structurally, never crawled, so it's kept
+          // out of the crawl query below by its type.
+          const placeSource = await prisma.dataSource.upsert({
+            where: { parkId_url: { parkId, url: place.mapsUri } },
+            update: {
+              crawlStatus: "SUCCESS",
+              lastCrawledAt: new Date(),
+              title: `Google Maps — ${place.name}`,
+            },
+            create: {
+              parkId,
+              url: place.mapsUri,
+              title: `Google Maps — ${place.name}`,
+              type: "googlePlaces",
+              origin: "AI_DISCOVERED",
+              reliability: GOOGLE_PLACES_RELIABILITY,
+              crawlStatus: "SUCCESS",
+              lastCrawledAt: new Date(),
+            },
+          });
+          totalSourcesFound++;
+
+          // Link the Places source to this session.
+          await prisma.researchSessionSource.upsert({
+            where: {
+              sessionId_dataSourceId: {
+                sessionId: session.id,
+                dataSourceId: placeSource.id,
+              },
+            },
+            update: {},
+            create: { sessionId: session.id, dataSourceId: placeSource.id },
+          });
+
+          // Record the stable place_id for future re-lookups / map links.
+          if (park.googlePlaceId !== place.placeId) {
+            await prisma.park.update({
+              where: { id: parkId },
+              data: { googlePlaceId: place.placeId },
+            });
+          }
+
+          // Emit FieldExtraction records for each field Places supplied.
+          for (const { fieldName, value } of placeToFieldValues(place)) {
+            if (!placeRelevantRemaining.includes(fieldName)) continue;
+
+            const validation = validateExtraction(
+              fieldName,
+              value,
+              park.address?.state ?? null
+            );
+            if (!validation.valid) {
+              validationWarnings.push(
+                `Google Places ${fieldName}: ${validation.reason}`
+              );
+              continue;
+            }
+
+            const created = await createPlaceFieldExtraction(
+              park as unknown as DbPark,
+              parkId,
+              fieldName,
+              value,
+              place,
+              placeSource.id,
+              session.id
+            );
+            if (created) totalFieldsExtracted++;
+
+            // Mark the field as found (even a deduped duplicate counts) so the
+            // NOT_FOUND sweep won't fire for a field Places did supply, and skip
+            // LLM re-extraction of it this session.
+            fieldsFoundInSources.set(
+              fieldName,
+              (fieldsFoundInSources.get(fieldName) ?? 0) + 1
+            );
+            placeFoundFields.add(fieldName);
+          }
+        } else if (lookup.reason) {
+          validationWarnings.push(lookup.reason);
+        }
+      }
+    }
+
+    // Stage 1: Source Discovery (for parks still being actively researched)
+    if (activelyResearching) {
       // Exclude all existing URLs + URLs previously rejected as wrong park
       const existingUrls = park.dataSources.map((s) => s.url);
       const newSources = await discoverSources(
@@ -142,10 +275,13 @@ export async function researchPark(
     }
 
     // Fetch all sources for this park
-    // Include robots-blocked sources IF they have a one-time override
+    // Include robots-blocked sources IF they have a one-time override.
+    // googlePlaces sources are consumed structurally in Stage 0, not crawled, so
+    // they're excluded here by type.
     const sources = await prisma.dataSource.findMany({
       where: {
         parkId,
+        type: { not: "googlePlaces" },
         OR: [
           { crawlStatus: { notIn: ["ROBOTS_BLOCKED", "SKIPPED", "WRONG_PARK"] } },
           { crawlStatus: "ROBOTS_BLOCKED", robotsOverride: true },
@@ -155,11 +291,12 @@ export async function researchPark(
       take: MAX_SOURCES_PER_SESSION,
     });
 
-    // Track which fields were found across all sources
-    const fieldsFoundInSources = new Map<string, number>();
-
-    // OP-82: Collect validation warnings across all sources
-    const validationWarnings: string[] = [];
+    // Fields the LLM should still try to extract: everything unresolved MINUS
+    // what Places already supplied this session (no point paying to re-guess).
+    const llmExcludeFields = [...excludedFields, ...placeFoundFields];
+    const llmRemainingFields = remainingFields.filter(
+      (f) => !placeFoundFields.has(f)
+    );
 
     // Stage 2 & 3: Content Extraction + Data Extraction per source
     for (const source of sources) {
@@ -236,8 +373,8 @@ export async function researchPark(
           data: { sessionId: session.id, dataSourceId: source.id },
         });
 
-        // Skip LLM if no remaining fields
-        if (remainingFields.length === 0) continue;
+        // Skip LLM if no remaining fields (after removing Places-supplied ones)
+        if (llmRemainingFields.length === 0) continue;
 
         // Extract structured data via LLM
         const result = await extractParkData(
@@ -245,7 +382,7 @@ export async function researchPark(
           park.address?.state ?? "",
           content.text,
           source.url,
-          excludedFields
+          llmExcludeFields
         );
 
         totalInputTokens += result.inputTokens;
@@ -282,7 +419,6 @@ export async function researchPark(
             : key;
 
           // OP-82: Post-extraction validation
-          const { validateExtraction } = await import("./extraction-validator");
           const validation = validateExtraction(fieldName, fieldData.value, park.address?.state ?? null);
           if (!validation.valid) {
             // Drop this field — don't create a FieldExtraction record
@@ -462,6 +598,7 @@ export async function researchPark(
       sourcesFound: totalSourcesFound,
       inputTokens: totalInputTokens,
       outputTokens: totalOutputTokens,
+      extraCostUSD: totalPlacesCostUSD,
     });
   } catch (error) {
     // Mark session as failed. `graduated` stays false → park resolves to PARTIAL.
@@ -473,6 +610,7 @@ export async function researchPark(
       sourcesFound: totalSourcesFound,
       inputTokens: totalInputTokens,
       outputTokens: totalOutputTokens,
+      extraCostUSD: totalPlacesCostUSD,
     });
   } finally {
     // Always leave a terminal resting state — never a dangling IN_PROGRESS.
@@ -569,6 +707,8 @@ async function completeSession(
     sourcesFound: number;
     inputTokens: number;
     outputTokens: number;
+    /** Non-token costs (e.g. Google Places API calls) added to the token cost. */
+    extraCostUSD?: number;
   }
 ) {
   await prisma.researchSession.update({
@@ -581,8 +721,77 @@ async function completeSession(
       sourcesFound: data.sourcesFound,
       inputTokens: data.inputTokens,
       outputTokens: data.outputTokens,
-      estimatedCostUSD: estimateCost(data.inputTokens, data.outputTokens),
+      estimatedCostUSD:
+        estimateCost(data.inputTokens, data.outputTokens) +
+        (data.extraCostUSD ?? 0),
       completedAt: new Date(),
     },
   });
+}
+
+/**
+ * Create a FieldExtraction for a single scalar value supplied by Google Places.
+ * Mirrors the scalar branch of the LLM extraction loop: address fields are
+ * cleaned, the value is auto-approved when it already matches the park's current
+ * value (a confirmation) and otherwise queued for review, and an identical
+ * pending suggestion is deduped so idempotent re-runs don't pile up.
+ *
+ * Returns true if a record was created, false if it was deduped.
+ */
+async function createPlaceFieldExtraction(
+  park: DbPark,
+  parkId: string,
+  fieldName: string,
+  value: string | number,
+  place: PlaceData,
+  dataSourceId: string,
+  sessionId: string
+): Promise<boolean> {
+  let scalarValue: unknown = value;
+  if (typeof value === "string") {
+    if (fieldName === "address.streetAddress") {
+      scalarValue = cleanStreetAddress(value);
+    } else if (fieldName === "address.county") {
+      scalarValue = cleanCounty(value);
+    }
+  }
+
+  const extractedValueJson = JSON.stringify(scalarValue);
+  const currentValueJson = getCurrentFieldValue(park, fieldName);
+  const valuesMatch =
+    currentValueJson !== null &&
+    normalizeForComparison(extractedValueJson, fieldName) ===
+      normalizeForComparison(currentValueJson, fieldName);
+
+  // Dedup: skip if an identical suggestion is already queued for review, so a
+  // re-run against the same listing doesn't create duplicate pending records.
+  if (!valuesMatch) {
+    const existing = await prisma.fieldExtraction.findFirst({
+      where: { parkId, fieldName, status: "PENDING_REVIEW" },
+    });
+    if (
+      existing?.extractedValue &&
+      normalizeForComparison(existing.extractedValue, fieldName) ===
+        normalizeForComparison(extractedValueJson, fieldName)
+    ) {
+      return false;
+    }
+  }
+
+  await prisma.fieldExtraction.create({
+    data: {
+      parkId,
+      fieldName,
+      extractedValue: extractedValueJson,
+      sourceQuote: `Google Maps listing: ${place.name}`.slice(0, 100),
+      confidence: "AI_EXTRACTED",
+      confidenceScore: GOOGLE_PLACES_CONFIDENCE,
+      status: valuesMatch ? "APPROVED" : "PENDING_REVIEW",
+      verifiedAt: valuesMatch ? new Date() : null,
+      dataSourceId,
+      sessionId,
+      sourcesChecked: 1,
+    },
+  });
+  return true;
 }

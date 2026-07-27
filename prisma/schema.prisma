@@ -193,6 +193,10 @@ model Park {
   fieldExtractions     FieldExtraction[]
   researchSessions     ResearchSession[]
   dataCompletenessScore  Float?
+  // Stable Google Places identifier for this park's Google Maps listing, set by
+  // the research pipeline's Places lookup. Enables idempotent re-lookups and
+  // "open in Google Maps" links.
+  googlePlaceId          String?
   lastResearchedAt       DateTime?
   researchQueuedAt       DateTime? // set when queued for bulk research; drained by the research-queue cron
   researchPriority       Int              @default(50)
@@ -329,6 +333,7 @@ enum DataSourceType {
   governmentPage
   reviewSite
   campingDirectory
+  googlePlaces
   other
 }
 
