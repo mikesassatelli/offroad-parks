@@ -20,11 +20,15 @@ import {
   ALL_OWNERSHIP_TYPES,
   ALL_TERRAIN_TYPES,
   ALL_VEHICLE_TYPES,
+  MIN_DIFFICULTY_FILTERS,
   MIN_RATING_FILTERS,
 } from "@/lib/constants";
 import { formatAmenity, formatCamping, formatOwnership, formatTerrain } from "@/lib/formatting";
 import type { Amenity, Camping, Terrain } from "@/lib/types";
 import { ChevronDown, LogIn, Plus, RotateCcw, Star, X } from "lucide-react";
+
+/** Upper bound of the "Max day pass" slider in USD. */
+const MAX_DAY_PASS = 200;
 
 interface SearchFiltersPanelProps {
   selectedState: string | undefined;
@@ -46,6 +50,12 @@ interface SearchFiltersPanelProps {
   maxAcres: number;
   minRating: string;
   onMinRatingChange: (rating: string) => void;
+  minDifficulty: string;
+  onMinDifficultyChange: (difficulty: string) => void;
+  freeOnly: boolean;
+  onFreeOnlyChange: (value: boolean) => void;
+  maxDayPassUSD: number;
+  onMaxDayPassUSDChange: (value: number) => void;
   selectedOwnership: string;
   onOwnershipChange: (ownership: string) => void;
   permitRequired: string;
@@ -124,6 +134,12 @@ export function SearchFiltersPanel({
   maxAcres,
   minRating,
   onMinRatingChange,
+  minDifficulty,
+  onMinDifficultyChange,
+  freeOnly,
+  onFreeOnlyChange,
+  maxDayPassUSD,
+  onMaxDayPassUSDChange,
   selectedOwnership,
   onOwnershipChange,
   permitRequired,
@@ -168,6 +184,10 @@ export function SearchFiltersPanel({
 
   const handleMinRatingChange = (value: string) => {
     onMinRatingChange(value === "__any" ? "" : value);
+  };
+
+  const handleMinDifficultyChange = (value: string) => {
+    onMinDifficultyChange(value === "__any" ? "" : value);
   };
 
   const handleOwnershipChange = (value: string) => {
@@ -231,6 +251,9 @@ export function SearchFiltersPanel({
     (minTrailMiles > 0 ? 1 : 0) +
     (minAcres > 0 ? 1 : 0) +
     (minRating ? 1 : 0) +
+    (minDifficulty ? 1 : 0) +
+    (freeOnly ? 1 : 0) +
+    (maxDayPassUSD > 0 ? 1 : 0) +
     (selectedOwnership ? 1 : 0) +
     (permitRequired ? 1 : 0) +
     (membershipRequired ? 1 : 0) +
@@ -522,6 +545,45 @@ export function SearchFiltersPanel({
         </div>
       </FilterSection>
 
+      {/* Pricing */}
+      <FilterSection
+        title="Pricing"
+        count={(freeOnly ? 1 : 0) + (maxDayPassUSD > 0 ? 1 : 0)}
+      >
+        <div className="space-y-3">
+          <div className="flex items-center space-x-2">
+            <Checkbox
+              id="pricing-free-only"
+              checked={freeOnly}
+              onCheckedChange={(checked) => onFreeOnlyChange(checked === true)}
+            />
+            <label
+              htmlFor="pricing-free-only"
+              className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70 cursor-pointer"
+            >
+              Free only
+            </label>
+          </div>
+
+          <div className="space-y-2">
+            <div className="flex justify-between text-xs text-muted-foreground">
+              <span>
+                Max day pass:{" "}
+                {maxDayPassUSD > 0 ? `$${maxDayPassUSD}` : "Any"}
+              </span>
+              <span>${MAX_DAY_PASS}</span>
+            </div>
+            <Slider
+              value={[maxDayPassUSD]}
+              min={0}
+              max={MAX_DAY_PASS}
+              step={5}
+              onValueChange={(values) => onMaxDayPassUSDChange(values[0])}
+            />
+          </div>
+        </div>
+      </FilterSection>
+
       {/* Rating & Access */}
       <FilterSection title="Rating & Access">
         <div className="space-y-3">
@@ -536,6 +598,28 @@ export function SearchFiltersPanel({
               </SelectTrigger>
               <SelectContent>
                 {MIN_RATING_FILTERS.map((filter) => (
+                  <SelectItem
+                    key={filter.value || "__any"}
+                    value={filter.value || "__any"}
+                  >
+                    {filter.label}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
+
+          <div>
+            <div className="text-xs font-medium text-muted-foreground mb-1.5">Minimum Difficulty</div>
+            <Select
+              onValueChange={handleMinDifficultyChange}
+              value={minDifficulty || "__any"}
+            >
+              <SelectTrigger>
+                <SelectValue placeholder="Any Difficulty" />
+              </SelectTrigger>
+              <SelectContent>
+                {MIN_DIFFICULTY_FILTERS.map((filter) => (
                   <SelectItem
                     key={filter.value || "__any"}
                     value={filter.value || "__any"}

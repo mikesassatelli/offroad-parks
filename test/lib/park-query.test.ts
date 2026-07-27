@@ -39,6 +39,9 @@ const params: ParkFilterParams = {
   minTrailMiles: 0,
   minAcres: 0,
   minRating: "",
+  minDifficulty: "",
+  freeOnly: false,
+  maxDayPassUSD: 0,
   ownership: "",
   permitRequired: "",
   membershipRequired: "",
@@ -138,6 +141,31 @@ describe("getParkPage (distance sort)", () => {
     expect(prisma.park.count).not.toHaveBeenCalled(); // JS path counts in-memory
     expect(result.total).toBe(3);
   });
+
+  it("applies a radius cutoff, dropping far and coordinate-less parks", async () => {
+    vi.mocked(prisma.park.findMany).mockResolvedValue([
+      dbPark("la", "LA Park", { latitude: 34, longitude: -118 }),
+      dbPark("den", "Denver Park", { latitude: 39.7, longitude: -104.9 }),
+      dbPark("none", "No Coords", { latitude: null, longitude: null }),
+    ] as never);
+
+    const result = await getParkPage(
+      {
+        ...params,
+        sort: "distance-nearest",
+        userLat: 39.74,
+        userLng: -104.99,
+        radiusMiles: 50,
+      },
+      0,
+      24,
+    );
+
+    // Only the Denver park is within 50 miles; total reflects the cutoff.
+    expect(result.parks.map((p) => p.id)).toEqual(["den"]);
+    expect(result.total).toBe(1);
+    expect(result.hasMore).toBe(false);
+  });
 });
 
 describe("getParkMarkers", () => {
@@ -172,6 +200,62 @@ describe("getParkMarkers", () => {
       terrain: [],
       address: { city: "LA", state: "California" },
     });
+  });
+
+  it("applies a radius cutoff when coords + radius are present", async () => {
+    vi.mocked(prisma.park.findMany).mockResolvedValue([
+      {
+        slug: "la",
+        name: "LA Park",
+        latitude: 34,
+        longitude: -118,
+        isFree: null,
+        dayPassUSD: null,
+        vehicleEntryFeeUSD: null,
+        riderFeeUSD: null,
+        membershipFeeUSD: null,
+        milesOfTrails: null,
+        acres: null,
+        address: { city: "LA", state: "California" },
+      },
+      {
+        slug: "den",
+        name: "Denver Park",
+        latitude: 39.7,
+        longitude: -104.9,
+        isFree: null,
+        dayPassUSD: null,
+        vehicleEntryFeeUSD: null,
+        riderFeeUSD: null,
+        membershipFeeUSD: null,
+        milesOfTrails: null,
+        acres: null,
+        address: { city: "Denver", state: "Colorado" },
+      },
+      {
+        slug: "none",
+        name: "No Coords",
+        latitude: null,
+        longitude: null,
+        isFree: null,
+        dayPassUSD: null,
+        vehicleEntryFeeUSD: null,
+        riderFeeUSD: null,
+        membershipFeeUSD: null,
+        milesOfTrails: null,
+        acres: null,
+        address: { city: null, state: "Colorado" },
+      },
+    ] as never);
+
+    const markers = await getParkMarkers({
+      ...params,
+      userLat: 39.74,
+      userLng: -104.99,
+      radiusMiles: 50,
+    });
+
+    expect(markers.map((m) => m.id)).toEqual(["den"]);
   });
 });
 

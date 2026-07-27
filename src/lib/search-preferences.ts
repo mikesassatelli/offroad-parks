@@ -20,6 +20,11 @@ export const savedSearchFiltersSchema = z.object({
   minTrailMiles: z.number().min(0),
   minAcres: z.number().min(0),
   minRating: z.string(),
+  // Added after launch — default so presets saved before these existed still
+  // parse cleanly (they migrate to the "no filter" value on read).
+  minDifficulty: z.string().default(""),
+  freeOnly: z.boolean().default(false),
+  maxDayPassUSD: z.number().min(0).default(0),
   selectedOwnership: z.string(),
   permitRequired: triStateSchema,
   membershipRequired: triStateSchema,
@@ -66,6 +71,9 @@ export const FILTER_QUERY_KEYS = [
   "minTrailMiles",
   "minAcres",
   "minRating",
+  "minDifficulty",
+  "free",
+  "maxPrice",
   "ownership",
   "permit",
   "membership",

@@ -3,7 +3,7 @@ import type { Park } from "@/lib/types";
 import { haversineDistance } from "@/lib/geo";
 import type { SavedSearchFilters } from "@/lib/search-preferences";
 
-export type SortOption = "name" | "price" | "miles" | "acres" | "rating" | "difficulty-high" | "difficulty-low" | "most-reviewed" | "distance-nearest";
+export type SortOption = "name" | "price" | "miles" | "acres" | "rating" | "difficulty-high" | "difficulty-low" | "most-reviewed" | "distance-nearest" | "newest";
 
 export interface UserCoords {
   lat: number;
@@ -22,6 +22,9 @@ export interface InitialFilterState {
   minTrailMiles?: number;
   minAcres?: number;
   minRating?: string;
+  minDifficulty?: string;
+  freeOnly?: boolean;
+  maxDayPassUSD?: number;
   selectedOwnership?: string;
   permitRequired?: string;
   membershipRequired?: string;
@@ -46,6 +49,9 @@ export function useFilteredParks({ parks, userCoords, initialState }: UseFiltere
   const [minTrailMiles, setMinTrailMiles] = useState<number>(initialState?.minTrailMiles ?? 0);
   const [minAcres, setMinAcres] = useState<number>(initialState?.minAcres ?? 0);
   const [minRating, setMinRating] = useState<string>(initialState?.minRating ?? "");
+  const [minDifficulty, setMinDifficulty] = useState<string>(initialState?.minDifficulty ?? "");
+  const [freeOnly, setFreeOnly] = useState<boolean>(initialState?.freeOnly ?? false);
+  const [maxDayPassUSD, setMaxDayPassUSD] = useState<number>(initialState?.maxDayPassUSD ?? 0);
   const [selectedOwnership, setSelectedOwnership] = useState<string>(initialState?.selectedOwnership ?? "");
   const [permitRequired, setPermitRequired] = useState<string>(initialState?.permitRequired ?? "");
   const [membershipRequired, setMembershipRequired] = useState<string>(initialState?.membershipRequired ?? "");
@@ -142,6 +148,26 @@ export function useFilteredParks({ parks, userCoords, initialState }: UseFiltere
       );
     }
 
+    // Apply minimum difficulty filter (review-aggregated averageDifficulty)
+    if (minDifficulty) {
+      const minDifficultyValue = parseFloat(minDifficulty);
+      filteredList = filteredList.filter(
+        (park) => (park.averageDifficulty ?? 0) >= minDifficultyValue,
+      );
+    }
+
+    // Filter to free parks only
+    if (freeOnly) {
+      filteredList = filteredList.filter((park) => park.isFree === true);
+    }
+
+    // Apply max day-pass price filter
+    if (maxDayPassUSD > 0) {
+      filteredList = filteredList.filter(
+        (park) => park.dayPassUSD != null && park.dayPassUSD <= maxDayPassUSD,
+      );
+    }
+
     // Filter by ownership
     if (selectedOwnership) {
       filteredList = filteredList.filter(
@@ -195,8 +221,7 @@ export function useFilteredParks({ parks, userCoords, initialState }: UseFiltere
         return (parkA.averageDifficulty ?? Infinity) - (parkB.averageDifficulty ?? Infinity);
       } else if (sortOption === "most-reviewed") {
         return (parkB.reviewCount ?? 0) - (parkA.reviewCount ?? 0);
-      } else {
-        // sortOption === "distance-nearest"
+      } else if (sortOption === "distance-nearest") {
         if (!userCoords) return 0;
         const distA = parkA.coords
           ? haversineDistance(userCoords.lat, userCoords.lng, parkA.coords.lat, parkA.coords.lng)
@@ -205,6 +230,11 @@ export function useFilteredParks({ parks, userCoords, initialState }: UseFiltere
           ? haversineDistance(userCoords.lat, userCoords.lng, parkB.coords.lat, parkB.coords.lng)
           : Infinity;
         return distA - distB;
+      } else {
+        // sortOption === "newest" — createdAt is not carried on the client Park
+        // shape, so real ordering happens server-side; keep the name-ordered
+        // base order here.
+        return 0;
       }
     });
 
@@ -220,6 +250,9 @@ export function useFilteredParks({ parks, userCoords, initialState }: UseFiltere
     minTrailMiles,
     minAcres,
     minRating,
+    minDifficulty,
+    freeOnly,
+    maxDayPassUSD,
     selectedOwnership,
     permitRequired,
     membershipRequired,
@@ -239,6 +272,9 @@ export function useFilteredParks({ parks, userCoords, initialState }: UseFiltere
     setMinTrailMiles(0);
     setMinAcres(0);
     setMinRating("");
+    setMinDifficulty("");
+    setFreeOnly(false);
+    setMaxDayPassUSD(0);
     setSelectedOwnership("");
     setPermitRequired("");
     setMembershipRequired("");
@@ -258,6 +294,9 @@ export function useFilteredParks({ parks, userCoords, initialState }: UseFiltere
       minTrailMiles,
       minAcres,
       minRating,
+      minDifficulty,
+      freeOnly,
+      maxDayPassUSD,
       selectedOwnership,
       permitRequired: permitRequired as SavedSearchFilters["permitRequired"],
       membershipRequired:
@@ -275,6 +314,9 @@ export function useFilteredParks({ parks, userCoords, initialState }: UseFiltere
     minTrailMiles,
     minAcres,
     minRating,
+    minDifficulty,
+    freeOnly,
+    maxDayPassUSD,
     selectedOwnership,
     permitRequired,
     membershipRequired,
@@ -292,6 +334,9 @@ export function useFilteredParks({ parks, userCoords, initialState }: UseFiltere
     setMinTrailMiles(filters.minTrailMiles ?? 0);
     setMinAcres(filters.minAcres ?? 0);
     setMinRating(filters.minRating ?? "");
+    setMinDifficulty(filters.minDifficulty ?? "");
+    setFreeOnly(filters.freeOnly ?? false);
+    setMaxDayPassUSD(filters.maxDayPassUSD ?? 0);
     setSelectedOwnership(filters.selectedOwnership ?? "");
     setPermitRequired(filters.permitRequired ?? "");
     setMembershipRequired(filters.membershipRequired ?? "");
@@ -320,6 +365,12 @@ export function useFilteredParks({ parks, userCoords, initialState }: UseFiltere
     maxAcres,
     minRating,
     setMinRating,
+    minDifficulty,
+    setMinDifficulty,
+    freeOnly,
+    setFreeOnly,
+    maxDayPassUSD,
+    setMaxDayPassUSD,
     selectedOwnership,
     setSelectedOwnership,
     permitRequired,

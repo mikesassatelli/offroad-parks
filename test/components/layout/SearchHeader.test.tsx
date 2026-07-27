@@ -4,12 +4,13 @@ import { vi } from "vitest";
 
 // Mock UI components
 vi.mock("@/components/ui/input", () => ({
-  Input: ({ value, onChange, placeholder, className }: any) => (
+  Input: ({ value, onChange, placeholder, className, ...rest }: any) => (
     <input
       value={value}
       onChange={onChange}
       placeholder={placeholder}
       className={className}
+      {...rest}
     />
   ),
 }));
@@ -32,8 +33,10 @@ vi.mock("@/components/ui/select", () => ({
       {children}
     </div>
   ),
-  SelectTrigger: ({ children, className }: any) => (
-    <div className={className}>{children}</div>
+  SelectTrigger: ({ children, className, ...rest }: any) => (
+    <div className={className} {...rest}>
+      {children}
+    </div>
   ),
   SelectValue: ({ placeholder }: any) => <div>{placeholder}</div>,
   SelectContent: ({ children }: any) => <div>{children}</div>,
@@ -165,6 +168,100 @@ describe("SearchHeader", () => {
     );
 
     expect(screen.getByText("Nearest First")).toBeInTheDocument();
+  });
+
+  it("should render Newest sort option", () => {
+    render(
+      <SearchHeader
+        searchQuery=""
+        onSearchQueryChange={mockOnSearchQueryChange}
+        sortOption="name"
+        onSortChange={mockOnSortChange}
+      />,
+    );
+
+    expect(screen.getByText("Newest")).toBeInTheDocument();
+  });
+
+  it("should render the manual location input", () => {
+    render(
+      <SearchHeader
+        searchQuery=""
+        onSearchQueryChange={mockOnSearchQueryChange}
+        sortOption="name"
+        onSortChange={mockOnSortChange}
+      />,
+    );
+
+    expect(screen.getByLabelText("Search by location")).toBeInTheDocument();
+  });
+
+  it("should call onLocationSearch with the trimmed query on submit", () => {
+    const mockOnLocationSearch = vi.fn();
+    render(
+      <SearchHeader
+        searchQuery=""
+        onSearchQueryChange={mockOnSearchQueryChange}
+        sortOption="name"
+        onSortChange={mockOnSortChange}
+        onLocationSearch={mockOnLocationSearch}
+      />,
+    );
+
+    const input = screen.getByLabelText("Search by location");
+    fireEvent.change(input, { target: { value: "  Denver, CO  " } });
+    fireEvent.submit(input.closest("form")!);
+
+    expect(mockOnLocationSearch).toHaveBeenCalledWith("Denver, CO");
+  });
+
+  it("should not call onLocationSearch when the query is blank", () => {
+    const mockOnLocationSearch = vi.fn();
+    render(
+      <SearchHeader
+        searchQuery=""
+        onSearchQueryChange={mockOnSearchQueryChange}
+        sortOption="name"
+        onSortChange={mockOnSortChange}
+        onLocationSearch={mockOnLocationSearch}
+      />,
+    );
+
+    const input = screen.getByLabelText("Search by location");
+    fireEvent.change(input, { target: { value: "   " } });
+    fireEvent.submit(input.closest("form")!);
+
+    expect(mockOnLocationSearch).not.toHaveBeenCalled();
+  });
+
+  it("should show the radius select only when a location is active", () => {
+    const { rerender } = render(
+      <SearchHeader
+        searchQuery=""
+        onSearchQueryChange={mockOnSearchQueryChange}
+        sortOption="distance-nearest"
+        onSortChange={mockOnSortChange}
+        locationActive={false}
+      />,
+    );
+
+    expect(screen.queryByLabelText("Distance radius")).not.toBeInTheDocument();
+
+    rerender(
+      <SearchHeader
+        searchQuery=""
+        onSearchQueryChange={mockOnSearchQueryChange}
+        sortOption="distance-nearest"
+        onSortChange={mockOnSortChange}
+        locationActive={true}
+        radiusMiles={50}
+        onRadiusChange={vi.fn()}
+      />,
+    );
+
+    expect(screen.getByLabelText("Distance radius")).toBeInTheDocument();
+    expect(screen.getByText("25 mi")).toBeInTheDocument();
+    expect(screen.getByText("200 mi")).toBeInTheDocument();
   });
 
   it("should render Near Me button when locationActive is false", () => {

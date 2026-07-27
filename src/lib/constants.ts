@@ -90,6 +90,14 @@ export const MIN_RATING_FILTERS = [
   { value: "4.5", label: "4.5+ Stars" },
 ];
 
+// Minimum review-aggregated difficulty (averageDifficulty, 1–5 float).
+export const MIN_DIFFICULTY_FILTERS = [
+  { value: "", label: "Any Difficulty" },
+  { value: "2", label: "2+ (Moderate)" },
+  { value: "3", label: "3+ (Hard)" },
+  { value: "4", label: "4+ (Extreme)" },
+];
+
 // Ownership types
 export const ALL_OWNERSHIP_TYPES: Ownership[] = [
   "private",

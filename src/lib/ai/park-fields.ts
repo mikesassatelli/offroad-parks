@@ -114,6 +114,95 @@ export const EXTRACTABLE_FIELDS: Record<string, string> = {
   vehicleTypes: "VehicleType[]",
 };
 
+/**
+ * Curated subset of {@link EXTRACTABLE_FIELDS} that end users are allowed to
+ * correct via the "Suggest a correction" dialog. Kept intentionally narrow to
+ * user-verifiable facts (contact info, fees, access rules, address) — the full
+ * extractable set includes fields like latitude/notes that we don't expose to
+ * public field-level correction. The POST /api/parks/[slug]/corrections route
+ * validates `fieldName` against this list; the dialog builds its picker from it.
+ */
+export const CORRECTABLE_FIELDS = [
+  "website",
+  "phone",
+  "campingWebsite",
+  "campingPhone",
+  "isFree",
+  "dayPassUSD",
+  "vehicleEntryFeeUSD",
+  "riderFeeUSD",
+  "membershipFeeUSD",
+  "milesOfTrails",
+  "acres",
+  "datesOpen",
+  "contactEmail",
+  "ownership",
+  "permitRequired",
+  "permitType",
+  "membershipRequired",
+  "flagsRequired",
+  "sparkArrestorRequired",
+  "helmetsRequired",
+  "address.streetAddress",
+  "address.city",
+  "address.zipCode",
+] as const;
+
+export type CorrectableField = (typeof CORRECTABLE_FIELDS)[number];
+
+/** Fast membership test for the curated correctable subset. */
+const CORRECTABLE_FIELD_SET = new Set<string>(CORRECTABLE_FIELDS);
+
+export function isCorrectableField(field: string): field is CorrectableField {
+  return CORRECTABLE_FIELD_SET.has(field);
+}
+
+/**
+ * The value-type (from {@link EXTRACTABLE_FIELDS}) for a correctable field. Used
+ * by the dialog to pick the right input control and by the route to coerce/
+ * validate the submitted value.
+ * - "boolean" → toggle
+ * - "number"  → number input
+ * - "Ownership" → enum select (see OWNERSHIP_OPTIONS)
+ * - "string"  → text input
+ */
+export function correctableFieldType(field: CorrectableField): string {
+  return EXTRACTABLE_FIELDS[field];
+}
+
+/** Human-readable label for a correctable field name (for the picker + admin). */
+const FIELD_LABEL_OVERRIDES: Record<string, string> = {
+  website: "Website",
+  phone: "Phone",
+  campingWebsite: "Camping website",
+  campingPhone: "Camping phone",
+  isFree: "Free to enter",
+  dayPassUSD: "Day pass ($)",
+  vehicleEntryFeeUSD: "Vehicle entry fee ($)",
+  riderFeeUSD: "Rider fee ($)",
+  membershipFeeUSD: "Membership fee ($)",
+  milesOfTrails: "Miles of trails",
+  acres: "Acres",
+  datesOpen: "Dates open",
+  contactEmail: "Contact email",
+  ownership: "Ownership",
+  permitRequired: "Permit required",
+  permitType: "Permit type",
+  membershipRequired: "Membership required",
+  flagsRequired: "Flags required",
+  sparkArrestorRequired: "Spark arrestor required",
+  helmetsRequired: "Helmets required",
+  "address.streetAddress": "Street address",
+  "address.city": "City",
+  "address.zipCode": "ZIP code",
+};
+
+export function humanizeFieldName(field: string): string {
+  if (FIELD_LABEL_OVERRIDES[field]) return FIELD_LABEL_OVERRIDES[field];
+  const bare = field.includes(".") ? field.split(".").pop()! : field;
+  return humanizeOption(bare);
+}
+
 /** Human-readable label for an enum option value shown in the review selectors. */
 const OPTION_LABEL_OVERRIDES: Record<string, string> = {
   atv: "ATV",

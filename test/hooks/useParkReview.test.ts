@@ -179,6 +179,169 @@ describe("useParkReview", () => {
     expect(result.current.isSubmitting).toBe(false);
   });
 
+  it("createReview: uploads attached photos to the photos endpoint (PENDING ParkPhoto path) and strips them from the review JSON", async () => {
+    vi.mocked(useSession).mockReturnValue({
+      data: { user: { id: "user-123" } },
+      status: "authenticated",
+      update: vi.fn(),
+    } as any);
+
+    const file1 = new File(["a"], "a.jpg", { type: "image/jpeg" });
+    const file2 = new File(["b"], "b.png", { type: "image/png" });
+
+    const reviewData = {
+      overallRating: 5,
+      terrainRating: 4,
+      facilitiesRating: 4,
+      difficultyRating: 3,
+      body: "Great park!",
+      photos: [file1, file2],
+    };
+
+    (global.fetch as any).mockImplementation((url: string) => {
+      if (url.endsWith("/reviews")) {
+        return Promise.resolve({ ok: true, json: async () => ({ review: mockReview }) });
+      }
+      // photos endpoint
+      return Promise.resolve({ ok: true, json: async () => ({ success: true }) });
+    });
+
+    const { result } = renderHook(() => useParkReview("test-park"));
+
+    let createResult: any;
+    await act(async () => {
+      createResult = await result.current.createReview(reviewData);
+    });
+
+    expect(createResult.success).toBe(true);
+
+    // Review POST goes to the reviews endpoint WITHOUT the photos field.
+    expect(global.fetch).toHaveBeenCalledWith("/api/parks/test-park/reviews", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        overallRating: 5,
+        terrainRating: 4,
+        facilitiesRating: 4,
+        difficultyRating: 3,
+        body: "Great park!",
+      }),
+    });
+
+    // Each photo is uploaded to the existing photos endpoint as multipart FormData.
+    const photoCalls = (global.fetch as any).mock.calls.filter(
+      (c: any[]) => c[0] === "/api/parks/test-park/photos",
+    );
+    expect(photoCalls).toHaveLength(2);
+    for (const call of photoCalls) {
+      expect(call[1].method).toBe("POST");
+      expect(call[1].body).toBeInstanceOf(FormData);
+    }
+    const uploadedFiles = photoCalls.map((c: any[]) => c[1].body.get("file"));
+    expect(uploadedFiles).toContain(file1);
+    expect(uploadedFiles).toContain(file2);
+  });
+
+  it("createReview: does not call the photos endpoint when no photos are attached (unchanged behavior)", async () => {
+    vi.mocked(useSession).mockReturnValue({
+      data: { user: { id: "user-123" } },
+      status: "authenticated",
+      update: vi.fn(),
+    } as any);
+
+    const reviewData = {
+      overallRating: 5,
+      terrainRating: 4,
+      facilitiesRating: 4,
+      difficultyRating: 3,
+      body: "No photos here",
+    };
+
+    (global.fetch as any).mockResolvedValueOnce({
+      ok: true,
+      json: async () => ({ review: mockReview }),
+    });
+
+    const { result } = renderHook(() => useParkReview("test-park"));
+
+    await act(async () => {
+      await result.current.createReview(reviewData);
+    });
+
+    expect(global.fetch).toHaveBeenCalledTimes(1);
+    expect(global.fetch).toHaveBeenCalledWith("/api/parks/test-park/reviews", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(reviewData),
+    });
+    const photoCalls = (global.fetch as any).mock.calls.filter(
+      (c: any[]) => c[0] === "/api/parks/test-park/photos",
+    );
+    expect(photoCalls).toHaveLength(0);
+  });
+
+  it("createReview: an empty photos array behaves like no photos", async () => {
+    vi.mocked(useSession).mockReturnValue({
+      data: { user: { id: "user-123" } },
+      status: "authenticated",
+      update: vi.fn(),
+    } as any);
+
+    (global.fetch as any).mockResolvedValueOnce({
+      ok: true,
+      json: async () => ({ review: mockReview }),
+    });
+
+    const { result } = renderHook(() => useParkReview("test-park"));
+
+    await act(async () => {
+      await result.current.createReview({
+        overallRating: 5,
+        terrainRating: 4,
+        facilitiesRating: 4,
+        difficultyRating: 3,
+        body: "Empty photos",
+        photos: [],
+      });
+    });
+
+    expect(global.fetch).toHaveBeenCalledTimes(1);
+  });
+
+  it("createReview: photo upload failures do not fail an otherwise successful review", async () => {
+    vi.mocked(useSession).mockReturnValue({
+      data: { user: { id: "user-123" } },
+      status: "authenticated",
+      update: vi.fn(),
+    } as any);
+
+    const file1 = new File(["a"], "a.jpg", { type: "image/jpeg" });
+
+    (global.fetch as any).mockImplementation((url: string) => {
+      if (url.endsWith("/reviews")) {
+        return Promise.resolve({ ok: true, json: async () => ({ review: mockReview }) });
+      }
+      return Promise.reject(new Error("blob down"));
+    });
+
+    const { result } = renderHook(() => useParkReview("test-park"));
+
+    let createResult: any;
+    await act(async () => {
+      createResult = await result.current.createReview({
+        overallRating: 5,
+        terrainRating: 4,
+        facilitiesRating: 4,
+        difficultyRating: 3,
+        body: "Great park!",
+        photos: [file1],
+      });
+    });
+
+    expect(createResult.success).toBe(true);
+    expect(result.current.userReview).toEqual(mockReview);
+  });
+
   it("createReview: handles 409 conflict (already reviewed)", async () => {
     vi.mocked(useSession).mockReturnValue({
       data: { user: { id: "user-123" } },

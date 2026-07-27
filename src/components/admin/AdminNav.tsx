@@ -13,6 +13,7 @@ import {
   MapPin,
   Menu,
   MessageSquare,
+  MessageSquareWarning,
   Users,
   X,
   type LucideIcon,
@@ -37,6 +38,7 @@ const NAV_ITEMS: NavItem[] = [
   { href: "/admin/photos", label: "Photos", icon: Camera },
   { href: "/admin/conditions", label: "Trail Conditions", icon: Activity },
   { href: "/admin/reviews", label: "Reviews", icon: MessageSquare },
+  { href: "/admin/corrections", label: "Corrections", icon: MessageSquareWarning },
   { href: "/admin/claims", label: "Park Claims", icon: ClipboardList },
   {
     href: "/admin/users",

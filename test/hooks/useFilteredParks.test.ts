@@ -512,6 +512,72 @@ describe("useFilteredParks", () => {
     expect(result.current.filteredParks.every((p) => p.sparkArrestorRequired !== true)).toBe(true);
   });
 
+  it("should filter parks by minimum difficulty", () => {
+    const parksWithDifficulty: Park[] = [
+      { ...mockParks[0], averageDifficulty: 2 },
+      { ...mockParks[1], averageDifficulty: 4 },
+      { ...mockParks[2], averageDifficulty: undefined },
+    ];
+    const { result } = renderHook(() =>
+      useFilteredParks({ parks: parksWithDifficulty }),
+    );
+
+    act(() => {
+      result.current.setMinDifficulty("3");
+    });
+
+    expect(result.current.filteredParks).toHaveLength(1);
+    expect(result.current.filteredParks[0].averageDifficulty).toBe(4);
+  });
+
+  it("should filter to free parks only", () => {
+    const parksWithFree: Park[] = [
+      { ...mockParks[0], isFree: true },
+      { ...mockParks[1], isFree: false },
+      { ...mockParks[2] },
+    ];
+    const { result } = renderHook(() =>
+      useFilteredParks({ parks: parksWithFree }),
+    );
+
+    act(() => {
+      result.current.setFreeOnly(true);
+    });
+
+    expect(result.current.filteredParks).toHaveLength(1);
+    expect(result.current.filteredParks[0].isFree).toBe(true);
+  });
+
+  it("should filter parks by max day-pass price (excluding unknown prices)", () => {
+    // park-1 $25, park-2 $35, park-3 undefined
+    const { result } = renderHook(() => useFilteredParks({ parks: mockParks }));
+
+    act(() => {
+      result.current.setMaxDayPassUSD(30);
+    });
+
+    expect(result.current.filteredParks).toHaveLength(1);
+    expect(result.current.filteredParks[0].dayPassUSD).toBe(25);
+  });
+
+  it("should clear the new pricing/difficulty filters when clearing all", () => {
+    const { result } = renderHook(() => useFilteredParks({ parks: mockParks }));
+
+    act(() => {
+      result.current.setMinDifficulty("3");
+      result.current.setFreeOnly(true);
+      result.current.setMaxDayPassUSD(40);
+    });
+
+    act(() => {
+      result.current.clearAllFilters();
+    });
+
+    expect(result.current.minDifficulty).toBe("");
+    expect(result.current.freeOnly).toBe(false);
+    expect(result.current.maxDayPassUSD).toBe(0);
+  });
+
   it("should sort parks by most reviewed (review count desc)", () => {
     const parksWithReviews: Park[] = [
       { ...mockParks[0], reviewCount: 5 },
@@ -622,6 +688,9 @@ describe("useFilteredParks", () => {
         minTrailMiles: 0,
         minAcres: 0,
         minRating: "",
+        minDifficulty: "",
+        freeOnly: false,
+        maxDayPassUSD: 0,
         selectedOwnership: "",
         permitRequired: "",
         membershipRequired: "",
@@ -644,6 +713,9 @@ describe("useFilteredParks", () => {
         result.current.setMinTrailMiles(25);
         result.current.setMinAcres(500);
         result.current.setMinRating("4");
+        result.current.setMinDifficulty("3");
+        result.current.setFreeOnly(true);
+        result.current.setMaxDayPassUSD(40);
         result.current.setSelectedOwnership("public");
         result.current.setPermitRequired("yes");
         result.current.setMembershipRequired("no");
@@ -660,6 +732,9 @@ describe("useFilteredParks", () => {
         minTrailMiles: 25,
         minAcres: 500,
         minRating: "4",
+        minDifficulty: "3",
+        freeOnly: true,
+        maxDayPassUSD: 40,
         selectedOwnership: "public",
         permitRequired: "yes",
         membershipRequired: "no",
@@ -700,6 +775,9 @@ describe("useFilteredParks", () => {
           minTrailMiles: 50,
           minAcres: 1000,
           minRating: "3",
+          minDifficulty: "2",
+          freeOnly: true,
+          maxDayPassUSD: 30,
           selectedOwnership: "public",
           permitRequired: "yes",
           membershipRequired: "",
@@ -709,6 +787,9 @@ describe("useFilteredParks", () => {
       });
 
       expect(result.current.selectedState).toBe("Colorado");
+      expect(result.current.minDifficulty).toBe("2");
+      expect(result.current.freeOnly).toBe(true);
+      expect(result.current.maxDayPassUSD).toBe(30);
       expect(result.current.selectedTerrains).toEqual(["mud"]);
       expect(result.current.selectedAmenities).toEqual(["fuel"]);
       expect(result.current.selectedCamping).toEqual([]);
@@ -740,6 +821,9 @@ describe("useFilteredParks", () => {
           minTrailMiles: 0,
           minAcres: 0,
           minRating: "",
+          minDifficulty: "",
+          freeOnly: false,
+          maxDayPassUSD: 0,
           selectedOwnership: "",
           permitRequired: "",
           membershipRequired: "",
@@ -771,6 +855,9 @@ describe("useFilteredParks", () => {
           minTrailMiles: 0,
           minAcres: 0,
           minRating: "",
+          minDifficulty: "",
+          freeOnly: false,
+          maxDayPassUSD: 0,
           selectedOwnership: "",
           permitRequired: "",
           membershipRequired: "",

@@ -58,6 +58,7 @@ model User {
   routes           Route[]
   savedFilters     SavedSearchFilter[]
   parkAlerts       ParkAlert[]
+  correctionReports ParkCorrectionReport[]
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -185,6 +186,7 @@ model Park {
   parkClaims       ParkClaim[]
   editLogs         ParkEditLog[]
   parkAlerts       ParkAlert[]
+  correctionReports ParkCorrectionReport[]
   mapMarkers       ParkMapMarker[]
   trailGeometry    ParkTrailGeometry?
 
@@ -965,4 +967,29 @@ model ParkTrailGeometry {
   park Park @relation(fields: [parkId], references: [id], onDelete: Cascade)
 
   updatedAt DateTime @updatedAt
+}
+
+// Free-text "Something else" corrections submitted from the park detail page.
+// Structured, field-level corrections reuse the AI-extraction pipeline
+// (FieldExtraction rows with confidence USER_SUBMITTED); this model captures the
+// general reports that don't map to a single field. Triaged in /admin/corrections.
+model ParkCorrectionReport {
+  id        String                 @id @default(cuid())
+  parkId    String
+  userId    String
+  note      String                 @db.Text
+  status    CorrectionReportStatus @default(PENDING)
+  createdAt DateTime               @default(now())
+
+  park Park @relation(fields: [parkId], references: [id], onDelete: Cascade)
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([parkId])
+  @@index([status])
+}
+
+enum CorrectionReportStatus {
+  PENDING
+  RESOLVED
+  DISMISSED
 }

@@ -4,6 +4,10 @@ import { useState, useCallback } from "react";
 import { useSession } from "next-auth/react";
 import type { Review, VehicleType, VisitCondition, RecommendedDuration } from "@/lib/types";
 
+// Maximum number of photos a user may attach to a single review. Kept small so
+// the moderation queue isn't flooded from one submission.
+export const MAX_REVIEW_PHOTOS = 4;
+
 export interface ReviewFormData {
   overallRating: number;
   terrainRating: number;
@@ -16,6 +20,37 @@ export interface ReviewFormData {
   visitCondition?: VisitCondition;
   recommendedDuration?: RecommendedDuration;
   recommendedFor?: string;
+  // Optional photos attached to the review. These are uploaded to the existing
+  // park photo endpoint (creating PENDING ParkPhoto rows credited to the user),
+  // so they flow through the standard photo-moderation queue and public gallery.
+  photos?: File[];
+}
+
+/**
+ * Uploads review photos to the existing park photo endpoint. Each file becomes a
+ * PENDING ParkPhoto row (for non-admins) credited to the signed-in user, so they
+ * flow through the standard moderation queue. Failures are swallowed per-file so
+ * a photo hiccup never fails an otherwise-successful review submission.
+ */
+async function uploadReviewPhotos(
+  parkSlug: string,
+  photos: File[],
+): Promise<void> {
+  const files = photos.slice(0, MAX_REVIEW_PHOTOS);
+  await Promise.all(
+    files.map(async (file) => {
+      try {
+        const formData = new FormData();
+        formData.append("file", file);
+        await fetch(`/api/parks/${parkSlug}/photos`, {
+          method: "POST",
+          body: formData,
+        });
+      } catch {
+        // Ignore individual photo upload failures; the review itself succeeded.
+      }
+    }),
+  );
 }
 
 interface UseParkReviewReturn {
@@ -75,16 +110,22 @@ export function useParkReview(parkSlug: string): UseParkReviewReturn {
       setError(null);
 
       try {
+        const { photos, ...reviewData } = data;
+
         const response = await fetch(`/api/parks/${parkSlug}/reviews`, {
           method: "POST",
           headers: { "Content-Type": "application/json" },
-          body: JSON.stringify(data),
+          body: JSON.stringify(reviewData),
         });
 
         const result = await response.json();
 
         if (!response.ok) {
           throw new Error(result.error || "Failed to create review");
+        }
+
+        if (photos && photos.length > 0) {
+          await uploadReviewPhotos(parkSlug, photos);
         }
 
         setUserReview(result.review);
@@ -110,16 +151,22 @@ export function useParkReview(parkSlug: string): UseParkReviewReturn {
       setError(null);
 
       try {
+        const { photos, ...reviewData } = data;
+
         const response = await fetch(`/api/reviews/${userReview.id}`, {
           method: "PUT",
           headers: { "Content-Type": "application/json" },
-          body: JSON.stringify(data),
+          body: JSON.stringify(reviewData),
         });
 
         const result = await response.json();
 
         if (!response.ok) {
           throw new Error(result.error || "Failed to update review");
+        }
+
+        if (photos && photos.length > 0) {
+          await uploadReviewPhotos(parkSlug, photos);
         }
 
         setUserReview(result.review);
@@ -132,7 +179,7 @@ export function useParkReview(parkSlug: string): UseParkReviewReturn {
         setIsSubmitting(false);
       }
     },
-    [session?.user, userReview]
+    [session?.user, userReview, parkSlug]
   );
 
   const deleteReview = useCallback(async () => {

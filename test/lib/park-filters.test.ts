@@ -20,6 +20,9 @@ const base: ParkFilterParams = {
   minTrailMiles: 0,
   minAcres: 0,
   minRating: "",
+  minDifficulty: "",
+  freeOnly: false,
+  maxDayPassUSD: 0,
   ownership: "",
   permitRequired: "",
   membershipRequired: "",
@@ -47,6 +50,9 @@ describe("parseParkFilterParams", () => {
       minTrailMiles: 25,
       minAcres: 500,
       minRating: "4",
+      minDifficulty: "",
+      freeOnly: false,
+      maxDayPassUSD: 0,
       ownership: "public",
       permitRequired: "yes",
       membershipRequired: "no",
@@ -55,6 +61,7 @@ describe("parseParkFilterParams", () => {
       sort: "rating",
       userLat: undefined,
       userLng: undefined,
+      radiusMiles: undefined,
     });
   });
 
@@ -88,6 +95,39 @@ describe("parseParkFilterParams", () => {
     expect(params.userLat).toBeUndefined();
     expect(params.userLng).toBeUndefined();
     expect(params.minTrailMiles).toBe(0);
+  });
+
+  it("parses free/maxPrice/minDifficulty filters", () => {
+    const params = parseParkFilterParams(
+      new URLSearchParams("free=1&maxPrice=40&minDifficulty=3"),
+    );
+    expect(params.freeOnly).toBe(true);
+    expect(params.maxDayPassUSD).toBe(40);
+    expect(params.minDifficulty).toBe("3");
+  });
+
+  it("treats free values other than '1' as false", () => {
+    expect(parseParkFilterParams(new URLSearchParams("free=0")).freeOnly).toBe(
+      false,
+    );
+    expect(
+      parseParkFilterParams(new URLSearchParams("free=true")).freeOnly,
+    ).toBe(false);
+  });
+
+  it("parses a positive radius but ignores zero/negative/non-numeric", () => {
+    expect(
+      parseParkFilterParams(new URLSearchParams("radius=50")).radiusMiles,
+    ).toBe(50);
+    expect(
+      parseParkFilterParams(new URLSearchParams("radius=0")).radiusMiles,
+    ).toBeUndefined();
+    expect(
+      parseParkFilterParams(new URLSearchParams("radius=-10")).radiusMiles,
+    ).toBeUndefined();
+    expect(
+      parseParkFilterParams(new URLSearchParams("radius=abc")).radiusMiles,
+    ).toBeUndefined();
   });
 });
 
@@ -153,6 +193,26 @@ describe("buildParkWhere", () => {
     });
   });
 
+  it("applies min-difficulty as an averageDifficulty gte threshold", () => {
+    const none = buildParkWhere(base).AND as any[];
+    expect(none.some((c) => c.averageDifficulty)).toBe(false);
+
+    const some = buildParkWhere({ ...base, minDifficulty: "3" }).AND as any[];
+    expect(some).toContainEqual({ averageDifficulty: { gte: 3 } });
+  });
+
+  it("applies free-only and max-price predicates", () => {
+    const free = buildParkWhere({ ...base, freeOnly: true }).AND as any[];
+    expect(free).toContainEqual({ isFree: true });
+
+    const priced = buildParkWhere({ ...base, maxDayPassUSD: 40 }).AND as any[];
+    expect(priced).toContainEqual({ dayPassUSD: { lte: 40 } });
+
+    // maxDayPassUSD of 0 means "no filter".
+    const noPrice = buildParkWhere({ ...base, maxDayPassUSD: 0 }).AND as any[];
+    expect(noPrice.some((c) => c.dayPassUSD)).toBe(false);
+  });
+
   it("filters by exact state and ownership", () => {
     const and = buildParkWhere({
       ...base,
@@ -200,6 +260,14 @@ describe("buildParkOrderBy", () => {
     expect(buildParkOrderBy({ ...base, sort: "most-reviewed" })[0]).toEqual({
       reviewCount: "desc",
     });
+  });
+
+  it("orders newest by createdAt descending with tiebreak", () => {
+    expect(buildParkOrderBy({ ...base, sort: "newest" })).toEqual([
+      { createdAt: "desc" },
+      { name: "asc" },
+      { id: "asc" },
+    ]);
   });
 
   it("falls back to the name tiebreaker for distance sort", () => {
@@ -261,6 +329,49 @@ describe("buildParkQueryString", () => {
     expect(qs.get("lat")).toBe("39.7");
     expect(qs.get("lng")).toBe("-104.9");
   });
+
+  it("emits free/maxPrice/minDifficulty filters", () => {
+    const qs = buildParkQueryString({
+      freeOnly: true,
+      maxDayPassUSD: 40,
+      minDifficulty: "3",
+    });
+    expect(qs.get("free")).toBe("1");
+    expect(qs.get("maxPrice")).toBe("40");
+    expect(qs.get("minDifficulty")).toBe("3");
+  });
+
+  it("omits free/maxPrice when disabled", () => {
+    const qs = buildParkQueryString({ freeOnly: false, maxDayPassUSD: 0 });
+    expect(qs.has("free")).toBe(false);
+    expect(qs.has("maxPrice")).toBe(false);
+  });
+
+  it("only forwards the radius alongside distance-sort coordinates", () => {
+    const coords = { lat: 39.7, lng: -104.9 };
+    // No coords → no radius even if requested.
+    expect(
+      buildParkQueryString({
+        sortOption: "distance-nearest",
+        radiusMiles: 50,
+      }).has("radius"),
+    ).toBe(false);
+    // Non-distance sort → no radius.
+    expect(
+      buildParkQueryString({
+        sortOption: "name",
+        userCoords: coords,
+        radiusMiles: 50,
+      }).has("radius"),
+    ).toBe(false);
+    // Distance sort + coords + radius → emitted.
+    const qs = buildParkQueryString({
+      sortOption: "distance-nearest",
+      userCoords: coords,
+      radiusMiles: 50,
+    });
+    expect(qs.get("radius")).toBe("50");
+  });
 });
 
 describe("searchParamsToURLSearchParams", () => {
@@ -307,6 +418,9 @@ describe("parkFilterParamsToState", () => {
       minTrailMiles: 25,
       minAcres: 0,
       minRating: "",
+      minDifficulty: "",
+      freeOnly: false,
+      maxDayPassUSD: 0,
       selectedOwnership: "",
       permitRequired: "yes",
       membershipRequired: "",
