@@ -245,4 +245,43 @@ describe("ParkClaimCTA", () => {
       );
     });
   });
+
+  describe("embedded mode (inside the accuracy card)", () => {
+    it("renders the claim prompt inline when logged in", () => {
+      render(<ParkClaimCTA parkSlug="test-park" isLoggedIn={true} embedded />);
+
+      expect(screen.getByText("Own or manage this park?")).toBeInTheDocument();
+      expect(screen.getByText("Claim this park")).toBeInTheDocument();
+    });
+
+    it("renders the operator status inline when isOperatorOfPark", () => {
+      render(
+        <ParkClaimCTA
+          parkSlug="test-park"
+          isLoggedIn={true}
+          isOperatorOfPark={true}
+          embedded
+        />,
+      );
+
+      expect(screen.getByText("You manage this park")).toBeInTheDocument();
+    });
+
+    it("renders the managed-by notice inline when the park has an operator", () => {
+      render(
+        <ParkClaimCTA
+          parkSlug="test-park"
+          isLoggedIn={false}
+          hasOperator={true}
+          operatorName="Desert Riders LLC"
+          embedded
+        />,
+      );
+
+      expect(
+        screen.getByText(/this listing is managed by/i),
+      ).toBeInTheDocument();
+      expect(screen.getByText("Desert Riders LLC")).toBeInTheDocument();
+    });
+  });
 });

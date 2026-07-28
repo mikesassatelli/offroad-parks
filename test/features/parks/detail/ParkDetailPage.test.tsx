@@ -695,11 +695,18 @@ describe("ParkDetailPage", () => {
       ).toBeInTheDocument();
     });
 
-    it("points to the claim flow via the #claim anchor", () => {
-      render(<ParkDetailPage park={mockPark} photos={[]} />);
+    it("embeds the claim flow inside the accuracy card (no separate #claim box)", () => {
+      const { container } = render(
+        <ParkDetailPage park={mockPark} photos={[]} />,
+      );
 
-      const link = screen.getByRole("link", { name: /claim it/i });
-      expect(link).toHaveAttribute("href", "#claim");
+      // The claim prompt now lives inside the sidebar accuracy card...
+      const sidebar = container.querySelector(".lg\\:col-span-1");
+      const claimHeading = screen.getByText(/own or manage this park/i);
+      expect(sidebar).toContainElement(claimHeading);
+      // ...and the old cross-page pointer + #claim anchor are gone.
+      expect(screen.queryByRole("link", { name: /claim it/i })).toBeNull();
+      expect(container.querySelector("#claim")).toBeNull();
     });
 
     it("no longer renders the old inline correction prompt in the Overview tab", () => {
