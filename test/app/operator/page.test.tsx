@@ -19,6 +19,7 @@ vi.mock("@/lib/auth", () => ({
 
 vi.mock("next/navigation", () => ({
   redirect: vi.fn(),
+  usePathname: () => "/operator",
 }));
 
 vi.mock("next/link", () => ({

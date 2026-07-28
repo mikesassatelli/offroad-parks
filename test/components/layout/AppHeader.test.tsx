@@ -70,7 +70,10 @@ describe("AppHeader", () => {
   it("should show sign in button when user is not authenticated", () => {
     render(<AppHeader user={null} />);
 
-    expect(screen.getByText("Sign In")).toBeInTheDocument();
+    // Two responsive entry points render for signed-out users: the desktop
+    // header dialog and the mobile bottom-bar tab (each hidden at the other's
+    // breakpoint via CSS). Assert at least one is present.
+    expect(screen.getAllByText("Sign In").length).toBeGreaterThan(0);
   });
 
   it("should show UserMenu when user is authenticated", () => {

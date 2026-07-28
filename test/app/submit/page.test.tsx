@@ -10,6 +10,7 @@ vi.mock("@/lib/auth", () => ({
 
 vi.mock("next/navigation", () => ({
   redirect: vi.fn(),
+  usePathname: () => "/submit",
 }));
 
 vi.mock("@/app/submit/SubmitSignInGate", () => ({

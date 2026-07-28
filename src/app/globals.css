@@ -173,3 +173,12 @@
   --animate-collapse: collapse 200ms ease-out;
   --animate-expand: expand 200ms ease-out;
 }
+
+/* Clear the fixed mobile bottom tab bar (MobileTabBar). Below lg the bar is
+   ~56px tall plus the iOS home-indicator safe area; pad the page so trailing
+   content and the footer aren't hidden behind it. */
+@media (max-width: 1023px) {
+  body {
+    padding-bottom: calc(3.5rem + env(safe-area-inset-bottom));
+  }
+}
