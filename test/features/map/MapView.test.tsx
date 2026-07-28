@@ -8,22 +8,42 @@ import type { Park, RouteWaypoint } from "@/lib/types";
 const useMapEventsHandlers: Array<Record<string, (...args: any[]) => void>> = [];
 
 // Mock react-leaflet
-vi.mock("react-leaflet", () => ({
-  MapContainer: ({ children, center, zoom }: any) => (
-    <div
-      data-testid="map-container"
-      data-center={JSON.stringify(center)}
-      data-zoom={zoom}
-    >
-      {children}
-    </div>
-  ),
-  TileLayer: () => <div data-testid="tile-layer" />,
-  useMapEvents: (handlers: Record<string, (...args: any[]) => void>) => {
-    useMapEventsHandlers.push(handlers);
-    return null;
-  },
-}));
+vi.mock("react-leaflet", () => {
+  const LayersControl: any = function LayersControl({ children }: any) {
+    return <div data-testid="layers-control">{children}</div>;
+  };
+  LayersControl.BaseLayer = function BaseLayer({
+    children,
+    name,
+    checked,
+  }: any) {
+    return (
+      <div
+        data-testid={`base-layer-${name}`}
+        data-checked={checked ? "true" : "false"}
+      >
+        {children}
+      </div>
+    );
+  };
+  return {
+    MapContainer: ({ children, center, zoom }: any) => (
+      <div
+        data-testid="map-container"
+        data-center={JSON.stringify(center)}
+        data-zoom={zoom}
+      >
+        {children}
+      </div>
+    ),
+    TileLayer: ({ url }: any) => <div data-testid="tile-layer" data-url={url} />,
+    LayersControl,
+    useMapEvents: (handlers: Record<string, (...args: any[]) => void>) => {
+      useMapEventsHandlers.push(handlers);
+      return null;
+    },
+  };
+});
 
 // Mock child components
 vi.mock("@/features/map/components/MapBoundsHandler", () => ({
@@ -142,9 +162,32 @@ describe("MapView", () => {
     expect(screen.getByTestId("map-container")).toBeInTheDocument();
   });
 
-  it("should render tile layer", () => {
+  it("should render a basemap layer switcher with streets, satellite, and topo", () => {
     render(<MapView parks={[mockPark1]} />);
-    expect(screen.getByTestId("tile-layer")).toBeInTheDocument();
+
+    expect(screen.getByTestId("layers-control")).toBeInTheDocument();
+    expect(screen.getByTestId("base-layer-Streets")).toBeInTheDocument();
+    expect(screen.getByTestId("base-layer-Satellite")).toBeInTheDocument();
+    expect(screen.getByTestId("base-layer-Topo")).toBeInTheDocument();
+    // Three basemaps, each with its own tile layer.
+    expect(screen.getAllByTestId("tile-layer")).toHaveLength(3);
+  });
+
+  it("defaults to the Streets basemap", () => {
+    render(<MapView parks={[mockPark1]} />);
+
+    expect(screen.getByTestId("base-layer-Streets")).toHaveAttribute(
+      "data-checked",
+      "true",
+    );
+    expect(screen.getByTestId("base-layer-Satellite")).toHaveAttribute(
+      "data-checked",
+      "false",
+    );
+    expect(screen.getByTestId("base-layer-Topo")).toHaveAttribute(
+      "data-checked",
+      "false",
+    );
   });
 
   it("should center on first park with coordinates", () => {
