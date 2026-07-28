@@ -6,8 +6,12 @@ const isDev = process.env.NODE_ENV !== "production";
  * Content-Security-Policy (OP-99).
  *
  * Scoped to the app's real client-side resource usage:
- *  - Leaflet loads OSM map tiles (*.tile.openstreetmap.org) and default marker
- *    icons (unpkg.com) directly in the browser.
+ *  - Leaflet loads basemap tiles directly in the browser: OSM streets
+ *    (*.tile.openstreetmap.org), Esri World Imagery satellite
+ *    (server.arcgisonline.com), and OpenTopoMap topo (*.tile.opentopomap.org).
+ *    See src/features/map/basemaps.ts — new tile hosts must be added to
+ *    img-src below (a test guards this coverage).
+ *  - Leaflet default marker icons load from unpkg.com.
  *  - The route planner fetches Mapbox directions/geocoding (api.mapbox.com).
  *  - next/image proxies blob + Mapbox images through /_next/image (same-origin).
  *  - Vercel Analytics + the preview toolbar (vercel.live) inject scripts.
@@ -38,6 +42,8 @@ function contentSecurityPolicy(): string {
       "https://*.public.blob.vercel-storage.com",
       "https://api.mapbox.com",
       "https://*.tile.openstreetmap.org",
+      "https://server.arcgisonline.com",
+      "https://*.tile.opentopomap.org",
       "https://unpkg.com",
       "https://lh3.googleusercontent.com",
       "https://vercel.live",
