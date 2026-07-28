@@ -32,9 +32,16 @@ describe("correctable fields registry", () => {
     expect(correctableFieldType("ownership")).toBe("Ownership");
   });
 
+  it("registers hours as a correctable field with the 'hours' type", () => {
+    expect(isCorrectableField("hours")).toBe(true);
+    expect(correctableFieldType("hours")).toBe("hours");
+    expect(EXTRACTABLE_FIELDS["hours"]).toBe("hours");
+  });
+
   it("humanizeFieldName produces readable labels incl. address fields", () => {
     expect(humanizeFieldName("website")).toBe("Website");
     expect(humanizeFieldName("address.streetAddress")).toBe("Street address");
     expect(humanizeFieldName("contactEmail")).toBe("Contact email");
+    expect(humanizeFieldName("hours")).toBe("Hours");
   });
 });

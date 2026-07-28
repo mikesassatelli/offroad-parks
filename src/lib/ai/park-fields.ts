@@ -104,6 +104,7 @@ export const EXTRACTABLE_FIELDS: Record<string, string> = {
   sparkArrestorRequired: "boolean",
   helmetsRequired: "boolean",
   noiseLimitDBA: "number",
+  hours: "hours",
   "address.streetAddress": "string",
   "address.city": "string",
   "address.zipCode": "string",
@@ -143,6 +144,7 @@ export const CORRECTABLE_FIELDS = [
   "flagsRequired",
   "sparkArrestorRequired",
   "helmetsRequired",
+  "hours",
   "address.streetAddress",
   "address.city",
   "address.zipCode",
@@ -164,6 +166,7 @@ export function isCorrectableField(field: string): field is CorrectableField {
  * - "boolean" → toggle
  * - "number"  → number input
  * - "Ownership" → enum select (see OWNERSHIP_OPTIONS)
+ * - "hours"    → structured weekly-hours editor (see WeeklyHoursEditor)
  * - "string"  → text input
  */
 export function correctableFieldType(field: CorrectableField): string {
@@ -192,6 +195,7 @@ const FIELD_LABEL_OVERRIDES: Record<string, string> = {
   flagsRequired: "Flags required",
   sparkArrestorRequired: "Spark arrestor required",
   helmetsRequired: "Helmets required",
+  hours: "Hours",
   "address.streetAddress": "Street address",
   "address.city": "City",
   "address.zipCode": "ZIP code",

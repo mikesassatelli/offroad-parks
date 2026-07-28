@@ -46,6 +46,18 @@ vi.mock("@/components/ui/dialog", async () => {
   };
 });
 
+// Radix Checkbox (used by the embedded WeeklyHoursEditor) → native checkbox.
+vi.mock("@/components/ui/checkbox", () => ({
+  Checkbox: ({ checked, onCheckedChange, ...props }: any) => (
+    <input
+      type="checkbox"
+      checked={checked}
+      onChange={(e) => onCheckedChange?.(e.target.checked)}
+      {...props}
+    />
+  ),
+}));
+
 // Mock the radix Select as a native <select> (radix Select doesn't work in jsdom).
 vi.mock("@/components/ui/select", () => ({
   Select: ({ value, onValueChange, children }: any) => (
@@ -203,6 +215,77 @@ describe("SuggestCorrectionDialog", () => {
     await waitFor(() => expect(global.fetch).toHaveBeenCalled());
     const body = JSON.parse((global.fetch as any).mock.calls[0][1].body);
     expect(body.value).toBe(1200);
+  });
+
+  it("renders the weekly-hours editor for the hours field", () => {
+    signedIn();
+    render(<SuggestCorrectionDialog parkSlug="test-park" />);
+    openDialog();
+    fireEvent.change(screen.getAllByRole("combobox")[0], {
+      target: { value: "hours" },
+    });
+    expect(screen.getByTestId("weekly-hours-editor")).toBeInTheDocument();
+    expect(screen.getByLabelText("Monday opening time")).toBeInTheDocument();
+  });
+
+  it("submits a weekly-hours correction as a structured object", async () => {
+    signedIn();
+    render(<SuggestCorrectionDialog parkSlug="test-park" />);
+    openDialog();
+    fireEvent.change(screen.getAllByRole("combobox")[0], {
+      target: { value: "hours" },
+    });
+    fireEvent.change(screen.getByLabelText("Monday opening time"), {
+      target: { value: "08:00" },
+    });
+    fireEvent.change(screen.getByLabelText("Monday closing time"), {
+      target: { value: "18:00" },
+    });
+    fireEvent.click(screen.getByRole("button", { name: /^submit$/i }));
+
+    await waitFor(() => expect(global.fetch).toHaveBeenCalled());
+    const body = JSON.parse((global.fetch as any).mock.calls[0][1].body);
+    expect(body.kind).toBe("field");
+    expect(body.fieldName).toBe("hours");
+    expect(body.value).toEqual({
+      mon: { open: "08:00", close: "18:00" },
+      tue: null,
+      wed: null,
+      thu: null,
+      fri: null,
+      sat: null,
+      sun: null,
+    });
+  });
+
+  it("blocks submit when no hours are set", () => {
+    signedIn();
+    render(<SuggestCorrectionDialog parkSlug="test-park" />);
+    openDialog();
+    fireEvent.change(screen.getAllByRole("combobox")[0], {
+      target: { value: "hours" },
+    });
+    fireEvent.click(screen.getByRole("button", { name: /^submit$/i }));
+    expect(global.fetch).not.toHaveBeenCalled();
+    expect(screen.getByRole("alert")).toHaveTextContent(/at least one day/i);
+  });
+
+  it("blocks submit and surfaces an error for invalid hours (open after close)", () => {
+    signedIn();
+    render(<SuggestCorrectionDialog parkSlug="test-park" />);
+    openDialog();
+    fireEvent.change(screen.getAllByRole("combobox")[0], {
+      target: { value: "hours" },
+    });
+    fireEvent.change(screen.getByLabelText("Monday opening time"), {
+      target: { value: "18:00" },
+    });
+    fireEvent.change(screen.getByLabelText("Monday closing time"), {
+      target: { value: "08:00" },
+    });
+    fireEvent.click(screen.getByRole("button", { name: /^submit$/i }));
+    expect(global.fetch).not.toHaveBeenCalled();
+    expect(screen.getByRole("alert")).toBeInTheDocument();
   });
 
   it("submits a free-text report", async () => {

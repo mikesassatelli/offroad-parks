@@ -215,6 +215,89 @@ describe("POST /api/parks/[slug]/corrections", () => {
       expect(res.status).toBe(400);
       expect(prisma.fieldExtraction.create).not.toHaveBeenCalled();
     });
+
+    it("accepts and stringifies a valid weekly-hours object", async () => {
+      vi.mocked(auth).mockResolvedValue({ user: { id: "user-1" } } as any);
+      vi.mocked(prisma.park.findUnique).mockResolvedValue(mockPark as any);
+      vi.mocked(prisma.fieldExtraction.create).mockResolvedValue({ id: "fx" } as any);
+
+      const hours = {
+        mon: { open: "08:00", close: "18:00" },
+        tue: { open: "08:00", close: "18:00" },
+        wed: null,
+        thu: null,
+        fri: null,
+        sat: { closed: true },
+        sun: null,
+      };
+      const res = await POST(
+        makeReq({ kind: "field", fieldName: "hours", value: hours }),
+        params,
+      );
+      expect(res.status).toBe(201);
+      const call = vi.mocked(prisma.fieldExtraction.create).mock.calls[0][0];
+      expect(call.data.fieldName).toBe("hours");
+      expect(call.data.extractedValue).toBe(JSON.stringify(hours));
+      // The stored value round-trips back into a proper object for the approve route.
+      expect(JSON.parse(call.data.extractedValue as string)).toEqual(hours);
+    });
+
+    it("rejects a malformed weekly-hours object (open >= close)", async () => {
+      vi.mocked(auth).mockResolvedValue({ user: { id: "user-1" } } as any);
+      vi.mocked(prisma.park.findUnique).mockResolvedValue(mockPark as any);
+      const res = await POST(
+        makeReq({
+          kind: "field",
+          fieldName: "hours",
+          value: {
+            mon: { open: "18:00", close: "08:00" },
+            tue: null,
+            wed: null,
+            thu: null,
+            fri: null,
+            sat: null,
+            sun: null,
+          },
+        }),
+        params,
+      );
+      expect(res.status).toBe(400);
+      expect(prisma.fieldExtraction.create).not.toHaveBeenCalled();
+    });
+
+    it("rejects a weekly-hours value with a bad time format", async () => {
+      vi.mocked(auth).mockResolvedValue({ user: { id: "user-1" } } as any);
+      vi.mocked(prisma.park.findUnique).mockResolvedValue(mockPark as any);
+      const res = await POST(
+        makeReq({
+          kind: "field",
+          fieldName: "hours",
+          value: {
+            mon: { open: "8am", close: "6pm" },
+            tue: null,
+            wed: null,
+            thu: null,
+            fri: null,
+            sat: null,
+            sun: null,
+          },
+        }),
+        params,
+      );
+      expect(res.status).toBe(400);
+      expect(prisma.fieldExtraction.create).not.toHaveBeenCalled();
+    });
+
+    it("rejects a non-object hours value", async () => {
+      vi.mocked(auth).mockResolvedValue({ user: { id: "user-1" } } as any);
+      vi.mocked(prisma.park.findUnique).mockResolvedValue(mockPark as any);
+      const res = await POST(
+        makeReq({ kind: "field", fieldName: "hours", value: "9-5" }),
+        params,
+      );
+      expect(res.status).toBe(400);
+      expect(prisma.fieldExtraction.create).not.toHaveBeenCalled();
+    });
   });
 
   it("rate-limits after the configured number of submissions", async () => {
