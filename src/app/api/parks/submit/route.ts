@@ -3,6 +3,7 @@ import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { generateMapHeroAsync } from "@/lib/map-hero/generate";
 import { normalizeStateName } from "@/lib/us-states";
+import { weeklyHoursSchema, type WeeklyHours } from "@/lib/hours";
 import type {
   Amenity,
   Camping,
@@ -46,6 +47,7 @@ interface SubmitParkRequest {
   vehicleTypes?: string[];
   // New operational fields
   datesOpen?: string;
+  hours?: WeeklyHours | null;
   contactEmail?: string;
   ownership?: string;
   permitRequired?: boolean;
@@ -113,6 +115,21 @@ export async function POST(request: Request) {
       );
     }
 
+    // Validate structured weekly hours (display-only). Absent/null → no hours.
+    let hoursData: WeeklyHours | undefined;
+    if (data.hours != null) {
+      const parsedHours = weeklyHoursSchema.safeParse(data.hours);
+      if (!parsedHours.success) {
+        return NextResponse.json(
+          {
+            error: `Invalid hours: ${parsedHours.error.issues[0]?.message ?? "malformed schedule"}`,
+          },
+          { status: 400 },
+        );
+      }
+      hoursData = parsedHours.data;
+    }
+
     // Validate optional operator claim up-front so we don't create the park
     // only to fail on the claim afterwards.
     if (data.claim) {
@@ -171,6 +188,9 @@ export async function POST(request: Request) {
         submitterName: data.submitterName || null,
         // New operational fields
         datesOpen: data.datesOpen || null,
+        // Structured weekly hours (Json?). Omitted when absent so the column
+        // stays NULL.
+        hours: hoursData ?? undefined,
         contactEmail: data.contactEmail || null,
         ownership: data.ownership ? (data.ownership as Ownership) : null,
         permitRequired: data.permitRequired ?? null,

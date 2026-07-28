@@ -510,6 +510,39 @@ describe("MapView", () => {
     });
   });
 
+  describe("empty-state contribution invite", () => {
+    it("shows an invitation to add a park when the filtered set is empty", () => {
+      render(<MapView parks={[]} />);
+
+      expect(
+        screen.getByText(/no parks in this area yet/i),
+      ).toBeInTheDocument();
+      const link = screen.getByRole("link", { name: /submit a park/i });
+      expect(link).toHaveAttribute("href", "/submit");
+    });
+
+    it("does not show the invite when parks are present", () => {
+      render(<MapView parks={[mockPark1]} />);
+
+      expect(
+        screen.queryByText(/no parks in this area yet/i),
+      ).not.toBeInTheDocument();
+      expect(
+        screen.queryByRole("link", { name: /submit a park/i }),
+      ).not.toBeInTheDocument();
+    });
+
+    it("does not show the invite when the caller frames the map via initialCenter", () => {
+      render(
+        <MapView parks={[]} initialCenter={[40, -100]} initialZoom={7} />,
+      );
+
+      expect(
+        screen.queryByText(/no parks in this area yet/i),
+      ).not.toBeInTheDocument();
+    });
+  });
+
   describe("custom waypoints", () => {
     const customWaypoint: RouteWaypoint = {
       id: "wp-custom-1",

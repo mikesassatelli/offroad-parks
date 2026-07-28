@@ -1,7 +1,9 @@
 import { NextResponse } from "next/server";
 import { revalidatePath } from "next/cache";
+import { Prisma } from "@prisma/client";
 import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
+import { weeklyHoursSchema } from "@/lib/hours";
 
 export const runtime = "nodejs";
 
@@ -57,6 +59,7 @@ const PARK_SCALAR_SELECT = {
   campingPhone: true,
   notes: true,
   datesOpen: true,
+  hours: true,
   contactEmail: true,
   isFree: true,
   dayPassUSD: true,
@@ -173,6 +176,33 @@ export async function PATCH(request: Request, { params }: RouteParams) {
     if (currentValue !== normalized) {
       updateData[key] = normalized;
       changes[key] = { from: currentValue, to: normalized };
+    }
+  }
+
+  // Structured weekly hours (Json). Validated explicitly (not part of the
+  // generic scalar loop). `null` clears the schedule; an object is validated
+  // against weeklyHoursSchema.
+  if ("hours" in body) {
+    const raw = body.hours;
+    if (raw === null) {
+      if (park.hours !== null) {
+        updateData.hours = Prisma.JsonNull;
+        changes.hours = { from: park.hours, to: null };
+      }
+    } else {
+      const parsedHours = weeklyHoursSchema.safeParse(raw);
+      if (!parsedHours.success) {
+        return NextResponse.json(
+          {
+            error: `Invalid hours: ${parsedHours.error.issues[0]?.message ?? "malformed schedule"}`,
+          },
+          { status: 400 }
+        );
+      }
+      if (JSON.stringify(park.hours) !== JSON.stringify(parsedHours.data)) {
+        updateData.hours = parsedHours.data;
+        changes.hours = { from: park.hours, to: parsedHours.data };
+      }
     }
   }
 

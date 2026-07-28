@@ -899,4 +899,72 @@ describe("POST /api/parks/submit", () => {
       }),
     );
   });
+
+  describe("structured weekly hours", () => {
+    const validHours = {
+      mon: { open: "08:00", close: "18:00" },
+      tue: null,
+      wed: null,
+      thu: null,
+      fri: null,
+      sat: { closed: true },
+      sun: null,
+    };
+
+    beforeEach(() => {
+      vi.mocked(auth).mockResolvedValue({
+        user: { id: "user-123", role: "USER" },
+      } as any);
+      vi.mocked(prisma.park.findUnique).mockResolvedValue(null);
+      vi.mocked(prisma.park.create).mockResolvedValue({
+        id: "park-123",
+        slug: "test-park",
+      } as any);
+    });
+
+    it("persists valid hours on the created park", async () => {
+      const request = new Request("http://localhost:3000/api/parks/submit", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ ...validParkData, hours: validHours }),
+      });
+
+      const response = await POST(request);
+      expect(response.status).toBe(200);
+      expect(prisma.park.create).toHaveBeenCalledWith(
+        expect.objectContaining({
+          data: expect.objectContaining({ hours: validHours }),
+        }),
+      );
+    });
+
+    it("omits hours (column stays NULL) when not provided", async () => {
+      const request = new Request("http://localhost:3000/api/parks/submit", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(validParkData),
+      });
+
+      await POST(request);
+      const createArg = vi.mocked(prisma.park.create).mock.calls[0][0] as any;
+      expect(createArg.data.hours).toBeUndefined();
+    });
+
+    it("rejects malformed hours with a 400", async () => {
+      const request = new Request("http://localhost:3000/api/parks/submit", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          ...validParkData,
+          hours: { ...validHours, mon: { open: "18:00", close: "08:00" } },
+        }),
+      });
+
+      const response = await POST(request);
+      const data = await response.json();
+      expect(response.status).toBe(400);
+      expect(data.error).toMatch(/invalid hours/i);
+      expect(prisma.park.create).not.toHaveBeenCalled();
+    });
+  });
 });

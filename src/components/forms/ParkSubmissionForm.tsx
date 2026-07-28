@@ -22,6 +22,8 @@ import { CampingSection } from "@/components/forms/park-fields/CampingSection";
 import { RequirementsSection } from "@/components/forms/park-fields/RequirementsSection";
 import { TerrainCheckboxGroup } from "@/components/forms/park-fields/TerrainCheckboxGroup";
 import { VehicleTypesCheckboxGroup } from "@/components/forms/park-fields/VehicleTypesCheckboxGroup";
+import { WeeklyHoursEditor } from "@/components/forms/park-fields/WeeklyHoursEditor";
+import { emptyWeeklyHours, weeklyHoursSchema, type WeeklyHours } from "@/lib/hours";
 import { Image as ImageIcon, Loader2, X } from "lucide-react";
 import Image from "next/image";
 import { ReadOnlyGate } from "@/components/admin/read-only";
@@ -50,6 +52,10 @@ interface FormData {
   vehicleTypes: string[];
   // Operations fields
   datesOpen: string;
+  // Structured weekly hours. Optional so callers passing initialData (admin
+  // edit) that predates this field, and legacy fixtures, still compile; the
+  // editor and validation default an absent value to an empty schedule.
+  hours?: WeeklyHours;
   contactEmail: string;
   ownership: string;
   // Requirements fields
@@ -123,6 +129,7 @@ export function ParkSubmissionForm({
       vehicleTypes: [],
       // Operations fields
       datesOpen: "",
+      hours: emptyWeeklyHours(),
       contactEmail: "",
       ownership: "",
       // Requirements fields
@@ -218,6 +225,19 @@ export function ParkSubmissionForm({
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+
+    // Validate the structured weekly hours before submitting (display-only,
+    // but we still reject malformed windows like close-before-open).
+    const hoursResult = weeklyHoursSchema.safeParse(
+      formData.hours ?? emptyWeeklyHours(),
+    );
+    if (!hoursResult.success) {
+      alert(
+        `Please fix the weekly hours: ${hoursResult.error.issues[0]?.message ?? "invalid hours"}`,
+      );
+      return;
+    }
+
     setIsSubmitting(true);
 
     try {
@@ -257,6 +277,7 @@ export function ParkSubmissionForm({
             ? parseInt(formData.noiseLimitDBA)
             : null,
           ownership: formData.ownership || null,
+          hours: hoursResult.data,
           address: {
             streetAddress: formData.streetAddress || null,
             streetAddress2: formData.streetAddress2 || null,
@@ -545,6 +566,20 @@ export function ParkSubmissionForm({
               ))}
             </SelectContent>
           </Select>
+        </div>
+
+        {/* Weekly Hours */}
+        <div className="col-span-1 md:col-span-2">
+          <Label className="mb-1 block">Weekly Hours</Label>
+          <p className="text-xs text-muted-foreground mb-3">
+            Set open and close times per day, or mark a day Closed. Leave a day
+            blank if hours are unknown. Use &ldquo;Dates/Hours Open&rdquo; above
+            for season notes.
+          </p>
+          <WeeklyHoursEditor
+            value={formData.hours}
+            onChange={(v) => setFormData((prev) => ({ ...prev, hours: v }))}
+          />
         </div>
 
         {/* Pricing */}

@@ -9,6 +9,7 @@ import type { ParkAlertDisplay } from "@/components/parks/ParkAlertsBanner";
 import { getActiveAlerts, getCurrentConditions, getForecast } from "@/lib/weather";
 import { SITE_URL } from "@/lib/site";
 import { JsonLd } from "@/components/seo/JsonLd";
+import { toOpeningHoursSpecification } from "@/lib/hours";
 
 interface ParkPageProps {
   params: Promise<{ id: string }>;
@@ -272,6 +273,9 @@ export default async function ParkPage({ params }: ParkPageProps) {
   // Build schema.org TouristAttraction structured data for rich results.
   const canonicalUrl = `${SITE_URL}/parks/${dbPark.slug}`;
   const absoluteHero = toAbsoluteUrl(park.heroImage ?? park.mapHeroUrl);
+  // Structured weekly hours → schema.org OpeningHoursSpecification (SEO). Only
+  // days with an explicit open/close window contribute; empty → omitted.
+  const openingHours = toOpeningHoursSpecification(park.hours);
   const jsonLd: Record<string, unknown> = {
     "@context": "https://schema.org",
     "@type": "TouristAttraction",
@@ -303,6 +307,9 @@ export default async function ParkPage({ params }: ParkPageProps) {
             reviewCount: park.reviewCount,
           },
         }
+      : {}),
+    ...(openingHours.length > 0
+      ? { openingHoursSpecification: openingHours }
       : {}),
   };
 

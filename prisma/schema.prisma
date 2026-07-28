@@ -133,6 +133,11 @@ model Park {
 
   // New operational fields
   datesOpen              String?
+  // Structured weekly opening hours (display-only). Shape: { mon..sun:
+  // { open: "HH:MM", close: "HH:MM" } | { closed: true } | null }. Validated
+  // via weeklyHoursSchema in src/lib/hours.ts. `datesOpen` remains the
+  // free-text "season notes" field alongside this.
+  hours                  Json?
   contactEmail           String?
   ownership              Ownership?
   permitRequired         Boolean?

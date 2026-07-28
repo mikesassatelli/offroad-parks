@@ -330,6 +330,59 @@ describe("Park Detail Page", () => {
       expect(screen.getByTestId("photos-count")).toHaveTextContent("1 photos");
     });
 
+    it("includes openingHoursSpecification in JSON-LD when hours are set", async () => {
+      vi.mocked(prisma.park.findUnique).mockResolvedValue({
+        ...mockDbPark,
+        hours: {
+          mon: { open: "08:00", close: "18:00" },
+          tue: null,
+          wed: null,
+          thu: null,
+          fri: null,
+          sat: { closed: true },
+          sun: null,
+        },
+      } as any);
+      vi.mocked(prisma.parkPhoto.findMany).mockResolvedValue([]);
+      vi.mocked(auth).mockResolvedValue(null as any);
+
+      const component = await ParkPage({
+        params: Promise.resolve({ id: "test-park" }),
+      });
+      const { container } = render(component);
+
+      const script = container.querySelector(
+        'script[type="application/ld+json"]',
+      );
+      expect(script).not.toBeNull();
+      const data = JSON.parse(script!.innerHTML);
+      expect(data.openingHoursSpecification).toEqual([
+        {
+          "@type": "OpeningHoursSpecification",
+          dayOfWeek: "https://schema.org/Monday",
+          opens: "08:00",
+          closes: "18:00",
+        },
+      ]);
+    });
+
+    it("omits openingHoursSpecification from JSON-LD when hours are absent", async () => {
+      vi.mocked(prisma.park.findUnique).mockResolvedValue(mockDbPark as any);
+      vi.mocked(prisma.parkPhoto.findMany).mockResolvedValue([]);
+      vi.mocked(auth).mockResolvedValue(null as any);
+
+      const component = await ParkPage({
+        params: Promise.resolve({ id: "test-park" }),
+      });
+      const { container } = render(component);
+
+      const script = container.querySelector(
+        'script[type="application/ld+json"]',
+      );
+      const data = JSON.parse(script!.innerHTML);
+      expect(data.openingHoursSpecification).toBeUndefined();
+    });
+
     it("should handle park with no photos", async () => {
       vi.mocked(prisma.park.findUnique).mockResolvedValue(mockDbPark as any);
       vi.mocked(prisma.parkPhoto.findMany).mockResolvedValue([]);

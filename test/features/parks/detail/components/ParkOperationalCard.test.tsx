@@ -44,11 +44,54 @@ describe("ParkOperationalCard", () => {
     expect(screen.getByText("Park Details")).toBeInTheDocument();
   });
 
-  it("should display datesOpen", () => {
+  it("should display datesOpen as a Season row", () => {
     const park = { ...basePark, datesOpen: "May 1 – October 31" };
     render(<ParkOperationalCard park={park} />);
     expect(screen.getByText("May 1 – October 31")).toBeInTheDocument();
-    expect(screen.getByText("Open")).toBeInTheDocument();
+    expect(screen.getByText("Season")).toBeInTheDocument();
+  });
+
+  it("renders a structured weekly schedule when hours are set", () => {
+    const park: Park = {
+      ...basePark,
+      hours: {
+        mon: { open: "08:00", close: "18:00" },
+        tue: { open: "08:00", close: "18:00" },
+        wed: null,
+        thu: null,
+        fri: null,
+        sat: { closed: true },
+        sun: null,
+      },
+    };
+    render(<ParkOperationalCard park={park} />);
+    // Card is shown purely because hours are present.
+    expect(screen.getByText("Hours")).toBeInTheDocument();
+    expect(screen.getByTestId("weekly-hours-list")).toBeInTheDocument();
+    // Formatted 12h window appears (twice — Mon and Tue).
+    expect(screen.getAllByText("8:00 AM – 6:00 PM")).toHaveLength(2);
+    // Explicit closure renders as "Closed".
+    expect(screen.getByText("Closed")).toBeInTheDocument();
+    // Unspecified days render as an em dash placeholder.
+    expect(screen.getAllByText("—").length).toBeGreaterThan(0);
+  });
+
+  it("does not render the Hours row when every day is unspecified", () => {
+    const park: Park = {
+      ...basePark,
+      hours: {
+        mon: null,
+        tue: null,
+        wed: null,
+        thu: null,
+        fri: null,
+        sat: null,
+        sun: null,
+      },
+    };
+    const { container } = render(<ParkOperationalCard park={park} />);
+    // All-null hours count as empty, so the card hides entirely.
+    expect(container.firstChild).toBeNull();
   });
 
   it("should display formatted ownership", () => {

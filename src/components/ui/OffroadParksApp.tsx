@@ -22,6 +22,7 @@ import { AppHeader } from "@/components/layout/AppHeader";
 import { SearchHeader } from "@/components/layout/SearchHeader";
 import { SearchFiltersPanel } from "@/components/parks/SearchFiltersPanel";
 import { ParkCard } from "@/components/parks/ParkCard";
+import { EmptyParksInvite } from "@/components/parks/EmptyParksInvite";
 import { RouteList } from "@/features/route-planner/RouteList";
 import { MyRoutesOverlayPanel } from "@/features/route-planner/MyRoutesOverlayPanel";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -511,12 +512,9 @@ function OffroadParksAppInner({
                   ))}
                 </div>
 
-                {/* Empty state — only when a completed load returned nothing. */}
-                {!isLoading && listParks.length === 0 && (
-                  <div className="py-16 text-center text-muted-foreground">
-                    No parks match your filters.
-                  </div>
-                )}
+                {/* Empty state — only when a completed load returned nothing.
+                    Doubles as a calm invitation to contribute a missing park. */}
+                {!isLoading && listParks.length === 0 && <EmptyParksInvite />}
 
                 {/* Loading / infinite-scroll region */}
                 {(isLoading || isLoadingMore) && (
