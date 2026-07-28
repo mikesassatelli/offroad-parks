@@ -73,6 +73,7 @@ export const PARK_TO_FORM_FIELD_MAP = {
 
   // Operational
   datesOpen: "datesOpen",
+  hours: "hours", // structured weekly-hours editor (WeeklyHoursEditor)
   contactEmail: "contactEmail",
   ownership: "ownership",
   permitRequired: "permitRequired",
@@ -128,6 +129,9 @@ export const BULK_UPLOAD_FIELD_MAP = {
   vehicleTypes: "vehicleTypes",
   // Operational fields
   datesOpen: "datesOpen",
+  // NOTE: `hours` (structured weekly schedule) is intentionally NOT captured
+  // via CSV bulk upload — it is a nested JSON shape that doesn't map to a flat
+  // CSV column. It is collected only through the human form surfaces.
   contactEmail: "contactEmail",
   ownership: "ownership",
   permitRequired: "permitRequired",

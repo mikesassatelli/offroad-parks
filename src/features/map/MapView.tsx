@@ -2,6 +2,8 @@
 
 import { useMemo, useState } from "react";
 import { MapContainer, Polyline, TileLayer, useMapEvents } from "react-leaflet";
+import Link from "next/link";
+import { Button } from "@/components/ui/button";
 import type { Park, RouteWaypoint } from "@/lib/types";
 import { MapBoundsHandler } from "./components/MapBoundsHandler";
 import { MapVisibilityHandler } from "./components/MapVisibilityHandler";
@@ -286,6 +288,23 @@ export function MapView({
         <div className="absolute bottom-4 left-1/2 -translate-x-1/2 bg-card px-4 py-2 rounded-full shadow-md text-sm text-muted-foreground z-[1000]">
           Showing {parksWithCoordinates.length} of {parks.length} parks with
           coordinates
+        </div>
+      )}
+      {/* Empty filtered set → a subtle invitation to add a park in this area.
+          Skipped when the caller frames the map itself (initialCenter, e.g. the
+          trail-overlay POC) so single-purpose maps aren't nagged. The wrapper
+          stays click-through so it never blocks panning; only the card
+          re-enables pointer events. */}
+      {!initialCenter && parks.length === 0 && (
+        <div className="pointer-events-none absolute inset-0 z-[1000] flex items-center justify-center p-4">
+          <div className="pointer-events-auto max-w-xs rounded-lg border bg-card/95 px-5 py-4 text-center shadow-md">
+            <p className="text-sm text-muted-foreground">
+              No parks in this area yet. Know one that belongs on the map?
+            </p>
+            <Button asChild variant="outline" size="sm" className="mt-3">
+              <Link href="/submit">Submit a park</Link>
+            </Button>
+          </div>
         </div>
       )}
     </div>

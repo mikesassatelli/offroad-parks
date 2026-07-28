@@ -671,6 +671,46 @@ describe("ParkDetailPage", () => {
     });
   });
 
+  describe("ContributeCard (sidebar accuracy card)", () => {
+    it("renders the consolidated 'Help keep this listing accurate' card in the sidebar", () => {
+      const { container } = render(
+        <ParkDetailPage park={mockPark} photos={[]} />,
+      );
+
+      const sidebar = container.querySelector(".lg\\:col-span-1");
+      expect(sidebar).not.toBeNull();
+      const heading = screen.getByText(/help keep this listing accurate/i);
+      expect(sidebar).toContainElement(heading);
+      // The correction dialog now lives inside this card (single mount).
+      expect(sidebar).toContainElement(
+        screen.getByTestId("suggest-correction-dialog"),
+      );
+    });
+
+    it("offers an 'Add photos' affordance", () => {
+      render(<ParkDetailPage park={mockPark} photos={[]} />);
+
+      expect(
+        screen.getByRole("button", { name: /^add photos$/i }),
+      ).toBeInTheDocument();
+    });
+
+    it("points to the claim flow via the #claim anchor", () => {
+      render(<ParkDetailPage park={mockPark} photos={[]} />);
+
+      const link = screen.getByRole("link", { name: /claim it/i });
+      expect(link).toHaveAttribute("href", "#claim");
+    });
+
+    it("no longer renders the old inline correction prompt in the Overview tab", () => {
+      render(<ParkDetailPage park={mockPark} photos={[]} />);
+
+      expect(
+        screen.queryByText(/see something wrong or out of date/i),
+      ).not.toBeInTheDocument();
+    });
+  });
+
   describe("Data freshness / provenance", () => {
     it("renders a 'Last verified' line when lastResearchedAt is present", () => {
       const park = { ...mockPark, lastResearchedAt: "2026-01-15T00:00:00.000Z" };

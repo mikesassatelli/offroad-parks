@@ -3,9 +3,16 @@ import { Badge } from "@/components/ui/badge";
 import type { Park } from "@/lib/types";
 import { formatOwnership } from "@/lib/formatting";
 import {
+  DAY_KEYS,
+  DAY_SHORT_LABELS,
+  formatDayHours,
+  hasAnyHours,
+} from "@/lib/hours";
+import {
   Building2,
   Calendar,
   ChevronsLeftRight,
+  Clock,
   CreditCard,
   FileWarning,
   Flag,
@@ -38,7 +45,10 @@ function Row({ icon: Icon, label, value }: RowProps) {
 }
 
 export function ParkOperationalCard({ park }: ParkOperationalCardProps) {
+  const showHours = hasAnyHours(park.hours);
+
   const hasAny =
+    showHours ||
     park.datesOpen ||
     park.ownership ||
     park.permitRequired ||
@@ -60,10 +70,35 @@ export function ParkOperationalCard({ park }: ParkOperationalCardProps) {
         </CardTitle>
       </CardHeader>
       <CardContent className="space-y-3">
+        {showHours && (
+          <Row
+            icon={Clock}
+            label="Hours"
+            value={
+              <ul className="space-y-0.5" data-testid="weekly-hours-list">
+                {DAY_KEYS.map((day) => {
+                  const text = formatDayHours(park.hours?.[day]);
+                  return (
+                    <li
+                      key={day}
+                      className="flex justify-between gap-4 tabular-nums"
+                    >
+                      <span className="text-muted-foreground">
+                        {DAY_SHORT_LABELS[day]}
+                      </span>
+                      <span>{text || "—"}</span>
+                    </li>
+                  );
+                })}
+              </ul>
+            }
+          />
+        )}
+
         {park.datesOpen && (
           <Row
             icon={Calendar}
-            label="Open"
+            label="Season"
             value={park.datesOpen}
           />
         )}

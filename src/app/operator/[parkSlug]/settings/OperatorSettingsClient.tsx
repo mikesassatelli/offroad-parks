@@ -8,7 +8,9 @@ import { CampingSection } from "@/components/forms/park-fields/CampingSection";
 import { RequirementsSection } from "@/components/forms/park-fields/RequirementsSection";
 import { TerrainCheckboxGroup } from "@/components/forms/park-fields/TerrainCheckboxGroup";
 import { VehicleTypesCheckboxGroup } from "@/components/forms/park-fields/VehicleTypesCheckboxGroup";
+import { WeeklyHoursEditor } from "@/components/forms/park-fields/WeeklyHoursEditor";
 import type { RequirementsValues } from "@/components/forms/park-fields/RequirementsSection";
+import { parseWeeklyHours, weeklyHoursSchema, type WeeklyHours } from "@/lib/hours";
 import { CheckCircle, MapPin } from "lucide-react";
 
 interface ParkData {
@@ -20,6 +22,7 @@ interface ParkData {
   campingPhone: string | null;
   notes: string | null;
   datesOpen: string | null;
+  hours: WeeklyHours | null;
   contactEmail: string | null;
   isFree: boolean | null;
   dayPassUSD: number | null;
@@ -58,7 +61,9 @@ export function OperatorSettingsClient({ parkSlug, parkName }: OperatorSettingsC
     fetch(`/api/operator/parks/${parkSlug}`)
       .then((r) => r.json())
       .then((data) => {
-        if (data.park) setPark(data.park);
+        if (data.park) {
+          setPark({ ...data.park, hours: parseWeeklyHours(data.park.hours) });
+        }
       })
       .catch(console.error)
       .finally(() => setIsLoading(false));
@@ -79,6 +84,17 @@ export function OperatorSettingsClient({ parkSlug, parkName }: OperatorSettingsC
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!park) return;
+
+    // Validate structured weekly hours before saving.
+    if (park.hours) {
+      const hoursResult = weeklyHoursSchema.safeParse(park.hours);
+      if (!hoursResult.success) {
+        setSaveError(
+          `Please fix the weekly hours: ${hoursResult.error.issues[0]?.message ?? "invalid hours"}`,
+        );
+        return;
+      }
+    }
 
     setSaveError(null);
     setSaveSuccess(false);
@@ -206,6 +222,18 @@ export function OperatorSettingsClient({ parkSlug, parkName }: OperatorSettingsC
                   placeholder="Year-round / May–October"
                 />
               </div>
+            </div>
+            <div>
+              <label className="text-sm font-medium block mb-1">Weekly Hours</label>
+              <p className="text-xs text-muted-foreground mb-3">
+                Set open and close times per day, or mark a day Closed. Leave a
+                day blank if hours are unknown. Use &ldquo;Dates Open&rdquo; for
+                season notes.
+              </p>
+              <WeeklyHoursEditor
+                value={park.hours}
+                onChange={(v) => handleChange("hours", v)}
+              />
             </div>
             <div>
               <label className="text-sm font-medium block mb-1">Description / Notes</label>
