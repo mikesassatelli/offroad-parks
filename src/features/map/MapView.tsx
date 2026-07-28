@@ -12,6 +12,7 @@ import { ParkMarker } from "./components/ParkMarker";
 import { RoutePolylines } from "./components/RoutePolylines";
 import { TrailOverlay, type TrailFeatureCollection } from "./components/TrailOverlay";
 import { MapMarkerLayer } from "./components/MapMarkerLayer";
+import { MarkerClusterGroup } from "./components/MarkerClusterGroup";
 import type { ParkMapMarker } from "@/lib/types";
 import "./utils/markers"; // Initialize marker icons
 import "leaflet/dist/leaflet.css";
@@ -203,6 +204,32 @@ export function MapView({
   // preserving the caller's initialCenter/initialZoom framing).
   const needsVisibilityFix = !!visibilityCenter || !!initialCenter;
 
+  // Cluster park markers only on the main, auto-framed multi-park map. Framed
+  // single-purpose maps (park detail Location tab via `fitOnVisible`, the
+  // trail-overlay POC via `initialCenter`) render markers directly.
+  const shouldCluster =
+    !fitOnVisible && !initialCenter && parksWithCoordinates.length > 1;
+
+  const renderParkMarker = (park: Park) => {
+    const isInRoute = isParkInRoute?.(park.id) ?? false;
+    const routeWaypoint = routeWaypoints.find((w) => w.parkId === park.id);
+    const routeIndex = routeWaypoint
+      ? routeWaypoints.indexOf(routeWaypoint)
+      : -1;
+
+    return (
+      <ParkMarker
+        key={park.id}
+        park={park}
+        isInRoute={isInRoute}
+        routeIndex={routeIndex}
+        routeWaypoint={routeWaypoint}
+        onAddToRoute={onAddToRoute}
+        showLabel={alwaysShowLabel || zoomLevel >= LABEL_ZOOM_THRESHOLD}
+      />
+    );
+  };
+
   return (
     <div className={wrapperClassName}>
       <MapContainer
@@ -265,24 +292,31 @@ export function MapView({
             />
           ))}
 
-        {/* Render park markers */}
-        {parksWithCoordinates.map((park) => {
-          const isInRoute = isParkInRoute?.(park.id) ?? false;
-          const routeWaypoint = routeWaypoints.find((w) => w.parkId === park.id);
-          const routeIndex = routeWaypoint ? routeWaypoints.indexOf(routeWaypoint) : -1;
-
-          return (
-            <ParkMarker
-              key={park.id}
-              park={park}
-              isInRoute={isInRoute}
-              routeIndex={routeIndex}
-              routeWaypoint={routeWaypoint}
-              onAddToRoute={onAddToRoute}
-              showLabel={alwaysShowLabel || zoomLevel >= LABEL_ZOOM_THRESHOLD}
-            />
-          );
-        })}
+        {/* Render park markers. On the main multi-park map they're grouped
+            into clusters so dense regions stay legible and performant; parks
+            already in the route are rendered outside the cluster so their
+            numbered pins remain individually visible. Single-park / framed
+            maps (detail Location tab, trail-overlay POC) skip clustering. */}
+        {shouldCluster ? (
+          <>
+            <MarkerClusterGroup
+              chunkedLoading
+              showCoverageOnHover={false}
+              spiderfyOnMaxZoom
+              maxClusterRadius={50}
+              disableClusteringAtZoom={LABEL_ZOOM_THRESHOLD + 1}
+            >
+              {parksWithCoordinates
+                .filter((park) => !(isParkInRoute?.(park.id) ?? false))
+                .map(renderParkMarker)}
+            </MarkerClusterGroup>
+            {parksWithCoordinates
+              .filter((park) => isParkInRoute?.(park.id) ?? false)
+              .map(renderParkMarker)}
+          </>
+        ) : (
+          parksWithCoordinates.map(renderParkMarker)
+        )}
       </MapContainer>
       {parksWithCoordinates.length < parks.length && (
         <div className="absolute bottom-4 left-1/2 -translate-x-1/2 bg-card px-4 py-2 rounded-full shadow-md text-sm text-muted-foreground z-[1000]">
