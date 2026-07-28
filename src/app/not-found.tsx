@@ -1,6 +1,6 @@
 import Link from "next/link";
 import { MapPinned } from "lucide-react";
-import { AppHeader } from "@/components/layout/AppHeader";
+import { SessionAppHeader } from "@/components/layout/SessionAppHeader";
 import { BrokenTruck } from "@/components/BrokenTruck";
 import { Button } from "@/components/ui/button";
 import type { Metadata } from "next";
@@ -13,7 +13,7 @@ export const metadata: Metadata = {
 export default function NotFound() {
   return (
     <div className="min-h-screen bg-background flex flex-col">
-      <AppHeader />
+      <SessionAppHeader />
       <main className="flex-1 flex items-center justify-center px-6 py-16">
         <div className="w-full max-w-md text-center flex flex-col items-center">
           <BrokenTruck className="w-64 sm:w-80 mb-8" />

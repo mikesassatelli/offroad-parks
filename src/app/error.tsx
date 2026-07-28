@@ -3,7 +3,7 @@
 import { useEffect } from "react";
 import Link from "next/link";
 import { Home, RotateCw } from "lucide-react";
-import { AppHeader } from "@/components/layout/AppHeader";
+import { SessionAppHeader } from "@/components/layout/SessionAppHeader";
 import { BrokenTruck } from "@/components/BrokenTruck";
 import { Button } from "@/components/ui/button";
 
@@ -21,7 +21,7 @@ export default function Error({
 
   return (
     <div className="min-h-screen bg-background flex flex-col">
-      <AppHeader />
+      <SessionAppHeader />
       <main className="flex-1 flex items-center justify-center px-6 py-16">
         <div className="w-full max-w-md text-center flex flex-col items-center">
           <BrokenTruck className="w-64 sm:w-80 mb-8" />
