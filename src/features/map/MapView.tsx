@@ -1,7 +1,14 @@
 "use client";
 
 import { useMemo, useState } from "react";
-import { MapContainer, Polyline, TileLayer, useMapEvents } from "react-leaflet";
+import {
+  LayersControl,
+  MapContainer,
+  Polyline,
+  TileLayer,
+  useMapEvents,
+} from "react-leaflet";
+import { BASEMAPS } from "./basemaps";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import type { Park, RouteWaypoint } from "@/lib/types";
@@ -238,10 +245,25 @@ export function MapView({
         style={{ height: "100%", width: "100%" }}
         scrollWheelZoom={true}
       >
-        <TileLayer
-          attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
-          url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
-        />
+        {/* Basemap switcher — streets / satellite / topo. Satellite and topo
+            suit the off-road audience far better than a road-only street map,
+            and all three sources are keyless. */}
+        <LayersControl position="topright">
+          {BASEMAPS.map((base, index) => (
+            <LayersControl.BaseLayer
+              key={base.name}
+              name={base.name}
+              checked={index === 0}
+            >
+              <TileLayer
+                url={base.url}
+                attribution={base.attribution}
+                maxZoom={base.maxZoom}
+                subdomains={base.subdomains ?? "abc"}
+              />
+            </LayersControl.BaseLayer>
+          ))}
+        </LayersControl>
         {/* POC: OHV trail-network overlay (managed-use styled) */}
         {trailOverlay && <TrailOverlay data={trailOverlay} />}
         {/* Point markers: trailheads, campgrounds/rec areas */}
