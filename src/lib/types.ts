@@ -1,3 +1,5 @@
+import type { WeeklyHours } from "./hours";
+
 // Route builder types
 export type RouteWaypoint = {
   id: string;
@@ -168,6 +170,10 @@ export type DbPark = {
   status: ParkStatus;
   // New operational fields
   datesOpen: string | null;
+  // Structured weekly hours JSON (display-only). Prisma types this as
+  // JsonValue; the transform casts it to the WeeklyHours shape. Optional so
+  // callers using a narrower select (or older fixtures) still satisfy DbPark.
+  hours?: unknown;
   contactEmail: string | null;
   ownership: Ownership | null;
   permitRequired: boolean | null;
@@ -244,6 +250,9 @@ export type Park = {
   mapHeroUrl?: string | null;
   // New operational fields
   datesOpen?: string;
+  // Structured weekly opening hours (display-only). Passed through from the
+  // DB Json column; validated on write via weeklyHoursSchema.
+  hours?: WeeklyHours | null;
   contactEmail?: string;
   ownership?: Ownership;
   permitRequired?: boolean;
@@ -409,6 +418,8 @@ export function transformDbPark(dbPark: DbPark): Park {
     mapHeroUrl: dbPark.mapHeroUrl ?? undefined,
     // New operational fields
     datesOpen: dbPark.datesOpen ?? undefined,
+    // Structured weekly hours — pass the JSON through, typed to the shape.
+    hours: (dbPark.hours as WeeklyHours | null | undefined) ?? undefined,
     contactEmail: dbPark.contactEmail ?? undefined,
     ownership: dbPark.ownership ?? undefined,
     permitRequired: dbPark.permitRequired ?? undefined,

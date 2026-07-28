@@ -53,6 +53,7 @@ const mockPark = {
   campingPhone: null,
   notes: "Great park",
   datesOpen: null,
+  hours: null,
   contactEmail: null,
   isFree: false,
   dayPassUSD: 25,
@@ -180,6 +181,70 @@ describe("PATCH /api/operator/parks/[parkSlug]", () => {
     expect(response.status).toBe(200);
     const data = await response.json();
     expect(data.success).toBe(true);
+  });
+
+  it("validates and persists structured weekly hours", async () => {
+    (auth as any).mockResolvedValue(operatorSession);
+    (prisma.park.findUnique as any).mockResolvedValue(mockPark);
+
+    const hours = {
+      mon: { open: "08:00", close: "18:00" },
+      tue: null,
+      wed: null,
+      thu: null,
+      fri: null,
+      sat: { closed: true },
+      sun: null,
+    };
+
+    const updateSpy = vi.fn().mockResolvedValue({ ...mockPark, hours });
+    (prisma.$transaction as any).mockImplementation(async (fn: any) =>
+      fn({
+        park: {
+          update: updateSpy,
+          findUnique: vi.fn().mockResolvedValue({ ...mockPark, hours }),
+        },
+        parkTerrain: { deleteMany: vi.fn(), createMany: vi.fn() },
+        parkAmenity: { deleteMany: vi.fn(), createMany: vi.fn() },
+        parkCamping: { deleteMany: vi.fn(), createMany: vi.fn() },
+        parkVehicleType: { deleteMany: vi.fn(), createMany: vi.fn() },
+        parkEditLog: { create: vi.fn().mockResolvedValue({ id: "log-1" }) },
+      }),
+    );
+
+    const response = await PATCH(makePatchRequest({ hours }), {
+      params: Promise.resolve({ parkSlug: "test-park" }),
+    });
+
+    expect(response.status).toBe(200);
+    expect(updateSpy).toHaveBeenCalledWith(
+      expect.objectContaining({ data: expect.objectContaining({ hours }) }),
+    );
+  });
+
+  it("rejects malformed hours with a 400 and does not write", async () => {
+    (auth as any).mockResolvedValue(operatorSession);
+    (prisma.park.findUnique as any).mockResolvedValue(mockPark);
+
+    const response = await PATCH(
+      makePatchRequest({
+        hours: {
+          mon: { open: "08:00", close: "07:00" }, // close before open
+          tue: null,
+          wed: null,
+          thu: null,
+          fri: null,
+          sat: null,
+          sun: null,
+        },
+      }),
+      { params: Promise.resolve({ parkSlug: "test-park" }) },
+    );
+
+    expect(response.status).toBe(400);
+    const data = await response.json();
+    expect(data.error).toMatch(/invalid hours/i);
+    expect(prisma.$transaction).not.toHaveBeenCalled();
   });
 
   it("revalidates the home grid + park detail page after a successful update", async () => {

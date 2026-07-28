@@ -31,6 +31,10 @@ describe("field-coverage", () => {
       expect(PARK_TO_FORM_FIELD_MAP.state).toBe("addressState");
     });
 
+    it("maps the structured weekly hours field to its form field", () => {
+      expect(PARK_TO_FORM_FIELD_MAP.hours).toBe("hours");
+    });
+
     it("preserves nested address mappings", () => {
       expect(PARK_TO_FORM_FIELD_MAP.address.streetAddress).toBe("streetAddress");
       expect(PARK_TO_FORM_FIELD_MAP.address.zipCode).toBe("zipCode");
@@ -57,6 +61,12 @@ describe("field-coverage", () => {
         "maxVehicleWidthInches"
       );
       expect(BULK_UPLOAD_FIELD_MAP.noiseLimitDBA).toBe("noiseLimitDBA");
+    });
+
+    it("intentionally excludes structured hours from CSV bulk upload", () => {
+      // `hours` is a nested JSON shape captured only via the human form
+      // surfaces, not flat CSV columns.
+      expect("hours" in BULK_UPLOAD_FIELD_MAP).toBe(false);
     });
 
     it("keeps state/city as flat CSV columns", () => {

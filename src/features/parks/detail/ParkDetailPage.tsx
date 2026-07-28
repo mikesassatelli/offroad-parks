@@ -36,7 +36,7 @@ import { AppHeader } from "@/components/layout/AppHeader";
 import { useSignInPrompt } from "@/components/auth/SignInPromptProvider";
 import { useFavorites } from "@/hooks/useFavorites";
 import { formatDate } from "@/lib/formatting";
-import { SuggestCorrectionDialog } from "./components/SuggestCorrectionDialog";
+import { ContributeCard } from "./components/ContributeCard";
 import { findTrailOverlay } from "./trailOverlays";
 import type { TrailFeatureCollection } from "@/features/map/components/TrailOverlay";
 
@@ -97,6 +97,10 @@ function ParkDetailPageInner({
   const { promptSignIn } = useSignInPrompt();
   const { isFavorite, toggleFavorite } = useFavorites();
   const [showReviewForm, setShowReviewForm] = useState(false);
+  // Controlled tab state so the sidebar ContributeCard's "Add photos" button can
+  // jump the user to the Photos tab (where the uploader / sign-in prompt lives)
+  // without rebuilding the upload flow.
+  const [activeTab, setActiveTab] = useState("overview");
   // Share control: prefer the native Web Share API; otherwise copy the URL to
   // the clipboard and show a transient "Copied!" confirmation.
   const [shareCopied, setShareCopied] = useState(false);
@@ -335,7 +339,7 @@ function ParkDetailPageInner({
               column grows to the widest child (e.g. the tab bar / cards) and
               pushes the whole page past the viewport. */}
           <div className="lg:col-span-2 min-w-0">
-            <Tabs defaultValue="overview">
+            <Tabs value={activeTab} onValueChange={setActiveTab}>
               <TabsList className="w-full justify-start mb-6">
                 <TabsTrigger value="overview">Overview</TabsTrigger>
                 <TabsTrigger value="photos">
@@ -354,17 +358,6 @@ function ParkDetailPageInner({
                 <ParkOverviewCard park={park} />
                 <ParkAttributesCards park={park} />
                 <ParkOperationalCard park={park} />
-                {/* Low-key crowdsourced-correction affordance. The dialog
-                    renders its own trigger and self-gates on auth. */}
-                <div className="flex flex-wrap items-center justify-between gap-3 rounded-lg border border-dashed border-border bg-muted/30 px-4 py-3">
-                  <p className="text-sm text-muted-foreground">
-                    See something wrong or out of date?
-                  </p>
-                  <SuggestCorrectionDialog
-                    parkSlug={park.id}
-                    parkName={park.name}
-                  />
-                </div>
               </TabsContent>
 
               {/* Photos Tab */}
@@ -631,6 +624,14 @@ function ParkDetailPageInner({
                   </div>
                 )
               )}
+              {/* Consolidated, always-visible contribution card. Keeps the
+                  correction dialog + photo prompt near the top of the sidebar
+                  instead of buried at the bottom of the page. */}
+              <ContributeCard
+                parkSlug={park.id}
+                parkName={park.name}
+                onAddPhotos={() => setActiveTab("photos")}
+              />
               <TrailConditionsDisplay parkSlug={park.id} />
               {/* OP-53: NWS forecast + current. Renders nothing when both
                   are empty (parks without coords or outside NWS coverage). */}
@@ -640,14 +641,18 @@ function ParkDetailPageInner({
               />
               <ParkContactSidebar park={park} />
               <CampingInfoCard park={park} />
-              <ParkClaimCTA
-                parkSlug={park.id}
-                isLoggedIn={!!session?.user}
-                hasOperator={park.hasOperator}
-                existingClaim={existingClaim}
-                isOperatorOfPark={isOperatorOfPark}
-                operatorName={operatorName}
-              />
+              {/* Full claim flow. The ContributeCard's "Claim it" pointer
+                  links to this `#claim` anchor so the form lives in one place. */}
+              <div id="claim" className="scroll-mt-24">
+                <ParkClaimCTA
+                  parkSlug={park.id}
+                  isLoggedIn={!!session?.user}
+                  hasOperator={park.hasOperator}
+                  existingClaim={existingClaim}
+                  isOperatorOfPark={isOperatorOfPark}
+                  operatorName={operatorName}
+                />
+              </div>
             </div>
           </div>
         </div>

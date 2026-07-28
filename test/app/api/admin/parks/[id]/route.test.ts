@@ -688,6 +688,74 @@ describe("PATCH /api/admin/parks/[id]", () => {
     expect(updateCall.data).not.toHaveProperty("county");
   });
 
+  it("persists valid structured hours passed through the update", async () => {
+    vi.mocked(auth).mockResolvedValue({
+      user: { id: "admin-123", role: "ADMIN" },
+    } as any);
+    vi.mocked(prisma.park.update).mockResolvedValue({
+      id: "park-123",
+      slug: "updated",
+    } as any);
+
+    const hours = {
+      mon: { open: "08:00", close: "18:00" },
+      tue: null,
+      wed: null,
+      thu: null,
+      fri: null,
+      sat: { closed: true },
+      sun: null,
+    };
+
+    const request = new Request(
+      "http://localhost:3000/api/admin/parks/park-123",
+      {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ ...validUpdateData, hours }),
+      },
+    );
+
+    await PATCH(request, { params: Promise.resolve({ id: "park-123" }) });
+
+    const updateCall = vi.mocked(prisma.park.update).mock.calls[0][0] as any;
+    expect(updateCall.data.hours).toEqual(hours);
+  });
+
+  it("returns 400 when hours are malformed", async () => {
+    vi.mocked(auth).mockResolvedValue({
+      user: { id: "admin-123", role: "ADMIN" },
+    } as any);
+
+    const request = new Request(
+      "http://localhost:3000/api/admin/parks/park-123",
+      {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          ...validUpdateData,
+          hours: {
+            mon: { open: "99:99", close: "18:00" },
+            tue: null,
+            wed: null,
+            thu: null,
+            fri: null,
+            sat: null,
+            sun: null,
+          },
+        }),
+      },
+    );
+
+    const response = await PATCH(request, {
+      params: Promise.resolve({ id: "park-123" }),
+    });
+    const data = await response.json();
+    expect(response.status).toBe(400);
+    expect(data.error).toMatch(/invalid hours/i);
+    expect(prisma.park.update).not.toHaveBeenCalled();
+  });
+
   it("should preserve other park fields not in update data", async () => {
     // Arrange
     vi.mocked(auth).mockResolvedValue({

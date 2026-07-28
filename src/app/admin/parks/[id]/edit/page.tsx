@@ -3,6 +3,7 @@ import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { ParkSubmissionForm } from "@/components/forms/ParkSubmissionForm";
 import { canAdminView } from "@/lib/roles";
+import { emptyWeeklyHours, parseWeeklyHours } from "@/lib/hours";
 
 interface EditParkPageProps {
   params: Promise<{
@@ -70,6 +71,7 @@ export default async function EditParkPage({ params }: EditParkPageProps) {
     vehicleTypes: park.vehicleTypes.map((v) => v.vehicleType),
     // New scalar fields
     datesOpen: park.datesOpen || "",
+    hours: parseWeeklyHours(park.hours) ?? emptyWeeklyHours(),
     contactEmail: park.contactEmail || "",
     ownership: park.ownership || "",
     permitRequired: park.permitRequired || false,

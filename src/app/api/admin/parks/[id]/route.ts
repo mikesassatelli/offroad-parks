@@ -2,8 +2,10 @@ import { NextResponse } from "next/server";
 import { revalidatePath, revalidateTag } from "next/cache";
 import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
+import { Prisma } from "@prisma/client";
 import { generateMapHeroAsync } from "@/lib/map-hero/generate";
 import { normalizeStateName } from "@/lib/us-states";
+import { weeklyHoursSchema } from "@/lib/hours";
 
 interface RouteParams {
   params: Promise<{
@@ -78,6 +80,25 @@ export async function PATCH(request: Request, { params }: RouteParams) {
       county: _co,
       ...parkData
     } = body;
+
+    // Validate structured weekly hours (Json). `null` clears the schedule; an
+    // object is validated against weeklyHoursSchema before being written.
+    if ("hours" in parkData) {
+      if (parkData.hours === null) {
+        parkData.hours = Prisma.JsonNull;
+      } else {
+        const parsedHours = weeklyHoursSchema.safeParse(parkData.hours);
+        if (!parsedHours.success) {
+          return NextResponse.json(
+            {
+              error: `Invalid hours: ${parsedHours.error.issues[0]?.message ?? "malformed schedule"}`,
+            },
+            { status: 400 }
+          );
+        }
+        parkData.hours = parsedHours.data;
+      }
+    }
 
     // Read existing coords so we can detect a change and regenerate the
     // map hero only when needed (OP-90).
