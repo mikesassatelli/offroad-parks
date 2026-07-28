@@ -1,4 +1,4 @@
-import { act, render, screen } from "@testing-library/react";
+import { act, render, screen, within } from "@testing-library/react";
 import { MapView } from "@/features/map/MapView";
 import { beforeEach, vi } from "vitest";
 import type { Park, RouteWaypoint } from "@/lib/types";
@@ -70,6 +70,15 @@ vi.mock("@/features/map/components/ParkMarker", () => ({
 vi.mock("@/features/map/components/RoutePolylines", () => ({
   RoutePolylines: ({ routeParks }: any) => (
     <div data-testid="route-polylines" data-route-count={routeParks.length} />
+  ),
+}));
+
+// Passthrough mock — the real component pulls leaflet.markercluster which
+// needs a live map. Rendering children directly preserves the park-marker
+// assertions while exposing whether clustering was engaged.
+vi.mock("@/features/map/components/MarkerClusterGroup", () => ({
+  MarkerClusterGroup: ({ children }: any) => (
+    <div data-testid="marker-cluster-group">{children}</div>
   ),
 }));
 
@@ -602,6 +611,51 @@ describe("MapView", () => {
         "data-has-remove",
         "false",
       );
+    });
+  });
+
+  describe("marker clustering", () => {
+    it("clusters parks on the main multi-park map", () => {
+      render(<MapView parks={[mockPark1, mockPark2]} />);
+
+      const cluster = screen.getByTestId("marker-cluster-group");
+      expect(
+        within(cluster).getByTestId("park-marker-park-1"),
+      ).toBeInTheDocument();
+      expect(
+        within(cluster).getByTestId("park-marker-park-2"),
+      ).toBeInTheDocument();
+    });
+
+    it("keeps in-route parks outside the cluster so their numbered pins stay visible", () => {
+      const isParkInRoute = (id: string) => id === "park-1";
+      render(
+        <MapView
+          parks={[mockPark1, mockPark2]}
+          routeWaypoints={[wp1]}
+          isParkInRoute={isParkInRoute}
+        />,
+      );
+
+      const cluster = screen.getByTestId("marker-cluster-group");
+      // Non-route park is clustered…
+      expect(
+        within(cluster).getByTestId("park-marker-park-2"),
+      ).toBeInTheDocument();
+      // …while the in-route park renders outside the cluster group.
+      expect(screen.getByTestId("park-marker-park-1")).toBeInTheDocument();
+      expect(
+        within(cluster).queryByTestId("park-marker-park-1"),
+      ).not.toBeInTheDocument();
+    });
+
+    it("does not cluster a framed single-park map (fitOnVisible)", () => {
+      render(<MapView parks={[mockPark1]} fitOnVisible />);
+
+      expect(
+        screen.queryByTestId("marker-cluster-group"),
+      ).not.toBeInTheDocument();
+      expect(screen.getByTestId("park-marker-park-1")).toBeInTheDocument();
     });
   });
 });
