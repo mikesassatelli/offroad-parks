@@ -2,6 +2,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import type { Park } from "@/lib/types";
 import { ExternalLink, Mail, MapPin, Phone } from "lucide-react";
 import { formatPhone } from "@/lib/formatting";
+import { DirectionsLinks } from "./DirectionsLinks";
 
 interface ParkContactSidebarProps {
   park: Park;
@@ -85,15 +86,7 @@ export function ParkContactSidebar({ park }: ParkContactSidebarProps) {
         )}
 
         {park.coords && (
-          <a
-            href={`https://www.google.com/maps/dir/?api=1&destination=${park.coords.lat},${park.coords.lng}`}
-            target="_blank"
-            rel="noopener noreferrer"
-            className="flex items-center gap-2 text-primary hover:underline"
-          >
-            <MapPin className="w-4 h-4 shrink-0" />
-            Get Directions
-          </a>
+          <DirectionsLinks lat={park.coords.lat} lng={park.coords.lng} />
         )}
 
         <div className="pt-4 border-t text-xs text-muted-foreground">
