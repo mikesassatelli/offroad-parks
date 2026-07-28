@@ -8,6 +8,7 @@ import { geocodeSuggestions } from "@/features/map/utils/routing";
 import type { RouteResult } from "@/features/map/utils/routing";
 import { RouteListHeader } from "./components/RouteListHeader";
 import { RouteListItem } from "./components/RouteListItem";
+import { RouteExportControls } from "@/features/map/components/RouteExportControls";
 import { ShareRouteDialog } from "./ShareRouteDialog";
 import { Button } from "@/components/ui/button";
 import { useSignInPrompt } from "@/components/auth/SignInPromptProvider";
@@ -351,6 +352,15 @@ export function RouteList({
             </div>
           )}
         </div>
+
+        {/* Navigate & Export (any visitor, 2+ waypoints) — hand the route off
+            to Google/Apple Maps or download a GPX for offline GPS apps. No
+            account required, so this sits above the Save & Share gate. */}
+        <RouteExportControls
+          waypoints={waypoints}
+          routeGeometry={routeResult?.geometry}
+          title={routeTitle}
+        />
 
         {/* Save & Share (authenticated, 2+ waypoints) */}
         {isAuthenticated && waypoints.length >= 2 && (onSaveRoute || onUpdateRoute) && (

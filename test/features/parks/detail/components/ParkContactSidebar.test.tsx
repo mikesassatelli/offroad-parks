@@ -79,13 +79,17 @@ describe("ParkContactSidebar", () => {
   it("should display get directions link when coords provided", () => {
     render(<ParkContactSidebar park={basePark} />);
 
-    const link = screen.getByText("Get Directions");
+    // Directions are platform-aware; jsdom is not an Apple device, so Google
+    // Maps is the primary link and Apple Maps the secondary option.
+    const link = screen.getByText("Get Directions (Google Maps)");
     expect(link).toBeInTheDocument();
-    expect(link).toHaveAttribute(
-      "href",
-      "https://www.google.com/maps/dir/?api=1&destination=34.0522,-118.2437",
-    );
+    const href = link.getAttribute("href") ?? "";
+    expect(href).toContain("https://www.google.com/maps/dir/");
+    expect(href).toContain("destination=34.052200");
+    expect(href).toContain("-118.243700");
     expect(link).toHaveAttribute("target", "_blank");
+
+    expect(screen.getByText("Open in Apple Maps")).toBeInTheDocument();
   });
 
   it("should display verification disclaimer", () => {
@@ -108,7 +112,7 @@ describe("ParkContactSidebar", () => {
     expect(
       container.querySelector('a[href="tel:5551234567"]'),
     ).toBeInTheDocument();
-    expect(screen.getByText("Get Directions")).toBeInTheDocument();
+    expect(screen.getByText("Get Directions (Google Maps)")).toBeInTheDocument();
   });
 
   it("should render icons", () => {
@@ -140,7 +144,7 @@ describe("ParkContactSidebar", () => {
     render(<ParkContactSidebar park={minimalPark} />);
 
     expect(screen.getByText("Contact & Links")).toBeInTheDocument();
-    expect(screen.getByText("Get Directions")).toBeInTheDocument();
+    expect(screen.getByText("Get Directions (Google Maps)")).toBeInTheDocument();
     expect(screen.queryByText("Official Website")).not.toBeInTheDocument();
   });
 
