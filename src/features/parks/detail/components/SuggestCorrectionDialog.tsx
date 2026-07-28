@@ -30,6 +30,13 @@ import {
   humanizeOption,
   OWNERSHIP_OPTIONS,
 } from "@/lib/ai/park-fields";
+import { WeeklyHoursEditor } from "@/components/forms/park-fields/WeeklyHoursEditor";
+import {
+  emptyWeeklyHours,
+  hasAnyHours,
+  weeklyHoursSchema,
+  type WeeklyHours,
+} from "@/lib/hours";
 
 type Mode = "field" | "text";
 
@@ -65,6 +72,7 @@ export function SuggestCorrectionDialog({
   const [fieldName, setFieldName] = useState<string>("");
   const [stringValue, setStringValue] = useState<string>("");
   const [boolValue, setBoolValue] = useState<boolean>(false);
+  const [hoursValue, setHoursValue] = useState<WeeklyHours>(emptyWeeklyHours());
   const [note, setNote] = useState<string>("");
   const [textNote, setTextNote] = useState<string>("");
   const [submitting, setSubmitting] = useState(false);
@@ -80,6 +88,7 @@ export function SuggestCorrectionDialog({
     setFieldName("");
     setStringValue("");
     setBoolValue(false);
+    setHoursValue(emptyWeeklyHours());
     setNote("");
     setTextNote("");
     setError(null);
@@ -105,6 +114,20 @@ export function SuggestCorrectionDialog({
 
   const buildFieldValue = (): { value: unknown } | { error: string } => {
     if (valueType === "boolean") return { value: boolValue };
+    if (valueType === "hours") {
+      if (!hasAnyHours(hoursValue)) {
+        return { error: "Set hours for at least one day." };
+      }
+      const parsed = weeklyHoursSchema.safeParse(hoursValue);
+      if (!parsed.success) {
+        return {
+          error:
+            parsed.error.issues[0]?.message ??
+            "Check the hours — opening time must be before closing time.",
+        };
+      }
+      return { value: parsed.data };
+    }
     if (valueType === "number") {
       const trimmed = stringValue.trim();
       if (trimmed === "") return { error: "Enter a number." };
@@ -252,6 +275,7 @@ export function SuggestCorrectionDialog({
                       setFieldName(v);
                       setStringValue("");
                       setBoolValue(false);
+                      setHoursValue(emptyWeeklyHours());
                       setError(null);
                     }}
                   >
@@ -282,7 +306,12 @@ export function SuggestCorrectionDialog({
                       Correct value
                     </label>
 
-                    {valueType === "boolean" ? (
+                    {valueType === "hours" ? (
+                      <WeeklyHoursEditor
+                        value={hoursValue}
+                        onChange={setHoursValue}
+                      />
+                    ) : valueType === "boolean" ? (
                       <label className="inline-flex items-center gap-2 cursor-pointer">
                         <input
                           id="correction-value"

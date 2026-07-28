@@ -13,7 +13,6 @@ import dynamic from "next/dynamic";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { ParkAttributesCards } from "./components/ParkAttributesCards";
-import { ParkClaimCTA } from "./components/ParkClaimCTA";
 import { ParkContactSidebar } from "./components/ParkContactSidebar";
 import { ParkOperationalCard } from "./components/ParkOperationalCard";
 import { ParkOverviewCard } from "./components/ParkOverviewCard";
@@ -624,37 +623,39 @@ function ParkDetailPageInner({
                   </div>
                 )
               )}
-              {/* Consolidated, always-visible contribution card. Keeps the
-                  correction dialog + photo prompt near the top of the sidebar
-                  instead of buried at the bottom of the page. */}
+              {/* Contact / directions — kept as a primary sidebar box. */}
+              <ParkContactSidebar park={park} />
+              {/* Consolidated contribution card: suggest a correction, add
+                  photos, and claim. The claim flow is embedded here as a
+                  section rather than living in a separate box this card links
+                  to. */}
               <ContributeCard
                 parkSlug={park.id}
                 parkName={park.name}
                 onAddPhotos={() => setActiveTab("photos")}
+                isLoggedIn={!!session?.user}
+                hasOperator={park.hasOperator}
+                existingClaim={existingClaim}
+                isOperatorOfPark={isOperatorOfPark}
+                operatorName={operatorName}
               />
-              <TrailConditionsDisplay parkSlug={park.id} />
-              {/* OP-53: NWS forecast + current. Renders nothing when both
-                  are empty (parks without coords or outside NWS coverage). */}
-              <WeatherCard
-                current={weatherCurrent ?? null}
-                forecast={weatherForecast ?? []}
-              />
-              <ParkContactSidebar park={park} />
-              <CampingInfoCard park={park} />
-              {/* Full claim flow. The ContributeCard's "Claim it" pointer
-                  links to this `#claim` anchor so the form lives in one place. */}
-              <div id="claim" className="scroll-mt-24">
-                <ParkClaimCTA
-                  parkSlug={park.id}
-                  isLoggedIn={!!session?.user}
-                  hasOperator={park.hasOperator}
-                  existingClaim={existingClaim}
-                  isOperatorOfPark={isOperatorOfPark}
-                  operatorName={operatorName}
-                />
-              </div>
             </div>
           </div>
+        </div>
+
+        {/* "More about this park" — full-width band below the two-column grid.
+            Glanceable info (trail conditions, weather, camping) reads across
+            the page instead of stacking the right rail too tall. Each card
+            self-hides when it has no data, so the row collapses gracefully. */}
+        <div className="mt-6 grid grid-cols-1 md:grid-cols-3 gap-6 items-start">
+          <TrailConditionsDisplay parkSlug={park.id} />
+          {/* OP-53: NWS forecast + current. Renders nothing when both are
+              empty (parks without coords or outside NWS coverage). */}
+          <WeatherCard
+            current={weatherCurrent ?? null}
+            forecast={weatherForecast ?? []}
+          />
+          <CampingInfoCard park={park} />
         </div>
       </main>
     </div>

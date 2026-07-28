@@ -214,6 +214,50 @@ describe("FieldExtractionReview", () => {
     expect(container.textContent).not.toMatch(/%/);
   });
 
+  it("renders a formatted schedule for a hours extraction", () => {
+    const hours = {
+      mon: { open: "08:00", close: "18:00" },
+      tue: { open: "08:00", close: "18:00" },
+      wed: { open: "08:00", close: "18:00" },
+      thu: { open: "08:00", close: "18:00" },
+      fri: { open: "08:00", close: "18:00" },
+      sat: { closed: true },
+      sun: { closed: true },
+    };
+    render(
+      <FieldExtractionReview
+        extractions={[
+          makeExtraction({
+            fieldName: "hours",
+            extractedValue: JSON.stringify(hours),
+            currentValue: null,
+          }),
+        ]}
+      />
+    );
+    // Grouped, human-readable schedule instead of the raw JSON blob.
+    expect(
+      screen.getByText(/Mon.*Fri.*8:00 AM.*6:00 PM/i)
+    ).toBeInTheDocument();
+    expect(screen.getByText(/Sat.*Sun.*Closed/i)).toBeInTheDocument();
+    expect(screen.queryByText(/"open"/)).not.toBeInTheDocument();
+  });
+
+  it("falls back to raw text when a hours value can't be parsed", () => {
+    render(
+      <FieldExtractionReview
+        extractions={[
+          makeExtraction({
+            fieldName: "hours",
+            extractedValue: "not-json",
+            currentValue: null,
+          }),
+        ]}
+      />
+    );
+    expect(screen.getByText("not-json")).toBeInTheDocument();
+  });
+
   it("falls back to raw JSON string when parsing fails", () => {
     render(
       <FieldExtractionReview

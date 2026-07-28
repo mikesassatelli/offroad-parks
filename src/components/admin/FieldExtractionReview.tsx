@@ -13,6 +13,7 @@ import {
   EXTRACTABLE_FIELDS,
   humanizeOption,
 } from "@/lib/ai/park-fields";
+import { formatWeeklyHours } from "@/lib/hours";
 
 type EditorKind = "array" | "ownership" | "boolean" | "number" | "string";
 
@@ -347,7 +348,15 @@ export function FieldExtractionReview({ extractions }: Props) {
                       <div>
                         <p className="text-muted-foreground text-xs mb-1">Current Value</p>
                         <p className="text-foreground font-mono bg-muted rounded px-2 py-1 break-all">
-                          {extraction.currentValue ? formatValue(extraction.currentValue) : <span className="italic text-muted-foreground">empty</span>}
+                          {extraction.currentValue ? (
+                            extraction.fieldName === "hours" ? (
+                              <HoursValue json={extraction.currentValue} />
+                            ) : (
+                              formatValue(extraction.currentValue)
+                            )
+                          ) : (
+                            <span className="italic text-muted-foreground">empty</span>
+                          )}
                         </p>
                       </div>
                       <div>
@@ -355,7 +364,15 @@ export function FieldExtractionReview({ extractions }: Props) {
                           {isArrayField(extraction.fieldName) ? "New values to add" : "Extracted Value"}
                         </p>
                         <p className={`text-foreground font-mono rounded px-2 py-1 break-all ${isArrayField(extraction.fieldName) ? "bg-green-50 dark:bg-green-900/20" : "bg-blue-50 dark:bg-blue-900/20"}`}>
-                          {extraction.extractedValue ? formatValue(extraction.extractedValue) : <span className="italic text-muted-foreground">null</span>}
+                          {extraction.extractedValue ? (
+                            extraction.fieldName === "hours" ? (
+                              <HoursValue json={extraction.extractedValue} />
+                            ) : (
+                              formatValue(extraction.extractedValue)
+                            )
+                          ) : (
+                            <span className="italic text-muted-foreground">null</span>
+                          )}
                         </p>
                       </div>
                     </div>
@@ -486,6 +503,32 @@ function ConfidenceBadge({ score }: { score: number | null }) {
 const ARRAY_FIELDS = new Set(["terrain", "amenities", "camping", "vehicleTypes"]);
 function isArrayField(fieldName: string): boolean {
   return ARRAY_FIELDS.has(fieldName);
+}
+
+/**
+ * Render a structured weekly-hours JSON value as a readable schedule
+ * (grouped day ranges). Falls back to the raw string if it can't be parsed
+ * into a valid schedule.
+ */
+function HoursValue({ json }: { json: string }) {
+  let groups: ReturnType<typeof formatWeeklyHours>;
+  try {
+    groups = formatWeeklyHours(JSON.parse(json));
+  } catch {
+    return <>{json}</>;
+  }
+  if (groups.length === 0) {
+    return <span className="italic text-muted-foreground">No hours set</span>;
+  }
+  return (
+    <span className="block space-y-0.5">
+      {groups.map((g) => (
+        <span key={g.label} className="block">
+          {g.label}: {g.hours}
+        </span>
+      ))}
+    </span>
+  );
 }
 
 function formatValue(jsonStr: string): string {

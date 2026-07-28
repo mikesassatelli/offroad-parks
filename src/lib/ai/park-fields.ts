@@ -115,12 +115,18 @@ export const EXTRACTABLE_FIELDS: Record<string, string> = {
 };
 
 /**
- * Curated subset of {@link EXTRACTABLE_FIELDS} that end users are allowed to
- * correct via the "Suggest a correction" dialog. Kept intentionally narrow to
- * user-verifiable facts (contact info, fees, access rules, address) — the full
- * extractable set includes fields like latitude/notes that we don't expose to
- * public field-level correction. The POST /api/parks/[slug]/corrections route
- * validates `fieldName` against this list; the dialog builds its picker from it.
+ * Fields end users are allowed to correct via the "Suggest a correction" dialog.
+ * Mostly a curated subset of {@link EXTRACTABLE_FIELDS} — user-verifiable facts
+ * (contact info, fees, access rules, address); the full extractable set includes
+ * fields like latitude/notes we don't expose to public correction.
+ *
+ * `hours` is the one member that is correctable but deliberately NOT in
+ * EXTRACTABLE_FIELDS: structured weekly hours are display-only and human-entered
+ * (submit/operator/admin forms + this correction dialog), never AI-researched or
+ * scored for completeness. See {@link correctableFieldType}.
+ *
+ * The POST /api/parks/[slug]/corrections route validates `fieldName` against this
+ * list; the dialog builds its picker from it.
  */
 export const CORRECTABLE_FIELDS = [
   "website",
@@ -143,6 +149,7 @@ export const CORRECTABLE_FIELDS = [
   "flagsRequired",
   "sparkArrestorRequired",
   "helmetsRequired",
+  "hours",
   "address.streetAddress",
   "address.city",
   "address.zipCode",
@@ -164,9 +171,13 @@ export function isCorrectableField(field: string): field is CorrectableField {
  * - "boolean" → toggle
  * - "number"  → number input
  * - "Ownership" → enum select (see OWNERSHIP_OPTIONS)
+ * - "hours"    → structured weekly-hours editor (see WeeklyHoursEditor)
  * - "string"  → text input
  */
 export function correctableFieldType(field: CorrectableField): string {
+  // `hours` is correctable but not an AI-extractable field, so it has no
+  // EXTRACTABLE_FIELDS entry — its structured-editor type is defined here.
+  if (field === "hours") return "hours";
   return EXTRACTABLE_FIELDS[field];
 }
 
@@ -192,6 +203,7 @@ const FIELD_LABEL_OVERRIDES: Record<string, string> = {
   flagsRequired: "Flags required",
   sparkArrestorRequired: "Spark arrestor required",
   helmetsRequired: "Helmets required",
+  hours: "Hours",
   "address.streetAddress": "Street address",
   "address.city": "City",
   "address.zipCode": "ZIP code",

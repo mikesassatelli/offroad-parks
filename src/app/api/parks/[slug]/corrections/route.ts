@@ -9,6 +9,7 @@ import {
   correctableFieldType,
   OWNERSHIP_OPTIONS,
 } from "@/lib/ai/park-fields";
+import { weeklyHoursSchema } from "@/lib/hours";
 
 export const runtime = "nodejs";
 
@@ -65,6 +66,19 @@ function coerceFieldValue(
         };
       }
       return { value: raw };
+    }
+    case "hours": {
+      // Structured weekly schedule: validate the full {mon..sun} object with
+      // the same Zod schema the editor/display use (enforces HH:MM + open<close).
+      const result = weeklyHoursSchema.safeParse(raw);
+      if (!result.success) {
+        return {
+          error:
+            result.error.issues[0]?.message ??
+            "Enter a valid weekly schedule.",
+        };
+      }
+      return { value: result.data };
     }
     case "string":
     default: {
