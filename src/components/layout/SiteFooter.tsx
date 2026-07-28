@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { WelcomeFooterLink } from "@/components/welcome/WelcomeFooterLink";
+import { FooterRoutesLink } from "./FooterRoutesLink";
 
 /**
  * Global site footer. Provides always-available links to the legal pages
@@ -15,7 +16,6 @@ const FOOTER_SECTIONS: {
     links: [
       { href: "/", label: "Browse parks" },
       { href: "/reviews", label: "Reviews" },
-      { href: "/routes", label: "Routes" },
       { href: "/submit", label: "Submit a park" },
     ],
   },
@@ -70,6 +70,7 @@ export function SiteFooter() {
                   </Link>
                 </li>
               ))}
+              {section.heading === "Explore" && <FooterRoutesLink />}
             </ul>
           </nav>
         ))}

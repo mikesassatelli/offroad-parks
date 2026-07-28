@@ -1,15 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
 import { Button } from "@/components/ui/button";
-import {
-  Sheet,
-  SheetClose,
-  SheetContent,
-  SheetHeader,
-  SheetTitle,
-  SheetTrigger,
-} from "@/components/ui/sheet";
 import {
   ArrowLeft,
   Building2,
@@ -18,8 +9,8 @@ import {
   Info,
   Mail,
   MessageSquare,
-  Menu,
   PlusCircle,
+  Route,
 } from "lucide-react";
 import Link from "next/link";
 import {
@@ -29,6 +20,7 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { UserMenu } from "./UserMenu";
+import { MobileTabBar } from "./MobileTabBar";
 import { ThemeToggle } from "@/components/ThemeToggle";
 import { LoginDialog } from "@/components/auth/LoginDialog";
 import { signOut } from "next-auth/react";
@@ -45,25 +37,13 @@ interface AppHeaderProps {
 }
 
 export function AppHeader({ user, showBackButton }: AppHeaderProps) {
-  const [menuOpen, setMenuOpen] = useState(false);
-
-  // Close the mobile menu if the viewport grows to desktop, where its trigger
-  // is hidden and the links render inline.
-  useEffect(() => {
-    const mq = window.matchMedia("(min-width: 1024px)");
-    const closeIfDesktop = () => {
-      if (mq.matches) setMenuOpen(false);
-    };
-    mq.addEventListener("change", closeIfDesktop);
-    return () => mq.removeEventListener("change", closeIfDesktop);
-  }, []);
-
   const handleSignOut = async () => {
     await signOut({ callbackUrl: "/" });
   };
 
   return (
-    <header className="bg-card/95 backdrop-blur-sm border-b border-border shadow-sm z-20">
+    <>
+      <header className="bg-card/95 backdrop-blur-sm border-b border-border shadow-sm z-20">
       <div className="max-w-7xl 2xl:max-w-[1800px] 3xl:max-w-[2400px] mx-auto px-4 sm:px-6 py-3 flex items-center gap-2 sm:gap-3">
         {showBackButton && (
           <Button asChild variant="ghost" size="sm" className="mr-1 sm:mr-2">
@@ -82,8 +62,11 @@ export function AppHeader({ user, showBackButton }: AppHeaderProps) {
         <span className="ml-1 hidden sm:inline-flex items-center text-[10px] px-2 py-0.5 rounded-md bg-primary/15 text-primary border border-primary/25 font-bold uppercase tracking-wider">
           beta
         </span>
-        {/* Desktop nav — hidden on mobile, moved into the sheet below */}
+        {/* Desktop nav — hidden on mobile, moved into the sheet below.
+            Product destinations sit directly on the bar; the "More" menu holds
+            only company/marketing pages. */}
         <nav className="ml-auto hidden items-center gap-3 lg:flex">
+          {/* Product nav — always available */}
           <Button asChild variant="ghost" size="sm">
             <Link href="/reviews" className="flex items-center gap-2">
               <MessageSquare className="w-4 h-4" />
@@ -98,15 +81,26 @@ export function AppHeader({ user, showBackButton }: AppHeaderProps) {
             </Link>
           </Button>
 
+          {/* Personal nav — signed-in destinations */}
           {user && (
-            <Button asChild variant="ghost" size="sm">
-              <Link href="/profile" className="flex items-center gap-2">
-                <CircleUser className="w-4 h-4" />
-                My Profile
-              </Link>
-            </Button>
+            <>
+              <Button asChild variant="ghost" size="sm">
+                <Link href="/routes" className="flex items-center gap-2">
+                  <Route className="w-4 h-4" />
+                  Saved Routes
+                </Link>
+              </Button>
+
+              <Button asChild variant="ghost" size="sm">
+                <Link href="/profile" className="flex items-center gap-2">
+                  <CircleUser className="w-4 h-4" />
+                  My Profile
+                </Link>
+              </Button>
+            </>
           )}
 
+          {/* Company / marketing — overflow only */}
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
               <Button variant="ghost" size="sm" className="gap-1">
@@ -137,91 +131,43 @@ export function AppHeader({ user, showBackButton }: AppHeaderProps) {
           </DropdownMenu>
         </nav>
 
-        {/* Right-side controls: theme + auth stay visible at every size. On
-            mobile the ml-auto lives here since the desktop nav is hidden. */}
+        {/* Right-side controls: theme stays visible at every size. On mobile
+            the ml-auto lives here since the desktop nav is hidden. */}
         <div className="ml-auto flex items-center gap-2 lg:ml-4">
-          <ThemeToggle />
-
-          {user ? (
-            <UserMenu user={user} onSignOut={handleSignOut} />
-          ) : (
-            <LoginDialog />
+          {/* Submit is an occasional action — a compact icon button on mobile
+              rather than a bottom-nav tab (signed-in only; the page is gated). */}
+          {user && (
+            <Button
+              asChild
+              variant="ghost"
+              size="icon-sm"
+              className="lg:hidden"
+            >
+              <Link href="/submit" aria-label="Submit a park">
+                <PlusCircle className="w-5 h-5" />
+              </Link>
+            </Button>
           )}
 
-          {/* Mobile menu — surfaces the nav links hidden above */}
-          <Sheet open={menuOpen} onOpenChange={setMenuOpen}>
-            <SheetTrigger asChild className="lg:hidden">
-              <Button variant="ghost" size="icon-sm" aria-label="Open menu">
-                <Menu className="h-5 w-5" />
-              </Button>
-            </SheetTrigger>
-            <SheetContent side="right" className="w-72">
-              <SheetHeader>
-                <SheetTitle>Menu</SheetTitle>
-              </SheetHeader>
-              <nav className="flex flex-col gap-1 px-2">
-                <SheetClose asChild>
-                  <Button asChild variant="ghost" className="justify-start">
-                    <Link href="/reviews" className="flex items-center gap-2">
-                      <MessageSquare className="w-4 h-4" />
-                      Park Reviews
-                    </Link>
-                  </Button>
-                </SheetClose>
+          <ThemeToggle />
 
-                <SheetClose asChild>
-                  <Button asChild variant="ghost" className="justify-start">
-                    <Link href="/submit" className="flex items-center gap-2">
-                      <PlusCircle className="w-4 h-4" />
-                      Submit Park
-                    </Link>
-                  </Button>
-                </SheetClose>
-
-                {user && (
-                  <SheetClose asChild>
-                    <Button asChild variant="ghost" className="justify-start">
-                      <Link href="/profile" className="flex items-center gap-2">
-                        <CircleUser className="w-4 h-4" />
-                        My Profile
-                      </Link>
-                    </Button>
-                  </SheetClose>
-                )}
-
-                <div className="my-1 border-t border-border" />
-
-                <SheetClose asChild>
-                  <Button asChild variant="ghost" className="justify-start">
-                    <Link href="/for-operators" className="flex items-center gap-2">
-                      <Building2 className="w-4 h-4" />
-                      For Operators
-                    </Link>
-                  </Button>
-                </SheetClose>
-
-                <SheetClose asChild>
-                  <Button asChild variant="ghost" className="justify-start">
-                    <Link href="/about" className="flex items-center gap-2">
-                      <Info className="w-4 h-4" />
-                      About
-                    </Link>
-                  </Button>
-                </SheetClose>
-
-                <SheetClose asChild>
-                  <Button asChild variant="ghost" className="justify-start">
-                    <Link href="/contact" className="flex items-center gap-2">
-                      <Mail className="w-4 h-4" />
-                      Contact
-                    </Link>
-                  </Button>
-                </SheetClose>
-              </nav>
-            </SheetContent>
-          </Sheet>
+          {/* Auth entry points move into the bottom tab bar on mobile (Account
+              sheet when signed in, Sign in tab when signed out), so both are
+              hidden below lg here. */}
+          {user ? (
+            <div className="hidden lg:block">
+              <UserMenu user={user} onSignOut={handleSignOut} />
+            </div>
+          ) : (
+            <div className="hidden lg:block">
+              <LoginDialog />
+            </div>
+          )}
         </div>
       </div>
-    </header>
+      </header>
+
+      <MobileTabBar user={user} onSignOut={handleSignOut} />
+    </>
   );
 }

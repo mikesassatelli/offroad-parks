@@ -28,7 +28,7 @@ const EMAIL_LOGIN_ENABLED = false;
  * Auth.js "resend" provider, which sends the link through our shared sender
  * with a dev fallback that logs it).
  */
-export function LoginDialog() {
+export function LoginDialog({ trigger }: { trigger?: React.ReactNode } = {}) {
   const [email, setEmail] = useState("");
   const [submitting, setSubmitting] = useState(false);
   const [sent, setSent] = useState(false);
@@ -60,10 +60,17 @@ export function LoginDialog() {
   return (
     <Dialog>
       <DialogTrigger asChild>
-        <Button variant="outline" size="sm" className="gap-2" aria-label="Sign In">
-          <LogIn className="w-4 h-4" />
-          <span className="hidden sm:inline">Sign In</span>
-        </Button>
+        {trigger ?? (
+          <Button
+            variant="outline"
+            size="sm"
+            className="gap-2"
+            aria-label="Sign In"
+          >
+            <LogIn className="w-4 h-4" />
+            <span className="hidden sm:inline">Sign In</span>
+          </Button>
+        )}
       </DialogTrigger>
       <DialogContent className="max-w-sm">
         <DialogHeader>
