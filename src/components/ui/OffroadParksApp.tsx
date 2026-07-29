@@ -47,12 +47,24 @@ interface OffroadParksAppProps {
   initialMarkers: Park[];
   /** Static filter facets (states + slider bounds) over all approved parks. */
   facets: ParkFacets;
+  /**
+   * Header user resolved on the server, so the navbar renders signed-in on the
+   * first paint. Deriving it from useSession here flashed the signed-out navbar
+   * on navigation and after sign-in.
+   */
+  user: {
+    name?: string | null;
+    email?: string | null;
+    image?: string | null;
+    role?: string | null;
+  } | null;
 }
 
 function OffroadParksAppInner({
   initialData,
   initialMarkers,
   facets,
+  user,
 }: OffroadParksAppProps) {
   const { data: session } = useSession();
   const searchParams = useSearchParams();
@@ -322,14 +334,8 @@ function OffroadParksAppInner({
     })();
   }, [routeIdParam, loadRouteById]);
 
-  const user = session?.user
-    ? {
-        name: session.user.name,
-        email: session.user.email,
-        image: session.user.image,
-        role: session.user.role,
-      }
-    : null;
+  // `user` (header identity) comes from the server prop above; `session` is
+  // still used for client-reactive, non-header bits below.
 
   // Mobile filters live in a slide-in sheet; on desktop the sidebar is inline.
   // Close the sheet if the viewport grows to desktop so it can't linger open

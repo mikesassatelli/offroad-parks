@@ -12,6 +12,12 @@ vi.mock("@/lib/park-query", () => ({
   getParkFacets: vi.fn(),
 }));
 
+// The page now resolves the header user server-side via auth(); stub it so the
+// test doesn't pull in next-auth (which fails to resolve next/server here).
+vi.mock("@/lib/auth", () => ({
+  auth: vi.fn(() => Promise.resolve(null)),
+}));
+
 // Mock the main app component so we can assert the props the page passes.
 vi.mock("@/components/ui/OffroadParksApp", () => ({
   default: ({ initialData, initialMarkers, facets }: any) => (

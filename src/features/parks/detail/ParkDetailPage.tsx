@@ -62,6 +62,18 @@ interface Photo {
 interface ParkDetailPageProps {
   park: Park;
   photos: Photo[];
+  /**
+   * Header user resolved on the server, so the navbar renders signed-in on the
+   * first paint. Deriving it from useSession here flashed the signed-out navbar
+   * on navigation and after sign-in. Optional only so tests can omit it; the
+   * real page always passes it.
+   */
+  user?: {
+    name?: string | null;
+    email?: string | null;
+    image?: string | null;
+    role?: string | null;
+  } | null;
   currentUserId?: string;
   isAdmin?: boolean;
   /** DB id of the park — used to build the admin edit link. */
@@ -81,6 +93,7 @@ interface ParkDetailPageProps {
 function ParkDetailPageInner({
   park,
   photos,
+  user,
   currentUserId,
   isAdmin,
   parkDbId,
@@ -152,14 +165,8 @@ function ParkDetailPageInner({
   const activeTrailOverlay =
     dbTrailGeometry ?? (overlayUrl ? fetchedOverlay : null);
 
-  const user = session?.user
-    ? {
-        name: session.user.name,
-        email: session.user.email,
-        image: session.user.image,
-        role: session.user.role,
-      }
-    : null;
+  // `user` (header identity) comes from the server prop above; `session` is
+  // still used for the client-reactive, non-header review UI below.
 
   // Review hooks
   const { reviews, pagination, isLoading: reviewsLoading, setPage, refresh: refreshReviews } = useReviews({ parkSlug: park.id });

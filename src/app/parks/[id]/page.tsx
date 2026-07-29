@@ -319,6 +319,16 @@ export default async function ParkPage({ params }: ParkPageProps) {
     <ParkDetailPage
       park={park}
       photos={photos}
+      user={
+        session?.user
+          ? {
+              name: session.user.name,
+              email: session.user.email,
+              image: session.user.image,
+              role: session.user.role,
+            }
+          : null
+      }
       currentUserId={session?.user?.id}
       isAdmin={isAdmin}
       parkDbId={dbPark.id}
