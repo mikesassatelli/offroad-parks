@@ -354,9 +354,21 @@ function ParkDetailPageInner({
 
               {/* Overview Tab */}
               <TabsContent value="overview" className="space-y-6">
+                {/* Live, glanceable info kept above the fold at the top of the
+                    main column — weather + latest trail conditions, side by
+                    side. Each self-hides when it has no data (WeatherCard for
+                    parks without coords / NWS coverage). */}
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6 items-start">
+                  <WeatherCard
+                    current={weatherCurrent ?? null}
+                    forecast={weatherForecast ?? []}
+                  />
+                  <TrailConditionsDisplay parkSlug={park.id} />
+                </div>
                 <ParkOverviewCard park={park} />
                 <ParkAttributesCards park={park} />
                 <ParkOperationalCard park={park} />
+                <CampingInfoCard park={park} />
               </TabsContent>
 
               {/* Photos Tab */}
@@ -641,21 +653,6 @@ function ParkDetailPageInner({
               />
             </div>
           </div>
-        </div>
-
-        {/* "More about this park" — full-width band below the two-column grid.
-            Glanceable info (trail conditions, weather, camping) reads across
-            the page instead of stacking the right rail too tall. Each card
-            self-hides when it has no data, so the row collapses gracefully. */}
-        <div className="mt-6 grid grid-cols-1 md:grid-cols-3 gap-6 items-start">
-          <TrailConditionsDisplay parkSlug={park.id} />
-          {/* OP-53: NWS forecast + current. Renders nothing when both are
-              empty (parks without coords or outside NWS coverage). */}
-          <WeatherCard
-            current={weatherCurrent ?? null}
-            forecast={weatherForecast ?? []}
-          />
-          <CampingInfoCard park={park} />
         </div>
       </main>
     </div>
