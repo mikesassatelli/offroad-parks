@@ -1,6 +1,6 @@
 "use client";
 
-import { SessionProvider, useSession } from "next-auth/react";
+import { SessionProvider } from "next-auth/react";
 import { useRouter } from "next/navigation";
 import type { Park, Review } from "@/lib/types";
 import { ParkCard } from "@/components/parks/ParkCard";
@@ -18,22 +18,13 @@ interface UserProfileClientProps {
     name?: string | null;
     email?: string | null;
     image?: string | null;
+    role?: string | null;
   };
 }
 
 function UserProfileInner({ parks, reviews, user }: UserProfileClientProps) {
   const router = useRouter();
-  const { data: session } = useSession();
   const { toggleFavorite, isFavorite } = useFavorites();
-
-  const headerUser = session?.user
-    ? {
-        name: session.user.name,
-        email: session.user.email,
-        image: session.user.image,
-        role: session.user.role,
-      }
-    : null;
 
   const handleToggleFavorite = async (parkId: string) => {
     await toggleFavorite(parkId);
@@ -57,7 +48,7 @@ function UserProfileInner({ parks, reviews, user }: UserProfileClientProps) {
   return (
     <div className="min-h-screen bg-background">
       <div className="sticky top-0 z-20">
-        <AppHeader user={headerUser} showBackButton />
+        <AppHeader user={user} showBackButton />
       </div>
 
       <main className="max-w-7xl mx-auto px-6 py-8">
