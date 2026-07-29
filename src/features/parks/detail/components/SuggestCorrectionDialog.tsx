@@ -45,6 +45,8 @@ export interface SuggestCorrectionDialogProps {
   parkSlug: string;
   /** Optional park name, shown in the dialog copy for context. */
   parkName?: string;
+  /** Trigger button label. Defaults to "Suggest a correction". */
+  triggerLabel?: string;
 }
 
 /**
@@ -63,6 +65,7 @@ export interface SuggestCorrectionDialogProps {
 export function SuggestCorrectionDialog({
   parkSlug,
   parkName,
+  triggerLabel = "Suggest a correction",
 }: SuggestCorrectionDialogProps) {
   const { data: session } = useSession();
   const { promptSignIn } = useSignInPrompt();
@@ -195,7 +198,7 @@ export function SuggestCorrectionDialog({
       <DialogTrigger asChild>
         <Button variant="outline" size="sm" onClick={handleTriggerClick}>
           <PencilLine className="w-4 h-4 mr-1.5" />
-          Suggest a correction
+          {triggerLabel}
         </Button>
       </DialogTrigger>
       <DialogContent>
