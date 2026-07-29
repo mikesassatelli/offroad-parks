@@ -35,7 +35,8 @@ import { AppHeader } from "@/components/layout/AppHeader";
 import { useSignInPrompt } from "@/components/auth/SignInPromptProvider";
 import { useFavorites } from "@/hooks/useFavorites";
 import { formatDate } from "@/lib/formatting";
-import { ContributeCard } from "./components/ContributeCard";
+import { ParkClaimCTA } from "./components/ParkClaimCTA";
+import { SuggestCorrectionDialog } from "./components/SuggestCorrectionDialog";
 import { findTrailOverlay } from "./trailOverlays";
 import type { TrailFeatureCollection } from "@/features/map/components/TrailOverlay";
 
@@ -96,9 +97,7 @@ function ParkDetailPageInner({
   const { promptSignIn } = useSignInPrompt();
   const { isFavorite, toggleFavorite } = useFavorites();
   const [showReviewForm, setShowReviewForm] = useState(false);
-  // Controlled tab state so the sidebar ContributeCard's "Add photos" button can
-  // jump the user to the Photos tab (where the uploader / sign-in prompt lives)
-  // without rebuilding the upload flow.
+  // Controlled tab state (lets other controls jump the user between tabs).
   const [activeTab, setActiveTab] = useState("overview");
   // Share control: prefer the native Web Share API; otherwise copy the URL to
   // the clipboard and show a transient "Copied!" confirmation.
@@ -274,7 +273,11 @@ function ParkDetailPageInner({
                   {shareCopied ? "Copied!" : "Share"}
                 </span>
               </Button>
-              {isAdmin && parkDbId && (
+              {/* Contextual edit action: admins jump straight to the admin
+                  editor; everyone else gets the data-correction modal (the
+                  "Help keep this listing accurate" card is retired — photos
+                  are collected via the Photos tab + reviews instead). */}
+              {isAdmin && parkDbId ? (
                 <Button asChild variant="outline" size="sm">
                   <Link
                     href={`/admin/parks/${parkDbId}/edit`}
@@ -284,6 +287,12 @@ function ParkDetailPageInner({
                     Edit in Admin
                   </Link>
                 </Button>
+              ) : (
+                <SuggestCorrectionDialog
+                  parkSlug={park.id}
+                  parkName={park.name}
+                  triggerLabel="Suggest an edit"
+                />
               )}
             </div>
           </div>
@@ -353,18 +362,10 @@ function ParkDetailPageInner({
               </TabsList>
 
               {/* Overview Tab */}
+              {/* Main column is pure park data. Glanceable/reference info
+                  (weather, trail conditions, contact, claim) lives in the
+                  sidebar rail. */}
               <TabsContent value="overview" className="space-y-6">
-                {/* Live, glanceable info kept above the fold at the top of the
-                    main column — weather + latest trail conditions, side by
-                    side. Each self-hides when it has no data (WeatherCard for
-                    parks without coords / NWS coverage). */}
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-6 items-start">
-                  <WeatherCard
-                    current={weatherCurrent ?? null}
-                    forecast={weatherForecast ?? []}
-                  />
-                  <TrailConditionsDisplay parkSlug={park.id} />
-                </div>
                 <ParkOverviewCard park={park} />
                 <ParkAttributesCards park={park} />
                 <ParkOperationalCard park={park} />
@@ -635,16 +636,20 @@ function ParkDetailPageInner({
                   </div>
                 )
               )}
-              {/* Contact / directions — kept as a primary sidebar box. */}
+              {/* Weather sits high (above Contact) so it clears the fold.
+                  Self-hides for parks without coords / NWS coverage. */}
+              <WeatherCard
+                current={weatherCurrent ?? null}
+                forecast={weatherForecast ?? []}
+              />
+              {/* Contact / directions — a primary reference box. */}
               <ParkContactSidebar park={park} />
-              {/* Consolidated contribution card: suggest a correction, add
-                  photos, and claim. The claim flow is embedded here as a
-                  section rather than living in a separate box this card links
-                  to. */}
-              <ContributeCard
+              {/* Trail conditions: compact, community-reported, usually empty —
+                  fine low in the rail rather than taking prime content space. */}
+              <TrailConditionsDisplay parkSlug={park.id} />
+              {/* Operator claim flow as its own slim card. */}
+              <ParkClaimCTA
                 parkSlug={park.id}
-                parkName={park.name}
-                onAddPhotos={() => setActiveTab("photos")}
                 isLoggedIn={!!session?.user}
                 hasOperator={park.hasOperator}
                 existingClaim={existingClaim}

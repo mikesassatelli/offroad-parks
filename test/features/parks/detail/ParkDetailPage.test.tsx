@@ -671,49 +671,54 @@ describe("ParkDetailPage", () => {
     });
   });
 
-  describe("ContributeCard (sidebar accuracy card)", () => {
-    it("renders the consolidated 'Help keep this listing accurate' card in the sidebar", () => {
-      const { container } = render(
-        <ParkDetailPage park={mockPark} photos={[]} />,
-      );
+  describe("Contribution & claim (data-first layout)", () => {
+    it("gives non-admins a 'Suggest an edit' header action that mounts the correction dialog", () => {
+      render(<ParkDetailPage park={mockPark} photos={[]} isAdmin={false} />);
 
-      const sidebar = container.querySelector(".lg\\:col-span-1");
-      expect(sidebar).not.toBeNull();
-      const heading = screen.getByText(/help keep this listing accurate/i);
-      expect(sidebar).toContainElement(heading);
-      // The correction dialog now lives inside this card (single mount).
-      expect(sidebar).toContainElement(
+      // The data-correction dialog is mounted (behind the header trigger).
+      expect(
         screen.getByTestId("suggest-correction-dialog"),
-      );
+      ).toBeInTheDocument();
+      // Admins get "Edit in Admin" instead; non-admins do not.
+      expect(
+        screen.queryByRole("link", { name: /edit in admin/i }),
+      ).not.toBeInTheDocument();
     });
 
-    it("offers an 'Add photos' affordance", () => {
-      render(<ParkDetailPage park={mockPark} photos={[]} />);
+    it("does not mount the correction dialog for admins (they use Edit in Admin)", () => {
+      render(
+        <ParkDetailPage
+          park={mockPark}
+          photos={[]}
+          isAdmin
+          parkDbId="db-park-123"
+        />,
+      );
 
       expect(
-        screen.getByRole("button", { name: /^add photos$/i }),
+        screen.queryByTestId("suggest-correction-dialog"),
+      ).not.toBeInTheDocument();
+      expect(
+        screen.getByRole("link", { name: /edit in admin/i }),
       ).toBeInTheDocument();
     });
 
-    it("embeds the claim flow inside the accuracy card (no separate #claim box)", () => {
+    it("renders the claim flow as its own card in the sidebar rail", () => {
       const { container } = render(
         <ParkDetailPage park={mockPark} photos={[]} />,
       );
 
-      // The claim prompt now lives inside the sidebar accuracy card...
       const sidebar = container.querySelector(".lg\\:col-span-1");
-      const claimHeading = screen.getByText(/own or manage this park/i);
-      expect(sidebar).toContainElement(claimHeading);
-      // ...and the old cross-page pointer + #claim anchor are gone.
-      expect(screen.queryByRole("link", { name: /claim it/i })).toBeNull();
-      expect(container.querySelector("#claim")).toBeNull();
+      expect(sidebar).toContainElement(
+        screen.getByText(/own or manage this park/i),
+      );
     });
 
-    it("no longer renders the old inline correction prompt in the Overview tab", () => {
+    it("no longer renders the consolidated 'Help keep this listing accurate' card", () => {
       render(<ParkDetailPage park={mockPark} photos={[]} />);
 
       expect(
-        screen.queryByText(/see something wrong or out of date/i),
+        screen.queryByText(/help keep this listing accurate/i),
       ).not.toBeInTheDocument();
     });
   });
