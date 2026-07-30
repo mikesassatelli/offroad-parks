@@ -272,7 +272,7 @@ describe("RouteList", () => {
 
   it("should render card container", () => {
     const { container } = render(<RouteList {...defaultProps} />);
-    const card = container.querySelector(".h-full");
+    const card = container.querySelector(".lg\\:h-full");
     expect(card).toBeInTheDocument();
   });
 

@@ -256,7 +256,7 @@ export function RouteList({
   const hasWaypoints = waypoints.length > 0;
 
   return (
-    <Card className="h-full">
+    <Card className="lg:h-full">
       {hasWaypoints ? (
         <RouteListHeader
           onClearRoute={handleClearRoute}
