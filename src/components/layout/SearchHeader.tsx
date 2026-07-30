@@ -1,8 +1,9 @@
 "use client";
 
-import { useState } from "react";
-import { Filter, Locate, LocateFixed, MapPin, Search } from "lucide-react";
+import { useEffect, useRef, useState } from "react";
+import { Filter, Loader2, Locate, LocateFixed, MapPin, Search } from "lucide-react";
 import { Input } from "@/components/ui/input";
+import type { GeocodeResult } from "@/lib/geocode-client";
 import { Button } from "@/components/ui/button";
 import {
   Select,
@@ -25,8 +26,14 @@ interface SearchHeaderProps {
   locationLoading?: boolean;
   onUseMyLocation?: () => void;
   onClearLocation?: () => void;
-  /** Resolve a typed location (city/zip) to coords via /api/geocode. */
+  /** Resolve a typed location (city/zip) to coords via /api/geocode. Used as
+      the free-text fallback when the user submits without picking a suggestion. */
   onLocationSearch?: (query: string) => void;
+  /** Fetch as-you-type location suggestions for the autocomplete dropdown.
+      When omitted, the location input stays a plain submit-to-search box. */
+  onLocationSuggest?: (query: string) => Promise<GeocodeResult[]>;
+  /** User picked a suggestion — coords are already known, so no re-geocode. */
+  onLocationSelect?: (result: GeocodeResult) => void;
   /** Current distance cutoff in miles (undefined = no cutoff). */
   radiusMiles?: number;
   onRadiusChange?: (miles: number | undefined) => void;
@@ -44,22 +51,105 @@ export function SearchHeader({
   onUseMyLocation,
   onClearLocation,
   onLocationSearch,
+  onLocationSuggest,
+  onLocationSelect,
   radiusMiles,
   onRadiusChange,
   onOpenFilters,
 }: SearchHeaderProps) {
   const [locationQuery, setLocationQuery] = useState("");
+  const [suggestions, setSuggestions] = useState<GeocodeResult[]>([]);
+  const [activeSuggestion, setActiveSuggestion] = useState(-1);
+  const [isSuggesting, setIsSuggesting] = useState(false);
+  const [showSuggestions, setShowSuggestions] = useState(false);
+  const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const locationBoxRef = useRef<HTMLFormElement | null>(null);
 
   const handleSortChange = (value: string) => {
     onSortChange(value as SortOption);
   };
 
+  const clearSuggestions = () => {
+    setSuggestions([]);
+    setActiveSuggestion(-1);
+    setShowSuggestions(false);
+  };
+
+  // Debounced suggestion fetch — mirrors the map route planner's custom-stop
+  // search (350ms, min 2 chars). No-ops when no suggest handler is wired.
+  const handleLocationChange = (value: string) => {
+    setLocationQuery(value);
+    setActiveSuggestion(-1);
+    if (debounceRef.current) clearTimeout(debounceRef.current);
+    if (!onLocationSuggest || value.trim().length < 2) {
+      setSuggestions([]);
+      setShowSuggestions(false);
+      setIsSuggesting(false);
+      return;
+    }
+    setIsSuggesting(true);
+    setShowSuggestions(true);
+    debounceRef.current = setTimeout(async () => {
+      const results = await onLocationSuggest(value.trim());
+      setSuggestions(results);
+      setIsSuggesting(false);
+    }, 350);
+  };
+
+  const selectSuggestion = (result: GeocodeResult) => {
+    setLocationQuery(result.placeName);
+    clearSuggestions();
+    onLocationSelect?.(result);
+  };
+
   const handleLocationSubmit = (e: React.FormEvent) => {
     e.preventDefault();
+    // Enter with a highlighted suggestion picks it; otherwise fall back to a
+    // free-text geocode of whatever was typed.
+    if (activeSuggestion >= 0 && suggestions[activeSuggestion]) {
+      selectSuggestion(suggestions[activeSuggestion]);
+      return;
+    }
     const q = locationQuery.trim();
     if (!q) return;
+    clearSuggestions();
     onLocationSearch?.(q);
   };
+
+  const handleLocationKeyDown = (e: React.KeyboardEvent) => {
+    if (!showSuggestions || suggestions.length === 0) return;
+    if (e.key === "ArrowDown") {
+      e.preventDefault();
+      setActiveSuggestion((i) => Math.min(i + 1, suggestions.length - 1));
+    } else if (e.key === "ArrowUp") {
+      e.preventDefault();
+      setActiveSuggestion((i) => Math.max(i - 1, -1));
+    } else if (e.key === "Escape") {
+      clearSuggestions();
+    }
+  };
+
+  // Clear the pending debounce on unmount.
+  useEffect(() => {
+    return () => {
+      if (debounceRef.current) clearTimeout(debounceRef.current);
+    };
+  }, []);
+
+  // Close the dropdown on an outside click.
+  useEffect(() => {
+    if (!showSuggestions) return;
+    const handler = (e: MouseEvent) => {
+      if (
+        locationBoxRef.current &&
+        !locationBoxRef.current.contains(e.target as Node)
+      ) {
+        clearSuggestions();
+      }
+    };
+    document.addEventListener("mousedown", handler);
+    return () => document.removeEventListener("mousedown", handler);
+  }, [showSuggestions]);
 
   const handleRadiusChange = (value: string) => {
     onRadiusChange?.(value === "__any" ? undefined : Number(value));
@@ -78,19 +168,68 @@ export function SearchHeader({
           />
         </div>
         <div className="flex items-center gap-2">
-          {/* Manual location entry — resolves a typed city/zip to coords. */}
+          {/* Manual location entry — as-you-type suggestions resolve to coords,
+              matching the map route planner's custom-stop search. */}
           <form
             onSubmit={handleLocationSubmit}
             className="relative hidden md:block"
+            ref={locationBoxRef}
           >
             <MapPin className="absolute left-2.5 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-muted-foreground" />
             <Input
               placeholder="City or ZIP…"
               aria-label="Search by location"
               value={locationQuery}
-              onChange={(e) => setLocationQuery(e.target.value)}
+              onChange={(e) => handleLocationChange(e.target.value)}
+              onKeyDown={handleLocationKeyDown}
+              onFocus={() => {
+                if (suggestions.length > 0) setShowSuggestions(true);
+              }}
+              autoComplete="off"
+              role="combobox"
+              aria-expanded={showSuggestions && suggestions.length > 0}
+              aria-autocomplete="list"
               className="pl-8 h-9 w-32 lg:w-40"
             />
+            {isSuggesting && (
+              <Loader2 className="absolute right-2 top-1/2 -translate-y-1/2 w-3.5 h-3.5 animate-spin text-muted-foreground" />
+            )}
+            {showSuggestions && suggestions.length > 0 && (
+              <ul className="absolute z-50 left-0 mt-1 w-64 max-w-[calc(100vw-3rem)] bg-popover border border-border rounded-md shadow-md overflow-hidden text-sm">
+                {suggestions.map((s, i) => (
+                  <li key={`${s.lat}-${s.lng}`}>
+                    <button
+                      type="button"
+                      onMouseDown={(e) => {
+                        e.preventDefault();
+                        selectSuggestion(s);
+                      }}
+                      className={`w-full text-left px-3 py-2 hover:bg-accent hover:text-accent-foreground transition ${
+                        activeSuggestion === i
+                          ? "bg-accent text-accent-foreground"
+                          : ""
+                      }`}
+                    >
+                      <span className="font-medium truncate block">
+                        {s.placeName.split(",")[0]}
+                      </span>
+                      <span className="text-xs text-muted-foreground truncate block">
+                        {s.placeName.split(",").slice(1).join(",").trim()}
+                      </span>
+                    </button>
+                  </li>
+                ))}
+              </ul>
+            )}
+            {showSuggestions &&
+              !isSuggesting &&
+              onLocationSuggest &&
+              locationQuery.trim().length >= 2 &&
+              suggestions.length === 0 && (
+                <div className="absolute z-50 left-0 mt-1 w-64 max-w-[calc(100vw-3rem)] bg-popover border border-border rounded-md shadow-md px-3 py-2 text-xs text-muted-foreground">
+                  No results found
+                </div>
+              )}
           </form>
           {locationActive ? (
             <Button
