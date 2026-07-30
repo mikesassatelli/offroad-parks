@@ -11,6 +11,7 @@ vi.mock("@/lib/auth", () => ({
 vi.mock("next/navigation", () => ({
   redirect: vi.fn(),
   usePathname: () => "/submit",
+  useRouter: () => ({ push: vi.fn(), replace: vi.fn(), refresh: vi.fn() }),
 }));
 
 vi.mock("@/app/submit/SubmitSignInGate", () => ({

@@ -20,6 +20,7 @@ vi.mock("@/lib/auth", () => ({
 vi.mock("next/navigation", () => ({
   redirect: vi.fn(),
   usePathname: () => "/operator",
+  useRouter: () => ({ push: vi.fn(), replace: vi.fn(), refresh: vi.fn() }),
 }));
 
 vi.mock("next/link", () => ({
