@@ -59,6 +59,10 @@ vi.mock("@/features/parks/detail/components/ParkAttributesCards", () => ({
   ),
 }));
 
+vi.mock("@/features/trail-conditions/TrailStatusBar", () => ({
+  TrailStatusBar: () => <div data-testid="trail-status-bar">Trail status</div>,
+}));
+
 vi.mock("@/features/parks/detail/components/ParkContactSidebar", () => ({
   ParkContactSidebar: () => (
     <div data-testid="park-contact-sidebar">Contact Info</div>
@@ -285,6 +289,12 @@ describe("ParkDetailPage", () => {
     render(<ParkDetailPage park={mockPark} photos={[]} />);
 
     expect(screen.getByTestId("park-attributes-cards")).toBeInTheDocument();
+  });
+
+  it("renders the trail status bar at the top of the overview", () => {
+    render(<ParkDetailPage park={mockPark} photos={[]} />);
+
+    expect(screen.getByTestId("trail-status-bar")).toBeInTheDocument();
   });
 
   it("should render park contact sidebar", () => {

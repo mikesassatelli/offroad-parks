@@ -10,6 +10,7 @@ import {
   formatConditionAge,
   isConditionFresh,
   isConditionPinned,
+  selectFeaturedCondition,
   CONDITION_LABELS,
 } from "@/lib/trail-conditions";
 import type { TrailConditionReport } from "@/lib/trail-conditions";
@@ -62,9 +63,7 @@ export function TrailConditionsDisplay({ parkSlug }: TrailConditionsDisplayProps
   const freshConditions = conditions.filter(
     (c) => isConditionFresh(c.createdAt) || isConditionPinned(c.pinnedUntil)
   );
-  const activePin = freshConditions.find((c) => isConditionPinned(c.pinnedUntil)) ?? null;
-  const recentOperatorPost = freshConditions.find((c) => c.isOperatorPost) ?? null;
-  const featured = activePin ?? recentOperatorPost ?? freshConditions[0] ?? null;
+  const featured = selectFeaturedCondition(conditions);
   const communityList = freshConditions.filter((c) => c.id !== featured?.id).slice(0, 4);
 
   const handleReportSuccess = () => {

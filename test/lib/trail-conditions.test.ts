@@ -2,9 +2,11 @@ import { vi } from "vitest";
 import {
   isConditionFresh,
   formatConditionAge,
+  selectFeaturedCondition,
   CONDITION_STALE_AFTER_MS,
   CONDITION_LABELS,
 } from "@/lib/trail-conditions";
+import type { TrailConditionReport } from "@/lib/trail-conditions";
 
 describe("isConditionFresh", () => {
   it("should return true for a condition reported just now", () => {
@@ -94,5 +96,61 @@ describe("CONDITION_LABELS", () => {
       expect(meta.label).toBeTruthy();
       expect(meta.color).toBeTruthy();
     }
+  });
+});
+
+describe("selectFeaturedCondition", () => {
+  const hoursAgo = (h: number) =>
+    new Date(Date.now() - h * 60 * 60 * 1000).toISOString();
+
+  const report = (
+    over: Partial<TrailConditionReport> & Pick<TrailConditionReport, "id">,
+  ): TrailConditionReport => ({
+    parkId: "p1",
+    userId: "u1",
+    status: "OPEN",
+    note: null,
+    reportStatus: "PUBLISHED",
+    isOperatorPost: false,
+    pinnedUntil: null,
+    createdAt: hoursAgo(1),
+    user: { id: "u1", name: "Rider", image: null },
+    ...over,
+  });
+
+  it("returns null for an empty list", () => {
+    expect(selectFeaturedCondition([])).toBeNull();
+  });
+
+  it("returns null when every report is stale and unpinned", () => {
+    const stale = report({ id: "old", createdAt: hoursAgo(100) });
+    expect(selectFeaturedCondition([stale])).toBeNull();
+  });
+
+  it("picks the latest fresh report when none is pinned or operator-posted", () => {
+    // API returns newest-first; the helper takes the first fresh one.
+    const newer = report({ id: "newer", createdAt: hoursAgo(1) });
+    const older = report({ id: "older", createdAt: hoursAgo(5) });
+    expect(selectFeaturedCondition([newer, older])?.id).toBe("newer");
+  });
+
+  it("prefers an actively-pinned report over a newer unpinned one", () => {
+    const newerUnpinned = report({ id: "newer", createdAt: hoursAgo(1) });
+    const pinned = report({
+      id: "pinned",
+      createdAt: hoursAgo(10),
+      pinnedUntil: hoursAgo(-24), // pin active until 24h from now
+    });
+    expect(selectFeaturedCondition([newerUnpinned, pinned])?.id).toBe("pinned");
+  });
+
+  it("prefers an operator post over a newer community report when nothing is pinned", () => {
+    const community = report({ id: "community", createdAt: hoursAgo(1) });
+    const operator = report({
+      id: "operator",
+      createdAt: hoursAgo(4),
+      isOperatorPost: true,
+    });
+    expect(selectFeaturedCondition([community, operator])?.id).toBe("operator");
   });
 });
