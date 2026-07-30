@@ -13,6 +13,7 @@ import {
   Route,
 } from "lucide-react";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -37,8 +38,27 @@ interface AppHeaderProps {
 }
 
 export function AppHeader({ user, showBackButton }: AppHeaderProps) {
+  const router = useRouter();
+
   const handleSignOut = async () => {
     await signOut({ callbackUrl: "/" });
+  };
+
+  // "Back to Parks" returns to the browse view the user last had open (filters
+  // + map/list mode), which OffroadParksApp stashes in sessionStorage. Read at
+  // click time (SSR-safe, always fresh); the href="/" stays as the fallback and
+  // for modified clicks (cmd/ctrl/middle → open the bare list in a new tab).
+  const handleBackToParks = (e: React.MouseEvent<HTMLAnchorElement>) => {
+    if (e.metaKey || e.ctrlKey || e.shiftKey || e.button !== 0) return;
+    try {
+      const stored = window.sessionStorage.getItem("parks:returnUrl");
+      if (stored && stored !== "/") {
+        e.preventDefault();
+        router.push(stored);
+      }
+    } catch {
+      /* sessionStorage unavailable — fall through to the default href="/" */
+    }
   };
 
   return (
@@ -47,7 +67,12 @@ export function AppHeader({ user, showBackButton }: AppHeaderProps) {
       <div className="max-w-7xl 2xl:max-w-[1800px] 3xl:max-w-[2400px] mx-auto px-4 sm:px-6 py-3 flex items-center gap-2 sm:gap-3">
         {showBackButton && (
           <Button asChild variant="ghost" size="sm" className="mr-1 sm:mr-2">
-            <Link href="/" className="flex items-center gap-2" aria-label="Back to Parks">
+            <Link
+              href="/"
+              onClick={handleBackToParks}
+              className="flex items-center gap-2"
+              aria-label="Back to Parks"
+            >
               <ArrowLeft className="w-4 h-4" />
               <span className="hidden sm:inline">Back to Parks</span>
             </Link>

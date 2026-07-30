@@ -218,6 +218,21 @@ function OffroadParksAppInner({
     enabled: activeView === "map",
   });
 
+  // Remember the current browse view (filters + map/list mode) so "Back to
+  // parks" from a detail page restores exactly what the user was looking at,
+  // instead of dropping them on an unfiltered list. The mount-time URL seed
+  // (parseParkFilterParams + ?view=) reconstructs it on return.
+  useEffect(() => {
+    try {
+      const params = new URLSearchParams(queryString);
+      if (activeView === "map") params.set("view", "map");
+      const qs = params.toString();
+      window.sessionStorage.setItem("parks:returnUrl", qs ? `/?${qs}` : "/");
+    } catch {
+      /* sessionStorage unavailable (e.g. privacy mode) — recall just no-ops */
+    }
+  }, [queryString, activeView]);
+
   const {
     presets,
     isAuthenticated,

@@ -9,6 +9,21 @@ vi.mock("next-auth/react", () => ({
   signOut: vi.fn(),
 }));
 
+// Local next/navigation mock exposing a stable push spy (the global setup mock
+// returns a fresh push each call, which can't be asserted on).
+const { mockPush } = vi.hoisted(() => ({ mockPush: vi.fn() }));
+vi.mock("next/navigation", () => ({
+  useRouter: () => ({
+    push: mockPush,
+    replace: vi.fn(),
+    refresh: vi.fn(),
+    back: vi.fn(),
+    forward: vi.fn(),
+    prefetch: vi.fn(),
+  }),
+  usePathname: () => "/",
+}));
+
 // Mock UI components
 vi.mock("@/components/ui/button", () => ({
   Button: ({ children, onClick, variant, size, className, asChild }: any) => (
@@ -173,5 +188,33 @@ describe("AppHeader", () => {
     const backLink = container.querySelector('a[href="/"]');
     expect(backLink).toBeInTheDocument();
     expect(backLink?.textContent).toContain("Back to Parks");
+  });
+
+  it("Back to Parks restores the stored browse view (filters + view)", () => {
+    window.sessionStorage.setItem(
+      "parks:returnUrl",
+      "/?state=Arkansas&view=map",
+    );
+
+    const { container } = render(<AppHeader showBackButton />);
+    fireEvent.click(
+      container.querySelector('a[aria-label="Back to Parks"]') as HTMLElement,
+    );
+
+    expect(mockPush).toHaveBeenCalledWith("/?state=Arkansas&view=map");
+
+    window.sessionStorage.clear();
+  });
+
+  it("Back to Parks falls back to the bare list when nothing is stored", () => {
+    window.sessionStorage.removeItem("parks:returnUrl");
+
+    const { container } = render(<AppHeader showBackButton />);
+    fireEvent.click(
+      container.querySelector('a[aria-label="Back to Parks"]') as HTMLElement,
+    );
+
+    // No stored view → the plain href="/" navigation is used, not router.push.
+    expect(mockPush).not.toHaveBeenCalled();
   });
 });
