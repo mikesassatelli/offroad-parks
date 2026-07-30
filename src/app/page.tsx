@@ -1,4 +1,5 @@
 import UtvParksApp from "@/components/ui/OffroadParksApp";
+import { auth } from "@/lib/auth";
 import {
   parseParkFilterParams,
   searchParamsToURLSearchParams,
@@ -23,14 +24,28 @@ export default async function Page({ searchParams }: PageProps) {
   const resolved = (await searchParams) ?? {};
   const params = parseParkFilterParams(searchParamsToURLSearchParams(resolved));
 
-  const [initialPage, initialMarkers, facets] = await Promise.all([
+  const [session, initialPage, initialMarkers, facets] = await Promise.all([
+    auth(),
     getParkPage(params, 0),
     getParkMarkers(params),
     getParkFacets(),
   ]);
 
+  // Resolve the header user on the server so the navbar renders signed-in on
+  // the first paint. Deriving it from useSession in the client app flashed the
+  // signed-out navbar on navigation and left it stale right after sign-in.
+  const user = session?.user
+    ? {
+        name: session.user.name,
+        email: session.user.email,
+        image: session.user.image,
+        role: session.user.role,
+      }
+    : null;
+
   return (
     <UtvParksApp
+      user={user}
       initialData={initialPage}
       initialMarkers={initialMarkers}
       facets={facets}
