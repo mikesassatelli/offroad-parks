@@ -1,4 +1,4 @@
-import { fireEvent, render, screen } from "@testing-library/react";
+import { fireEvent, render, screen, waitFor } from "@testing-library/react";
 import { SearchHeader } from "@/components/layout/SearchHeader";
 import { vi } from "vitest";
 
@@ -346,6 +346,92 @@ describe("SearchHeader", () => {
 
     const button = screen.getByTitle("Use my location");
     expect(button).toBeDisabled();
+  });
+
+  it("should show autocomplete suggestions as the user types", async () => {
+    const mockOnLocationSuggest = vi.fn().mockResolvedValue([
+      { lat: 39.7392, lng: -104.9903, placeName: "Denver, Colorado" },
+    ]);
+    render(
+      <SearchHeader
+        searchQuery=""
+        onSearchQueryChange={mockOnSearchQueryChange}
+        sortOption="name"
+        onSortChange={mockOnSortChange}
+        onLocationSuggest={mockOnLocationSuggest}
+      />,
+    );
+
+    const input = screen.getByLabelText("Search by location");
+    fireEvent.change(input, { target: { value: "Denv" } });
+
+    await waitFor(() =>
+      expect(mockOnLocationSuggest).toHaveBeenCalledWith("Denv"),
+    );
+    expect(await screen.findByText("Denver")).toBeInTheDocument();
+  });
+
+  it("should not fetch suggestions for queries shorter than 2 chars", () => {
+    const mockOnLocationSuggest = vi.fn().mockResolvedValue([]);
+    render(
+      <SearchHeader
+        searchQuery=""
+        onSearchQueryChange={mockOnSearchQueryChange}
+        sortOption="name"
+        onSortChange={mockOnSortChange}
+        onLocationSuggest={mockOnLocationSuggest}
+      />,
+    );
+
+    const input = screen.getByLabelText("Search by location");
+    fireEvent.change(input, { target: { value: "D" } });
+
+    expect(mockOnLocationSuggest).not.toHaveBeenCalled();
+  });
+
+  it("should call onLocationSelect (not onLocationSearch) when a suggestion is picked", async () => {
+    const result = { lat: 39.7392, lng: -104.9903, placeName: "Denver, Colorado" };
+    const mockOnLocationSuggest = vi.fn().mockResolvedValue([result]);
+    const mockOnLocationSelect = vi.fn();
+    const mockOnLocationSearch = vi.fn();
+    render(
+      <SearchHeader
+        searchQuery=""
+        onSearchQueryChange={mockOnSearchQueryChange}
+        sortOption="name"
+        onSortChange={mockOnSortChange}
+        onLocationSuggest={mockOnLocationSuggest}
+        onLocationSelect={mockOnLocationSelect}
+        onLocationSearch={mockOnLocationSearch}
+      />,
+    );
+
+    const input = screen.getByLabelText("Search by location");
+    fireEvent.change(input, { target: { value: "Denver" } });
+
+    const option = await screen.findByText("Denver");
+    fireEvent.mouseDown(option);
+
+    expect(mockOnLocationSelect).toHaveBeenCalledWith(result);
+    expect(mockOnLocationSearch).not.toHaveBeenCalled();
+  });
+
+  it("should show a no-results message when suggestions come back empty", async () => {
+    const mockOnLocationSuggest = vi.fn().mockResolvedValue([]);
+    render(
+      <SearchHeader
+        searchQuery=""
+        onSearchQueryChange={mockOnSearchQueryChange}
+        sortOption="name"
+        onSortChange={mockOnSortChange}
+        onLocationSuggest={mockOnLocationSuggest}
+      />,
+    );
+
+    const input = screen.getByLabelText("Search by location");
+    fireEvent.change(input, { target: { value: "zzzznowhere" } });
+
+    expect(await screen.findByText("No results found")).toBeInTheDocument();
   });
 
   it("should render filter icon", () => {

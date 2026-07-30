@@ -11,7 +11,11 @@ import { useSearchPresets } from "@/hooks/useSearchPresets";
 import { useSignInPrompt } from "@/components/auth/SignInPromptProvider";
 import { useParkList, useParkMarkers } from "@/hooks/useServerParks";
 import { haversineDistance } from "@/lib/geo";
-import { geocodeQuery } from "@/lib/geocode-client";
+import {
+  geocodeQuery,
+  geocodeSuggestions,
+  type GeocodeResult,
+} from "@/lib/geocode-client";
 import {
   buildParkQueryString,
   parkFilterParamsToState,
@@ -214,6 +218,47 @@ function OffroadParksAppInner({
     enabled: activeView === "map",
   });
 
+  // Keep the address bar and the "Back to parks" return target in sync with the
+  // current browse view (filters + map/list mode).
+  //   • sessionStorage["parks:returnUrl"] lets the header restore the view on
+  //     return (see AppHeader).
+  //   • history.replaceState mirrors it into the URL so filtered/searched views
+  //     are shareable and survive a refresh. It uses the History API (not the
+  //     Next router), so it never triggers a navigation / server refetch, and it
+  //     preserves Next's own history state. Skipped while the route-planner owns
+  //     the URL via ?routeId.
+  useEffect(() => {
+    try {
+      const params = new URLSearchParams(queryString);
+      if (activeView === "map") params.set("view", "map");
+      const qs = params.toString();
+      const url = qs ? `/?${qs}` : "/";
+      window.sessionStorage.setItem("parks:returnUrl", url);
+      if (!new URLSearchParams(window.location.search).get("routeId")) {
+        window.history.replaceState(window.history.state, "", url);
+      }
+    } catch {
+      /* sessionStorage / history unavailable — recall & mirroring just no-op */
+    }
+  }, [queryString, activeView]);
+
+  // Flag navigations that start from a park card or map popup in this browse
+  // view. "Back to parks" on the detail page reads this and router.back()s, so
+  // the router cache restores scroll + loaded pages exactly (see AppHeader).
+  const handleBrowseParkClickCapture = (
+    e: React.MouseEvent<HTMLDivElement>,
+  ) => {
+    const link = (e.target as HTMLElement | null)?.closest?.(
+      'a[href^="/parks/"]',
+    );
+    if (!link) return;
+    try {
+      window.sessionStorage.setItem("parks:backHint", "1");
+    } catch {
+      /* sessionStorage unavailable — back just falls back to a fresh view */
+    }
+  };
+
   const {
     presets,
     isAuthenticated,
@@ -251,17 +296,21 @@ function OffroadParksAppInner({
     );
   };
 
-  // Resolve a typed location via the /api/geocode route, then drive the exact
-  // same coords path "Near Me" uses (set coords + switch to distance sort).
+  // Drive the exact same coords path "Near Me" uses: set coords + switch to
+  // distance sort. Shared by the free-text search and suggestion-pick flows.
+  const applyLocationResult = (result: GeocodeResult) => {
+    setUserCoords({ lat: result.lat, lng: result.lng });
+    setSortOption("distance-nearest");
+  };
+
+  // Free-text fallback: resolve a typed location via the /api/geocode route
+  // when the user submits without picking an autocomplete suggestion.
   const handleLocationSearch = async (query: string) => {
     if (!query.trim()) return;
     setLocationLoading(true);
     const result = await geocodeQuery(query);
     setLocationLoading(false);
-    if (result) {
-      setUserCoords({ lat: result.lat, lng: result.lng });
-      setSortOption("distance-nearest");
-    }
+    if (result) applyLocationResult(result);
   };
 
   const handleClearLocation = () => {
@@ -444,6 +493,8 @@ function OffroadParksAppInner({
           onUseMyLocation={handleUseMyLocation}
           onClearLocation={handleClearLocation}
           onLocationSearch={handleLocationSearch}
+          onLocationSuggest={geocodeSuggestions}
+          onLocationSelect={applyLocationResult}
           radiusMiles={radiusMiles}
           onRadiusChange={setRadiusMiles}
           onOpenFilters={() => setFiltersOpen(true)}
@@ -483,7 +534,10 @@ function OffroadParksAppInner({
             {filtersPanel}
           </div>
 
-          <div className="flex-1 min-w-0 w-full">
+          <div
+            className="flex-1 min-w-0 w-full"
+            onClickCapture={handleBrowseParkClickCapture}
+          >
             <Tabs
               value={activeView}
               onValueChange={(v) => setActiveView(v as "list" | "map")}
