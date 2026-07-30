@@ -110,7 +110,7 @@ function AttrRow({
   children: React.ReactNode;
 }) {
   return (
-    <div className="flex flex-col gap-1.5 sm:flex-row sm:items-baseline sm:gap-3">
+    <div className="flex flex-col gap-1.5 py-3 first:pt-0 last:pb-0 sm:flex-row sm:items-baseline sm:gap-3">
       <span className="text-[11px] font-medium uppercase tracking-wide text-muted-foreground sm:w-20 sm:shrink-0 sm:pt-0.5">
         {label}
       </span>
@@ -135,7 +135,7 @@ export function ParkAttributesCards({ park }: ParkAttributesCardsProps) {
 
   return (
     <Card>
-      <CardContent className="space-y-3 py-4">
+      <CardContent className="divide-y divide-border/60 py-4">
         {park.terrain.length > 0 && (
           <AttrRow label="Terrain">
             {park.terrain.map((terrain) => (
