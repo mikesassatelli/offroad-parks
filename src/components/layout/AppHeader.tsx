@@ -1,5 +1,6 @@
 "use client";
 
+import { useEffect, useRef } from "react";
 import { Button } from "@/components/ui/button";
 import {
   ArrowLeft,
@@ -44,12 +45,35 @@ export function AppHeader({ user, showBackButton }: AppHeaderProps) {
     await signOut({ callbackUrl: "/" });
   };
 
-  // "Back to Parks" returns to the browse view the user last had open (filters
-  // + map/list mode), which OffroadParksApp stashes in sessionStorage. Read at
-  // click time (SSR-safe, always fresh); the href="/" stays as the fallback and
-  // for modified clicks (cmd/ctrl/middle → open the bare list in a new tab).
+  // Did we arrive here straight from the browse list/map? OffroadParksApp sets
+  // this hint on a park-link click; consume it on mount (into a ref, so no
+  // extra render) so it reflects *this* page's arrival and can't go stale.
+  const cameFromBrowseListRef = useRef(false);
+  useEffect(() => {
+    try {
+      if (window.sessionStorage.getItem("parks:backHint")) {
+        cameFromBrowseListRef.current = true;
+        window.sessionStorage.removeItem("parks:backHint");
+      }
+    } catch {
+      /* sessionStorage unavailable — treat as a normal navigation */
+    }
+  }, []);
+
+  // "Back to Parks":
+  //   • Came straight from the browse list/map → router.back(), so the router
+  //     cache restores scroll + loaded pages + view exactly as they were.
+  //   • Otherwise → restore the last browse view fresh (filters + map/list) from
+  //     the URL OffroadParksApp stashed in sessionStorage.
+  // The href="/" stays as the fallback and for modified clicks (cmd/ctrl/middle
+  // → open the bare list in a new tab).
   const handleBackToParks = (e: React.MouseEvent<HTMLAnchorElement>) => {
     if (e.metaKey || e.ctrlKey || e.shiftKey || e.button !== 0) return;
+    if (cameFromBrowseListRef.current) {
+      e.preventDefault();
+      router.back();
+      return;
+    }
     try {
       const stored = window.sessionStorage.getItem("parks:returnUrl");
       if (stored && stored !== "/") {
