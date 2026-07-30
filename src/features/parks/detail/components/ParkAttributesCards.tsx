@@ -1,4 +1,9 @@
 import { Card, CardContent } from "@/components/ui/card";
+import {
+  AtvIcon,
+  FullSizeTruckIcon,
+  SxsIcon,
+} from "@/components/icons/vehicles";
 import { formatAmenity, formatTerrain } from "@/lib/formatting";
 import type { Amenity, Park, Terrain, VehicleType } from "@/lib/types";
 import {
@@ -6,8 +11,6 @@ import {
   Armchair,
   Baby,
   Bike,
-  Car,
-  CarFront,
   CircleCheck,
   Droplets,
   Fish,
@@ -26,7 +29,6 @@ import {
   ShowerHead,
   Store,
   Toilet,
-  Truck,
   Umbrella,
   Utensils,
   Waves,
@@ -47,9 +49,9 @@ const TERRAIN_ICONS: Record<Terrain, IconComponent> = {
 
 const VEHICLE_ICONS: Record<VehicleType, IconComponent> = {
   motorcycle: Bike,
-  atv: Car,
-  sxs: CarFront,
-  fullSize: Truck,
+  atv: AtvIcon,
+  sxs: SxsIcon,
+  fullSize: FullSizeTruckIcon,
 };
 
 const VEHICLE_LABELS: Record<VehicleType, string> = {
