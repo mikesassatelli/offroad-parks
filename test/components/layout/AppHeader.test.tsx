@@ -9,15 +9,18 @@ vi.mock("next-auth/react", () => ({
   signOut: vi.fn(),
 }));
 
-// Local next/navigation mock exposing a stable push spy (the global setup mock
-// returns a fresh push each call, which can't be asserted on).
-const { mockPush } = vi.hoisted(() => ({ mockPush: vi.fn() }));
+// Local next/navigation mock exposing stable push/back spies (the global setup
+// mock returns fresh fns each call, which can't be asserted on).
+const { mockPush, mockBack } = vi.hoisted(() => ({
+  mockPush: vi.fn(),
+  mockBack: vi.fn(),
+}));
 vi.mock("next/navigation", () => ({
   useRouter: () => ({
     push: mockPush,
+    back: mockBack,
     replace: vi.fn(),
     refresh: vi.fn(),
-    back: vi.fn(),
     forward: vi.fn(),
     prefetch: vi.fn(),
   }),
@@ -56,6 +59,7 @@ vi.mock("@/components/auth/LoginDialog", () => ({
 describe("AppHeader", () => {
   beforeEach(() => {
     vi.clearAllMocks();
+    window.sessionStorage.clear();
   });
 
   it("should render the app title", () => {
@@ -216,5 +220,23 @@ describe("AppHeader", () => {
 
     // No stored view → the plain href="/" navigation is used, not router.push.
     expect(mockPush).not.toHaveBeenCalled();
+  });
+
+  it("Back to Parks uses history back when arriving from the browse list", () => {
+    // The hint is set by OffroadParksApp on a park-link click; a filtered
+    // return URL is also present, but arriving from the list takes precedence
+    // so the router cache can restore scroll + loaded pages.
+    window.sessionStorage.setItem("parks:backHint", "1");
+    window.sessionStorage.setItem("parks:returnUrl", "/?state=Arkansas");
+
+    const { container } = render(<AppHeader showBackButton />);
+    fireEvent.click(
+      container.querySelector('a[aria-label="Back to Parks"]') as HTMLElement,
+    );
+
+    expect(mockBack).toHaveBeenCalled();
+    expect(mockPush).not.toHaveBeenCalled();
+    // The hint is consumed on mount so it can't leak to a later page.
+    expect(window.sessionStorage.getItem("parks:backHint")).toBeNull();
   });
 });
