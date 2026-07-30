@@ -564,7 +564,7 @@ function OffroadParksAppInner({
                       onRemoveWaypoint={removeWaypoint}
                     />
                   </div>
-                  <div className="lg:col-span-1 lg:self-start">
+                  <div className="lg:col-span-1 self-start">
                     {session?.user && (
                       <MyRoutesOverlayPanel
                         onSelectRoute={setPreviewRoute}
