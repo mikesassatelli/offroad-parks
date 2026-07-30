@@ -60,6 +60,24 @@ export function formatConditionAge(createdAt: string | Date): string {
   return `${diffDays} day${diffDays === 1 ? "" : "s"} ago`;
 }
 
+/**
+ * Pick the single most-relevant condition to feature (used by both the
+ * top-of-page status bar and the rail display): an active operator pin, else
+ * the most recent operator post, else the latest fresh report. Only fresh
+ * (< 72h) or actively-pinned reports are considered. Returns null when none
+ * qualify. Assumes `conditions` is newest-first (as the API returns them).
+ */
+export function selectFeaturedCondition(
+  conditions: TrailConditionReport[],
+): TrailConditionReport | null {
+  const fresh = conditions.filter(
+    (c) => isConditionFresh(c.createdAt) || isConditionPinned(c.pinnedUntil),
+  );
+  const activePin = fresh.find((c) => isConditionPinned(c.pinnedUntil)) ?? null;
+  const recentOperatorPost = fresh.find((c) => c.isOperatorPost) ?? null;
+  return activePin ?? recentOperatorPost ?? fresh[0] ?? null;
+}
+
 /** Display label and color variant per status */
 export const CONDITION_LABELS: Record<
   TrailConditionStatus,

@@ -29,6 +29,7 @@ import type {
 } from "@/lib/weather/types";
 import { ReviewList, ReviewForm, StarRating, DifficultyRating } from "@/components/reviews";
 import { TrailConditionsDisplay } from "@/features/trail-conditions/TrailConditionsDisplay";
+import { TrailStatusBar } from "@/features/trail-conditions/TrailStatusBar";
 import { useReviews } from "@/hooks/useReviews";
 import { useParkReview } from "@/hooks/useParkReview";
 import { AppHeader } from "@/components/layout/AppHeader";
@@ -373,6 +374,9 @@ function ParkDetailPageInner({
                   (weather, trail conditions, contact, claim) lives in the
                   sidebar rail. */}
               <TabsContent value="overview" className="space-y-6">
+                {/* Prominent, color-coded trail status. Links to the full
+                    report list + form in the rail (#trail-conditions). */}
+                <TrailStatusBar parkSlug={park.id} />
                 <ParkOverviewCard park={park} />
                 <ParkAttributesCards park={park} />
                 <ParkOperationalCard park={park} />
@@ -653,7 +657,9 @@ function ParkDetailPageInner({
               <ParkContactSidebar park={park} />
               {/* Trail conditions: compact, community-reported, usually empty —
                   fine low in the rail rather than taking prime content space. */}
-              <TrailConditionsDisplay parkSlug={park.id} />
+              <div id="trail-conditions" className="scroll-mt-24">
+                <TrailConditionsDisplay parkSlug={park.id} />
+              </div>
               {/* Operator claim flow as its own slim card. */}
               <ParkClaimCTA
                 parkSlug={park.id}

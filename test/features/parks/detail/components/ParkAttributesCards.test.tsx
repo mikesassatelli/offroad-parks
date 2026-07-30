@@ -1,25 +1,8 @@
 import { render, screen } from "@testing-library/react";
 import { ParkAttributesCards } from "@/features/parks/detail/components/ParkAttributesCards";
 import type { Park } from "@/lib/types";
-import { vi } from "vitest";
 
-// Mock UI components
-vi.mock("@/components/ui/card", () => ({
-  Card: ({ children }: any) => <div data-testid="card">{children}</div>,
-  CardHeader: ({ children }: any) => <div>{children}</div>,
-  CardTitle: ({ children }: any) => <h3>{children}</h3>,
-  CardContent: ({ children }: any) => <div>{children}</div>,
-}));
-
-vi.mock("@/components/ui/badge", () => ({
-  Badge: ({ children, variant, className }: any) => (
-    <span data-variant={variant} className={className}>
-      {children}
-    </span>
-  ),
-}));
-
-describe("ParkAttributesCards", () => {
+describe("ParkAttributesCards (chip strip)", () => {
   const mockPark: Park = {
     id: "park-1",
     name: "Test Park",
@@ -28,17 +11,18 @@ describe("ParkAttributesCards", () => {
     terrain: ["sand", "rocks", "mud"],
     amenities: ["restrooms", "showers"],
     camping: [],
-    vehicleTypes: [],
+    vehicleTypes: ["motorcycle", "atv", "sxs", "fullSize"],
   };
 
-  it("should render all two cards", () => {
+  it("renders one labeled row per non-empty attribute group", () => {
     render(<ParkAttributesCards park={mockPark} />);
 
-    expect(screen.getByText("Terrain Types")).toBeInTheDocument();
+    expect(screen.getByText("Terrain")).toBeInTheDocument();
+    expect(screen.getByText("Vehicles")).toBeInTheDocument();
     expect(screen.getByText("Amenities")).toBeInTheDocument();
   });
 
-  it("should render terrain badges with formatted labels", () => {
+  it("renders terrain chips with formatted labels", () => {
     render(<ParkAttributesCards park={mockPark} />);
 
     expect(screen.getByText("Sand")).toBeInTheDocument();
@@ -46,98 +30,72 @@ describe("ParkAttributesCards", () => {
     expect(screen.getByText("Mud")).toBeInTheDocument();
   });
 
-  it("should render terrain badges with outline variant and no capitalize class", () => {
-    render(<ParkAttributesCards park={mockPark} />);
-
-    const sandBadge = screen.getByText("Sand");
-    expect(sandBadge).toHaveAttribute("data-variant", "outline");
-    expect(sandBadge).not.toHaveClass("capitalize");
-  });
-
-  it("should render amenity badges with formatted labels", () => {
+  it("renders amenity chips with formatted labels", () => {
     render(<ParkAttributesCards park={mockPark} />);
 
     expect(screen.getByText("Restrooms")).toBeInTheDocument();
     expect(screen.getByText("Showers")).toBeInTheDocument();
   });
 
-  it("should render amenity badges without capitalize class", () => {
+  it("renders vehicle-type chips with human labels", () => {
     render(<ParkAttributesCards park={mockPark} />);
 
-    const restroomsBadge = screen.getByText("Restrooms");
-    expect(restroomsBadge).not.toHaveClass("capitalize");
+    expect(screen.getByText("Motorcycle")).toBeInTheDocument();
+    expect(screen.getByText("ATV")).toBeInTheDocument();
+    expect(screen.getByText("SxS")).toBeInTheDocument();
+    expect(screen.getByText("Full-Size")).toBeInTheDocument();
   });
 
-  it("should format motocrossTrack terrain as 'Motocross Track'", () => {
-    const parkWithMotocross: Park = {
-      ...mockPark,
-      terrain: ["motocrossTrack"],
-      amenities: [],
-    };
-    render(<ParkAttributesCards park={parkWithMotocross} />);
+  it("formats motocrossTrack terrain as 'Motocross Track'", () => {
+    render(
+      <ParkAttributesCards
+        park={{ ...mockPark, terrain: ["motocrossTrack"], amenities: [], vehicleTypes: [] }}
+      />,
+    );
 
     expect(screen.getByText("Motocross Track")).toBeInTheDocument();
   });
 
-  it("should format picnicTable amenity as 'Picnic Table'", () => {
-    const parkWithPicnic: Park = {
-      ...mockPark,
-      terrain: [],
-      amenities: ["picnicTable"],
-    };
-    render(<ParkAttributesCards park={parkWithPicnic} />);
+  it("formats picnicTable amenity as 'Picnic Table'", () => {
+    render(
+      <ParkAttributesCards
+        park={{ ...mockPark, terrain: [], amenities: ["picnicTable"], vehicleTypes: [] }}
+      />,
+    );
 
     expect(screen.getByText("Picnic Table")).toBeInTheDocument();
   });
 
-  it("hides the Terrain card when terrain is empty", () => {
-    const parkNoTerrain = { ...mockPark, terrain: [] };
-    render(<ParkAttributesCards park={parkNoTerrain} />);
+  it("hides the Terrain row when terrain is empty", () => {
+    render(<ParkAttributesCards park={{ ...mockPark, terrain: [] }} />);
 
-    expect(screen.queryByText("Terrain Types")).not.toBeInTheDocument();
-    // Amenities still has data, so its card remains.
+    expect(screen.queryByText("Terrain")).not.toBeInTheDocument();
     expect(screen.getByText("Amenities")).toBeInTheDocument();
   });
 
-  it("hides the Amenities card when amenities is empty", () => {
-    const parkNoAmenities = { ...mockPark, amenities: [] };
-    render(<ParkAttributesCards park={parkNoAmenities} />);
+  it("hides the Amenities row when amenities is empty", () => {
+    render(<ParkAttributesCards park={{ ...mockPark, amenities: [] }} />);
 
     expect(screen.queryByText("Amenities")).not.toBeInTheDocument();
-    expect(screen.getByText("Terrain Types")).toBeInTheDocument();
+    expect(screen.getByText("Terrain")).toBeInTheDocument();
   });
 
   it("renders nothing when a park has no terrain, amenities, or vehicle types", () => {
-    const minimalPark: Park = {
-      id: "minimal",
-      name: "Minimal Park",
-      address: { state: "Texas" },
-      coords: { lat: 30, lng: -98 },
-      terrain: [],
-      amenities: [],
-      camping: [],
-      vehicleTypes: [],
-    };
+    const { container } = render(
+      <ParkAttributesCards
+        park={{
+          id: "minimal",
+          name: "Minimal Park",
+          address: { state: "Texas" },
+          coords: { lat: 30, lng: -98 },
+          terrain: [],
+          amenities: [],
+          camping: [],
+          vehicleTypes: [],
+        }}
+      />,
+    );
 
-    const { container } = render(<ParkAttributesCards park={minimalPark} />);
-
-    expect(screen.queryByText("Terrain Types")).not.toBeInTheDocument();
-    expect(screen.queryByText("Amenities")).not.toBeInTheDocument();
     expect(container).toBeEmptyDOMElement();
-  });
-
-  it("should render single item in each category with formatted labels", () => {
-    const singleItemPark: Park = {
-      ...mockPark,
-      terrain: ["sand"],
-      amenities: ["restrooms"],
-      camping: [],
-      vehicleTypes: [],
-    };
-
-    render(<ParkAttributesCards park={singleItemPark} />);
-
-    expect(screen.getByText("Sand")).toBeInTheDocument();
-    expect(screen.getByText("Restrooms")).toBeInTheDocument();
   });
 });
