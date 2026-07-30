@@ -11,7 +11,11 @@ import { useSearchPresets } from "@/hooks/useSearchPresets";
 import { useSignInPrompt } from "@/components/auth/SignInPromptProvider";
 import { useParkList, useParkMarkers } from "@/hooks/useServerParks";
 import { haversineDistance } from "@/lib/geo";
-import { geocodeQuery } from "@/lib/geocode-client";
+import {
+  geocodeQuery,
+  geocodeSuggestions,
+  type GeocodeResult,
+} from "@/lib/geocode-client";
 import {
   buildParkQueryString,
   parkFilterParamsToState,
@@ -251,17 +255,21 @@ function OffroadParksAppInner({
     );
   };
 
-  // Resolve a typed location via the /api/geocode route, then drive the exact
-  // same coords path "Near Me" uses (set coords + switch to distance sort).
+  // Drive the exact same coords path "Near Me" uses: set coords + switch to
+  // distance sort. Shared by the free-text search and suggestion-pick flows.
+  const applyLocationResult = (result: GeocodeResult) => {
+    setUserCoords({ lat: result.lat, lng: result.lng });
+    setSortOption("distance-nearest");
+  };
+
+  // Free-text fallback: resolve a typed location via the /api/geocode route
+  // when the user submits without picking an autocomplete suggestion.
   const handleLocationSearch = async (query: string) => {
     if (!query.trim()) return;
     setLocationLoading(true);
     const result = await geocodeQuery(query);
     setLocationLoading(false);
-    if (result) {
-      setUserCoords({ lat: result.lat, lng: result.lng });
-      setSortOption("distance-nearest");
-    }
+    if (result) applyLocationResult(result);
   };
 
   const handleClearLocation = () => {
@@ -444,6 +452,8 @@ function OffroadParksAppInner({
           onUseMyLocation={handleUseMyLocation}
           onClearLocation={handleClearLocation}
           onLocationSearch={handleLocationSearch}
+          onLocationSuggest={geocodeSuggestions}
+          onLocationSelect={applyLocationResult}
           radiusMiles={radiusMiles}
           onRadiusChange={setRadiusMiles}
           onOpenFilters={() => setFiltersOpen(true)}
