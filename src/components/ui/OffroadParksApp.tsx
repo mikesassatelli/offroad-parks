@@ -242,22 +242,84 @@ function OffroadParksAppInner({
     }
   }, [queryString, activeView]);
 
-  // Flag navigations that start from a park card or map popup in this browse
-  // view. "Back to parks" on the detail page reads this and router.back()s, so
-  // the router cache restores scroll + loaded pages exactly (see AppHeader).
+  // --- Scroll + pagination recall ---
+  // Home is force-dynamic, so returning via the URL remounts the list at page 0
+  // and Next's scroll restoration lands on a too-short list. Instead we snapshot
+  // what was loaded when a park was opened and rebuild it on return.
+  const scrollRestoreRef = useRef<{
+    url: string;
+    count: number;
+    href: string | null;
+  } | null>(null);
+  const restoreAttemptsRef = useRef(0);
+
+  // On a park-link click in the LIST view, snapshot the browse URL (to confirm
+  // we return to the same view), how many parks were loaded (to replay the
+  // infinite-scroll pages), and which park link was clicked (to scroll to).
   const handleBrowseParkClickCapture = (
     e: React.MouseEvent<HTMLDivElement>,
   ) => {
+    if (activeView !== "list") return;
     const link = (e.target as HTMLElement | null)?.closest?.(
       'a[href^="/parks/"]',
     );
     if (!link) return;
     try {
-      window.sessionStorage.setItem("parks:backHint", "1");
+      window.sessionStorage.setItem(
+        "parks:scrollSnap",
+        JSON.stringify({
+          url: window.location.pathname + window.location.search,
+          count: listParks.length,
+          href: link.getAttribute("href"),
+        }),
+      );
     } catch {
-      /* sessionStorage unavailable — back just falls back to a fresh view */
+      /* sessionStorage unavailable — scroll recall just no-ops */
     }
   };
+
+  // Mount: adopt a snapshot only if we're back on the exact same browse view
+  // (one-shot; declared before the replay effect so the ref is set first).
+  useEffect(() => {
+    try {
+      const raw = window.sessionStorage.getItem("parks:scrollSnap");
+      if (!raw) return;
+      window.sessionStorage.removeItem("parks:scrollSnap");
+      const snap = JSON.parse(raw);
+      if (snap?.url === window.location.pathname + window.location.search) {
+        scrollRestoreRef.current = snap;
+      }
+    } catch {
+      /* ignore malformed / unavailable snapshot */
+    }
+  }, []);
+
+  // Replay loaded pages up to the snapshot count, then scroll the clicked park
+  // into view. Runs on every list update; ref-guarded and attempt-capped so it
+  // always terminates (even if a page fetch fails and can't make progress).
+  useEffect(() => {
+    const target = scrollRestoreRef.current;
+    if (!target) return;
+    if (listParks.length >= target.count || !hasMore) {
+      scrollRestoreRef.current = null;
+      const href = target.href;
+      requestAnimationFrame(() => {
+        if (!href) return;
+        document.querySelectorAll('a[href^="/parks/"]').forEach((card) => {
+          if (card.getAttribute("href") === href) {
+            card.scrollIntoView({ block: "center" });
+          }
+        });
+      });
+    } else if (!isLoading && !isLoadingMore) {
+      if (restoreAttemptsRef.current >= 40) {
+        scrollRestoreRef.current = null; // safety cap — stop replaying
+        return;
+      }
+      restoreAttemptsRef.current += 1;
+      loadMore();
+    }
+  }, [listParks.length, hasMore, isLoading, isLoadingMore, loadMore]);
 
   const {
     presets,
