@@ -307,20 +307,24 @@ function OffroadParksAppInner({
     if (!target) return;
     if (listParks.length >= target.count || !hasMore) {
       scrollRestoreRef.current = null;
-      // eslint-disable-next-line react-hooks/set-state-in-effect -- ends the replay-driven loading state
-      setRestoring(false);
       const href = target.href;
+      // Scroll to the clicked park while the overlay still covers the list, then
+      // lift the overlay on the next frame — the user sees the list already in
+      // place instead of watching it jump. (setState in rAF, not the effect body.)
       requestAnimationFrame(() => {
-        if (!href) return;
-        document.querySelectorAll('a[href^="/parks/"]').forEach((card) => {
-          if (card.getAttribute("href") === href) {
-            card.scrollIntoView({ block: "center" });
-          }
-        });
+        if (href) {
+          document.querySelectorAll('a[href^="/parks/"]').forEach((card) => {
+            if (card.getAttribute("href") === href) {
+              card.scrollIntoView({ block: "center" });
+            }
+          });
+        }
+        requestAnimationFrame(() => setRestoring(false));
       });
     } else if (!isLoading && !isLoadingMore) {
       if (restoreAttemptsRef.current >= 40) {
         scrollRestoreRef.current = null; // safety cap — stop replaying
+        // eslint-disable-next-line react-hooks/set-state-in-effect -- ends the replay-driven loading state on the safety-cap bail
         setRestoring(false);
         return;
       }
@@ -548,6 +552,23 @@ function OffroadParksAppInner({
 
   return (
     <div className="min-h-screen bg-background">
+      {/* "Back to parks" rebuilds the list (replays the loaded pages) to restore
+          the user's scroll position. This overlay masks that rebuild and the
+          scroll jump: it sits below the sticky nav (z-30) so the header stays
+          usable, and lifts to reveal the list already in place. */}
+      {restoring && (
+        <div
+          className="fixed inset-0 z-20 flex items-center justify-center bg-background/80 backdrop-blur-sm"
+          role="status"
+          aria-live="polite"
+        >
+          <div className="flex items-center gap-2 rounded-full border border-border bg-card px-4 py-2 text-sm text-muted-foreground shadow-md">
+            <Loader2 className="h-4 w-4 animate-spin" />
+            Restoring your place…
+          </div>
+        </div>
+      )}
+
       {/* Sticky top block: app header + search/sort bar stay pinned while the
           list scrolls. Solid background + high z-index keep cards from showing
           through. */}
@@ -630,22 +651,6 @@ function OffroadParksAppInner({
                   </div>
                 )}
 
-                {/* Viewport-anchored indicator while "Back to parks" rebuilds
-                    the list to restore the user's scroll position — the bottom
-                    infinite-scroll loader is usually off-screen during that. */}
-                {restoring && (
-                  <div
-                    className="fixed inset-x-0 top-24 z-40 flex justify-center px-4 pointer-events-none"
-                    role="status"
-                    aria-live="polite"
-                  >
-                    <div className="flex items-center gap-2 rounded-full border border-border bg-card/95 px-4 py-2 text-sm text-muted-foreground shadow-md backdrop-blur-sm">
-                      <Loader2 className="h-4 w-4 animate-spin" />
-                      Restoring your place…
-                    </div>
-                  </div>
-                )}
-
                 <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-4 3xl:grid-cols-5 gap-5">
                   {listParks.map((park) => (
                     <ParkCard
@@ -666,7 +671,7 @@ function OffroadParksAppInner({
                 {(isLoading || isLoadingMore) && (
                   <div className="flex items-center justify-center gap-2 py-8 text-sm text-muted-foreground">
                     <Loader2 className="h-4 w-4 animate-spin" />
-                    {restoring ? "Restoring your place…" : "Loading parks…"}
+                    Loading parks…
                   </div>
                 )}
 
