@@ -252,6 +252,9 @@ function OffroadParksAppInner({
     href: string | null;
   } | null>(null);
   const restoreAttemptsRef = useRef(0);
+  // Reactive flag so the list can show a "restoring your place" state (rather
+  // than the generic "loading more") while the replay rebuilds the pages.
+  const [restoring, setRestoring] = useState(false);
 
   // On a park-link click in the LIST view, snapshot the browse URL (to confirm
   // we return to the same view), how many parks were loaded (to replay the
@@ -288,6 +291,8 @@ function OffroadParksAppInner({
       const snap = JSON.parse(raw);
       if (snap?.url === window.location.pathname + window.location.search) {
         scrollRestoreRef.current = snap;
+        // eslint-disable-next-line react-hooks/set-state-in-effect -- one-shot sync from sessionStorage on mount
+        setRestoring(true);
       }
     } catch {
       /* ignore malformed / unavailable snapshot */
@@ -302,6 +307,8 @@ function OffroadParksAppInner({
     if (!target) return;
     if (listParks.length >= target.count || !hasMore) {
       scrollRestoreRef.current = null;
+      // eslint-disable-next-line react-hooks/set-state-in-effect -- ends the replay-driven loading state
+      setRestoring(false);
       const href = target.href;
       requestAnimationFrame(() => {
         if (!href) return;
@@ -314,6 +321,7 @@ function OffroadParksAppInner({
     } else if (!isLoading && !isLoadingMore) {
       if (restoreAttemptsRef.current >= 40) {
         scrollRestoreRef.current = null; // safety cap — stop replaying
+        setRestoring(false);
         return;
       }
       restoreAttemptsRef.current += 1;
@@ -622,6 +630,22 @@ function OffroadParksAppInner({
                   </div>
                 )}
 
+                {/* Viewport-anchored indicator while "Back to parks" rebuilds
+                    the list to restore the user's scroll position — the bottom
+                    infinite-scroll loader is usually off-screen during that. */}
+                {restoring && (
+                  <div
+                    className="fixed inset-x-0 top-24 z-40 flex justify-center px-4 pointer-events-none"
+                    role="status"
+                    aria-live="polite"
+                  >
+                    <div className="flex items-center gap-2 rounded-full border border-border bg-card/95 px-4 py-2 text-sm text-muted-foreground shadow-md backdrop-blur-sm">
+                      <Loader2 className="h-4 w-4 animate-spin" />
+                      Restoring your place…
+                    </div>
+                  </div>
+                )}
+
                 <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-4 3xl:grid-cols-5 gap-5">
                   {listParks.map((park) => (
                     <ParkCard
@@ -642,7 +666,7 @@ function OffroadParksAppInner({
                 {(isLoading || isLoadingMore) && (
                   <div className="flex items-center justify-center gap-2 py-8 text-sm text-muted-foreground">
                     <Loader2 className="h-4 w-4 animate-spin" />
-                    Loading parks…
+                    {restoring ? "Restoring your place…" : "Loading parks…"}
                   </div>
                 )}
 
